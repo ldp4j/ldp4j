@@ -1,0 +1,287 @@
+<!--
+
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      This file is part of the LDP4j Project:
+        http://www.ldp4j.org/
+
+      Center for Open Middleware
+        http://www.centeropenmiddleware.com/
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Copyright (C) 2014 Center for Open Middleware.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+                http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Artifact    : org.ldp4j:ldpj4-dist:1.0.0-SNAPSHOT
+      Bundle      : ldpj4-dist-1.0.0-SNAPSHOT.jar
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+
+-->
+<h1>Getting Started with LDP4j</h1>
+
+<h2>What's LDP4j</h2>
+
+<p>LDP4j is a <strong>Java-based framework for the development  of read-write Linked Data applications</strong> based on the W3C Linked Data Platform 1.0 (LDP) specification.</p>
+
+<p>This framework provides the components required by clients and servers for handling their communication, hidding the complexity of the protocol details from application developers and letting them focus on implementing their application-specific business logic.</p>
+
+<p>In addition, the framework also provides a set of middleware services for the development of read-write Linked Data applications with requirements beyond the LDP specification scope.</p>
+
+<h2>High-level Design of LDP4j</h2>
+
+<p>In order to facilitate the development of LDP-based applications the LDP4j provides different components that developers may use for the development of such applications, in particular: an extensible LDP Server and an extensible LDP Client. The following sections will present both components.</p>
+
+<h3>LDP4j Server Component</h3>
+
+<p>The purpose of the LDP4j Server Component (or <em>LDP Server</em> for short) is to provide the means for publishing application-specific LDP containers and resources, abstracting developers from the particularities of the LDP protocol and letting them focus on the particular business logic behind the containers and resources themselves.</p>
+
+<p>The LDP Server is organized into two modules, namely: the <strong>LDP Server API</strong> and the <strong>LDP Server Implementation</strong>, both of them described below. </p>
+
+<h4>LDP Server API</h4>
+
+<p>The <em>LDP Server API</em> is divided into: (1) the <strong>server API</strong>, which defines entities related to different aspects of the LDP protocol that are of interest for the LDP Server (i.e., resources, content, and format); (2) the <strong>server SPI</strong>, which defines APIs that provide extensions to the types supported by the <em>server API</em>; (3) the <strong>server frontend</strong>, which provides the developers with a frontened that allows the interaction with the different services provided by the LDP Server, if required;  and (4) the <strong>developer API</strong>, which defines the low-level interfaces and annotations that have to be used to create server-side LDP application using LDP4j. </p>
+
+<p>This latter part of the API provides and extensibility layer that enables the developer specify the behaviour of the LDP4j Server when dealing with LDP containers and resources. For the time being two extensibility points are provided: <strong>org.ldp4j.server.core.ILinkedDataPlatformContainer</strong> and <strong>org.ldp4j.server.core.ILinkedDataPlatformResourceHandler</strong>.</p>
+
+<p>In order to develop <em>direct</em> LDP containers, developers must implement the <em>org.ldp4j.server.core.ILinkedDataPlatformContainer</em> interface. This interfaces provides the means for handling the creation of LDP resources given an RDF serialization, as well as for retrieving a RDF summary of contents of one or more of the resources managed by the container. Each container is must be identified by an application unique identifier. In addition, every created resource must be identified by a container unique identifier.</p>
+
+<p>On the other hand, the <em>org.ldp4j.server.core.ILinkedDataPlatformResourceHandler</em> interface has to be implemented for developing LDP resources. This interfaces provides the means for retrieving the contents of existing resources and well as for updating their contents given an RDF serialization. Resource handlers must be identified by an application unique identifier, which should match that of the container used for the creation of the resources handled by the handler.</p>
+
+<p>If the application supports resource deletion, developers will have to extend the classes that implement the <em>org.ldp4j.server.core.ILinkedDataPlatformResourceHandler</em> in one of two ways: implement also the <strong>org.ldp4j.server.core.Deletable</strong> interface, or add provide a method with the same signature as the <em>delete</em> method defined in the latter interface, annotated with <strong>org.ldp4j.server.core.Delete</strong>.</p>
+
+<h4>LDP Server Implementation</h4>
+
+<p>The implementation includes a <a href="http://jcp.org/aboutJava/communityprocess/final/jsr311/">JAX-RS 1.0</a> based application which is published under the <strong>/ldp</strong> path. The application includes an <em>LDP container manager</em> and an <em>LDP resource handler manager</em>. These managers discover LDP containers and LDP resource handlers at runtime, and enable dispatching LDP-protocol requests to them using the <strong>/ldp/containers/«containerId»</strong> and <strong>/ldp/resources/«containerId»/«resourceId»</strong> paths, respectively.</p>
+
+<p>The runtime discovery of LDP containers and LDP resource handlers relies on the standard <em><a href="http://docs.oracle.com/javase/6/docs/api/java/util/ServiceLoader.html">Service Provider Mechanism</a></em> of the Java 6 SE.</p>
+
+<p>For the time being the implementation supports the following <a href="http://www.w3.org/TR/2014/WD-ldp-20140311/">LDP 1.0 LCWD2</a> capabilities:</p>
+
+<ul>
+<li><strong>Direct Container</strong>
+<ul><li><em>Resource creation</em>, supporting both RDF/XML and Turtle serializations.</li>
+<li><em>Container retrieval</em>, supporting both the RDF/XML and Turtle serializations.</li></ul></li>
+<li><strong>RDF Source-based LDP Resources</strong>
+<ul><li><em>Resource retrieval</em>, supporting both RDF/XML and Turtle serializations.</li>
+<li><em>Resource update</em>, supporting both RDF/XML and Turtle serializations.</li>
+<li><em>Resource deletion</em></li></ul></li>
+</ul>
+
+<p>However the following caveats apply:</p>
+
+<ol>
+<li>The container retrieval operations does not support the current paging functionality. Also, the method for selecting the contents of the container representation is still based on a <a href="http://www.w3.org/TR/2013/WD-ldp-20130307/">previous version of the specification</a>.</li>
+</ol>
+
+<h3>LDP4j Client Component</h3>
+
+<p>While the LDP4j Server Component is meant to help developers in publishing contents via the LDP protocol, the purpose of the LDP4j Client Component is to let developers build applications capable of consuming those contents exploiting the LDP protocol. Again, the LDP4j Client Component hides the specificities of the LDP protocol to the developer so that he only has to decide how to use those contents.</p>
+
+<p>The LDP4j Client Component (or <em>LDP Client</em> for short) is also divided in two modules: the <strong>LDP Client API</strong> and the <strong>LDP Client Implementation</strong>, which are presented in the following paragraphs.</p>
+
+<h4>LDP Client API</h4>
+
+<p>The API provides the frontend to the LDP Client that developers have to use for consuming LDP contents. The frontend consists of a façade (<strong>org.ldp4j.client.LDPClientFactory</strong>) that allows creating <strong>proxies</strong> to containers (<strong>org.ldp4j.client.ILDPContainer</strong>) and resources (<strong>org.ldp4j.client.ILDPResources</strong>) given their URLs. For the time being, these proxies provide the client-side functionalities that match those offered by the current version of the LDP Server, that is, resource creation on containers and content retrieval on resources.</p>
+
+<h4>LDP Client Implementation</h4>
+
+<p>The LDP Client Implementation is also built with extensibility on mind. Thus, the implementation provides an SPI that defines the extensibility points that developers have to provide in order to create specific LDP Client implementations. In particular, one extensibility point is defined: <strong>org.ldp4j.client.ILDPClientProvider</strong>. This interface defines methods for creating proxies to containers and resources following the contracts defined in the LDP Client API.</p>
+
+<p>As in the case of the LDP Server Implementation, the runtime discovery of providers in the LDP Client façade relies on the standard Service Provider Mechanism of the Java 6 SE.</p>
+
+<p>The default provider implementation is based on JAX-RS 1.0 using a CXF implementation.</p>
+
+<h2>Using LDP4j</h2>
+
+<h3>Prerequisites</h3>
+
+<p>In order to use LDP4j you''ll need the following:</p>
+
+<ul>
+<li>A Java SE 1.6 distribution</li>
+<li>A Maven 3 distribution</li>
+<li>An Apache TomEE 1.5.1 distribution. In fact any JAX-RS 1.0 capable container would suffice. Servlet 3.0/JSP 2.2 containers can be also used if they are extended with a JAX-RS implementation or the JAX-RS implementation is included in the application's WAR.</li>
+<li>A Git client</li>
+</ul>
+
+<h3>Build the sources</h3>
+
+<p>The first step is to grab the sources from the project's Git repository:</p>
+
+<pre><code>    git clone git://github.com/ldp4j/ldp4j.git
+</code></pre>
+
+<p>Once the repository is locally available you can build it as follows:</p>
+
+<pre><code>    mvn install
+</code></pre>
+
+<h3>Creating a server-side LDP application</h3>
+
+<p>Using Apache TomEE as target container, in order to create a server-side application you'll just need to create a java application that includes the LDP4j Server Components and package it as a WAR.</p>
+
+<p>This can be done in Maven with project with the following dependency:</p>
+
+<pre><code>    &lt;dependency&gt;
+        &lt;groupId&gt;org.ldp4j.framework&lt;/groupId&gt;
+        &lt;artifactId&gt;ldp4j-server-depchain&lt;/artifactId&gt;
+        &lt;version&gt;${project.version}&lt;/version&gt;
+        &lt;type&gt;pom&lt;/type&gt;
+    &lt;/dependency&gt;
+</code></pre>
+
+<p>A container could be implemented as follows:</p>
+
+<pre><code>    package org.examples;
+
+    import java.util.Collection;
+
+    import org.ldp4j.server.Format;
+    import org.ldp4j.server.IContent;
+    import org.ldp4j.server.LinkedDataPlatformException;
+    import org.ldp4j.server.core.ILinkedDataPlatformContainer;
+
+    public class ExampleContainer implements ILinkedDataPlatformContainer {
+
+        @Override
+        public String getContainerId() {
+            return &lt;&lt;containerId&gt;&gt;;
+        }
+
+        @Override
+        public String createResource(IContent content, Format format) throws LinkedDataPlatformException {
+            &lt;&lt;creation logic here&gt;&gt;
+        }
+
+        @Override
+        public IContent getSummary(final Collection&lt;String&gt; resources, final Format format) throws LinkedDataPlatformException {
+            &lt;&lt;summarization logic hereupdate&gt;&gt;
+        }
+
+    }
+</code></pre>
+
+<p>In order to make the container implementation available to the LDP4j Server, a file named <strong>org.ldp4j.server.core.ILinkedDataPlatformContainer</strong> has to be added to the <strong>META-INF/services</strong> directory of the WAR including the full qualified names of the classes that implement this interface. In our example, the file would only include the following line:</p>
+
+<pre><code>    org.examples.ExampleContainer
+</code></pre>
+
+<p>Similarly, a deletable resource handler associated to the previous container could be implemented as follows:</p>
+
+<pre><code>    package org.examples;
+
+    import java.util.Collection;
+
+    import org.ldp4j.server.Format;
+    import org.ldp4j.server.IContent;
+    import org.ldp4j.server.IResource;
+    import org.ldp4j.server.LinkedDataPlatformException;
+    import org.ldp4j.server.LinkedDataPlatformServer;
+    import org.ldp4j.server.core.Deletable;
+    import org.ldp4j.server.core.DeletionException;
+    import org.ldp4j.server.core.DeletionResult;
+    import org.ldp4j.server.core.ILinkedDataPlatformResourceHandler;
+
+    public class ExampleResource implements ILinkedDataPlatformResourceHandler, Deletable {
+
+        @Override
+        public String getContainerId() {
+            return "myContainer";
+        }
+
+        @Override
+        public IResource getResource(final String id) throws LinkedDataPlatformException {
+            &lt;&lt;retrieval logic here&gt;&gt;
+        }
+
+        @Override
+        public Collection&lt;String&gt; getResourceList() throws LinkedDataPlatformException {
+            &lt;&lt;resource listing logic here&gt;&gt;
+        }
+
+        @Override
+        public IResource updateResource(String resourceId, final IContent content, Format format) throws LinkedDataPlatformException  {
+            &lt;&lt;update logic here&gt;&gt;
+        }
+
+        @Override
+        public DeletionResult delete(String resourceId) throws DeletionException {
+            &lt;&lt;deletion logic here&gt;&gt;
+        }
+
+    }
+</code></pre>
+
+<p>Again, in order to make the container implementation available to the LDP4j Server, a file named <strong>org.ldp4j.server.core.ILinkedDataPlatformResourceHandler</strong> has to be added to the <strong>META-INF/services</strong> directory of the WAR including the full qualified names of the classes that implement this interface. In our example, the file would only include the following line:</p>
+
+<pre><code>    org.examples.ExampleResource
+</code></pre>
+
+<h3>Consuming LDP contents</h3>
+
+<p>In order to consumer LDP contents you'll need to create a Java application that uses the LDP4j Client. In Maven this can be done with project with the following dependency:</p>
+
+<pre><code>    &lt;dependency&gt;
+        &lt;groupId&gt;org.ldp4j.framework&lt;/groupId&gt;
+        &lt;artifactId&gt;ldp4j-client-depchain&lt;/artifactId&gt;
+        &lt;version&gt;${project.version}&lt;/version&gt;
+        &lt;type&gt;pom&lt;/type&gt;
+    &lt;/dependency&gt;
+</code></pre>
+
+<p>A proxy to a container located at <em>http://www.example.org/myContainer/</em> can be created as follows:</p>
+
+<pre><code>    package org.examples;
+
+    import java.net.URL;
+
+    import org.ldp4j.client.ILDPContainer;
+    import org.ldp4j.client.LDPClientFactory;
+
+    public class ExampleClient {
+
+        public static void main(String[] args) {
+            String location="http://www.examples.org/myContainer";
+            try {
+                ILDPContainer containerProxy = LDPClientFactory.createContainer(new URL(location));
+                &lt;&lt;use proxy&gt;&gt;
+            } catch(Exception e) {
+                &lt;&lt;failure recovery&gt;&gt;
+            }
+        }
+
+    }
+</code></pre>
+
+<p>Similarly, a proxy to a resource located at <em>http://www.example.org/myContainer/00001</em> can be created as follows:</p>
+
+<pre><code>    package org.examples;
+
+    import java.net.URL;
+
+    import org.ldp4j.client.ILDPResource;
+    import org.ldp4j.client.LDPClientFactory;
+
+    public class ExampleClient {
+
+        public static void main(String[] args) {
+            String location="http://www.examples.org/myContainer/00001";
+            try {
+                ILDPResource resourceProxy = LDPClientFactory.createResource(new URL(location));
+                &lt;&lt;use proxy&gt;&gt;
+            } catch(Exception e) {
+                &lt;&lt;failure recovery&gt;&gt;
+            }
+        }
+
+    }
+</code></pre>

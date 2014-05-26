@@ -1,0 +1,5 @@
+${license.project.name}
+Copyright (C) ${license.project.duration} ${license.project.owner}.
+
+This product includes software developed at the
+${license.organization.name} (${license.organization.url}).

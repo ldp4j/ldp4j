@@ -1,0 +1,2 @@
+# Default LDP Client provider
+org.ldp4j.client.core.CoreLDPClientProvider

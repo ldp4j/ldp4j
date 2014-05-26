@@ -1,0 +1,19 @@
+-- -------------------------------------------------------------------------- --
+-- ORGANIZATION OF THE LDP4j DISTRIBUTION                                     --
+-- -------------------------------------------------------------------------- --
+-- v${project.version} --
+
+The distribution is organized in the following directories:
+
+ - bin: this directory includes the LDP4j binaries.
+
+ - documentation: this directory includes additional material required for 
+  using LDP4j as well as the JavaDoc of the developer API (under the *javadoc* 
+  directory).
+
+ - lib: includes the 3rd party dependencies of LDP4j.
+
+ - licenses: includes the licenses of third-party libraries that are included 
+ 	as part of the LDP4j distribution.
+ 
+-- -------------------------------------------------------------------------- --
