@@ -409,7 +409,7 @@
 	<build>
 		<testResources>
 			<testResource>
-				<directory>src/test/resources</directory>
+				<directory>src${file.separator}test${file.separator}resources</directory>
 				<filtering>true</filtering>
 			</testResource>
 		</testResources>
@@ -968,6 +968,12 @@
 				</file>
 			</activation>
 			<build>
+				<testResources>
+					<testResource>
+						<directory>src${file.separator}it${file.separator}resources</directory>
+						<filtering>true</filtering>
+					</testResource>
+				</testResources>
 				<plugins>
 					<!-- Add integration test sources -->
 					<plugin>
@@ -985,21 +991,6 @@
 									<sources>
 										<source>src${file.separator}it${file.separator}java</source>
 									</sources>
-								</configuration>
-							</execution>
-							<execution>
-								<id>add-it-resources</id>
-								<phase>generate-test-resources</phase>
-								<goals>
-									<goal>add-test-resource</goal>
-								</goals>
-								<configuration>
-									<resources>
-										<resource>
-											<directory>src${file.separator}it${file.separator}resources</directory>
-											<filtering>true</filtering>
-										</resource>
-									</resources>
 								</configuration>
 							</execution>
 						</executions>

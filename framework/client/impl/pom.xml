@@ -60,6 +60,18 @@
 		<tomee.classifier>plus</tomee.classifier>
 	</properties>
 
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.ldp4j.framework</groupId>
+				<artifactId>ldp4j-client-bom</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<dependencies>
 
 		<dependency>
@@ -178,11 +190,11 @@
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>reserve-network-port</id>
+						<id>reserve-tomee-port</id>
+						<phase>generate-test-resources</phase>
 						<goals>
 							<goal>reserve-network-port</goal>
 						</goals>
-						<phase>initialize</phase>
 						<configuration>
 							<portNames>
 								<portName>tomee.http.port</portName>

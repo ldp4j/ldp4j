@@ -61,14 +61,14 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.ldp4j.framework</groupId>
-				<artifactId>ldp4j-server</artifactId>
+				<artifactId>ldp4j-server-bom</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.ldp4j.framework</groupId>
-				<artifactId>ldp4j-client</artifactId>
+				<artifactId>ldp4j-client-bom</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 				<scope>import</scope>

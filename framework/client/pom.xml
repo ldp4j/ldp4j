@@ -52,6 +52,7 @@
 	<description>LDP4j Client-side implementation</description>
 
 	<modules>
+		<module>bom</module>
 		<module>api</module>
 		<module>impl</module>
 		<module>depchain</module>
@@ -63,21 +64,7 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
-				<groupId>org.ldp4j.framework</groupId>
-				<artifactId>ldp4j-client-api</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.ldp4j.framework</groupId>
-				<artifactId>ldp4j-client-impl</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.ldp4j.framework</groupId>
-				<artifactId>ldp4j-client-depchain</artifactId>
-				<version>${project.version}</version>
-			</dependency>
+			<!-- Bill-of-Materials -->
 		</dependencies>
 	</dependencyManagement>
 	

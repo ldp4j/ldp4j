@@ -21,8 +21,8 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-server-depchain:1.0.0-SNAPSHOT
-      Bundle      : ldp4j-server-depchain-1.0.0-SNAPSHOT.pom
+      Artifact    : org.ldp4j.framework:ldp4j-server-bom:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-server-bom-1.0.0-SNAPSHOT.pom
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
@@ -41,15 +41,15 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>ldp4j-server-depchain</artifactId>
+	<artifactId>ldp4j-server-bom</artifactId>
 	<packaging>pom</packaging>
 
 	<!-- =================================================================== -->
 	<!--   MODULE INFORMATION                                                -->
 	<!-- =================================================================== -->
 
-	<name>LDP4j :: Framework :: Server :: Dependency Chain</name>
-	<description>Single-POM definition to export the LDP4j Server artifacts in proper scope</description>
+	<name>LDP4j :: Framework :: Server :: Bill-of-Materials</name>
+	<description>Bill of Materials of the LDP4j Server</description>
 
 	<!-- =================================================================== -->
 	<!--   BUILD SETTINGS                                                    -->
@@ -59,24 +59,20 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.ldp4j.framework</groupId>
-				<artifactId>ldp4j-server-bom</artifactId>
+				<artifactId>ldp4j-server-api</artifactId>
 				<version>${project.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.ldp4j.framework</groupId>
+				<artifactId>ldp4j-server-impl</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ldp4j.framework</groupId>
+				<artifactId>ldp4j-server-depchain</artifactId>
+				<version>${project.version}</version>
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-server-api</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-server-impl</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-	</dependencies>
 	
 </project>
