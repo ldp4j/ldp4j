@@ -27,11 +27,8 @@
 package org.ldp4j.server.testing.stubs;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.net.URL;
 import java.util.Collection;
 
-import org.apache.commons.io.IOUtils;
 import org.ldp4j.server.Format;
 import org.ldp4j.server.IContent;
 import org.ldp4j.server.IResource;
@@ -46,18 +43,6 @@ import org.ldp4j.server.core.InvalidResourceContentsException;
 public class WorkingResource implements ILinkedDataPlatformResourceHandler {
 
 	public static final String INVALID_CONTENT = "INVALID_CONTENT";
-
-	private WorkingContainer container;
-
-	private synchronized WorkingContainer getContainer() {
-		if(container==null) {
-			container=LinkedDataPlatformServer.getRegistry().getContainer(getContainerId(), WorkingContainer.class);
-			if(container==null) {
-				throw new IllegalStateException("Could not find container");
-			}
-		}
-		return container;
-	}
 	
 	@Override
 	public String getContainerId() {
@@ -66,37 +51,12 @@ public class WorkingResource implements ILinkedDataPlatformResourceHandler {
 
 	@Override
 	public IResource getResource(final String id) throws LinkedDataPlatformException {
-		final String resource=getContainer().getResource(id);
-		return new IResource() {
-			@Override
-			public URL getIdentity() {
-				throw new UnsupportedOperationException("Method not implemented yet");
-			}
-
-			@Override
-			public IContent getContent(Format format) throws IOException {
-				return new IContent() {
-					@Override
-					public <S> S serialize(Class<S> clazz) throws IOException {
-						S result=null;
-						if(clazz.isAssignableFrom(String.class)) {
-							result=clazz.cast(resource);
-						} else if(clazz.isAssignableFrom(InputStream.class)) {
-							result=clazz.cast(IOUtils.toInputStream(resource));
-						} else {
-							throw new IOException(String.format("Could not serialize content to '%s'",clazz.getCanonicalName()));
-						}
-						return result;
-					}
-				};
-			}
-			
-		};
+		return new ResourceImpl(getResourceManager().retrieveResource(id));
 	}
 
 	@Override
 	public Collection<String> getResourceList() throws LinkedDataPlatformException {
-		return getContainer().getResourceList();
+		return getResourceManager().getResources();
 	}
 
 	@Override
@@ -106,7 +66,7 @@ public class WorkingResource implements ILinkedDataPlatformResourceHandler {
 			if(body.equals(INVALID_CONTENT)) {
 				throw new InvalidResourceContentsException(String.format("Bad contents: resource creation for content '%s' failed",body));
 			} else {
-				if(!getContainer().updateResource(resourceId,body)) {
+				if(!getResourceManager().updateResource(resourceId,body)) {
 					return null;
 				}
 				return getResource(resourceId);
@@ -118,7 +78,17 @@ public class WorkingResource implements ILinkedDataPlatformResourceHandler {
 	
 	@Delete
 	public DeletionResult deleteResource(String resourceId) throws DeletionException {
-		return getContainer().deleteResource(resourceId);
+		DeletionResult result;
+		if(getResourceManager().deleteResource(resourceId)) {
+			result=DeletionResult.newBuilder().enacted(true).withMessage(String.format("Resource '%s' succesfully deleted",resourceId)).build();
+		} else {
+			throw new DeletionException(String.format("Resource '%s' not found",resourceId));
+		}
+		return result;
+	}
+
+	private ResourceManager getResourceManager() {
+		return LinkedDataPlatformServer.getRegistry().getContainer(getContainerId(), WorkingContainer.class).getResourceManager();
 	}
 
 }

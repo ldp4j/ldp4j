@@ -54,6 +54,7 @@ public class TestingApplicationBuilder {
 		SETTINGS(ResourceParameter,"settings.xml"),
 		POM(ResourceParameter,"pom.xml"),
 		WEB_XML(ResourceParameter,"web.xml"),
+		BEANS(ResourceParameter,"beans.xml"),
 		LiteralParameter(null, null) {
 		},
 		DEPLOYABLE_NAME(LiteralParameter,"ldp-application.war"),
@@ -104,8 +105,6 @@ public class TestingApplicationBuilder {
 
 	private JavaArchive stubs;
 
-//	private JavaArchive extendedStubs;
-
 	static {
 		PACKAGE_PATH = TestingApplicationBuilder.class.getPackage().getName().replace(".", "/").concat("/");
 	}
@@ -130,7 +129,6 @@ public class TestingApplicationBuilder {
 	public TestingApplicationBuilder() {
 		ldpServerArchive = TestingUtil.getServerRuntimeArchive();
 		stubs=TestingUtil.getServerTestingArchive();
-//		extendedStubs=TestingUtil.getServerExtendedTestingArchive();
 	}
 	
 	/**
@@ -152,6 +150,13 @@ public class TestingApplicationBuilder {
 	 */
 	public String getWebXml() {
 		return retrieveParameter(Parameter.WEB_XML);
+	}
+
+	/**
+	 * @return the beans
+	 */
+	public String getBeans() {
+		return retrieveParameter(Parameter.BEANS);
 	}
 
 	/**
@@ -244,12 +249,6 @@ public class TestingApplicationBuilder {
 				LOGGER.debug("- Testing stubs:");
 				LOGGER.debug("  + "+stubs);
 			}
-/*
-			if(Boolean.parseBoolean(retrieveParameter(Parameter.WITH_EXTENDED_STUBS))) {
-				LOGGER.debug("- Extended testing stubs:");
-				LOGGER.debug("  + "+extendedStubs);
-			}
-*/
 			if(archives.length>0) {
 				LOGGER.debug("- Custom libraries:");
 				for(JavaArchive archive:archives) {
@@ -290,19 +289,23 @@ public class TestingApplicationBuilder {
 		if(Boolean.parseBoolean(retrieveParameter(Parameter.WITH_STUBS))) {
 			war.addAsLibraries(stubs);
 		}
-/*
-		if(Boolean.parseBoolean(retrieveParameter(Parameter.WITH_EXTENDED_STUBS))) {
-			war.addAsLibraries(extendedStubs);
-		}
-*/
 	}
 
 	private void updateWebInf(WebArchive war) {
-		File file = new File(getWebXml());
+		addWebInf(war, getWebXml());
+		addWebInf(war, getBeans());
+	}
+
+	/**
+	 * @param war
+	 * @param source
+	 */
+	private void addWebInf(WebArchive war, String source) {
+		File file = new File(source);
 		if(file.canRead() && file.isFile()) {
 			war.addAsWebInfResource(file);
 		} else {
-			war.addAsWebInfResource(getWebXml());
+			war.addAsWebInfResource(source);
 		}
 	}
 

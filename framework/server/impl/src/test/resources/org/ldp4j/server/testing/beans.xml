@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
@@ -27,23 +26,50 @@
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
-<settings
-	xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+		http://cxf.apache.org/jaxws
+		http://cxf.apache.org/schemas/jaxws.xsd
+		http://cxf.apache.org/jaxrs
+		http://cxf.apache.org/schemas/jaxrs.xsd">
 
-	<localRepository>${settings.localRepository}</localRepository>
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
-	<offline>false</offline>
+	<bean
+		id="logInInterceptor" 
+		class="org.apache.cxf.interceptor.LoggingInInterceptor" />
+		
+	<bean
+		id="logOutInterceptor" 
+		class="org.apache.cxf.interceptor.LoggingOutInterceptor" />
+	<bean 
+		id="resourceManager"
+		scope="singleton"
+		class="org.ldp4j.server.impl.LinkedDataPlatformResourceManager"/>
+ 
+	<bean 
+		id="containerManager"
+		scope="singleton"
+		class="org.ldp4j.server.impl.LinkedDataPlatformContainerManager"/>
 
-	<pluginGroups/>
+	<jaxrs:server id="ldp4j" address="/ldp">
+		<jaxrs:serviceBeans>
+			<ref bean="resourceManager" />
+			<ref bean="containerManager" />
+		</jaxrs:serviceBeans>
+		<jaxrs:inInterceptors>
+			<ref bean="logInInterceptor" />
+		</jaxrs:inInterceptors>
+		<jaxrs:outInterceptors>
+			<ref bean="logOutInterceptor" />
+		</jaxrs:outInterceptors>
+	</jaxrs:server> 
 
-	<proxies/>
-
-	<servers/>
-
-	<mirrors/>
-
-	<profiles/>
-	
-</settings>
+</beans>

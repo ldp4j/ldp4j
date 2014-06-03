@@ -27,46 +27,27 @@
 package org.ldp4j.server.testing.stubs;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
+import java.net.URL;
 
 import org.ldp4j.server.Format;
 import org.ldp4j.server.IContent;
-import org.ldp4j.server.LinkedDataPlatformException;
-import org.ldp4j.server.core.ILinkedDataPlatformContainer;
-import org.ldp4j.server.sdk.IndividualFormattedContent;
-import org.ldp4j.server.sdk.IndividualFormattedContent.Individual;
+import org.ldp4j.server.IResource;
 
-public class WorkingContainer implements ILinkedDataPlatformContainer {
+final class ResourceImpl implements IResource {
 
-	public static final String CONTAINER_ID = "WorkingContainer";
+	private final String resource;
 
-	public WorkingContainer() {
-		ResourceManagerController.getInstance().attachResourceManager(CONTAINER_ID);
-	}
-	
-	@Override
-	public String getContainerId() {
-		return CONTAINER_ID;
+	ResourceImpl(String resource) {
+		this.resource = resource;
 	}
 
 	@Override
-	public String createResource(IContent content, Format format) throws LinkedDataPlatformException {
-		try {
-			return getResourceManager().createResource(content, format);
-		} catch (IOException e) {
-			throw new LinkedDataPlatformException("Could not read content",e);
-		}
+	public URL getIdentity() {
+		throw new UnsupportedOperationException("Method not implemented yet");
 	}
-	
+
 	@Override
-	public IContent getSummary(final Collection<String> resources, final Format format) throws LinkedDataPlatformException {
-		List<Individual> individuals=getResourceManager().getSummary(resources, format);
-		return new IndividualFormattedContent(format,individuals.toArray(new Individual[]{}));
+	public IContent getContent(Format format) throws IOException {
+		return new ContentImpl(this.resource);
 	}
-
-	ResourceManager getResourceManager() {
-		return ResourceManagerController.getInstance().getResourceManager(CONTAINER_ID);
-	}
-
 }

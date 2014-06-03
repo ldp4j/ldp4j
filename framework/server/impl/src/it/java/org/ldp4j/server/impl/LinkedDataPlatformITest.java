@@ -41,7 +41,7 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.cxf.helpers.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -50,12 +50,8 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.ldp4j.server.Format;
-import org.ldp4j.server.impl.ILinkedDataPlatformContainerManager;
-import org.ldp4j.server.impl.ILinkedDataPlatformResourceManager;
-import org.ldp4j.server.impl.ResourceLocator;
 import org.ldp4j.server.testing.TestingApplicationBuilder;
 import org.ldp4j.server.testing.TestingUtil;
 import org.ldp4j.server.testing.stubs.WorkingContainer;
@@ -76,7 +72,7 @@ public class LinkedDataPlatformITest {
 	private URL containerLocation;
 
 	@Deployment(name=DEPLOYMENT, testable=false)
-	@TargetsContainer("tomee-plus")
+	@TargetsContainer("tomcat-7.0.20")
 	public static WebArchive createLinkedDataPlatformServerWar() {
 		return 
 			new TestingApplicationBuilder().
@@ -107,7 +103,7 @@ public class LinkedDataPlatformITest {
 		Response response = containerManager.createResource(containerId, entity,Format.Turtle.getMime());
 		LOGGER.debug("\t- Response:");
 		LOGGER.debug("\t\t+ Status.....: " + response.getStatus());
-		LOGGER.debug("\t\t+ Body.......: " + IOUtils.readStringFromStream((InputStream)response.getEntity()));
+		LOGGER.debug("\t\t+ Body.......: " + IOUtils.toString((InputStream)response.getEntity()));
 		List<Object> list = response.getMetadata().get("Location");
 		LOGGER.debug("\t\t+ Location...: " + list);
 	
@@ -132,7 +128,7 @@ public class LinkedDataPlatformITest {
 			LOGGER.debug("\t\t+ ETag.........: " + response.getMetadata().get("ETag"));
 			LOGGER.debug("\t\t+ Last-Modified: " + response.getMetadata().get("Last-Modified"));
 			LOGGER.debug("\t\t+ Link.........: " + response.getMetadata().get("Link"));
-			LOGGER.debug("\t\t+ Entity.......: " + IOUtils.readStringFromStream((InputStream)response.getEntity()));
+			LOGGER.debug("\t\t+ Entity.......: " + IOUtils.toString((InputStream)response.getEntity()));
 		}
 		return response;
 	}
@@ -165,7 +161,7 @@ public class LinkedDataPlatformITest {
 		LOGGER.debug(String.format("* Checking %s Deployment (%s)",DEPLOYMENT,url));
 		InputStream is = url.openStream();
 		try {
-			String content = IOUtils.readStringFromStream(is);
+			String content = IOUtils.toString(is);
 			LOGGER.debug("\t- Content: " + content);
 			assertThat(content,equalTo(CONTROL_PHRASE));
 		} finally {

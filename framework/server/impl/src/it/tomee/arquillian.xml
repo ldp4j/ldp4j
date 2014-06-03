@@ -31,34 +31,12 @@
 	xmlns="http://jboss.org/schema/arquillian"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://jboss.org/schema/arquillian http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
-	<engine>
-		<property name="deploymentExportPath">target/deployments</property>
-	</engine>
-	<group qualifier="tomee-cluster">
-		<container qualifier="tomee-plus">
-			<configuration>
-				<property name="version">${tomee.version}</property>
-				<property name="dir">target${file.separator}apache-tomee-plus</property>
-				<property name="appWorkingDir">target${file.separator}arquillian-test-working-dir</property>
-				<property name="conf">target${file.separator}test-classes${file.separator}conf</property>
-<!-- 
-				<property name="lib">target${file.separator}ldp-server${file.separator}lib</property>
- -->
-				<property name="httpPort">${tomee.http.port}</property>
-				<property name="stopPort">${tomee.shutdown.port}</property>
-				<property name="ajpPort">${tomee.ajp.port}</property>
-<!-- 
-				<property name="catalina_opts">
-					-Dorg.ldp4j.server.integration.catalina.ServerListener.Logger.log_file=target${file.separator}events.log
-				</property>
- -->
-				<property name="catalina_opts">
-					${jacoco.agent.it.arg}
-				</property>
-				<property name="exportConfAsSystemProperty">true</property>
-				<property name="debugPort">5005</property>
-				<!--  <property name="debug">true</property> -->
-			</configuration>
+	<group qualifier="tomcat-cluster">
+		<container qualifier="tomcat-7.0.20">
+				<configuration>
+					<property name="bindHttpPort">${tomcat.http.port}</property>
+					<property name="unpackArchive">true</property>
+				</configuration>
 		</container>
 	</group>
 </arquillian>

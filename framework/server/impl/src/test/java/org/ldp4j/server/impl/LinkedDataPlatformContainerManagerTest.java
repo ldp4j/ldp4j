@@ -27,15 +27,14 @@
 package org.ldp4j.server.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.startsWith;
+import static org.hamcrest.Matchers.*;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.any;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
@@ -90,25 +89,32 @@ public class LinkedDataPlatformContainerManagerTest {
 
 	@Mock private UriInfo info;
 	@Mock private UriBuilder uriBuilder;
+	
 	private static TestHelper helper;
 	
 	@Test
 	public void testSuccessfulResourceCreation() {
-		String relativePath = "resources/".concat(WorkingContainer.CONTAINER_ID).concat("/").concat(Integer.toHexString(BODY.hashCode()));
-		String absolutePath = "http://"+relativePath;
+		String suffix = Integer.toHexString(BODY.hashCode());
+		String prefix = "resources/".concat(WorkingContainer.CONTAINER_ID).concat("/");
+		String absolutePath = "http://localhost:8080/myapp/ldp/"+prefix.concat(suffix);
 
 		when(info.getBaseUriBuilder()).thenReturn(uriBuilder);
-		when(uriBuilder.path(relativePath)).thenReturn(uriBuilder);
+		when(uriBuilder.path(any(String.class))).thenReturn(uriBuilder);
 		when(uriBuilder.build()).thenReturn(URI.create(absolutePath));
 		
 		Response response = sut.createResource(WorkingContainer.CONTAINER_ID, BODY, Format.Turtle.getMime());
 		assertThat(response,notNullValue());
 		assertThat(response.getStatus(),equalTo(Status.CREATED.getStatusCode()));
 		assertThat(response.getEntity().toString(),equalTo(absolutePath));
-		assertThat(response.getMetadata().get("Location"),hasItem((Object)relativePath));
+		List<Object> locations = response.getMetadata().get("Location");
+		assertThat(locations,hasSize(1));
+		// ID generator testing, only verifies that the internal generator used by the container works as expected, could be removed
+		String location = (String)locations.get(0);
+		assertThat(location,startsWith(prefix));
+		assertThat(location,endsWith(suffix));
 		
 		verify(info).getBaseUriBuilder();
-		verify(uriBuilder).path(relativePath);
+		verify(uriBuilder).path(any(String.class));
 		verify(uriBuilder).build();
 	}
 

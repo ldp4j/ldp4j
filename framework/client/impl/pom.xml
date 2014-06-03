@@ -57,7 +57,9 @@
 	<!-- =================================================================== -->
 
 	<properties>
-		<tomee.classifier>plus</tomee.classifier>
+		<version.org.apache.tomcat>7.0.20</version.org.apache.tomcat>
+		<version.org.eclipse.jdt.core.compiler>3.7</version.org.eclipse.jdt.core.compiler>
+		<spring.version>3.0.7.RELEASE</spring.version>
 	</properties>
 
 	<dependencyManagement>
@@ -99,6 +101,7 @@
 			<artifactId>ldp4j-server-depchain</artifactId>
 			<version>${project.version}</version>
 			<type>pom</type>
+			<scope>test</scope>
 		</dependency>
 
 		<dependency>
@@ -170,15 +173,66 @@
 			<scope>test</scope>
 		</dependency>
 
+
+		<!-- Arquillian -->
 		<dependency>
 			<groupId>org.jboss.arquillian.junit</groupId>
 			<artifactId>arquillian-junit-container</artifactId>
 			<scope>test</scope>
 		</dependency>
-	
+
 		<dependency>
-			<groupId>org.apache.openejb</groupId>
-			<artifactId>arquillian-tomee-remote</artifactId>
+			<groupId>org.jboss.arquillian.container</groupId>
+			<artifactId>arquillian-tomcat-embedded-7</artifactId>
+			<version>1.0.0.CR6</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Tomcat Embed (Arquillian Tomcat Embedded Container requirement) -->
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-core</artifactId>
+			<version>${version.org.apache.tomcat}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-jasper</artifactId>
+			<version>${version.org.apache.tomcat}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-logging-juli</artifactId>
+			<version>${version.org.apache.tomcat}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jdt.core.compiler</groupId>
+			<artifactId>ecj</artifactId>
+			<version>${version.org.eclipse.jdt.core.compiler}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- CXF (Non-Java EE Container requirement)-->
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-bundle-jaxrs</artifactId>
+			<version>${cxf.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Spring (CXF bootstrap requirement)  -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
@@ -190,21 +244,19 @@
 				<artifactId>build-helper-maven-plugin</artifactId>
 				<executions>
 					<execution>
-						<id>reserve-tomee-port</id>
+						<id>reserve-tomcat-port</id>
 						<phase>generate-test-resources</phase>
 						<goals>
 							<goal>reserve-network-port</goal>
 						</goals>
 						<configuration>
 							<portNames>
-								<portName>tomee.http.port</portName>
-								<portName>tomee.shutdown.port</portName>
-								<portName>tomee.ajp.port</portName>
+								<portName>tomcat.http.port</portName>
 							</portNames>
 						</configuration>
 					</execution>
 					<execution>
-						<id>add-tomee-conf</id>
+						<id>add-tomcat-conf</id>
 						<phase>generate-test-resources</phase>
 						<goals>
 							<goal>add-test-resource</goal>
@@ -225,14 +277,13 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
 					<systemPropertyVariables>
-							<org.ops4j.pax.url.mvn.localRepository>${settings.localRepository}</org.ops4j.pax.url.mvn.localRepository>
-							<!-- <org.ops4j.pax.url.mvn.settings>${basedir}/target/test-classes/settings.xml</org.ops4j.pax.url.mvn.settings> -->
-							<tomee.classifier>${tomee.classifier}</tomee.classifier>
-						<arquillian.launch>tomee-cluster</arquillian.launch>
+						<!-- <org.ops4j.pax.url.mvn.localRepository>${settings.localRepository}</org.ops4j.pax.url.mvn.localRepository> -->
+						<!-- <org.ops4j.pax.url.mvn.settings>${basedir}/target/test-classes/settings.xml</org.ops4j.pax.url.mvn.settings> -->
+						<arquillian.launch>tomcat-cluster</arquillian.launch>
 					</systemPropertyVariables>
 				</configuration>
 			</plugin>
 		</plugins>
 	</build>
-
+	
 </project>

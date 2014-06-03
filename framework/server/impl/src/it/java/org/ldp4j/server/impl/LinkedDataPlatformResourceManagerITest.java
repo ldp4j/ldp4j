@@ -27,7 +27,9 @@
 package org.ldp4j.server.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -38,7 +40,7 @@ import java.util.List;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.cxf.helpers.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.hamcrest.Matcher;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
@@ -48,12 +50,8 @@ import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
 import org.ldp4j.server.Format;
-import org.ldp4j.server.impl.ILinkedDataPlatformContainerManager;
-import org.ldp4j.server.impl.ILinkedDataPlatformResourceManager;
-import org.ldp4j.server.impl.ResourceLocator;
 import org.ldp4j.server.testing.TestingApplicationBuilder;
 import org.ldp4j.server.testing.TestingUtil;
 import org.ldp4j.server.testing.stubs.DeletableContainer;
@@ -75,7 +73,7 @@ public class LinkedDataPlatformResourceManagerITest {
 	private URI resourceLocation;
 
 	@Deployment(name=DEPLOYMENT, testable=false)
-	@TargetsContainer("tomee-plus")
+	@TargetsContainer("tomcat-7.0.20")
 	public static WebArchive createLinkedDataPlatformServerWar() {
 		return 
 			new TestingApplicationBuilder().
@@ -109,7 +107,7 @@ public class LinkedDataPlatformResourceManagerITest {
 			logValue("Last-Modified",response.getMetadata().get("Last-Modified"));
 			logValue("Link.........",response.getMetadata().get("Link"));
 			logValue("Location.....",response.getMetadata().get("Location"));
-			String entity = IOUtils.readStringFromStream((InputStream)response.getEntity());
+			String entity = IOUtils.toString((InputStream)response.getEntity());
 			logEntity("Entity.......",entity);
 		}
 	}
@@ -179,14 +177,14 @@ public class LinkedDataPlatformResourceManagerITest {
 		logResponse(response);
 		return response;
 	}
-
+	
 	@Test
 	@OperateOnDeployment(DEPLOYMENT)
 	public void testDeployment(@ArquillianResource final URL url) throws IOException {
 		LOGGER.debug(String.format("* Checking %s Deployment (%s)",DEPLOYMENT,url));
 		InputStream is = url.openStream();
 		try {
-			String content = IOUtils.readStringFromStream(is);
+			String content = IOUtils.toString(is);
 			LOGGER.debug("\t- Content: " + content);
 			assertThat(content,equalTo(CONTROL_PHRASE));
 		} finally {

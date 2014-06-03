@@ -65,7 +65,7 @@ public abstract class AbstractLDPResourceCompatibilityITest {
 	private static final Logger LOGGER=LoggerFactory.getLogger(CoreLDPResourceITest.class);
 
 	@Deployment(name=DEPLOYMENT, testable=false)
-	@TargetsContainer("tomee-plus")
+	@TargetsContainer("tomcat-7.0.20")
 	public static WebArchive createLinkedDataPlatformServerWar() throws Exception {
 		return 
 			new TestingApplicationBuilder().

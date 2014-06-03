@@ -27,46 +27,28 @@
 package org.ldp4j.server.testing.stubs;
 
 import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
+import java.io.InputStream;
 
-import org.ldp4j.server.Format;
+import org.apache.commons.io.IOUtils;
 import org.ldp4j.server.IContent;
-import org.ldp4j.server.LinkedDataPlatformException;
-import org.ldp4j.server.core.ILinkedDataPlatformContainer;
-import org.ldp4j.server.sdk.IndividualFormattedContent;
-import org.ldp4j.server.sdk.IndividualFormattedContent.Individual;
 
-public class WorkingContainer implements ILinkedDataPlatformContainer {
+final class ContentImpl implements IContent {
+	private final String resource;
 
-	public static final String CONTAINER_ID = "WorkingContainer";
-
-	public WorkingContainer() {
-		ResourceManagerController.getInstance().attachResourceManager(CONTAINER_ID);
-	}
-	
-	@Override
-	public String getContainerId() {
-		return CONTAINER_ID;
+	ContentImpl(String resource) {
+		this.resource = resource;
 	}
 
 	@Override
-	public String createResource(IContent content, Format format) throws LinkedDataPlatformException {
-		try {
-			return getResourceManager().createResource(content, format);
-		} catch (IOException e) {
-			throw new LinkedDataPlatformException("Could not read content",e);
+	public <S> S serialize(Class<S> clazz) throws IOException {
+		S result=null;
+		if(clazz.isAssignableFrom(String.class)) {
+			result=clazz.cast(resource);
+		} else if(clazz.isAssignableFrom(InputStream.class)) {
+			result=clazz.cast(IOUtils.toInputStream(resource));
+		} else {
+			throw new IOException(String.format("Could not serialize content to '%s'",clazz.getCanonicalName()));
 		}
+		return result;
 	}
-	
-	@Override
-	public IContent getSummary(final Collection<String> resources, final Format format) throws LinkedDataPlatformException {
-		List<Individual> individuals=getResourceManager().getSummary(resources, format);
-		return new IndividualFormattedContent(format,individuals.toArray(new Individual[]{}));
-	}
-
-	ResourceManager getResourceManager() {
-		return ResourceManagerController.getInstance().getResourceManager(CONTAINER_ID);
-	}
-
 }

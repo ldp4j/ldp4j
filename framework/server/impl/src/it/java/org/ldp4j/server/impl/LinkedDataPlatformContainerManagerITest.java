@@ -28,18 +28,22 @@ package org.ldp4j.server.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.List;
 
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.cxf.helpers.IOUtils;
+import org.apache.commons.io.IOUtils;
 import org.jboss.arquillian.container.test.api.Deployment;
 import org.jboss.arquillian.container.test.api.OperateOnDeployment;
 import org.jboss.arquillian.container.test.api.TargetsContainer;
@@ -66,7 +70,7 @@ public class LinkedDataPlatformContainerManagerITest {
 	private static final Logger LOGGER=LoggerFactory.getLogger(LinkedDataPlatformContainerManagerITest.class);
 
 	@Deployment(name=DEPLOYMENT, testable=false)
-	@TargetsContainer("tomee-plus")
+	@TargetsContainer("tomcat-7.0.20")
 	public static WebArchive createLinkedDataPlatformServerWar() {
 		return 
 			new TestingApplicationBuilder().
@@ -82,7 +86,7 @@ public class LinkedDataPlatformContainerManagerITest {
 		LOGGER.debug(String.format("* Checking %s Deployment (%s)",DEPLOYMENT,url));
 		InputStream is = url.openStream();
 		try {
-			String content = IOUtils.readStringFromStream(is);
+			String content = IOUtils.toString(is);
 			LOGGER.debug("\t- Content: " + content);
 			assertThat(content,equalTo(CONTROL_PHRASE));
 		} finally {
@@ -100,7 +104,7 @@ public class LinkedDataPlatformContainerManagerITest {
 		LOGGER.debug("\t- Status.....: " + response.getStatus());
 		LOGGER.debug("\t- Location...: " + response.getMetadata().get("Location"));
 		assertThat(response.getStatus(),equalTo(Status.OK.getStatusCode()));
-		String body = IOUtils.readStringFromStream((InputStream)response.getEntity());
+		String body = IOUtils.toString((InputStream)response.getEntity());
 		LOGGER.debug("\t- Body.......: " + body);
 		assertThat(body,containsString(WorkingContainer.CONTAINER_ID));
 		assertThat(body,containsString(FailingContainer.CONTAINER_ID));
@@ -109,18 +113,28 @@ public class LinkedDataPlatformContainerManagerITest {
 	@Test
 	@OperateOnDeployment(DEPLOYMENT)
 	public void testCreateResource$validContents(@ArquillianResource final URL url) throws IOException {
-		String expectedLocation = url.toString().concat("ldp/resources/WorkingContainer/"+Integer.toHexString("example".hashCode()));
+		String prefix = url.toString().concat("ldp/resources/WorkingContainer/");
+		String suffix = Integer.toHexString("example".hashCode()).toUpperCase();
 		LOGGER.debug("* Create resource: " + url);
 		ILinkedDataPlatformContainerManager server = TestingUtil.createServiceClient(url,ILinkedDataPlatformContainerManager.class);
 		Response response = server.createResource(WorkingContainer.CONTAINER_ID, "example",Format.Turtle.getMime());
 		assertThat(response,notNullValue());
 		LOGGER.debug("\t- Status.....: " + response.getStatus());
 		assertThat(response.getStatus(),equalTo(Status.CREATED.getStatusCode()));
-		String body = IOUtils.readStringFromStream((InputStream)response.getEntity());
+		String body = IOUtils.toString((InputStream)response.getEntity());
 		LOGGER.debug("\t- Body.......: " + body);
-		assertThat(body,equalTo(expectedLocation));
+		assertThat(body,notNullValue());
 		LOGGER.debug("\t- Location...: " + response.getMetadata().get("Location"));
-		assertThat(response.getMetadata().get("Location"),hasItem((Object)expectedLocation));
+		List<Object> locations = response.getMetadata().get("Location");
+		assertThat(locations,hasSize(1));
+		String location = (String)locations.get(0);
+		assertThat(body,equalTo(location));
+		
+		// ID generator testing, only verifies that the internal generator used by the container works as expected, could be removed
+		assertThat(location,startsWith(prefix));
+		assertThat(location,endsWith(suffix));
+		assertThat(body,startsWith(prefix));
+		assertThat(body,endsWith(suffix));
 	}
 
 	@Test
@@ -132,7 +146,7 @@ public class LinkedDataPlatformContainerManagerITest {
 		assertThat(response,notNullValue());
 		LOGGER.debug("\t- Status.....: " + response.getStatus());
 		assertThat(response.getStatus(),equalTo(Status.CONFLICT.getStatusCode()));
-		String body = IOUtils.readStringFromStream((InputStream)response.getEntity());
+		String body = IOUtils.toString((InputStream)response.getEntity());
 		LOGGER.debug("\t- Body.......: " + body);
 		assertThat(body,notNullValue());
 		LOGGER.debug("\t- Link.......: " + response.getMetadata().get("Link"));
@@ -148,7 +162,7 @@ public class LinkedDataPlatformContainerManagerITest {
 		assertThat(response,notNullValue());
 		LOGGER.debug("\t- Status.....: " + response.getStatus());
 		assertThat(response.getStatus(),equalTo(Status.OK.getStatusCode()));
-		String body = IOUtils.readStringFromStream((InputStream)response.getEntity());
+		String body = IOUtils.toString((InputStream)response.getEntity());
 		LOGGER.debug("\t- Body.......: " + body);
 	}
 
