@@ -80,8 +80,10 @@ final class CXFRemoteLDPContainer extends AbstractRemoteLDPContainer {
 				LOGGER.trace("Requested container description with resource member summary:"+getTarget());
 			}
 		}
-		IRemoteLDPContainer gateway = JAXRSClientFactory.create(modifiedTarget, IRemoteLDPContainer.class);
-		return gateway.getResource(format);
+		return 
+			JAXRSClientFactory.
+				create(modifiedTarget, IRemoteLDPContainer.class).
+					getResource(format);
 	}
 
 }

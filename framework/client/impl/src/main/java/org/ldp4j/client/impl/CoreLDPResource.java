@@ -34,7 +34,6 @@ import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.cxf.jaxrs.client.ClientWebApplicationException;
 import org.ldp4j.client.Content;
 import org.ldp4j.client.DeletionResult;
 import org.ldp4j.client.Format;
@@ -89,6 +88,26 @@ class CoreLDPResource implements ILDPResource {
 		this.serviceClient = serviceClient;
 	}
 
+	private LDPResourceException getOperationException(Throwable e, String errorTemplate, Object... args) {
+		String errorMessage = String.format(errorTemplate,args);
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
+		}
+		return new LDPResourceException(errorMessage,e);
+	}
+
+	private LDPResourceException getOperationException(Response response, String responseMessage) {
+		String result=responseMessage;
+		try {
+			result=responseMessage.concat(String.format(": %s%s",NEW_LINE,ResponseHelper.getEntity(response)));
+		} catch (IOException e) {
+			if(LOGGER.isWarnEnabled()) {
+				LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
+			}
+		}
+		return new LDPResourceException(result);
+	}
+
 	@Override
 	public URL getIdentity() {
 		return serviceClient.getTarget();
@@ -106,35 +125,10 @@ class CoreLDPResource implements ILDPResource {
 				case OK:
 					return new ResponseWrapperRepresentation(response);
 				case INTERNAL_SERVER_ERROR:
-					String responseMessage = "Resource retrieval failed";
-					try {
-						responseMessage=responseMessage.concat(String.format(": %s%s",NEW_LINE,ResponseHelper.getEntity(response)));
-					} catch (IOException e) {
-						if(LOGGER.isWarnEnabled()) {
-							LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
-						}
-					}
-					throw new LDPResourceException(responseMessage);
+					throw getOperationException(response, "Resource retrieval failed");
 				default:
-					String errorMessage = "Unexpected resource response ("+status+")";
-					try {
-						String entity = ResponseHelper.getEntity(response);
-						if(entity!=null && !entity.trim().isEmpty()) {
-							errorMessage=errorMessage.concat(String.format(": %s%s",NEW_LINE,entity));
-						}
-					} catch (IOException e) {
-						if(LOGGER.isWarnEnabled()) {
-							LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
-						}
-					}
-					throw new LDPResourceException(errorMessage);
+					throw getOperationException(response, "Unexpected resource response");
 			}
-		} catch (ClientWebApplicationException e) {
-			String errorMessage = String.format("Unknown client exception");
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-			}
-			throw new LDPResourceException(errorMessage,e);
 		} catch (WebApplicationException e) {
 			String errorMessage = String.format("Failed to retrieve LDP resource '%s'",getIdentity());
 			if(LOGGER.isDebugEnabled()) {
@@ -160,44 +154,14 @@ class CoreLDPResource implements ILDPResource {
 				case NO_CONTENT:
 					return new ResponseWrapperRepresentation(response);
 				case INTERNAL_SERVER_ERROR:
-					String responseMessage = "Resource retrieval failed";
-					try {
-						responseMessage=responseMessage.concat(String.format(": %s%s",NEW_LINE,ResponseHelper.getEntity(response)));
-					} catch (IOException e) {
-						if(LOGGER.isWarnEnabled()) {
-							LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
-						}
-					}
-					throw new LDPResourceException(responseMessage);
+					throw getOperationException(response, "Resource update failed");
 				default:
-					String errorMessage = "Unexpected resource response";
-					try {
-						errorMessage=errorMessage.concat(String.format(": %s%s",NEW_LINE,ResponseHelper.getEntity(response)));
-					} catch (IOException e) {
-						if(LOGGER.isWarnEnabled()) {
-							LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
-						}
-					}
-					throw new LDPResourceException(errorMessage);
+					throw getOperationException(response, "Unexpected resource response");
 			}
 		} catch (IOException e) {
-			String errorMessage = String.format("Failed to update LDP resource '%s'",getIdentity());
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-			}
-			throw new LDPResourceException(errorMessage,e);
-		} catch (ClientWebApplicationException e) {
-			String errorMessage = String.format("Unknown client exception");
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-			}
-			throw new LDPResourceException(errorMessage,e);
+			throw getOperationException(e, "Failed to update LDP resource '%s'", getIdentity());
 		} catch (WebApplicationException e) {
-			String errorMessage = String.format("Failed to update LDP resource '%s'",getIdentity());
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-			}
-			throw new LDPResourceException(errorMessage,e);
+			throw getOperationException(e, "Failed to update LDP resource '%s'", getIdentity());
 		}
 	}
 
@@ -214,44 +178,14 @@ class CoreLDPResource implements ILDPResource {
 				case ACCEPTED:
 					return DeletionResult.newBuilder().enacted(false).build();
 				case INTERNAL_SERVER_ERROR:
-					String responseMessage = "Resource deletion failed";
-					try {
-						responseMessage=responseMessage.concat(String.format(": %s%s",NEW_LINE,ResponseHelper.getEntity(response)));
-					} catch (IOException e) {
-						if(LOGGER.isWarnEnabled()) {
-							LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
-						}
-					}
-					throw new LDPResourceException(responseMessage);
+					throw getOperationException(response, "Resource deletion failed");
 				default:
-					String errorMessage = "Unexpected resource response";
-					try {
-						errorMessage=errorMessage.concat(String.format(": %s%s",NEW_LINE,ResponseHelper.getEntity(response)));
-					} catch (IOException e) {
-						if(LOGGER.isWarnEnabled()) {
-							LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
-						}
-					}
-					throw new LDPResourceException(errorMessage);
+					throw getOperationException(response, "Unexpected resource response");
 			}
 		} catch (IOException e) {
-			String errorMessage = String.format("Failed to update LDP resource '%s'",getIdentity());
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-			}
-			throw new LDPResourceException(errorMessage,e);
-		} catch (ClientWebApplicationException e) {
-			String errorMessage = String.format("Unknown client exception");
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-			}
-			throw new LDPResourceException(errorMessage,e);
+			throw getOperationException(e, "Failed to delete LDP resource '%s'", getIdentity());
 		} catch (WebApplicationException e) {
-			String errorMessage = String.format("Failed to update LDP resource '%s'",getIdentity());
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-			}
-			throw new LDPResourceException(errorMessage,e);
+			throw getOperationException(e, "Failed to delete LDP resource '%s'", getIdentity());
 		}
 	}
 

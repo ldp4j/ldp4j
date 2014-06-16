@@ -36,7 +36,7 @@ package org.ldp4j.server;
  * @see org.ldp4j.server.IResource
  */
 public enum Format {
-	Turtle("text/turtle"),
+	TURTLE("text/turtle"),
 	RDFXML("application/rdf+xml"),
 	;
 	

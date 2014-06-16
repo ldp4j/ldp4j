@@ -26,20 +26,16 @@
  */
 package org.ldp4j.server.impl;
 
-import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import java.net.URI;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.ldp4j.server.impl.ResourceLocator;
 
 public class ResourceLocatorTest {
 
-	
-	
 	private ResourceLocator sut;
 
 	@Before
@@ -47,28 +43,18 @@ public class ResourceLocatorTest {
 		sut=new ResourceLocator();
 	}
 	
-	@Ignore("Not implemented yet")
-	@Test
-	public void testCreateResourceLocationUriInfoStringString() {
-	}
-
-	@Ignore("Not implemented yet")
-	@Test
-	public void testCreateResourceLocationStringString() {
-	}
-
 	@Test
 	public void testResolveContainerFromLocation() {
 		URI location = URI.create("http://localhost/ldp/resources/c/r");
 		String c = sut.resolveContainerFromLocation(location);
-		assertThat(c,is("c"));
+		assertThat(c,equalTo("c"));
 	}
 
 	@Test
 	public void testResolveResourceFromLocation() {
 		URI location = URI.create("http://localhost/ldp/resources/c/r");
 		String c = sut.resolveResourceFromLocation(location);
-		assertThat(c,is("r"));
+		assertThat(c,equalTo("r"));
 	}
 
 }

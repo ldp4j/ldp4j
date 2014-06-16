@@ -100,7 +100,7 @@ public class LinkedDataPlatformITest {
 		LOGGER.debug("\t\t+ Base.....: "+url);
 		LOGGER.debug("\t\t+ Container: "+containerId);
 		LOGGER.debug("\t- Entity.....: " + entity);
-		Response response = containerManager.createResource(containerId, entity,Format.Turtle.getMime());
+		Response response = containerManager.createResource(containerId, entity,Format.TURTLE.getMime());
 		LOGGER.debug("\t- Response:");
 		LOGGER.debug("\t\t+ Status.....: " + response.getStatus());
 		LOGGER.debug("\t\t+ Body.......: " + IOUtils.toString((InputStream)response.getEntity()));
@@ -138,9 +138,9 @@ public class LinkedDataPlatformITest {
 			LOGGER.debug("* Searching container:");
 			LOGGER.debug("\t- Target:");
 			LOGGER.debug("\t\t+ Location..: " + containerLocation);
-			LOGGER.debug("\t\t+ Identifier: " + containerId);
+			LOGGER.debug("\t\t+ Name: " + containerId);
 		}
-		Response response = containerManager.search(null, containerId, Format.Turtle.getMime());
+		Response response = containerManager.search(null, containerId, Format.TURTLE.getMime());
 		if(LOGGER.isDebugEnabled()) {
 			LOGGER.debug("\t- Response:");
 			LOGGER.debug("\t\t+ Status.......: " + response.getStatus());
@@ -162,7 +162,7 @@ public class LinkedDataPlatformITest {
 		InputStream is = url.openStream();
 		try {
 			String content = IOUtils.toString(is);
-			LOGGER.debug("\t- Content: " + content);
+			LOGGER.debug("\t- Entity: " + content);
 			assertThat(content,equalTo(CONTROL_PHRASE));
 		} finally {
 			is.close();

@@ -46,21 +46,25 @@ import javax.ws.rs.core.UriInfo;
  */
 public class ResourceLocator implements IResourceLocator {
 
+	private static final String PATH_SEGMENT_SEPARATOR = "/";
+	private static final String CONTAINERS_PATH_SEGMENT = "containers/";
+	private static final String RESOURCES_PATH_SEGMENT = "resources/";
+
 	private String createRelativeResource(String containerId, String resourceId) {
-		return "resources/"+containerId+"/"+resourceId;
+		return RESOURCES_PATH_SEGMENT+containerId+PATH_SEGMENT_SEPARATOR+resourceId;
 	}
 
 	private String createRelativeContainer(String containerId) {
-		return "containers/"+containerId;
+		return CONTAINERS_PATH_SEGMENT+containerId;
 	}
 
 	private String getPart(URI location, int part) {
 		String result=null;
 		String path = location.getPath();
-		int lastIndexOf = path.lastIndexOf("resources/");
+		int lastIndexOf = path.lastIndexOf(RESOURCES_PATH_SEGMENT);
 		if(lastIndexOf>=0) {
 			String candidate = path.substring(lastIndexOf);
-			String[] split = candidate.split("/");
+			String[] split = candidate.split(PATH_SEGMENT_SEPARATOR);
 			if(split.length==3) {
 				result=split[part];
 			}
@@ -68,7 +72,7 @@ public class ResourceLocator implements IResourceLocator {
 		return result;
 	}
 
-	/*
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -76,7 +80,7 @@ public class ResourceLocator implements IResourceLocator {
 		return context.getBaseUriBuilder().path(createRelativeResource(containerId, resourceId)).build();
 	}
 	
-	/*
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -84,7 +88,7 @@ public class ResourceLocator implements IResourceLocator {
 		return UriBuilder.fromUri(createRelativeResource(containerId,resourceId)).build();
 	}
 
-	/*
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -92,7 +96,7 @@ public class ResourceLocator implements IResourceLocator {
 		return getPart(location, 1);
 	}
 
-	/*
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -100,7 +104,7 @@ public class ResourceLocator implements IResourceLocator {
 		return context.getBaseUriBuilder().path(createRelativeContainer(containerId)).build();
 	}
 
-	/*
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override
@@ -108,7 +112,7 @@ public class ResourceLocator implements IResourceLocator {
 		return UriBuilder.fromUri(createRelativeContainer(containerId)).build();
 	}
 
-	/*
+	/**
 	 * {@inheritDoc}
 	 */
 	@Override

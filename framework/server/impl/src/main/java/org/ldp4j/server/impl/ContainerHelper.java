@@ -207,7 +207,7 @@ final class ContainerHelper {
 				handler = new RDFXMLPrettyWriter(out);
 				break;
 			default: 
-				// Is the case of Turtle:
+				// Is the case of TURTLE:
 				sesameFormat = RDFFormat.TURTLE;
 				handler = new TurtleWriter(out);
 				break;

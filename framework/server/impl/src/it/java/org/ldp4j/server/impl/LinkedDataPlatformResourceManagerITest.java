@@ -140,7 +140,7 @@ public class LinkedDataPlatformResourceManagerITest {
 
 	private URI createResource(URL url, String containerId, String entity) throws IOException {
 		logRequest(url,containerId,null,entity,"Create resource");
-		Response response = containerManager.createResource(containerId, entity,Format.Turtle.getMime());
+		Response response = containerManager.createResource(containerId, entity,Format.TURTLE.getMime());
 		logResponse(response);
 		List<Object> list = response.getMetadata().get("Location");
 		URI newResource = URI.create(list.get(0).toString());
@@ -153,7 +153,7 @@ public class LinkedDataPlatformResourceManagerITest {
 			String containerId=locator.resolveContainerFromLocation(location);
 			String resourceId=locator.resolveResourceFromLocation(location);
 			logRequest(location,containerId,resourceId,null,"Retrieve resource");
-			Response response = resourceManager.getResource(containerId,resourceId,Format.Turtle.getMime());
+			Response response = resourceManager.getResource(containerId,resourceId,Format.TURTLE.getMime());
 			logResponse(response);
 			return response;
 		}
@@ -164,7 +164,7 @@ public class LinkedDataPlatformResourceManagerITest {
 		String containerId=locator.resolveContainerFromLocation(location);
 		String resourceId=locator.resolveResourceFromLocation(location);
 		logRequest(location, containerId, resourceId, entity, "Update resource");
-		Response response = resourceManager.updateResource(containerId, resourceId, entity, Format.Turtle.getMime());
+		Response response = resourceManager.updateResource(containerId, resourceId, entity, Format.TURTLE.getMime());
 		logResponse(response);
 		return response;
 	}
@@ -185,7 +185,7 @@ public class LinkedDataPlatformResourceManagerITest {
 		InputStream is = url.openStream();
 		try {
 			String content = IOUtils.toString(is);
-			LOGGER.debug("\t- Content: " + content);
+			LOGGER.debug("\t- Entity: " + content);
 			assertThat(content,equalTo(CONTROL_PHRASE));
 		} finally {
 			is.close();

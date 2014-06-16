@@ -26,8 +26,6 @@
  */
 package org.ldp4j.server.impl;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.util.Date;
 
 import javax.inject.Singleton;
@@ -52,12 +50,14 @@ import org.ldp4j.server.sdk.StringContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Throwables;
+
 /**
  * A pluggable <b><i>Linked Data Platform Resource</i> Manager</b>
  * implementation that provides support for the <b>LDP4j Linked Data
  * Platform Server SPI</b>.<br />
  * 
- * <i>Linked Data Platform Resource Handler</i> implementations should be registered
+ * <i>Linked Data Platform Resource Manager</i> implementations should be registered
  * using the standard <a href=
  * "http://docs.oracle.com/javase/6/docs/api/java/util/ServiceLoader.html">JSE 6
  * Service Provider mechanism</a>.
@@ -86,10 +86,7 @@ public class LinkedDataPlatformResourceManager implements ILinkedDataPlatformRes
 	 * @return A String that contains the stack trace dump.
 	 */
 	private String getFailure(Throwable e) {
-		StringWriter writer = new StringWriter();
-		e.printStackTrace(new PrintWriter(writer));
-		writer.flush();
-		return writer.toString();
+		return Throwables.getStackTraceAsString(e);
 	}
 
 	private Response createNotFoundResponse(String errorMessage) {
@@ -309,7 +306,7 @@ public class LinkedDataPlatformResourceManager implements ILinkedDataPlatformRes
 
 				Format contentFormat=Format.fromMime(format);
 				if(contentFormat==null) {
-					contentFormat=Format.Turtle;
+					contentFormat=Format.TURTLE;
 				}
 				return 
 					Response.
@@ -335,8 +332,8 @@ public class LinkedDataPlatformResourceManager implements ILinkedDataPlatformRes
 	public Response updateResource(String containerId, String resourceId, String body, String contentType) {
 		if(LOGGER.isInfoEnabled()) {
 			LOGGER.info(String.format("Requested resource '%s' update for container '%s'",resourceId,containerId));
-			LOGGER.debug(String.format("- Content-Type: %s",contentType));
-			LOGGER.debug(String.format("- Content.....: %n%s",body));
+			LOGGER.debug(String.format("- Entity-Type: %s",contentType));
+			LOGGER.debug(String.format("- Entity.....: %n%s",body));
 		}
 		
 		// TODO: Document this behaviour in the JavaDoc

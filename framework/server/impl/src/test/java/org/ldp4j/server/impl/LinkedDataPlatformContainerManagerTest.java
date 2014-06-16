@@ -81,7 +81,7 @@ public class LinkedDataPlatformContainerManagerTest {
 	
 	@Test
 	public void testUnknownContainer() {
-		Response response = sut.createResource(BODY, BODY,Format.Turtle.getMime());
+		Response response = sut.createResource(BODY, BODY,Format.TURTLE.getMime());
 		assertThat(response,notNullValue());
 		assertThat(response.getStatus(),equalTo(Status.NOT_FOUND.getStatusCode()));
 		assertThat(response.getEntity(),equalTo((Object)String.format("Container '%s' does not exist.",BODY)));
@@ -102,7 +102,7 @@ public class LinkedDataPlatformContainerManagerTest {
 		when(uriBuilder.path(any(String.class))).thenReturn(uriBuilder);
 		when(uriBuilder.build()).thenReturn(URI.create(absolutePath));
 		
-		Response response = sut.createResource(WorkingContainer.CONTAINER_ID, BODY, Format.Turtle.getMime());
+		Response response = sut.createResource(WorkingContainer.CONTAINER_ID, BODY, Format.TURTLE.getMime());
 		assertThat(response,notNullValue());
 		assertThat(response.getStatus(),equalTo(Status.CREATED.getStatusCode()));
 		assertThat(response.getEntity().toString(),equalTo(absolutePath));
@@ -120,7 +120,7 @@ public class LinkedDataPlatformContainerManagerTest {
 
 	@Test
 	public void testFailedResourceCreation() {
-		Response response = sut.createResource(FailingContainer.CONTAINER_ID, BODY,Format.Turtle.getMime());
+		Response response = sut.createResource(FailingContainer.CONTAINER_ID, BODY,Format.TURTLE.getMime());
 		assertThat(response,notNullValue());
 		assertThat(response.getStatus(),equalTo(Status.INTERNAL_SERVER_ERROR.getStatusCode()));
 		assertThat(response.getEntity().toString(),startsWith(LinkedDataPlatformException.class.getCanonicalName()));

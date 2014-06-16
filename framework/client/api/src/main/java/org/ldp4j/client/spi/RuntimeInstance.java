@@ -28,6 +28,7 @@ package org.ldp4j.client.spi;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.ReflectPermission;
 import java.net.URL;
@@ -37,6 +38,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.client.ILDPContainer;
 import org.ldp4j.client.ILDPResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 /**
@@ -78,24 +81,27 @@ import org.ldp4j.client.ILDPResource;
  * @version 1.0
  */
 public abstract class RuntimeInstance {
+	
+	/** The internal logger */
+	private static final Logger LOGGER=LoggerFactory.getLogger(RuntimeInstance.class);
 
-	/** The Constant LDP4j_CLIENT_API_SPI_RUNTIMEINSTANCE_FINDER. */
-	public static final String LDP4j_CLIENT_API_SPI_RUNTIMEINSTANCE_FINDER = "org.ldp4j.client.spi.runtimeinstance.finder";
+	/** The Constant LDP4J_CLIENT_API_SPI_RUNTIMEINSTANCE_FINDER. */
+	public static final String LDP4J_CLIENT_API_SPI_RUNTIMEINSTANCE_FINDER = "org.ldp4j.client.spi.runtimeinstance.finder";
 
-	/** Name of the configuration file where the. {@link RuntimeInstance#LDP4j_CLIENT_API_PROPERTY} property that identifies the {@link RuntimeInstance} implementation to be returned from {@link RuntimeInstance#getInstance()} can be defined. */
-	public static final String LDP4j_CLIENT_API_CFG = "ldp4j-client.properties";
+	/** Name of the configuration file where the. {@link RuntimeInstance#LDP4J_CLIENT_API_PROPERTY} property that identifies the {@link RuntimeInstance} implementation to be returned from {@link RuntimeInstance#getInstance()} can be defined. */
+	public static final String LDP4J_CLIENT_API_CFG = "ldp4j-client.properties";
 
 	/**
 	 * Name of the property identifying the {@link RuntimeInstance} implementation
 	 * to be returned from {@link RuntimeInstance#getInstance()}.
 	 */
-	public static final String LDP4j_CLIENT_API_PROPERTY = "org.ldp4j.client.spi.RuntimeInstance";
+	public static final String LDP4J_CLIENT_API_PROPERTY = "org.ldp4j.client.spi.RuntimeInstance";
 
 	/** The suppress access checks permission. */
-	private static ReflectPermission suppressAccessChecksPermission = new ReflectPermission("suppressAccessChecks");
+	private static final ReflectPermission SUPPRESS_ACCESS_CHECKS_PERMISSION = new ReflectPermission("suppressAccessChecks");
 
-	/** The Constant cachedDelegate. */
-	private static final AtomicReference<RuntimeInstance> cachedDelegate=new AtomicReference<RuntimeInstance>();
+	/** The cached delegate. */
+	private static final AtomicReference<RuntimeInstance> CACHED_DELEGATE=new AtomicReference<RuntimeInstance>();
 
 	/**
 	 * Allows custom implementations to extend the {@code RuntimeInstance} class.
@@ -114,14 +120,14 @@ public abstract class RuntimeInstance {
 			RuntimeInstance result = createRuntimeInstanceFromSPI();
 			if (result == null) {
 				File dir = new File(System.getProperty("java.home"));
-				File properties = new File(dir,"lib"+File.separator+LDP4j_CLIENT_API_CFG);
+				File properties = new File(dir,"lib"+File.separator+LDP4J_CLIENT_API_CFG);
 				if (properties.canRead()) {
 					InputStream is = null;
 					try {
 						is = new FileInputStream(properties);
 						Properties jvmConfiguration = new Properties();
 						jvmConfiguration.load(is);
-						String delegateClassName = jvmConfiguration.getProperty(LDP4j_CLIENT_API_PROPERTY);
+						String delegateClassName = jvmConfiguration.getProperty(LDP4J_CLIENT_API_PROPERTY);
 						if (delegateClassName != null) {
 							result = createRuntimeInstanceForClassName(delegateClassName);
 						}
@@ -129,8 +135,10 @@ public abstract class RuntimeInstance {
 						if (is != null) {
 							try {
 								is.close();
-							} catch (Exception e) {
-								// TODO Add some logging
+							} catch (IOException e) {
+								if(LOGGER.isWarnEnabled()) {
+									LOGGER.warn("Could not close configuration file stream", e);
+								}
 							}
 						}
 					}
@@ -138,7 +146,7 @@ public abstract class RuntimeInstance {
 			}
 
 			if (result == null) {
-				String delegateClassName = System.getProperty(LDP4j_CLIENT_API_PROPERTY);
+				String delegateClassName = System.getProperty(LDP4J_CLIENT_API_PROPERTY);
 				if (delegateClassName != null) {
 					result = createRuntimeInstanceForClassName(delegateClassName);
 				}
@@ -160,7 +168,7 @@ public abstract class RuntimeInstance {
 	 * @return the runtime instance
 	 */
 	private static RuntimeInstance createRuntimeInstanceFromSPI() {
-		if(!"disable".equalsIgnoreCase(System.getProperty(LDP4j_CLIENT_API_SPI_RUNTIMEINSTANCE_FINDER))) {
+		if(!"disable".equalsIgnoreCase(System.getProperty(LDP4J_CLIENT_API_SPI_RUNTIMEINSTANCE_FINDER))) {
 			for (RuntimeInstance delegate : ServiceLoader.load(RuntimeInstance.class)) {
 				return delegate;
 			}
@@ -178,18 +186,24 @@ public abstract class RuntimeInstance {
 		RuntimeInstance r = null;
 		try {
 			Class<?> delegateClass = Class.forName(delegateClassName);
-			if (RuntimeInstance.class.isAssignableFrom(delegateClass)) {
-				try {
-					Object impl = delegateClass.newInstance();
-					r = RuntimeInstance.class.cast(impl);
-				} catch (InstantiationException e) {
-					// TODO Add some logging
-				}
+			if(RuntimeInstance.class.isAssignableFrom(delegateClass)) {
+				Object impl = delegateClass.newInstance();
+				r = RuntimeInstance.class.cast(impl);
 			}
-		} catch (Exception e) {
-			// TODO Add some logging
+		} catch (InstantiationException e) {
+			logLoadFailure(delegateClassName, e);
+		} catch (ClassNotFoundException e) {
+			logLoadFailure(delegateClassName, e);
+		} catch (IllegalAccessException e) {
+			logLoadFailure(delegateClassName, e);
 		}
 		return r;
+	}
+
+	private static void logLoadFailure(String delegateClassName, Throwable e) {
+		if(LOGGER.isErrorEnabled()) {
+			LOGGER.error("Could load delegate class '"+delegateClassName+"'", e);
+		}
 	}
 
 	/**
@@ -207,32 +221,32 @@ public abstract class RuntimeInstance {
 	 * If a resource with the name of
 	 *
 	 * @return an instance of {@code RuntimeInstance}.
-	 * {@code META-INF/services/{@value #LDP4j_CLIENT_API_PROPERTY}} exists, then
+	 * {@code META-INF/services/{@value #LDP4J_CLIENT_API_PROPERTY}} exists, then
 	 * its first line, if present, is used as the UTF-8 encoded name of the
 	 * implementation class.</li>
 	 * <li>
-	 * If the $java.home/lib/{@value #LDP4j_CLIENT_API_CFG} file exists and it is readable by
+	 * If the $java.home/lib/{@value #LDP4J_CLIENT_API_CFG} file exists and it is readable by
 	 * the {@code java.util.Properties.load(InputStream)} method and it contains
-	 * an entry whose key is {@code {@value #LDP4j_CLIENT_API_PROPERTY}}, then the
+	 * an entry whose key is {@code {@value #LDP4J_CLIENT_API_PROPERTY}}, then the
 	 * value of that entry is used as the name of the implementation class.</li>
 	 * <li>
 	 * If a system property with the name
-	 * {@code {@value #LDP4j_CLIENT_API_PROPERTY}} is defined, then its value is
+	 * {@code {@value #LDP4J_CLIENT_API_PROPERTY}} is defined, then its value is
 	 * used as the name of the implementation class.</li>
 	 * <li>
 	 * Finally, a default implementation class name is used.</li>
 	 * </ul>
 	 */
 	public static RuntimeInstance getInstance() {
-		RuntimeInstance result = RuntimeInstance.cachedDelegate.get();
+		RuntimeInstance result = RuntimeInstance.CACHED_DELEGATE.get();
 		if (result != null) {
 			return result;
 		} 
-		synchronized(RuntimeInstance.cachedDelegate) {
-			result=RuntimeInstance.cachedDelegate.get();
+		synchronized(RuntimeInstance.CACHED_DELEGATE) {
+			result=RuntimeInstance.CACHED_DELEGATE.get();
 			if(result==null) {
-				RuntimeInstance.cachedDelegate.set(findDelegate());
-				result=RuntimeInstance.cachedDelegate.get();
+				RuntimeInstance.CACHED_DELEGATE.set(findDelegate());
+				result=RuntimeInstance.CACHED_DELEGATE.get();
 			}
 			return result;
 		}
@@ -252,9 +266,9 @@ public abstract class RuntimeInstance {
 	public static void setInstance(final RuntimeInstance delegate) throws SecurityException, IllegalArgumentException {
 		SecurityManager security = System.getSecurityManager();
 		if (security != null) {
-			security.checkPermission(suppressAccessChecksPermission);
+			security.checkPermission(SUPPRESS_ACCESS_CHECKS_PERMISSION);
 		}
-		RuntimeInstance.cachedDelegate.set(delegate);
+		RuntimeInstance.CACHED_DELEGATE.set(delegate);
 	}
 
 	/**

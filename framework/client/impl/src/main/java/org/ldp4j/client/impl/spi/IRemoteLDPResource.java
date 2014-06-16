@@ -62,9 +62,9 @@ public interface IRemoteLDPResource {
 	 *            The expected syntax in which the contents of the <i>Linked
 	 *            Data Resource</i> will have to be formatted. The value
 	 *            <code>text/turtle</code> will be used for requesting the
-	 *            seialization using the Turtle syntax, and the value
+	 *            seialization using the TURTLE syntax, and the value
 	 *            <code>application/rdf+xml</code> will be used for requesting
-	 *            the serialization using the RDF/XML syntax.
+	 *            the serialization using the RDFS/XML syntax.
 	 * @returns The response of the server.
 	 */
 	@GET
@@ -82,9 +82,9 @@ public interface IRemoteLDPResource {
 	 *            The expected syntax in which the contents of the <i>Linked
 	 *            Data Resource</i> are formatted. The value
 	 *            <code>text/turtle</code> should be used for contents serialized
-	 *            using the Turtle syntax, and the value
+	 *            using the TURTLE syntax, and the value
 	 *            <code>application/rdf+xml</code> for contents serialized using 
-	 *            the RDF/XML syntax.
+	 *            the RDFS/XML syntax.
 	 * @returns The response of the server.
 	 */
 	@PUT
@@ -105,7 +105,7 @@ public interface IRemoteLDPResource {
 	 * @return An HTTP response with status status code OK (200) if the resource
 	 *         was deleted and the response includes an entity describing the
 	 *         status, Accepted (202) if the action has not yet been enacted, or
-	 *         No Content (204) if the action has been enacted but the response
+	 *         No Entity (204) if the action has been enacted but the response
 	 *         does not include an entity; Server Exception (500) if an internal
 	 *         failure precludes the deletion of the resource; and Not found
 	 *         (404) or Gone (410) if the resource does not exist or existed at

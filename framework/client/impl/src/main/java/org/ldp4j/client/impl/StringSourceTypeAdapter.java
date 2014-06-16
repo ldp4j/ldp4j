@@ -26,8 +26,6 @@
  */
 package org.ldp4j.client.impl;
 
-import java.io.InputStream;
-
 import org.apache.commons.io.IOUtils;
 import org.ldp4j.client.impl.spi.ISourceTypeAdapter;
 import org.ldp4j.client.spi.ITypeAdapter;
@@ -35,6 +33,36 @@ import org.ldp4j.client.spi.SourceTransformationException;
 import org.ldp4j.client.spi.UnsupportedTargetException;
 
 final class StringSourceTypeAdapter implements ISourceTypeAdapter<String> {
+
+	private static final class InputStream<T> implements ITypeAdapter<String, T> {
+
+		private final Class<T> targetClazz;
+
+		private InputStream(Class<T> targetClazz) {
+			this.targetClazz = targetClazz;
+		}
+
+		@Override
+		public T transform(String source) throws SourceTransformationException {
+			return targetClazz.cast(IOUtils.toInputStream(source));
+		}
+
+	}
+
+	private static final class StringAdapter<T> implements ITypeAdapter<String, T> {
+
+		private final Class<T> targetClazz;
+
+		private StringAdapter(Class<T> targetClazz) {
+			this.targetClazz = targetClazz;
+		}
+
+		@Override
+		public T transform(String source) throws SourceTransformationException {
+			return targetClazz.cast(source);
+		}
+
+	}
 
 	@Override
 	public boolean supportsTarget(Class<?> targetClazz) {
@@ -46,22 +74,9 @@ final class StringSourceTypeAdapter implements ISourceTypeAdapter<String> {
 	@Override
 	public <T> ITypeAdapter<String, T> createTypeAdapter(final Class<T> targetClazz) throws UnsupportedTargetException {
 		if(targetClazz.isAssignableFrom(String.class)) {
-			return new ITypeAdapter<String,T>() {
-				@Override
-				public T transform(String source) throws SourceTransformationException {
-					return targetClazz.cast(source);
-				}
-				
-			};
-		} 
-		if(targetClazz.isAssignableFrom(InputStream.class)) {
-			return new ITypeAdapter<String,T>() {
-				@Override
-				public T transform(String source) throws SourceTransformationException {
-					return targetClazz.cast(IOUtils.toInputStream(source));
-				}
-				
-			};
+			return new StringAdapter<T>(targetClazz);
+		} else if(targetClazz.isAssignableFrom(InputStream.class)) {
+			return new InputStream<T>(targetClazz);
 		}
 		throw new UnsupportedTargetException(String.format("Could not serialize content availabe as '%s' to '%s'",String.class.getCanonicalName(),targetClazz.getCanonicalName()));
 	}

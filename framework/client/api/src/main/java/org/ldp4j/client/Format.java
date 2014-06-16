@@ -37,8 +37,8 @@ package org.ldp4j.client;
  */
 public enum Format {
 	
-	/** The Turtle format. */
-	Turtle("text/turtle"),
+	/** The TURTLE format. */
+	TURTLE("text/turtle"),
 	
 	/** The RDF/XML format. */
 	RDFXML("application/rdf+xml"),

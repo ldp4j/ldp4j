@@ -53,8 +53,6 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ldp4j.server.Format;
-import org.ldp4j.server.impl.ILinkedDataPlatformContainerManager;
-import org.ldp4j.server.impl.LinkUtil;
 import org.ldp4j.server.testing.TestingApplicationBuilder;
 import org.ldp4j.server.testing.TestingUtil;
 import org.ldp4j.server.testing.stubs.FailingContainer;
@@ -87,7 +85,7 @@ public class LinkedDataPlatformContainerManagerITest {
 		InputStream is = url.openStream();
 		try {
 			String content = IOUtils.toString(is);
-			LOGGER.debug("\t- Content: " + content);
+			LOGGER.debug("\t- Entity: " + content);
 			assertThat(content,equalTo(CONTROL_PHRASE));
 		} finally {
 			is.close();
@@ -117,7 +115,7 @@ public class LinkedDataPlatformContainerManagerITest {
 		String suffix = Integer.toHexString("example".hashCode()).toUpperCase();
 		LOGGER.debug("* Create resource: " + url);
 		ILinkedDataPlatformContainerManager server = TestingUtil.createServiceClient(url,ILinkedDataPlatformContainerManager.class);
-		Response response = server.createResource(WorkingContainer.CONTAINER_ID, "example",Format.Turtle.getMime());
+		Response response = server.createResource(WorkingContainer.CONTAINER_ID, "example",Format.TURTLE.getMime());
 		assertThat(response,notNullValue());
 		LOGGER.debug("\t- Status.....: " + response.getStatus());
 		assertThat(response.getStatus(),equalTo(Status.CREATED.getStatusCode()));
@@ -142,15 +140,19 @@ public class LinkedDataPlatformContainerManagerITest {
 	public void testCreateResource$invalidContents(@ArquillianResource final URL url) throws IOException {
 		LOGGER.debug("* Create resource: " + url);
 		ILinkedDataPlatformContainerManager server = TestingUtil.createServiceClient(url,ILinkedDataPlatformContainerManager.class);
-		Response response = server.createResource(FailingContainer.CONTAINER_ID, FailingContainer.INVALID_CONTENT,Format.Turtle.getMime());
+		Response response = server.createResource(FailingContainer.CONTAINER_ID, FailingContainer.INVALID_CONTENT,Format.TURTLE.getMime());
 		assertThat(response,notNullValue());
 		LOGGER.debug("\t- Status.....: " + response.getStatus());
 		assertThat(response.getStatus(),equalTo(Status.CONFLICT.getStatusCode()));
 		String body = IOUtils.toString((InputStream)response.getEntity());
 		LOGGER.debug("\t- Body.......: " + body);
 		assertThat(body,notNullValue());
-		LOGGER.debug("\t- Link.......: " + response.getMetadata().get("Link"));
-		assertThat(response.getMetadata().get("Link"),hasItem(LinkUtil.create(url.toString()+"ldp/containers/"+FailingContainer.CONTAINER_ID+"?describedBy", "describedBy")));
+		List<Object> links = response.getMetadata().get("Link");
+		assertThat(links,notNullValue());
+		assertThat(links,hasSize(2));
+		LOGGER.debug("\t- Link......: "+links);
+		assertThat(links,hasItem(LinkUtil.create(url.toString()+"ldp/containers/"+FailingContainer.CONTAINER_ID+"?describedBy", "describedBy")));
+		assertThat(links,hasItem(LinkUtil.create("http://www.w3.org/ns/ldp#DirectContainer", "type")));
 	}
 
 	@Test
@@ -158,7 +160,7 @@ public class LinkedDataPlatformContainerManagerITest {
 	public void testSearch(@ArquillianResource final URL url) throws IOException {
 		LOGGER.debug("* Search container: " + url);
 		ILinkedDataPlatformContainerManager server = TestingUtil.createServiceClient(url,ILinkedDataPlatformContainerManager.class);
-		Response response = server.search(null,WorkingContainer.CONTAINER_ID, Format.Turtle.getMime());
+		Response response = server.search(null,WorkingContainer.CONTAINER_ID, Format.TURTLE.getMime());
 		assertThat(response,notNullValue());
 		LOGGER.debug("\t- Status.....: " + response.getStatus());
 		assertThat(response.getStatus(),equalTo(Status.OK.getStatusCode()));

@@ -29,6 +29,7 @@ package org.ldp4j.server.testing;
 import java.net.URL;
 
 import org.apache.cxf.jaxrs.client.JAXRSClientFactory;
+import org.apache.cxf.jaxrs.client.WebClient;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.ldp4j.server.core.ILinkedDataPlatformContainer;
@@ -53,13 +54,16 @@ public final class TestingUtil {
 			LOGGER.debug("Create service client '"+serviceClass.getCanonicalName()+"'");
 			LOGGER.debug(String.format("\t- Using base address '%s'...",baseAddress));
 		}
-		return JAXRSClientFactory.create(baseAddress, serviceClass);
+		S proxy = JAXRSClientFactory.create(baseAddress, serviceClass);
+		WebClient.getConfig(proxy).getBus().setProperty("org.apache.cxf.http.header.split", true);
+		return proxy;
 	}
 
 	static JavaArchive getServerRuntimeArchive() {
 		JavaArchive coreArchive= 
 			ShrinkWrap.
 				create(JavaArchive.class,"ldp4j-server-rt.jar").
+				// Legacy stuff
 				addPackages(false, "org.ldp4j.server").
 				addPackages(true, "org.ldp4j.server.annotations").
 				addPackages(true, "org.ldp4j.server.core").
@@ -68,6 +72,13 @@ public final class TestingUtil {
 				addPackages(true, "org.ldp4j.server.impl").
 				addPackages(true, "org.ldp4j.server.utils").
 				addAsServiceProvider(ILinkedDataPlatformRegistry.class, LinkedDataPlatformRegistry.class);
+//				// New stuff
+//				addPackages(true, "org.ldp4j.model").
+//				addPackages(true, "org.ldp4j.sdk").
+//				addPackages(true, "org.ldp4j.server.commands").
+//				addPackages(true, "org.ldp4j.server.api").
+//				addAsServiceProvider(RuntimeInstance.class, RuntimeInstanceImpl.class).
+//				addAsServiceProvider(IMediaTypeProvider.class,TurtleMediaTypeProvider.class,RDFXMLMediaTypeProvider.class);
 //				addAsResources(
 //					VocabularyBasedContainerFrontend.class.getPackage(), 
 //					"queries/triples.vm",

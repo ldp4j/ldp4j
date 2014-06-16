@@ -38,9 +38,9 @@ public final class EmptyFormattedContent implements IContent {
 		"@prefix dc: <http://purl.org/dc/elements/1.1/>."+LINE_SEPARATOR+
 		"@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.";
 	private static final String EMPTY_RDF_XML = 
-	"<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\""+LINE_SEPARATOR+
+	"<rdf:RDFS xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\""+LINE_SEPARATOR+
 	"\txmlns:dc=\"http://purl.org/dc/elements/1.1/\">"+LINE_SEPARATOR+
-	"</rdf:RDF>";
+	"</rdf:RDFS>";
 
 	private final Format format;
 
@@ -51,7 +51,7 @@ public final class EmptyFormattedContent implements IContent {
 	@Override
 	public <S> S serialize(Class<S> clazz) throws IOException {
 		String resource=null;
-		if(Format.Turtle.equals(format)) {
+		if(Format.TURTLE.equals(format)) {
 			resource=EMPTY_TURTLE;
 		} else {
 			resource=EMPTY_RDF_XML;

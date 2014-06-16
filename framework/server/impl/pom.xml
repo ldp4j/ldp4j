@@ -182,7 +182,7 @@
 			<artifactId>mockito-core</artifactId>
 			<scope>test</scope>
 		</dependency>
-	
+
 		<!-- ShrinkWrap -->
 		<dependency>
 			<groupId>org.jboss.shrinkwrap</groupId>
@@ -312,6 +312,12 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
 					<systemPropertyVariables>
+<!-- 
+						<org.ldp4j.testing.logging.setup>true</org.ldp4j.testing.logging.setup>
+						<org.ldp4j.testing.logging.archive>true</org.ldp4j.testing.logging.archive>
+						<org.ldp4j.server.bootstrap.logging.initialization>true</org.ldp4j.server.bootstrap.logging.initialization>
+						<org.ldp4j.server.bootstrap.logging.shutdown>true</org.ldp4j.server.bootstrap.logging.shutdown>
+ -->
 						<!-- <org.ops4j.pax.url.mvn.localRepository>${settings.localRepository}</org.ops4j.pax.url.mvn.localRepository> -->
 						<!-- <org.ops4j.pax.url.mvn.settings>${basedir}/target/test-classes/settings.xml</org.ops4j.pax.url.mvn.settings> -->
 						<arquillian.launch>tomcat-cluster</arquillian.launch>

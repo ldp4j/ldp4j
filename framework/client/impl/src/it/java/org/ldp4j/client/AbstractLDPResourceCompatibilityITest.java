@@ -90,7 +90,7 @@ public abstract class AbstractLDPResourceCompatibilityITest {
 	private URL createResource(ILDPContainer containerProxy, String entity) throws Exception {
 		LOGGER.debug("* Create resource:");
 		LOGGER.debug("\t- Entity: "+entity);
-		URL response = containerProxy.createResource(Content.newInstance(entity),Format.Turtle);
+		URL response = containerProxy.createResource(Content.newInstance(entity),Format.TURTLE);
 		LOGGER.debug("\t- Response:");
 		LOGGER.debug("\t\t+ Location...: " + response);
 		return response;
@@ -99,7 +99,7 @@ public abstract class AbstractLDPResourceCompatibilityITest {
 	private void deleteResource(ILDPResource resource, String body)
 			throws LDPResourceException, IOException {
 		LOGGER.debug("* Retrieving resource:");
-		IRepresentation representation = resource.getContent(Format.Turtle);
+		IRepresentation representation = resource.getContent(Format.TURTLE);
 		assertThat(representation,notNullValue());
 		IContent content = representation.getContent();
 		assertThat(content,notNullValue());
@@ -116,7 +116,7 @@ public abstract class AbstractLDPResourceCompatibilityITest {
 	
 		try {
 			LOGGER.debug("* Retriving resource again:");
-			resource.getContent(Format.Turtle);
+			resource.getContent(Format.TURTLE);
 			fail("Resource should not be addressable after deletion");
 		} catch (LDPResourceException e) {
 			LOGGER.debug("\t- Response:",e);
@@ -129,7 +129,7 @@ public abstract class AbstractLDPResourceCompatibilityITest {
 		InputStream is = url.openStream();
 		try {
 			String content = IOUtils.readStringFromStream(is);
-			LOGGER.debug("\t* Content: " + content);
+			LOGGER.debug("\t* Entity: " + content);
 			assertThat(content,equalTo(CONTROL_PHRASE));
 		} finally {
 			is.close();
@@ -143,11 +143,11 @@ public abstract class AbstractLDPResourceCompatibilityITest {
 		LOGGER.debug("* Create resource: " + url);
 		LOGGER.debug("\t- Date: "+before+" ("+before.getTime()+")");
 		ILDPContainer server = createContainerClient(new URL(url.toString().concat("ldp/containers/WorkingContainer")));
-		URL resource = server.createResource(Content.newInstance(EXAMPLE_SERIALIZATION), Format.Turtle);
+		URL resource = server.createResource(Content.newInstance(EXAMPLE_SERIALIZATION), Format.TURTLE);
 		LOGGER.debug("\t- Resource: "+resource);
 		ILDPResource resourceProxy=createResourceClient(resource);
 		LOGGER.debug("* Getting resource: " + resource);
-		IRepresentation content = resourceProxy.getContent(Format.Turtle);
+		IRepresentation content = resourceProxy.getContent(Format.TURTLE);
 		assertThat(content,notNullValue());
 		String serialization = content.getContent().serialize(String.class);
 		String entityTag = content.getEntityTag();
@@ -177,7 +177,7 @@ public abstract class AbstractLDPResourceCompatibilityITest {
 		LOGGER.debug("\t- Last Modified: "+lastModified2+" ("+lastModified2.getTime()+")");
 
 		LOGGER.debug("* Getting resource: " + resource);
-		IRepresentation content3 = resourceProxy.getContent(Format.Turtle);
+		IRepresentation content3 = resourceProxy.getContent(Format.TURTLE);
 		String serialization3 = content3.getContent().serialize(String.class);
 		String entityTag3 = content2.getEntityTag();
 		Date lastModified3 = content2.getLastModified();

@@ -31,6 +31,11 @@ abstract class ChainedFilter<T> extends AbstractFilter<T> {
 
 	private final AbstractFilter<T> predecessor;
 
+	public ChainedFilter(AbstractFilter<T> predecessor) {
+		this.predecessor = predecessor;
+	}
+
+
 	@Override
 	protected final <F extends T> IExpectation<F> createExpectation(F value) {
 		IExpectation<F> expectation = predecessor.createExpectation(value);
@@ -42,9 +47,5 @@ abstract class ChainedFilter<T> extends AbstractFilter<T> {
 	
 	
 	protected abstract <F extends T> IExpectation<F> createChainedExpectation(F value);
-
-	public ChainedFilter(AbstractFilter<T> predecessor) {
-		this.predecessor = predecessor;
-	}
 
 }

@@ -57,12 +57,12 @@ public interface IRemoteLDPContainer {
 	 * The method follows the guidelines of the <a
 	 * href="http://www.w3.org/2012/ldp/hg/ldp.html#http-post-1">HTTP POST
 	 * protocol</a> for <i>Linked Data Platform Containers</i>. Thus, it expects
-	 * a Turtle based RDF(S) serialization (see the <a
-	 * href="http://www.w3.org/TR/turtle/">Turtle W3C Working Draft</a>) and
+	 * a TURTLE based RDFS(S) serialization (see the <a
+	 * href="http://www.w3.org/TR/turtle/">TURTLE W3C Working Draft</a>) and
 	 * returns plain text content.
 	 * <p>
 	 * @param content The source content for the
-	 * 		Linked Data Resource formatted using the Turtle syntax.<br />
+	 * 		Linked Data Resource formatted using the TURTLE syntax.<br />
 	 * 
 	 * @return The response of the server.
 	 *         </p>
@@ -78,9 +78,9 @@ public interface IRemoteLDPContainer {
 	 * The method follows the guidelines of the <a
 	 * href="http://www.w3.org/2012/ldp/hg/ldp.html#http-post-1">HTTP POST
 	 * protocol</a> for <i>Linked Data Platform Containers</i>, but expecting 
-	 * an RDF/XML serialization of the contents. 
+	 * an RDFS/XML serialization of the contents. 
 	 * @param content The source content for the
-	 * Linked Data Resource formatted using the RDF/XML syntax.<br />
+	 * Linked Data Resource formatted using the RDFS/XML syntax.<br />
 	 * 
 	 * @return The response of the server.
 	 *         </p>
@@ -100,9 +100,9 @@ public interface IRemoteLDPContainer {
 	 *            The expected syntax in which the contents of the <i>Linked
 	 *            Data Container</i> will have to be formatted. The value
 	 *            <code>text/turtle</code> will be used for requesting the
-	 *            seialization using the Turtle syntax, and the value
+	 *            seialization using the TURTLE syntax, and the value
 	 *            <code>application/rdf+xml</code> will be used for requesting
-	 *            the serialization using the RDF/XML syntax.
+	 *            the serialization using the RDFS/XML syntax.
 	 * @returns The response of the server.
 	 */
 	@GET

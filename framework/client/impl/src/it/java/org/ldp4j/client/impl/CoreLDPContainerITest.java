@@ -28,9 +28,7 @@ package org.ldp4j.client.impl;
 
 import java.net.URL;
 
-import org.junit.experimental.categories.Category;
 import org.ldp4j.client.AbstractLDPContainerCompatibilityITest;
-import org.ldp4j.client.impl.CoreLDPContainer;
 import org.ldp4j.client.impl.cxf.CXFRemoteLDPProvider;
 
 public class CoreLDPContainerITest extends AbstractLDPContainerCompatibilityITest {

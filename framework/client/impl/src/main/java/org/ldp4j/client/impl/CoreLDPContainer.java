@@ -36,7 +36,6 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.apache.cxf.jaxrs.client.ClientWebApplicationException;
 import org.ldp4j.client.Content;
 import org.ldp4j.client.Format;
 import org.ldp4j.client.IContent;
@@ -49,37 +48,40 @@ import org.slf4j.LoggerFactory;
 
 class CoreLDPContainer implements ILDPContainer {
 
-	private static class CachedResponse extends Response {
-
-		private final Response response;
-		private final String entity;
-
-		public CachedResponse(Response response) throws IOException {
-			this.response = response;
-			this.entity=ResponseHelper.getEntity(response);
-		}
-
-		@Override
-		public Object getEntity() {
-			return entity;
-		}
-
-		@Override
-		public int getStatus() {
-			return response.getStatus();
-		}
-
-		@Override
-		public MultivaluedMap<String, Object> getMetadata() {
-			return response.getMetadata();
-		}
-
-	}
-
 	private static final Logger LOGGER=LoggerFactory.getLogger(CoreLDPContainer.class);
 	private static final String NEW_LINE=System.getProperty("line.separator");
 
 	private final IRemoteLDPContainer serviceClient;
+
+	private void logResponse(Response response) {
+		if(LOGGER.isDebugEnabled()) {
+			try {
+				LOGGER.debug(ResponseHelper.dumpResponse(response));
+			} catch (IOException e) {
+				LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
+			}
+		}
+	}
+
+	private LDPContainerException getOperationException(Throwable t, String errorTemplate, Object... args) {
+		String errorMessage = String.format(errorTemplate,args);
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),t);
+		}
+		return new LDPContainerException(errorMessage,t);
+	}
+
+	private LDPContainerException getOperationException(Response response, String errorMessageTemplate, Object... args) {
+		String responseMessage = String.format(errorMessageTemplate,args);
+		try {
+			responseMessage=responseMessage.concat(String.format(": %s%s",NEW_LINE,ResponseHelper.getEntity(response)));
+		} catch (IOException e) {
+			if(LOGGER.isWarnEnabled()) {
+				LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
+			}
+		}
+		return new LDPContainerException(responseMessage);
+	}
 
 	private Response sendRequest(IContent content, Format format) throws LDPContainerException {
 		if(content==null) {
@@ -96,92 +98,67 @@ class CoreLDPContainer implements ILDPContainer {
 			throw new LDPContainerException("Could not process content",ie);
 		}
 
-		Response response=null;
-		switch(format) {
-			case RDFXML:
-				try {
+		try {
+			Response response=null;
+			switch(format) {
+				case RDFXML:
 					response = serviceClient.createResourceFromRDFXML(body);
-				} catch (ClientWebApplicationException e) {
-					String errorMessage = String.format("Unknown client exception");
-					if(LOGGER.isDebugEnabled()) {
-						LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-					}
-					throw new LDPContainerException(errorMessage,e);
-				} catch (WebApplicationException e) {
-					String errorMessage = String.format("Failed to create resource in container '%s'",getIdentity());
-					if(LOGGER.isDebugEnabled()) {
-						LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-					}
-					throw new LDPContainerException(errorMessage,e);
-				}
-				break;
-			case Turtle:
-				try {
+					break;
+				case TURTLE:
 					response = serviceClient.createResourceFromTurtle(body);
-				} catch (ClientWebApplicationException e) {
-					String errorMessage = String.format("Unknown client exception");
-					if(LOGGER.isDebugEnabled()) {
-						LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-					}
-					throw new LDPContainerException(errorMessage,e);
-				} catch (WebApplicationException e) {
-					String errorMessage = String.format("Failed to create resource in container '%s'",getIdentity());
-					if(LOGGER.isDebugEnabled()) {
-						LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-					}
-					throw new LDPContainerException(errorMessage,e);
-				}
-				break;
-			default:
-				throw new IllegalArgumentException(String.format("Unsupported format '%s'",format));
-		}
-		if(LOGGER.isDebugEnabled()) {
-			try {
-				LOGGER.debug(ResponseHelper.dumpResponse(response));
-			} catch (IOException e) {
-				LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
+					break;
+				default:
+					throw new IllegalArgumentException(String.format("Unsupported format '%s'",format));
 			}
+			logResponse(response);
+			return response;
+		} catch (WebApplicationException e) {
+			throw getOperationException(e, "Failed to create resource in container '%s'", getIdentity());
 		}
-		return response;
 	}
 
 	private Response sendRequest(Format format, boolean exclude_members, boolean exclude_member_properties) throws LDPContainerException {
 		if(format==null) {
 			throw new IllegalArgumentException("Object 'format' cannot be null");
 		}
-		Response response=null;
 		try {
-			response=serviceClient.getResource(format.getMime(), !exclude_members, !exclude_member_properties);
-		} catch (ClientWebApplicationException e) {
-			String errorMessage = String.format("Unknown client exception");
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-			}
-			throw new LDPContainerException(errorMessage,e);
+			Response response=serviceClient.getResource(format.getMime(), !exclude_members, !exclude_member_properties);
+			response.bufferEntity();
+			logResponse(response);
+			return response;
 		} catch (WebApplicationException e) {
-			String errorMessage = String.format("Failed to retrieve container '%s' description",getIdentity());
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-			}
-			throw new LDPContainerException(errorMessage,e);
+			throw getOperationException(e, "Failed to retrieve container '%s' description",getIdentity());
 		}
-		try {
-			response=new CachedResponse(response);
-		} catch (IOException e) {
-			String errorMessage = String.format("Failed to consume container '%s' description",getIdentity());
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug(errorMessage.concat(". Full stacktrace follows"),e);
-			}
-			throw new LDPContainerException(errorMessage,e);
+	}
+
+	/**
+	 * @param response
+	 * @return
+	 * @throws LDPContainerException
+	 */
+	private URL getLocation(Response response) throws LDPContainerException {
+		MultivaluedMap<String, Object> headers = response.getMetadata();
+		if(headers==null) {
+			throw new LDPContainerException("Invalid JAX-RS response: no headers found");
 		}
-		if(LOGGER.isDebugEnabled()) {
+		List<Object> locations = headers.get("Location");
+		if(locations==null || locations.isEmpty()) {
+			throw new LDPContainerException("Invalid response: no resource location returned");
+		}
+		for(Object rawLocation:locations) {
 			try {
-				LOGGER.debug(ResponseHelper.dumpResponse(response));
-			} catch (IOException e) {
-				LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
+				return new URL(rawLocation.toString());
+			} catch (MalformedURLException e) {
+				if(LOGGER.isTraceEnabled()) {
+					LOGGER.trace(String.format("Discarding invalid returned resource location '%s'. Full stacktrace follows",rawLocation),e);
+				}
 			}
 		}
-		return response;
+		String errorMessage = "Invalid response: no valid resource location returned";
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug(String.format(errorMessage));
+		}
+		throw new LDPContainerException(errorMessage);
 	}
 
 	public CoreLDPContainer(IRemoteLDPContainer gateway) {
@@ -199,98 +176,37 @@ class CoreLDPContainer implements ILDPContainer {
 	@Override
 	public URL createResource(IContent content, Format format) throws LDPContainerException {
 		Response response = sendRequest(content, format);
-		URL result=null;
 		Status status = Status.fromStatusCode(response.getStatus());
 		switch(status) {
 			case CREATED:
-				MultivaluedMap<String, Object> headers = response.getMetadata();
-				if(headers==null) {
-					throw new LDPContainerException("Invalid JAX-RS response: no headers found");
-				}
-				List<Object> locations = headers.get("Location");
-				if(locations==null || locations.isEmpty()) {
-					throw new LDPContainerException("Invalid response: no resource location returned");
-				}
-				for(Object rawLocation:locations) {
-					try {
-						result=new URL(rawLocation.toString());
-					} catch (MalformedURLException e) {
-						if(LOGGER.isTraceEnabled()) {
-							LOGGER.trace(String.format("Discarding invalid returned resource location '%s'. Full stacktrace follows",rawLocation),e);
-						}
-					}
-				}
-				if(result==null) {
-					String errorMessage = "Invalid response: no valid resource location returned";
-					if(LOGGER.isDebugEnabled()) {
-						LOGGER.debug(String.format(errorMessage));
-					}
-					throw new LDPContainerException(errorMessage);
-				}
-				break;
+				return getLocation(response);
 			case INTERNAL_SERVER_ERROR:
-				String responseMessage = "Resource creation failed";
-				try {
-					responseMessage=responseMessage.concat(String.format(": %s%s",NEW_LINE,ResponseHelper.getEntity(response)));
-				} catch (IOException e) {
-					if(LOGGER.isWarnEnabled()) {
-						LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
-					}
-				}
-				throw new LDPContainerException(responseMessage);
+				throw getOperationException(response, "Resource creation failed");
 			default:
-				String errorMessage = "Unexpected container response";
-				try {
-					errorMessage=errorMessage.concat(String.format(": %s%s",NEW_LINE,ResponseHelper.getEntity(response)));
-				} catch (IOException e) {
-					if(LOGGER.isWarnEnabled()) {
-						LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
-					}
-				}
-				throw new LDPContainerException(errorMessage);
+				throw getOperationException(response, "Unexpected container response");
 		}
-		return result;
 	}
 
 	@Override
-	public IContent getDescription(Format format, boolean exclude_members, boolean exclude_member_properties) throws LDPContainerException {
-		Response response = sendRequest(format,exclude_members,exclude_member_properties);
+	public IContent getDescription(Format format, boolean excludeMembers, boolean excludeMemberProperties) throws LDPContainerException {
+		Response response = sendRequest(format,excludeMembers,excludeMemberProperties);
 		Status status = Status.fromStatusCode(response.getStatus());
-		switch(status) {
-			case OK:
-			try {
-				String entity = ResponseHelper.getEntity(response);
-				return Content.newInstance(entity);
-			} catch (IOException e) {
-				String responseMessage = String.format("Container '%s' description retrieval failed: %s",getIdentity(),e.getMessage());
-				if(LOGGER.isWarnEnabled()) {
-					LOGGER.warn(responseMessage.concat(". Full stacktrace follows"),e);
-				}
-				throw new LDPContainerException(responseMessage,e);
+		try {
+			switch(status) {
+				case OK:
+					return 
+						Content.
+							newInstance(
+								ResponseHelper.getEntity(response));
+				case INTERNAL_SERVER_ERROR:
+					throw getOperationException(response, "Container '%s' description retrieval failed", getIdentity());
+				default:
+					throw getOperationException(response, "Unexpected container response");
 			}
-			case INTERNAL_SERVER_ERROR:
-				String responseMessage = String.format("Container '%s' description retrieval failed",getIdentity());
-				try {
-					responseMessage=responseMessage.concat(String.format(": %s%s",NEW_LINE,ResponseHelper.getEntity(response)));
-				} catch (IOException e) {
-					if(LOGGER.isWarnEnabled()) {
-						LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
-					}
-				}
-				throw new LDPContainerException(responseMessage);
-			default:
-				String errorMessage = "Unexpected container response";
-				try {
-					errorMessage=errorMessage.concat(String.format(": %s%s",NEW_LINE,ResponseHelper.getEntity(response)));
-				} catch (IOException e) {
-					if(LOGGER.isWarnEnabled()) {
-						LOGGER.warn(String.format("Could not process server '%s' response. Full stacktrace follows",getIdentity()),e);
-					}
-				}
-				throw new LDPContainerException(errorMessage);
+		} catch (IOException e) {
+			throw getOperationException(e, "Container '%s' description retrieval failed: %s",getIdentity(),e.getMessage());
 		}
 	}
-
 
 	@Override
 	public IContent searchResources(Format format, int page, int count) throws LDPContainerException {

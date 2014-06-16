@@ -30,17 +30,17 @@ import javax.ws.rs.core.UriInfo;
 
 final class UriInfoProvider {
 	
-	private static final ThreadLocal<UriInfo> info=new ThreadLocal<UriInfo>();
+	private static final ThreadLocal<UriInfo> INFO=new ThreadLocal<UriInfo>();
 
 	private UriInfoProvider() {
 	}
 	
 	static void setUriInfo(UriInfo info) {
-		UriInfoProvider.info.set(info);
+		UriInfoProvider.INFO.set(info);
 	}
 
 	static UriInfo getUriInfo() {
-		return UriInfoProvider.info.get();
+		return UriInfoProvider.INFO.get();
 	}
 
 }

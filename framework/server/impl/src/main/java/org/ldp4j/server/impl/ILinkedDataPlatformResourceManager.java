@@ -66,9 +66,9 @@ public interface ILinkedDataPlatformResourceManager extends IComponent{
 	 *            The expected format in which the contents of the <i>Linked
 	 *            Data Resource</i> will have to be serialized. The value
 	 *            <code>text/turtle</code> will be used for requesting the
-	 *            seialization using the Turtle syntax, and the value
+	 *            seialization using the TURTLE syntax, and the value
 	 *            <code>application/rdf+xml</code> will be used for requesting
-	 *            the serialization using the RDF/XML syntax.
+	 *            the serialization using the RDFS/XML syntax.
 	 * @return An HTTP response with status Ok (200) if the operation succeded,
 	 *         Server Exception (500) if the container could not retrieve the
 	 *         resource contents, and Not found (404) if the resource does not
@@ -87,15 +87,15 @@ public interface ILinkedDataPlatformResourceManager extends IComponent{
 	 * The method follows the guidelines of the <a
 	 * href="http://www.w3.org/2012/ldp/hg/ldp.html#http-post-1">HTTP POST
 	 * protocol</a> for <i>Linked Data Platform Containers</i>. Thus, it expects
-	 * a Turtle based RDF(S) serialization (see the <a
-	 * href="http://www.w3.org/TR/turtle/">Turtle W3C Working Draft</a>) and
+	 * a TURTLE based RDFS(S) serialization (see the <a
+	 * href="http://www.w3.org/TR/turtle/">TURTLE W3C Working Draft</a>) and
 	 * returns plain text content.
 	 * 
 	 * @param containerId
 	 *            The identifier of the target <i>Linked Data Container</i>.
 	 * @param body
 	 *            The source content for the Linked Data Resource. The contents
-	 *            should be an RDF(S) Turtle serialization.
+	 *            should be an RDFS(S) TURTLE serialization.
 	 * @return An HTTP response with status Created (201) if the operation
 	 *         succeded, Server Exception (500) if the container could not
 	 *         create the resource, and Not found (404) if the container does
@@ -107,7 +107,7 @@ public interface ILinkedDataPlatformResourceManager extends IComponent{
 	@PUT
 	@Consumes({"text/turtle","application/rdf+xml"})
 	@Path("/{containerId}/{resourceId}")
-	Response updateResource(@PathParam("containerId") String containerId, @PathParam("resourceId") String resourceId, String body, @HeaderParam("Content-Type") String format);
+	Response updateResource(@PathParam("containerId") String containerId, @PathParam("resourceId") String resourceId, String body, @HeaderParam("Entity-Type") String format);
 
 	/**
 	 * Request the deletion specified <i>Linked Data Platform Resource</i> from
@@ -123,7 +123,7 @@ public interface ILinkedDataPlatformResourceManager extends IComponent{
 	 * @return An HTTP response with status status code OK (200) if the resource
 	 *         was deleted and the response includes an entity describing the
 	 *         status, Accepted (202) if the action has not yet been enacted, or
-	 *         No Content (204) if the action has been enacted but the response
+	 *         No Entity (204) if the action has been enacted but the response
 	 *         does not include an entity; Server Exception (500) if an internal
 	 *         failure precludes the deletion of the resource; and Not found
 	 *         (404) or Gone (410) if the resource does not exist or existed at

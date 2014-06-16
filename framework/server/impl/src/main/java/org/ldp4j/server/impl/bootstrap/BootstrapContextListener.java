@@ -55,7 +55,7 @@ import org.slf4j.LoggerFactory;
 @WebListener
 public final class BootstrapContextListener implements ServletContextListener {
 	
-	private final class BootstrapServletContextAttributeListener implements ServletContextAttributeListener {
+	private static final class BootstrapServletContextAttributeListener implements ServletContextAttributeListener {
 		@Override
 		public void attributeAdded(ServletContextAttributeEvent scab) {
 			LOGGER.info(String.format("Added attribute '%s' with value '%s'",scab.getName(),scab.getValue()));
@@ -180,19 +180,25 @@ public final class BootstrapContextListener implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		sce.
-			getServletContext().
-				addListener(
-					new BootstrapServletContextAttributeListener()
-				);
+		if(Boolean.parseBoolean(System.getProperty("org.ldp4j.server.bootstrap.logging.update"))) {
+			sce.
+				getServletContext().
+					addListener(
+						new BootstrapServletContextAttributeListener()
+					);
+		}
 		
 		BootstrapManager.initialize();
-		LOGGER.info(dumpContext("Application initialized",sce.getServletContext()));
+		if(Boolean.parseBoolean(System.getProperty("org.ldp4j.server.bootstrap.logging.initialization"))) {
+			LOGGER.info(dumpContext("Application initialized",sce.getServletContext()));
+		}
 	}
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		LOGGER.info(dumpContext("Application destroyed",sce.getServletContext()));
+		if(Boolean.parseBoolean(System.getProperty("org.ldp4j.server.bootstrap.logging.shutdown"))) {
+			LOGGER.info(dumpContext("Application destroyed",sce.getServletContext()));
+		}
 		BootstrapManager.shutdown();
 	}
 

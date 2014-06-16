@@ -96,7 +96,7 @@ public class CoreLDPContainerTest {
 	@Test(expected=IllegalArgumentException.class)
 	public void testCreateResource$nullContent() throws Exception {
 		CoreLDPContainer sut=new CoreLDPContainer(gateway);
-		sut.createResource(null, Format.Turtle);
+		sut.createResource(null, Format.TURTLE);
 	}
 
 	@Test(expected=IllegalArgumentException.class)
@@ -151,7 +151,7 @@ public class CoreLDPContainerTest {
 			thenReturn(locations,locations,locations);
 
 		CoreLDPContainer sut=new CoreLDPContainer(gatewayMock);
-		URL resource = sut.createResource(Content.newInstance("test"), Format.Turtle);
+		URL resource = sut.createResource(Content.newInstance("test"), Format.TURTLE);
 		assertThat(resource,notNullValue());
 		assertThat(resource,equalTo(target));
 	}

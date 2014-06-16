@@ -83,25 +83,27 @@ public abstract class RuntimeInstance {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(RuntimeInstance.class);
 	
-	public static final String LDP4j_SERVER_SPI_RUNTIMEINSTANCE_FINDER = "org.ldp4j.server.spi.runtimeinstance.finder";
+	public static final String LDP4J_SERVER_SPI_RUNTIMEINSTANCE_FINDER = "org.ldp4j.server.spi.runtimeinstance.finder";
 
 	/**
 	 * Name of the configuration file where the
-	 * {@link RuntimeInstance#LDP4j_SERVER_SPI_PROPERTY} property that
+	 * {@link RuntimeInstance#LDP4J_SERVER_SPI_PROPERTY} property that
 	 * identifies the {@link RuntimeInstance} implementation to be returned from
 	 * {@link RuntimeInstance#getInstance()} can be defined.
 	 */
-	public static final String LDP4j_SERVER_SPI_CFG = "ldp4j-server.properties";
+	public static final String LDP4J_SERVER_SPI_CFG = "ldp4j-server.properties";
 
 	/**
 	 * Name of the property identifying the {@link RuntimeInstance} implementation
 	 * to be returned from {@link RuntimeInstance#getInstance()}.
 	 */
-	public static final String LDP4j_SERVER_SPI_PROPERTY = "org.ldp4j.server.spi.RuntimeInstance";
+	public static final String LDP4J_SERVER_SPI_PROPERTY = "org.ldp4j.server.spi.RuntimeInstance";
 
+	/** The cached delegate. */
 	private static final AtomicReference<RuntimeInstance> CACHED_DELEGATE=new AtomicReference<RuntimeInstance>();
 
-	private static ReflectPermission suppressAccessChecksPermission = new ReflectPermission("suppressAccessChecks");
+	/** The suppress access checks permission. */
+	private static final ReflectPermission SUPPRESS_ACCESS_CHECKS_PERMISSION = new ReflectPermission("suppressAccessChecks");
 
 	/**
 	 * Allows custom implementations to extend the {@code RuntimeInstance} class.
@@ -123,7 +125,7 @@ public abstract class RuntimeInstance {
 			}
 
 			if(result==null) {
-				String delegateClassName = System.getProperty(LDP4j_SERVER_SPI_PROPERTY);
+				String delegateClassName = System.getProperty(LDP4J_SERVER_SPI_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createRuntimeInstanceForClassName(delegateClassName);
 				}
@@ -148,7 +150,7 @@ public abstract class RuntimeInstance {
 				is=new FileInputStream(configFile);
 				Properties configProperties=new Properties();
 				configProperties.load(is);
-				String delegateClassName=configProperties.getProperty(LDP4j_SERVER_SPI_PROPERTY);
+				String delegateClassName=configProperties.getProperty(LDP4J_SERVER_SPI_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createRuntimeInstanceForClassName(delegateClassName);
 				}
@@ -172,13 +174,13 @@ public abstract class RuntimeInstance {
 
 	/**
 	 * Get the configuration file for the Runtime Instance: a file named
-	 * {@link RuntimeInstance#LDP4j_SERVER_SPI_CFG} in the <code>lib</code> directory of
+	 * {@link RuntimeInstance#LDP4J_SERVER_SPI_CFG} in the <code>lib</code> directory of
 	 * current JAVA_HOME.
 	 * 
 	 * @return The configuration file for the runtime instance.
 	 */
 	private static File getConfigurationFile() {
-		return new File(new File(System.getProperty("java.home")),"lib"+File.separator+LDP4j_SERVER_SPI_CFG);
+		return new File(new File(System.getProperty("java.home")),"lib"+File.separator+LDP4J_SERVER_SPI_CFG);
 	}
 
 	/**
@@ -199,7 +201,7 @@ public abstract class RuntimeInstance {
 	}
 
 	private static RuntimeInstance createRuntimeInstanceFromSPI() {
-		if(!"disable".equalsIgnoreCase(System.getProperty(LDP4j_SERVER_SPI_RUNTIMEINSTANCE_FINDER))) {
+		if(!"disable".equalsIgnoreCase(System.getProperty(LDP4J_SERVER_SPI_RUNTIMEINSTANCE_FINDER))) {
 			for (RuntimeInstance delegate : ServiceLoader.load(RuntimeInstance.class)) {
 				return delegate;
 			}
@@ -298,7 +300,7 @@ public abstract class RuntimeInstance {
 	public static void setInstance(final RuntimeInstance delegate) {
 		SecurityManager security = System.getSecurityManager();
 		if (security != null) {
-			security.checkPermission(suppressAccessChecksPermission);
+			security.checkPermission(SUPPRESS_ACCESS_CHECKS_PERMISSION);
 		}
 		RuntimeInstance.CACHED_DELEGATE.set(delegate);
 	}

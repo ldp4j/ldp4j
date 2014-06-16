@@ -65,7 +65,7 @@ public interface ILDPContainer {
 	 * 
 	 * @param format
 	 *            The syntax in which the description is be formatted.
-	 * @param exclude_members
+	 * @param excludeMembers
 	 *            Whether or not to exclude container's member properties.
 	 * @param exclude_members_properties
 	 *            Whether or not to exclude member specific properties.
@@ -74,7 +74,7 @@ public interface ILDPContainer {
 	 *             if the description cannot be retrieved.
 	 * @see Format
 	 */
-	IContent getDescription(Format format, boolean exclude_members, boolean exclude_member_properties) throws LDPContainerException;
+	IContent getDescription(Format format, boolean excludeMembers, boolean excludeMemberProperties) throws LDPContainerException;
 
 	/**
 	 * Retrieve the member resources of the <i>Linked Data Platform Container</i>.

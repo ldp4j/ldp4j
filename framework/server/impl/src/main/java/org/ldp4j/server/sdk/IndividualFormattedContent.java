@@ -49,11 +49,11 @@ public final class IndividualFormattedContent implements IContent {
 		"@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.";
 
 	private static final String EMPTY_RDF_XML_HEADER = 
-	"<rdf:RDF xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\""+LINE_SEPARATOR+
+	"<rdf:RDFS xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\""+LINE_SEPARATOR+
 	"\txmlns:dc=\"http://purl.org/dc/elements/1.1/\">"+LINE_SEPARATOR;
 
 	private static final String EMPTY_RDF_XML_FOOTER = 
-	"</rdf:RDF>";
+	"</rdf:RDFS>";
 
 	private final Format format;
 
@@ -61,7 +61,7 @@ public final class IndividualFormattedContent implements IContent {
 
 	public static final class Individual {
 		
-		final static class Value {
+		static final class Value {
 
 			private final QName resource;
 			private final String literal;
@@ -88,7 +88,7 @@ public final class IndividualFormattedContent implements IContent {
 					}
 					break;
 				default: 
-					// Is the case of Turtle:
+					// Is the case of TURTLE:
 					if(isResource()) {
 						result="<"+resource.getNamespaceURI()+resource.getLocalPart()+">";
 					} else {
@@ -149,9 +149,9 @@ public final class IndividualFormattedContent implements IContent {
 		
 	}
 	
-	public static interface Placeholder<T> {
+	public interface Placeholder<T> {
 
-		public T build();
+		T build();
 
 	}
 
@@ -267,7 +267,7 @@ public final class IndividualFormattedContent implements IContent {
 	@Override
 	public <S> S serialize(Class<S> clazz) throws IOException {
 		StringBuilder builder=new StringBuilder();
-		if(Format.Turtle.equals(format)) {
+		if(Format.TURTLE.equals(format)) {
 			builder.append(EMPTY_TURTLE);
 			for(Individual individual:individuals) {
 				if(individual.hasProperties()) {

@@ -27,8 +27,6 @@
 package org.ldp4j.server.impl;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -60,6 +58,8 @@ import org.ldp4j.server.impl.ResourceStateRegistry.ResourceState;
 import org.ldp4j.server.sdk.StringContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Throwables;
 
 /**
  * A pluggable <b><i>Linked Data Platform Container</i> Manager</b>
@@ -127,10 +127,7 @@ public class LinkedDataPlatformContainerManager implements ILinkedDataPlatformCo
 	 * @return A String that contains the stack trace dump.
 	 */
 	private String getFailure(Throwable e) {
-		StringWriter writer = new StringWriter();
-		e.printStackTrace(new PrintWriter(writer));
-		writer.flush();
-		return writer.toString();
+		return Throwables.getStackTraceAsString(e);
 	}
 
 	private synchronized ResourceLocatorHelper getHelper() {
@@ -186,7 +183,7 @@ public class LinkedDataPlatformContainerManager implements ILinkedDataPlatformCo
 
 	/**
 	 * For the time being, the current implementation does not check that the
-	 * body contains a valid RDF(S) Turtle serialization. SPI implementors must
+	 * body contains a valid RDFS(S) TURTLE serialization. SPI implementors must
 	 * check it. <br />
 	 * 
 	 * Also, there is not content-negotiation. All response entities are
@@ -200,12 +197,12 @@ public class LinkedDataPlatformContainerManager implements ILinkedDataPlatformCo
 	 */
 	@Override
 	public Response createResource(String containerId, String body, String contentType) {
-		ResourceLocatorHelper helper = getHelper();
+		ResourceLocatorHelper sessionHelper = getHelper();
 		
 		if(LOGGER.isInfoEnabled()) {
 			LOGGER.info(String.format("Requested resource creation to container '%s'...",containerId));
-			LOGGER.debug(String.format("- Content-Type: %s",contentType));
-			LOGGER.debug(String.format("- Content.....: %n%s",body));
+			LOGGER.debug(String.format("- Entity-Type: %s",contentType));
+			LOGGER.debug(String.format("- Entity.....: %n%s",body));
 		}
 		
 		ILinkedDataPlatformContainer container = LinkedDataPlatformServer.getRegistry().getContainer(containerId);
@@ -237,7 +234,7 @@ public class LinkedDataPlatformContainerManager implements ILinkedDataPlatformCo
 				LOGGER.info(String.format("Resource '%s' created by container '%s'.",resourceId,containerId));
 			}
 			
-			String location = helper.createAbsoluteResourcePath(containerId,resourceId).toString();
+			String location = sessionHelper.createAbsoluteResourcePath(containerId,resourceId).toString();
 			URL resourceLocation = new URL(location);
 
 			// TODO: Right now the etag only takes into account the input representation, not what it is stored
@@ -252,7 +249,7 @@ public class LinkedDataPlatformContainerManager implements ILinkedDataPlatformCo
 				}
 			}
 			
-			URI resourceUri = helper.createRelativeResourcePath(containerId,resourceId);
+			URI resourceUri = sessionHelper.createRelativeResourcePath(containerId,resourceId);
 			return 
 				Response.
 					created(resourceUri).

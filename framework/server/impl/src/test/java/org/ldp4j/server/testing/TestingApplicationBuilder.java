@@ -126,11 +126,6 @@ public class TestingApplicationBuilder {
 		return result;
 	}
 
-	public TestingApplicationBuilder() {
-		ldpServerArchive = TestingUtil.getServerRuntimeArchive();
-		stubs=TestingUtil.getServerTestingArchive();
-	}
-	
 	/**
 	 * @return the settings
 	 */
@@ -189,6 +184,14 @@ public class TestingApplicationBuilder {
 		return this;
 	}
 
+	/**
+	 * @param beans the Spring configuration file to set
+	 */
+	public TestingApplicationBuilder withBeans(String beans) {
+		updateParameter(Parameter.BEANS,beans);
+		return this;
+	}
+
 
 	/**
 	 * @param webXml the webXml to set
@@ -232,7 +235,14 @@ public class TestingApplicationBuilder {
 	}
 
 	public WebArchive build(JavaArchive... archives) {
-		if(LOGGER.isDebugEnabled()) {
+		if(!Boolean.parseBoolean(retrieveParameter(Parameter.EXCLUDE_MIDDLEWARE))) {
+			ldpServerArchive = TestingUtil.getServerRuntimeArchive();
+		}
+		if(Boolean.parseBoolean(retrieveParameter(Parameter.WITH_STUBS))) {
+			stubs=TestingUtil.getServerTestingArchive();
+		}
+		if(LOGGER.isDebugEnabled() && 
+			Boolean.parseBoolean(System.getProperty("org.ldp4j.testing.logging.setup"))) {
 			LOGGER.debug("Creating testing web application archive:");
 			LOGGER.debug("- Maven configuration:");
 			LOGGER.debug("  + Setting: "+getSettings());
@@ -275,8 +285,10 @@ public class TestingApplicationBuilder {
 		updatePredefinedBundles(war);
 		updateWebInf(war);
 
-		if(LOGGER.isTraceEnabled()) {
-			LOGGER.debug(String.format("Testing web application archive: \n%s",war.toString(true)));
+		if(LOGGER.isTraceEnabled() && 
+			Boolean.parseBoolean(System.getProperty("org.ldp4j.testing.logging.setup")) && 
+			Boolean.parseBoolean(System.getProperty("org.ldp4j.testing.logging.archive"))) {
+			LOGGER.trace(String.format("Testing web application archive: \n%s",war.toString(true)));
 		}
 
 		return war;

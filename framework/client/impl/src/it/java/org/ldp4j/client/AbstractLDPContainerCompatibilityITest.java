@@ -75,7 +75,7 @@ public abstract class AbstractLDPContainerCompatibilityITest {
 		InputStream is = url.openStream();
 		try {
 			String content = IOUtils.readStringFromStream(is);
-			LOGGER.debug("\t* Content: " + content);
+			LOGGER.debug("\t* Entity: " + content);
 			assertThat(content,equalTo(CONTROL_PHRASE));
 		} finally {
 			is.close();
@@ -87,26 +87,26 @@ public abstract class AbstractLDPContainerCompatibilityITest {
 	public void testWorkingContainer(@ArquillianResource final URL url) throws Exception {
 		LOGGER.debug("* Create resource: " + url);
 		ILDPContainer server = createContainerClient(new URL(url.toString().concat("ldp/containers/WorkingContainer")));
-		URL resource = server.createResource(Content.newInstance("example"), Format.Turtle);
+		URL resource = server.createResource(Content.newInstance("example"), Format.TURTLE);
 		assertThat(resource,notNullValue());
 		LOGGER.debug("\t- Resource: "+resource);
 		
 		LOGGER.debug("* Get full description: " + url);
-		IContent description = server.getDescription(Format.Turtle,false,false);
+		IContent description = server.getDescription(Format.TURTLE,false,false);
 		assertThat(description,notNullValue());
 		String content = description.serialize(String.class);
 		LOGGER.debug("\t- Description: "+content);
 		assertThat(content,containsString(resource.toString()));
 
 		LOGGER.debug("* Get partial description: " + url);
-		description = server.getDescription(Format.Turtle,false,true);
+		description = server.getDescription(Format.TURTLE,false,true);
 		assertThat(description,notNullValue());
 		content = description.serialize(String.class);
 		LOGGER.debug("\t- Description: "+content);
 		assertThat(content,containsString(resource.toString()));
 
 		LOGGER.debug("* Get raw description: " + url);
-		description = server.getDescription(Format.Turtle,true,false);
+		description = server.getDescription(Format.TURTLE,true,false);
 		assertThat(description,notNullValue());
 		content = description.serialize(String.class);
 		LOGGER.debug("\t- Description: "+content);
@@ -118,7 +118,7 @@ public abstract class AbstractLDPContainerCompatibilityITest {
 	public void testFailingContainer(@ArquillianResource final URL url) throws Exception {
 		LOGGER.debug("* Create resource: " + url);
 		ILDPContainer server = createContainerClient(new URL(url.toString().concat("ldp/containers/FailingContainer")));
-		server.createResource(Content.newInstance("example"), Format.Turtle);
+		server.createResource(Content.newInstance("example"), Format.TURTLE);
 	}
 
 }

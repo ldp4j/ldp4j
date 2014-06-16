@@ -28,12 +28,9 @@ package org.ldp4j.client.impl;
 
 import java.net.URL;
 
-import org.junit.experimental.categories.Category;
 import org.ldp4j.client.AbstractLDPResourceCompatibilityITest;
 import org.ldp4j.client.ILDPContainer;
 import org.ldp4j.client.ILDPResource;
-import org.ldp4j.client.impl.CoreLDPContainer;
-import org.ldp4j.client.impl.CoreLDPResource;
 import org.ldp4j.client.impl.cxf.CXFRemoteLDPProvider;
 
 public class CoreLDPResourceITest extends AbstractLDPResourceCompatibilityITest {

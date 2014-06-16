@@ -57,15 +57,15 @@ public interface ILinkedDataPlatformContainerManager extends IComponent {
 	 * The method follows the guidelines of the <a
 	 * href="http://www.w3.org/2012/ldp/hg/ldp.html#http-post-1">HTTP POST
 	 * protocol</a> for <i>Linked Data Platform Containers</i>. Thus, it expects
-	 * a Turtle based RDF(S) serialization (see the <a
-	 * href="http://www.w3.org/TR/turtle/">Turtle W3C Working Draft</a>) and
+	 * a TURTLE based RDFS(S) serialization (see the <a
+	 * href="http://www.w3.org/TR/turtle/">TURTLE W3C Working Draft</a>) and
 	 * returns plain text content.
 	 * 
 	 * @param containerId
 	 *            The identifier of the target <i>Linked Data Container</i>.
 	 * @param body
 	 *            The source content for the Linked Data Resource. The contents
-	 *            should be an RDF(S) Turtle serialization.
+	 *            should be an RDFS(S) TURTLE serialization.
 	 * @return An HTTP response with status Created (201) if the operation
 	 *         succeded, Server Exception (500) if the container could not
 	 *         create the resource, and Not found (404) if the container does
@@ -77,7 +77,7 @@ public interface ILinkedDataPlatformContainerManager extends IComponent {
 	@POST
 	@Consumes({"text/turtle","application/rdf+xml"})
 	@Path("/{containerId}")
-	Response createResource(@PathParam("containerId") String containerId, String body, @HeaderParam("Content-Type") String contentType);
+	Response createResource(@PathParam("containerId") String containerId, String body, @HeaderParam("Entity-Type") String contentType);
 
 	/**
 	 * Gets the list of available <i>Linked Data Platform Containers</i>.
@@ -95,15 +95,15 @@ public interface ILinkedDataPlatformContainerManager extends IComponent {
 	 * The method follows the guidelines of the <a
 	 * href="http://www.w3.org/2012/ldp/hg/ldp.html#http-post-1">HTTP POST
 	 * protocol</a> for <i>Linked Data Platform Containers</i>. Thus, it expects
-	 * a Turtle based RDF(S) serialization (see the <a
-	 * href="http://www.w3.org/TR/turtle/">Turtle W3C Working Draft</a>) and
+	 * a TURTLE based RDFS(S) serialization (see the <a
+	 * href="http://www.w3.org/TR/turtle/">TURTLE W3C Working Draft</a>) and
 	 * returns plain text content.
 	 * 
 	 * @param containerId
 	 *            The identifier of the target <i>Linked Data Container</i>.
 	 * @param body
 	 *            The source content for the Linked Data Resource. The contents
-	 *            should be an RDF(S) Turtle serialization.
+	 *            should be an RDFS(S) TURTLE serialization.
 	 * @return An HTTP response with status Created (201) if the operation
 	 *         succeded, Server Exception (500) if the container could not
 	 *         create the resource, and Not found (404) if the container does

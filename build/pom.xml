@@ -107,7 +107,10 @@
 		<sesame.version>2.2.4</sesame.version>
 		<jaxb2-basics-runtime.version>0.6.3</jaxb2-basics-runtime.version>
 		<xalan.version>2.7.1</xalan.version>
+		<cxf.version>2.7.11</cxf.version>
+<!-- 
 		<cxf.version>2.6.3</cxf.version>
+ -->
 
 		<tomee.version>1.5.1</tomee.version>
 		<tomee.classifier>plus</tomee.classifier>
@@ -702,6 +705,8 @@
 						<cfg>SCRIPT_STYLE</cfg>
 						<ttl>SCRIPT_STYLE</ttl>
 						<cmd>CMD_STYLE</cmd>
+						<xjb>XML_STYLE</xjb>
+						<cat>XML_STYLE</cat>
 					</mapping>
 					<includes>
 						<include>pom.xml</include>

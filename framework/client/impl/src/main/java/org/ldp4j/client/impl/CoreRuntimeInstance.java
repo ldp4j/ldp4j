@@ -56,7 +56,7 @@ public final class CoreRuntimeInstance extends RuntimeInstance {
 	private static final Logger LOGGER=LoggerFactory.getLogger(CoreRuntimeInstance.class);
 
 	// TODO: Make discoverable & configurable
-	private static final IRemoteLDPProvider provider=new CXFRemoteLDPProvider();
+	private static final IRemoteLDPProvider PROVIDER=new CXFRemoteLDPProvider();
 	
 	public CoreRuntimeInstance() {
 		LOGGER.info("Starting Core LDP Client API Implementation");
@@ -70,7 +70,7 @@ public final class CoreRuntimeInstance extends RuntimeInstance {
 		if(target==null) {
 			throw new IllegalArgumentException("Object 'target' cannot be null");
 		}
-		return new CoreLDPContainer(provider.createContainerProxy(target));
+		return new CoreLDPContainer(PROVIDER.createContainerProxy(target));
 	}
 
 	@Override
@@ -78,7 +78,7 @@ public final class CoreRuntimeInstance extends RuntimeInstance {
 		if(target==null) {
 			throw new IllegalArgumentException("Object 'target' cannot be null");
 		}
-		return new CoreLDPResource(provider.createResourceProxy(target));
+		return new CoreLDPResource(PROVIDER.createResourceProxy(target));
 	}
 
 	@Override

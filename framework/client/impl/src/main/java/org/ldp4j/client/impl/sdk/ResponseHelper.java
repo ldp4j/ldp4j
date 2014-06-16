@@ -27,17 +27,15 @@
 package org.ldp4j.client.impl.sdk;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.ws.rs.MessageProcessingException;
 import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
-
-import org.apache.commons.io.IOUtils;
 
 /**
  * Utility class for helping in the process of consuming JAX-RS responses.
@@ -100,17 +98,13 @@ public final class ResponseHelper {
 	 */
 	public static String getEntity(Response response) throws IOException {
 		String message=null;
-		Object entity=response.getEntity();
-		if(entity!=null) {
-			if(entity instanceof InputStream) {
-				InputStream is=(InputStream)entity;
-				message=IOUtils.toString(is);
-			} else if(entity instanceof String) {
-				message=(String)entity;
-			} else if(entity instanceof CharSequence) {
-				message=((CharSequence)entity).toString();
-			} else {
-				throw new IOException(String.format("Could not parse entity from type '%s'",entity.getClass()));
+		if(response.hasEntity()) {
+			try {
+				message=response.readEntity(String.class);
+			} catch (MessageProcessingException e) {
+				throw new IOException("Could not retrieve response entity",e);
+			} catch (IllegalStateException e) {
+				throw new IOException("Could not retrieve response entity",e);
 			}
 		}
 		return message;

@@ -36,6 +36,36 @@ import org.ldp4j.client.spi.UnsupportedTargetException;
 
 final class CharSequenceSourceTypeAdapter implements ISourceTypeAdapter<CharSequence> {
 
+	private static final class InputStreamAdapter<T> implements ITypeAdapter<CharSequence, T> {
+
+		private final Class<T> targetClazz;
+
+		private InputStreamAdapter(Class<T> targetClazz) {
+			this.targetClazz = targetClazz;
+		}
+
+		@Override
+		public T transform(CharSequence source) throws SourceTransformationException {
+			return targetClazz.cast(IOUtils.toInputStream(source));
+		}
+
+	}
+
+	private static final class CharSequenceAdapter<T> implements ITypeAdapter<CharSequence, T> {
+
+		private final Class<T> targetClazz;
+
+		private CharSequenceAdapter(Class<T> targetClazz) {
+			this.targetClazz = targetClazz;
+		}
+
+		@Override
+		public T transform(CharSequence source) throws SourceTransformationException {
+			return targetClazz.cast(source);
+		}
+
+	}
+
 	@Override
 	public boolean supportsTarget(Class<?> targetClazz) {
 		return 
@@ -46,22 +76,9 @@ final class CharSequenceSourceTypeAdapter implements ISourceTypeAdapter<CharSequ
 	@Override
 	public <T> ITypeAdapter<CharSequence, T> createTypeAdapter(final Class<T> targetClazz) throws UnsupportedTargetException {
 		if(targetClazz.isAssignableFrom(CharSequence.class)) {
-			return new ITypeAdapter<CharSequence,T>() {
-				@Override
-				public T transform(CharSequence source) throws SourceTransformationException {
-					return targetClazz.cast(source);
-				}
-				
-			};
-		} 
-		if(targetClazz.isAssignableFrom(InputStream.class)) {
-			return new ITypeAdapter<CharSequence,T>() {
-				@Override
-				public T transform(CharSequence source) throws SourceTransformationException {
-					return targetClazz.cast(IOUtils.toInputStream(source));
-				}
-				
-			};
+			return new CharSequenceAdapter<T>(targetClazz);
+		} else if(targetClazz.isAssignableFrom(InputStream.class)) {
+			return new InputStreamAdapter<T>(targetClazz);
 		}
 		throw new UnsupportedTargetException(String.format("Could not serialize content availabe as '%s' to '%s'",String.class.getCanonicalName(),targetClazz.getCanonicalName()));
 	}

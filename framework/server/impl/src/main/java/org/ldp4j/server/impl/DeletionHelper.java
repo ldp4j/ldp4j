@@ -174,11 +174,11 @@ final class DeletionHelper {
 	}
 
 	public Response delete(String resourceId) throws DeletionException {
-		ResourceHandlerWrapper wrapper = getWrapper();
-		if(!wrapper.isDeletionSupported()) {
+		ResourceHandlerWrapper sessionWrapper = getWrapper();
+		if(!sessionWrapper.isDeletionSupported()) {
 			throw new DeletionException(String.format("Resource handler class '%s' does not support deletion",resourceHandler.getClass().getCanonicalName()));
 		}
-		DeletionResult result=wrapper.delete(resourceId);
+		DeletionResult result=sessionWrapper.delete(resourceId);
 		Response response=null;
 		if(result.isEnacted()) {
 			String message=result.getMessage();
