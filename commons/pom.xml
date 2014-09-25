@@ -73,6 +73,16 @@
 		</dependencies>
 	</dependencyManagement>
 
+	<profiles>
+		<profile>
+			<id>experimental</id>
+			<modules>
+				<module>core</module>
+				<module>rmf</module>
+			</modules>
+		</profile>
+	</profiles>
+
 	<!-- =================================================================== -->
 	<!--   ENVIRONMENT SETTINGS                                              -->
 	<!-- =================================================================== -->

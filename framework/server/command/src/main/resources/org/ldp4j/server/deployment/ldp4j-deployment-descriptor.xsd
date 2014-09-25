@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- edited with XMLSpy v2013 (http://www.altova.com) by  () -->
+<!--
+
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      This file is part of the LDP4j Project:
+        http://www.ldp4j.org/
+
+      Center for Open Middleware
+        http://www.centeropenmiddleware.com/
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Copyright (C) 2014 Center for Open Middleware.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+                http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Artifact    : org.ldp4j.framework:ldp4j-server-command:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+
+-->
+<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:tns="http://www.ldp4j.org/schemas/deployment-descriptor/1.0" targetNamespace="http://www.ldp4j.org/schemas/deployment-descriptor/1.0" elementFormDefault="qualified">
+	<xsd:element name="ldp-app" type="tns:DeploymentType"/>
+	<xsd:simpleType name="JavaIdentifier">
+		<xsd:restriction base="xsd:string">
+			<xsd:pattern value="[a-zA-Z_$][a-zA-Z_$0-9]*(\.[a-zA-Z_$][a-zA-Z_$0-9]*)*"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:simpleType name="MembershipRelationType">
+		<xsd:restriction base="xsd:anyURI">
+			<xsd:enumeration value="http://www.w3.org/ns/ldp#hasMemberRelation"/>
+			<xsd:enumeration value="http://www.w3.org/ns/ldp#isMemberOfRelation"/>
+		</xsd:restriction>
+	</xsd:simpleType>
+	<xsd:attribute name="id" type="xsd:string"/>
+	<xsd:attribute name="class" type="tns:JavaIdentifier"/>
+	<xsd:attributeGroup name="reusableHandlerDefinition">
+		<xsd:attribute ref="tns:id" use="required"/>
+		<xsd:attribute ref="tns:class" use="required"/>
+	</xsd:attributeGroup>
+	<xsd:group name="elementDescription">
+		<xsd:sequence>
+			<xsd:element name="name" minOccurs="0"/>
+			<xsd:element name="description" minOccurs="0"/>
+		</xsd:sequence>
+	</xsd:group>
+	<xsd:complexType name="Name">
+		<xsd:simpleContent>
+			<xsd:extension base="xsd:string">
+				<xsd:attribute  ref="tns:class" use="optional" default="java.lang.String"/>
+			</xsd:extension>
+		</xsd:simpleContent>
+	</xsd:complexType>
+	<xsd:complexType name="TemplateReferenceType" mixed="false">
+		<xsd:attribute name="ref" type="xsd:string" use="required"/>
+	</xsd:complexType>
+	<xsd:complexType name="AttachmentType">
+		<xsd:complexContent>
+			<xsd:extension base="tns:TemplateReferenceType">
+				<xsd:attribute name="path" type="xsd:string" use="required"/>
+				<xsd:attribute name="predicate" type="xsd:QName" use="optional"/>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="DeploymentType">
+		<xsd:all>
+			<xsd:element name="templates">
+				<xsd:complexType>
+					<xsd:choice maxOccurs="unbounded">
+						<xsd:element name="resource" type="tns:ResourceTemplateType"/>
+						<xsd:element name="container" type="tns:ContainerTemplateType"/>
+					</xsd:choice>
+				</xsd:complexType>
+			</xsd:element>
+			<xsd:element name="endpoints">
+				<xsd:complexType>
+					<xsd:sequence>
+						<xsd:element name="endpoint" type="tns:EndpointType" maxOccurs="unbounded"/>
+					</xsd:sequence>
+				</xsd:complexType>
+			</xsd:element>
+		</xsd:all>
+	</xsd:complexType>
+	<xsd:complexType name="ResourceTemplateType">
+		<xsd:sequence>
+			<xsd:group ref="tns:elementDescription"/>
+			<xsd:element name="attached-resource" type="tns:AttachmentType" minOccurs="0" maxOccurs="unbounded"/>
+		</xsd:sequence>
+		<xsd:attributeGroup ref="tns:reusableHandlerDefinition"/>
+	</xsd:complexType>
+	<xsd:complexType name="ContainerTemplateType">
+		<xsd:complexContent>
+			<xsd:extension base="tns:ResourceTemplateType">
+				<xsd:sequence>
+					<xsd:element name="contained-resource" type="tns:TemplateReferenceType"/>
+					<xsd:element name="membership-predicate" type="xsd:anyURI" default="http://www.w3.org/ns/ldp#member" minOccurs="0"/>
+					<xsd:element name="membership-relation" type="tns:MembershipRelationType" default="http://www.w3.org/ns/ldp#hasMemberRelation" minOccurs="0"/>
+					<xsd:element name="inserted-content-relation" type="xsd:anyURI" minOccurs="0"/>
+				</xsd:sequence>
+			</xsd:extension>
+		</xsd:complexContent>
+	</xsd:complexType>
+	<xsd:complexType name="EndpointType">
+		<xsd:sequence>
+			<xsd:group ref="tns:elementDescription"/>
+			<xsd:element name="target-name" type="tns:Name"/>
+			<xsd:element name="target-template" type="tns:TemplateReferenceType"/>
+		</xsd:sequence>
+		<xsd:attribute ref="tns:id" use="required"/>
+		<xsd:attribute name="base" use="required"/>
+	</xsd:complexType>
+</xsd:schema>

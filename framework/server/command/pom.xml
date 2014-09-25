@@ -1,0 +1,586 @@
+<!--
+
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      This file is part of the LDP4j Project:
+        http://www.ldp4j.org/
+
+      Center for Open Middleware
+        http://www.centeropenmiddleware.com/
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Copyright (C) 2014 Center for Open Middleware.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+                http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Artifact    : org.ldp4j.framework:ldp4j-server-command:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- =================================================================== -->
+	<!--   MODULE COORDINATES                                                -->
+	<!-- =================================================================== -->
+
+	<parent>
+		<groupId>org.ldp4j.framework</groupId>
+		<artifactId>ldp4j-server</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+	
+	<artifactId>ldp4j-server-command</artifactId>
+
+	<!-- =================================================================== -->
+	<!--   MODULE INFORMATION                                                -->
+	<!-- =================================================================== -->
+
+	<name>LDP4j :: Framework :: Server :: Command</name>
+	<description>LDP4j Server-side Command Util</description>
+
+	<!-- =================================================================== -->
+	<!--   BUILD SETTINGS                                                    -->
+	<!-- =================================================================== -->
+
+	<properties>
+		<sesame.version>2.7.9</sesame.version>
+		<version.org.apache.tomcat>7.0.20</version.org.apache.tomcat>
+		<version.org.eclipse.jdt.core.compiler>3.7</version.org.eclipse.jdt.core.compiler>
+		<spring.version>3.0.7.RELEASE</spring.version>
+		<reflections.version>0.9.8</reflections.version>
+		<httpcomponents.client.version>4.3.3</httpcomponents.client.version>
+		<jaxb2-basics.version>0.6.4</jaxb2-basics.version>
+		<jaxb2-fluent-api.version>3.0</jaxb2-fluent-api.version>
+		<jaxb2-default-value.version>1.1</jaxb2-default-value.version>
+		<jaxb2-namespace-prefix.version>1.1</jaxb2-namespace-prefix.version>
+		<jaxb2-value-constructor.version>3.0</jaxb2-value-constructor.version>
+		<fixed-jaxb.version>2.2.6</fixed-jaxb.version>
+		<xmlunit.version>1.5</xmlunit.version>
+		<xmlmatchers.version>1.0-RC1</xmlmatchers.version>
+		<metrics.version>3.0.1</metrics.version>
+	</properties>
+
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.ldp4j.framework</groupId>
+				<artifactId>ldp4j-server-bom</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-repository-sail</artifactId>
+				<version>${sesame.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-sail-memory</artifactId>
+				<version>${sesame.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-rio-rdfxml</artifactId>
+				<version>${sesame.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.openrdf.sesame</groupId>
+				<artifactId>sesame-rio-turtle</artifactId>
+				<version>${sesame.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>javax.xml.bind</groupId>
+				<artifactId>jaxb-api</artifactId>
+				<version>${fixed-jaxb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>com.sun.xml.bind</groupId>
+				<artifactId>jaxb-impl</artifactId>
+				<version>${fixed-jaxb.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jvnet.jaxb2_commons</groupId>
+				<artifactId>jaxb2-basics</artifactId>
+				<version>${jaxb2-basics.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.jvnet.jaxb2_commons</groupId>
+				<artifactId>jaxb2-basics-runtime</artifactId>
+				<version>${jaxb2-basics.version}</version>
+			</dependency>
+
+			<dependency>
+				<groupId>xmlunit</groupId>
+				<artifactId>xmlunit</artifactId>
+				<version>${xmlunit.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.xmlmatchers</groupId>
+				<artifactId>xml-matchers</artifactId>
+				<version>${xmlmatchers.version}</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-server-application</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.ldp4j.commons.rmf</groupId>
+			<artifactId>rmf-core</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>xml-apis</groupId>
+			<artifactId>xml-apis</artifactId>
+			<version>1.4.01</version>
+		</dependency>
+	
+		<dependency>
+			<groupId>javax.xml.bind</groupId>
+			<artifactId>jaxb-api</artifactId>
+			<scope>provided</scope>  
+		</dependency>
+
+		<dependency>
+			<groupId>com.sun.xml.bind</groupId>  
+			<artifactId>jaxb-impl</artifactId>  
+			<scope>provided</scope>  
+		</dependency>
+
+		<dependency>
+			<groupId>org.jvnet.jaxb2_commons</groupId>
+			<artifactId>jaxb2-basics</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jvnet.jaxb2_commons</groupId>
+			<artifactId>jaxb2-basics-runtime</artifactId>
+		</dependency>
+
+		<!-- TODO: Replace by a standard one -->
+		<dependency>
+			<groupId>org.apache.openejb</groupId>
+			<artifactId>javaee-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-server-impl</artifactId>
+			<type>test-jar</type>
+			<version>${project.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- HttpComponents Client -->
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient</artifactId>
+			<version>${httpcomponents.client.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpclient-cache</artifactId>
+			<version>${httpcomponents.client.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>httpmime</artifactId>
+			<version>${httpcomponents.client.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.httpcomponents</groupId>
+			<artifactId>fluent-hc</artifactId>
+			<version>${httpcomponents.client.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-integration</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.testng</groupId>
+			<artifactId>testng</artifactId>
+			<version>6.8.8</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jmockit</groupId>
+			<artifactId>jmockit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- XML Unit testing -->
+		<dependency>
+			<groupId>org.xmlmatchers</groupId>
+			<artifactId>xml-matchers</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>xmlunit</groupId>
+			<artifactId>xmlunit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- ShrinkWrap -->
+		<dependency>
+			<groupId>org.jboss.shrinkwrap</groupId>
+			<artifactId>shrinkwrap-depchain</artifactId>
+			<version>${shrinkwrap.version}</version>
+			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+	
+		<!-- ShrinkWrap Resolver -->
+		<dependency>
+			<groupId>org.jboss.shrinkwrap.resolver</groupId>
+			<artifactId>shrinkwrap-resolver-depchain</artifactId>
+			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+	
+		<!-- ShrinkWrap Descriptors -->
+		<dependency>
+			<groupId>org.jboss.shrinkwrap.descriptors</groupId>
+			<artifactId>shrinkwrap-descriptors-depchain</artifactId>
+			<version>${shrinkwrap.descriptors.version}</version>
+			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Arquillian -->
+		<dependency>
+			<groupId>org.jboss.arquillian.junit</groupId>
+			<artifactId>arquillian-junit-container</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.arquillian.testng</groupId>
+			<artifactId>arquillian-testng-container</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.arquillian.container</groupId>
+			<artifactId>arquillian-tomcat-embedded-7</artifactId>
+			<version>1.0.0.CR6</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Tomcat Embed (Arquillian Tomcat Container required) -->
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-core</artifactId>
+			<version>${version.org.apache.tomcat}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-jasper</artifactId>
+			<version>${version.org.apache.tomcat}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.tomcat.embed</groupId>
+			<artifactId>tomcat-embed-logging-juli</artifactId>
+			<version>${version.org.apache.tomcat}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jdt.core.compiler</groupId>
+			<artifactId>ecj</artifactId>
+			<version>${version.org.eclipse.jdt.core.compiler}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- CXF -->
+		<dependency>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-bundle-jaxrs</artifactId>
+			<version>${cxf.version}</version>
+			<scope>test</scope>
+		</dependency>
+
+		<!-- Spring (CXF required)  -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.jvnet.jaxb2.maven2</groupId>
+				<artifactId>maven-jaxb2-plugin</artifactId>
+				<version>0.8.3</version>
+				<executions>
+					<execution>
+						<id>default</id>
+						<goals>
+							<goal>generate</goal>
+						</goals>
+						<configuration>
+							<schemaDirectory>${basedir}${file.separator}src${file.separator}main${file.separator}resources</schemaDirectory>
+							<schemaIncludes>
+								<include>**/*.xsd</include>
+							</schemaIncludes>			
+							<bindingDirectory>${basedir}${file.separator}src${file.separator}main${file.separator}xjb</bindingDirectory>
+							<bindingIncludes>
+								<include>*.xjb</include>
+							</bindingIncludes>
+<!-- 
+							<catalog>${basedir}${file.separator}src${file.separator}main${file.separator}xjb${file.separator}catalog.cat</catalog>
+							<catalogResolver>org.jvnet.jaxb2.maven2.resolver.tools.ClasspathCatalogResolver</catalogResolver>
+ -->
+							<addCompileSourceRoot>true</addCompileSourceRoot>
+							<extension>true</extension>
+							<strict>true</strict>
+							<args>
+								<arg>-Xdefault-value</arg>
+								<arg>-Xfluent-api</arg>
+								<arg>-Xvalue-constructor</arg>
+								<arg>-npa</arg>
+								<arg>-Xnamespace-prefix</arg>
+								<arg>-XtoString</arg>
+								<arg>-Xequals</arg>
+								<arg>-XhashCode</arg>
+								<arg>-Xcopyable</arg>
+							</args>
+							<plugins>
+								<plugin>
+									<groupId>org.jvnet.jaxb2_commons</groupId>
+									<artifactId>jaxb2-basics</artifactId>
+									<version>${jaxb2-basics.version}</version>
+								</plugin>
+								<plugin>
+									<groupId>org.jvnet.jaxb2_commons</groupId>
+									<artifactId>jaxb2-fluent-api</artifactId>
+									<version>${jaxb2-fluent-api.version}</version>
+								</plugin>
+								<plugin>
+									<groupId>org.jvnet.jaxb2_commons</groupId>
+									<artifactId>jaxb2-default-value</artifactId>
+									<version>${jaxb2-default-value.version}</version>
+								</plugin>
+								<plugin>
+									<groupId>org.jvnet.jaxb2_commons</groupId>
+									<artifactId>jaxb2-namespace-prefix</artifactId>
+									<version>${jaxb2-namespace-prefix.version}</version>
+								</plugin>
+								<plugin>
+									<groupId>org.jvnet.jaxb2_commons</groupId>
+									<artifactId>jaxb2-value-constructor</artifactId>
+									<version>${jaxb2-value-constructor.version}</version>
+								</plugin>
+							</plugins>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>reserve-tomcat-port</id>
+						<phase>generate-test-resources</phase>
+						<goals>
+							<goal>reserve-network-port</goal>
+						</goals>
+						<configuration>
+							<portNames>
+								<portName>tomcat.http.port</portName>
+							</portNames>
+						</configuration>
+					</execution>
+					<execution>
+						<id>add-tomcat-conf</id>
+						<phase>generate-test-resources</phase>
+						<goals>
+							<goal>add-test-resource</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>src${file.separator}it${file.separator}tomee</directory>
+									<filtering>true</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<testNGArtifactName>none:none</testNGArtifactName>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.groovy.maven</groupId>
+				<artifactId>gmaven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>update-categories</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<color>true</color>
+							<source>
+								def expandCategories(text) {
+									text?.split(',').collect { 'org.ldp4j.testing.categories.'+it.trim() }.join(', ')
+								}
+								def processCategories(Map args) {
+									def propertyName = "test." + args.property + "." + (args.includes?'includes':'excludes')
+									def sourceProperty = args.type + "." + propertyName
+									def targetProperty = (args.type=='it'?'failsafe':args.type=='ut'?'surefire':type) +"." + propertyName
+									def categories=project.properties.get(sourceProperty)
+									if(args.debug) {
+										println args
+										println "$propertyName ($sourceProperty --> $targetProperty)"
+										println "project.properties.get($sourceProperty)=$categories"
+									}
+									if(categories!=null) {
+										expandedCategories=expandCategories(categories)
+										project.properties.setProperty(targetProperty,expandedCategories)
+										println "$sourceProperty [$categories] --> $targetProperty [$expandedCategories] "
+									}
+								}
+								processCategories(type:'ut',property:'groups',includes:true)
+								processCategories(type:'ut',property:'groups',includes:false)
+								processCategories(type:'it',property:'groups',includes:true)
+								processCategories(type:'it',property:'groups',includes:false)
+							</source>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<configuration>
+					<systemPropertyVariables>
+						<!-- org.ldp4j.testing.categories.logging.setup>true</org.ldp4j.testing.categories.logging.setup -->
+						<!-- org.ldp4j.testing.categories.logging.archive>true</org.ldp4j.testing.categories.logging.archive -->
+						<!-- org.ldp4j.server.bootstrap.logging.initialization>true</org.ldp4j.server.bootstrap.logging.initialization-->
+						<!-- org.ldp4j.server.bootstrap.logging.shutdown>true</org.ldp4j.server.bootstrap.logging.shutdown -->
+						<!-- org.ops4j.pax.url.mvn.localRepository>${settings.localRepository}</org.ops4j.pax.url.mvn.localRepository -->
+						<!-- org.ops4j.pax.url.mvn.settings>${basedir}/target/test-classes/settings.xml</org.ops4j.pax.url.mvn.settings -->
+						<arquillian.launch>tomcat-cluster</arquillian.launch>
+					</systemPropertyVariables>
+					<groups>${failsafe.test.groups.includes}</groups>
+					<excludedGroups>${failsafe.test.groups.excludes}</excludedGroups>
+					<testNGArtifactName>none:none</testNGArtifactName>
+				</configuration>
+<!-- 
+				<executions>
+					<execution>
+						<id>testng</id>
+						<phase>integration-test</phase>
+						<goals>
+							<goal>integration-test</goal>
+						</goals>
+						<configuration>
+							<junitArtifactName>none:none</junitArtifactName>
+							<testNGArtifactName>org.testng:testng</testNGArtifactName>
+							<suiteXmlFiles>
+								<file>${basedir}${file.separator}src${file.separator}test${file.separator}resources${file.separator}testng.xml</file>
+							</suiteXmlFiles>
+						</configuration>
+					</execution>
+				</executions>
+ -->
+			</plugin>
+		</plugins>
+		<pluginManagement>
+			<plugins>
+				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<plugin>
+					<groupId>org.eclipse.m2e</groupId>
+					<artifactId>lifecycle-mapping</artifactId>
+					<version>1.0.0</version>
+					<configuration>
+						<lifecycleMappingMetadata>
+							<pluginExecutions>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>
+											org.codehaus.groovy.maven
+										</groupId>
+										<artifactId>
+											gmaven-plugin
+										</artifactId>
+										<versionRange>
+											[1.0,)
+										</versionRange>
+										<goals>
+											<goal>execute</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+							</pluginExecutions>
+						</lifecycleMappingMetadata>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+	</build>
+
+</project>

@@ -117,12 +117,12 @@ class CoreLDPContainer implements ILDPContainer {
 		}
 	}
 
-	private Response sendRequest(Format format, boolean exclude_members, boolean exclude_member_properties) throws LDPContainerException {
+	private Response sendRequest(Format format, boolean excludeMembers, boolean excludeMemberProperties) throws LDPContainerException {
 		if(format==null) {
 			throw new IllegalArgumentException("Object 'format' cannot be null");
 		}
 		try {
-			Response response=serviceClient.getResource(format.getMime(), !exclude_members, !exclude_member_properties);
+			Response response=serviceClient.getResource(format.getMime(), !excludeMembers, !excludeMemberProperties);
 			response.bufferEntity();
 			logResponse(response);
 			return response;

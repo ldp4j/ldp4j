@@ -68,4 +68,14 @@
 		</dependencies>
 	</dependencyManagement>
 	
+	<profiles>
+		<profile>
+			<id>experimental</id>
+			<modules>
+				<module>application</module>
+				<module>command</module>
+			</modules>
+		</profile>
+	</profiles>
+	
 </project>

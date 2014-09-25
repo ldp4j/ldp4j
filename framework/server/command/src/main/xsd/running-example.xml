@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      This file is part of the LDP4j Project:
+        http://www.ldp4j.org/
+
+      Center for Open Middleware
+        http://www.centeropenmiddleware.com/
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Copyright (C) 2014 Center for Open Middleware.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+                http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Artifact    : org.ldp4j.framework:ldp4j-server-command:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+
+-->
+<!DOCTYPE ldp-app [
+	<!ENTITY ex "http://www.ldp4j.org/vocabularies/example#">
+]>
+<tns:ldp-app 
+	xmlns:tns="http://www.ldp4j.org/schemas/deployment-descriptor/1.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" 
+	xmlns:ex="http://www.ldp4j.org/vocabularies/example#"
+	xsi:schemaLocation="
+		http://www.ldp4j.org/schemas/deployment-descriptor/1.0
+		http://www.ldp4j.org/schemas/deployment-descriptor/1.0/ldp4j-deployment-descriptor.xsd
+	">
+	<tns:templates>
+		<tns:resource tns:id="personTemplate" tns:class="org.ldp4j.examples.server.PersonResourceHandler">
+			<tns:name>Person Resource</tns:name>
+			<tns:description>A template for dealing with the persons used by the example application</tns:description>
+			<tns:attached-resource path="address" ref="addressTemplate" predicate="ex:address"/>
+			<tns:attached-resource path="books" ref="bookContainerTemplate"/>
+		</tns:resource>
+		<tns:resource tns:id="addressTemplate" tns:class="org.ldp4j.examples.server.AddressResourceHandler">
+			<tns:name>Address Resource</tns:name>
+			<tns:description>A template for dealing with the addresses used by the example application</tns:description>
+		</tns:resource>
+		<tns:resource tns:id="bookTemplate" tns:class="org.ldp4j.examples.server.BookResourceHandler">
+			<tns:name>Book Resource</tns:name>
+			<tns:description>A template for dealing with the books used by the example application</tns:description>
+			<tns:attached-resource path="authors" ref="personContainerTemplate"/>
+		</tns:resource>
+		<tns:container tns:id="bookTemplate" tns:class="org.ldp4j.examples.server.BookContainerResourceHandler">
+			<tns:contained-resource ref="bookTemplate"/>
+			<tns:membership-predicate>http://www.ldp4j.org/vocabularies/example#hasBook</tns:membership-predicate>
+			<tns:membership-relation>http://www.w3.org/ns/ldp#hasMemberRelation</tns:membership-relation>
+		</tns:container>
+		<tns:container tns:id="bookContainerTemplate" tns:class="org.ldp4j.examples.server.BookContainerResourceHandler">
+			<tns:contained-resource ref="bookTemplate"/>
+			<tns:membership-predicate>http://www.ldp4j.org/vocabularies/example#hasBook</tns:membership-predicate>
+			<tns:membership-relation>http://www.w3.org/ns/ldp#hasMemberRelation</tns:membership-relation>
+		</tns:container>
+		<tns:container tns:id="personContainerTemplate" tns:class="org.ldp4j.examples.server.PersonContainerResourceHandler">
+			<tns:contained-resource ref="personTemplate"/>
+		</tns:container>
+	</tns:templates>
+	<tns:endpoints>
+		<tns:endpoint tns:id="rootPersonContainer" base="persons">
+			<tns:target-name>default</tns:target-name>
+			<tns:target-template ref="personContainerTemplate"/>
+		</tns:endpoint>
+		<tns:endpoint tns:id="repeatedName" base="repeated">
+			<tns:target-name>default</tns:target-name>
+			<tns:target-template ref="personContainerTemplate"/>
+		</tns:endpoint>
+		<tns:endpoint tns:id="r1" base="r1">
+			<tns:target-name>another</tns:target-name>
+			<tns:target-template ref="personContainerTemplate"/>
+		</tns:endpoint>
+		<tns:endpoint tns:id="r2" base="r2">
+			<tns:target-name>another</tns:target-name>
+			<tns:target-template ref="personContainerTemplate"/>
+		</tns:endpoint>
+		<tns:endpoint tns:id="r3" base="r3">
+			<tns:target-name>another</tns:target-name>
+			<tns:target-template ref="personContainerTemplate"/>
+		</tns:endpoint>
+	</tns:endpoints>
+</tns:ldp-app>

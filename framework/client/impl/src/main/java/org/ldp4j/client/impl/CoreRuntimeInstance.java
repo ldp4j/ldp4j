@@ -27,8 +27,6 @@
 package org.ldp4j.client.impl;
 
 import java.io.InputStream;
-import java.lang.reflect.Type;
-import java.lang.reflect.TypeVariable;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -58,6 +56,10 @@ public final class CoreRuntimeInstance extends RuntimeInstance {
 	// TODO: Make discoverable & configurable
 	private static final IRemoteLDPProvider PROVIDER=new CXFRemoteLDPProvider();
 	
+	private final Map<Class<?>, Collection<ISourceTypeAdapter<?>>> registry=new HashMap<Class<?>, Collection<ISourceTypeAdapter<?>>>();
+
+	private final ReadWriteLock registryLock=new ReentrantReadWriteLock();
+
 	public CoreRuntimeInstance() {
 		LOGGER.info("Starting Core LDP Client API Implementation");
 		registerSourceTypeAdapters(CharSequence.class, new CharSequenceSourceTypeAdapter());
@@ -67,82 +69,35 @@ public final class CoreRuntimeInstance extends RuntimeInstance {
 	
 	@Override
 	public ILDPContainer createContainer(URL target) {
-		if(target==null) {
-			throw new IllegalArgumentException("Object 'target' cannot be null");
-		}
+		assertTargetNotNull(target);
 		return new CoreLDPContainer(PROVIDER.createContainerProxy(target));
 	}
 
 	@Override
 	public ILDPResource createResource(URL target) {
-		if(target==null) {
-			throw new IllegalArgumentException("Object 'target' cannot be null");
-		}
+		assertTargetNotNull(target);
 		return new CoreLDPResource(PROVIDER.createResourceProxy(target));
 	}
 
 	@Override
 	public <S, T> ITypeAdapter<S, T> createTypeAdapter(Class<? extends S> sourceClass, Class<? extends T> targetClass) throws UnsupportedSourceException, UnsupportedTargetException {
 		Collection<ISourceTypeAdapter<?>> sourceTypeAdapters = getSourceTypeAdapters(sourceClass);
-		if(sourceTypeAdapters.isEmpty()) {
-			throw new UnsupportedSourceException("Source type '"+sourceClass.getCanonicalName()+"' is not supported yet");
-		}
-	
-		ITypeAdapter<S, T> result=null;
 		for(ISourceTypeAdapter<?> sta:sourceTypeAdapters) {
-			if(sta.supportsTarget(targetClass)) {
-				try {
-					ITypeAdapter<?, ?> adapter = sta.createTypeAdapter(targetClass);
-					// TODO This has to be fixed, maybe using a third party utility like Reflections
-//					validateTypeAdapter(sourceClass,targetClass,adapter);
-					@SuppressWarnings("unchecked")
-					ITypeAdapter<S, T> tmp = (ITypeAdapter<S, T>) adapter;
-					result=tmp;
-					break;
-				} catch (UnsupportedTargetException e) {
-					if(LOGGER.isErrorEnabled()) {
-						LOGGER.warn("We've already checked that the source type adapter supports the target class. Full stacktrace follows",e);
-					}
-					throw new AssertionError("We've already checked that the source type adapter supports the target class");
-				}
+			ITypeAdapter<S, T> result=tryCreateTypeAdapter(targetClass, sta);
+			if(result!=null) {
+				return result;
 			}
 		}
-	
-		if(result==null) {
-			throw new UnsupportedTargetException("No source type adapter for source class '"+sourceClass.getCanonicalName()+"' supports target class '"+targetClass.getCanonicalName()+"'");
-		}
-	
-		return result;
+		throw new UnsupportedTargetException("No source type adapter for source class '"+sourceClass.getCanonicalName()+"' supports target class '"+targetClass.getCanonicalName()+"'");
 	}
 
-	private final Map<Class<?>, Collection<ISourceTypeAdapter<?>>> registry=new HashMap<Class<?>, Collection<ISourceTypeAdapter<?>>>();
-	private final ReadWriteLock registryLock=new ReentrantReadWriteLock();
-	
-	Collection<ISourceTypeAdapter<?>> getSourceTypeAdapters(Class<?> sourceClass) {
-		registryLock.readLock().lock();
-		try {
-			LOGGER.debug("Retrieving  source type adapter for source class '"+sourceClass.getCanonicalName()+"'...");
-			Collection<ISourceTypeAdapter<?>> result = registry.get(sourceClass);
-			if(result==null) {
-				LOGGER.debug("No straight forwad support for source class '"+sourceClass.getCanonicalName()+"' is available. Checking for support by compatible classes...");
-				// No straight forward support, maybe indirect support
-				result=new ArrayList<ISourceTypeAdapter<?>>();
-				for(Entry<Class<?>, Collection<ISourceTypeAdapter<?>>> entry:registry.entrySet()) {
-					LOGGER.trace("Checking supported source class '"+entry.getKey().getCanonicalName()+"'...");
-					if(entry.getKey().isAssignableFrom(sourceClass)) {
-						LOGGER.debug("Found compatuble supported source class '"+entry.getKey().getCanonicalName()+"'...");
-						result.addAll(entry.getValue());
-					}
-				}
-			}
-			LOGGER.debug("Following source type adapters are available for source class '"+sourceClass.getCanonicalName()+"': "+result);
-			return Collections.unmodifiableCollection(result);
-		} finally {
-			registryLock.readLock().unlock();
+	private void assertTargetNotNull(URL target) {
+		if(target==null) {
+			throw new IllegalArgumentException("Object 'target' cannot be null");
 		}
 	}
 
-	<S> void registerSourceTypeAdapters(Class<? extends S> sourceClass, ISourceTypeAdapter<S> sta) {
+	private <S> void registerSourceTypeAdapters(Class<? extends S> sourceClass, ISourceTypeAdapter<S> sta) {
 		registryLock.writeLock().lock();
 		try {
 			boolean isSourceClassRegistered=false;
@@ -151,67 +106,70 @@ public final class CoreRuntimeInstance extends RuntimeInstance {
 				if(key.equals(sourceClass)) {
 					entry.getValue().add(sta);
 					isSourceClassRegistered=true;
-					LOGGER.debug("Registered additional source type adapter '"+sta.getClass().getCanonicalName()+"' for source class '"+key.getCanonicalName()+"'");
+					LOGGER.debug("Registered additional source type adapter '{}' for source class '{}'",sta.getClass().getCanonicalName(),key.getCanonicalName());
 				} else if(entry.getKey().isAssignableFrom(sourceClass)) {
 					entry.getValue().add(sta);
-					LOGGER.debug("Registered additional source type adapter '"+sta.getClass().getCanonicalName()+"' for compatible source class '"+key.getCanonicalName()+"'");
+					LOGGER.debug("Registered additional source type adapter '{}' for compatible source class '{}'",sta.getClass().getCanonicalName(),key.getCanonicalName());
 				}
 			}
 			if(!isSourceClassRegistered) {
 				Collection<ISourceTypeAdapter<?>> collection=new ArrayList<ISourceTypeAdapter<?>>();
 				collection.add(sta);
-				LOGGER.debug("Registered source type adapter '"+sta.getClass().getCanonicalName()+"' for source class '"+sourceClass.getCanonicalName()+"'");
+				LOGGER.debug("Registered source type adapter '{}' for source class '{}'",sta.getClass().getCanonicalName(),sourceClass.getCanonicalName());
 				registry.put(sourceClass, collection);
 			}
 		} finally {
 			registryLock.writeLock().unlock();
 		}
 	}
+
+	@SuppressWarnings("unchecked")
+	// TODO This has to be fixed, maybe using a third party utility like Reflections
+	private <S, T> ITypeAdapter<S, T> tryCreateTypeAdapter(Class<? extends T> targetClass, ISourceTypeAdapter<?> sta) {
+		if(!sta.supportsTarget(targetClass)) {
+			return null;
+		}
+		try {
+			return (ITypeAdapter<S, T>) sta.createTypeAdapter(targetClass);
+		} catch (UnsupportedTargetException e) {
+			String errorMessage = "We've already checked that the source type adapter supports the target class";
+			if(LOGGER.isErrorEnabled()) {
+				LOGGER.warn(errorMessage.concat(". Full stacktrace follows"),e);
+			}
+			throw new AssertionError(errorMessage);
+		}
+	}
+
+	private Collection<ISourceTypeAdapter<?>> getSourceTypeAdapters(Class<?> sourceClass) throws UnsupportedSourceException {
+		registryLock.readLock().lock();
+		try {
+			LOGGER.debug("Retrieving  source type adapter for source class '"+sourceClass.getCanonicalName()+"'...");
+			Collection<ISourceTypeAdapter<?>> result = registry.get(sourceClass);
+			if(result==null) {
+				// No straight forward support, maybe indirect support
+				LOGGER.debug("No straight forwad support for source class '"+sourceClass.getCanonicalName()+"' is available. Checking for support by compatible classes...");
+				result=findCompatibleSourceTypeAdapters(sourceClass);
+			}
+			if(result.isEmpty()) {
+				throw new UnsupportedSourceException("Source type '"+sourceClass.getCanonicalName()+"' is not supported yet");
+			}
+			LOGGER.debug("Following source type adapters are available for source class '"+sourceClass.getCanonicalName()+"': "+result);
+			return Collections.unmodifiableCollection(result);
+		} finally {
+			registryLock.readLock().unlock();
+		}
+	}
+
+	private Collection<ISourceTypeAdapter<?>> findCompatibleSourceTypeAdapters(Class<?> sourceClass) {
+		Collection<ISourceTypeAdapter<?>> result=new ArrayList<ISourceTypeAdapter<?>>();
+		for(Entry<Class<?>, Collection<ISourceTypeAdapter<?>>> entry:registry.entrySet()) {
+			LOGGER.trace("Checking supported source class '"+entry.getKey().getCanonicalName()+"'...");
+			if(entry.getKey().isAssignableFrom(sourceClass)) {
+				LOGGER.debug("Found compatible supported source class '"+entry.getKey().getCanonicalName()+"'...");
+				result.addAll(entry.getValue());
+			}
+		}
+		return result;
+	}
 	
-	protected final void validateTypeAdapter(
-			Class<?> sourceClass,
-			Class<?> targetClass,
-			ITypeAdapter<?, ?> adapter) throws AssertionError {
-		TypeVariable<?>[] typeParameters = checkParameterLength(adapter.getClass());
-		checkAssignableParameter(adapter.getClass(), typeParameters[0], sourceClass);
-		checkCastableParameter(adapter.getClass(), typeParameters[1], targetClass);
-	}
-
-	private TypeVariable<?>[] checkParameterLength(Class<?> clazz) throws AssertionError {
-		TypeVariable<?>[] typeParameters = clazz.getTypeParameters();
-		int length=2;
-		if(typeParameters.length!=length) {
-			throw new AssertionError("Unexpected number of type parameters for an instance of class "+clazz.getName()+" (found "+typeParameters.length+" instead of "+length+")");
-		}
-		return typeParameters;
-	}
-
-	private void checkAssignableParameter(
-			Class<?> adapterClass,
-			TypeVariable<?> typeVariable, 
-			Class<?> sourceClass) throws AssertionError {
-		Type[] bounds = typeVariable.getBounds();
-		if(bounds.length!=1) {
-			throw new AssertionError("Unexpected number bounds for type parameter '"+typeVariable.getName()+"' of an instance of class "+adapterClass.getName()+" (found "+bounds.length+" instead of 1)");
-		}
-		Class<? extends Type> parameterClass = bounds[0].getClass();
-		if(parameterClass.isAssignableFrom(sourceClass)) {
-			throw new AssertionError("Invalid type parameter '"+typeVariable.getName()+"' bound for an instance of class "+adapterClass.getName()+" ('"+parameterClass.getName()+"' cannot be assigned from '"+sourceClass.getName()+"')");
-		}
-	}
-
-	private void checkCastableParameter(
-			Class<?> adapterClass,
-			TypeVariable<?> typeVariable, 
-			Class<?> targetClass) throws AssertionError {
-		Type[] bounds = typeVariable.getBounds();
-		if(bounds.length!=1) {
-			throw new AssertionError("Unexpected number bounds for type parameter '"+typeVariable.getName()+"' of an instance of class "+adapterClass.getName()+" (found "+bounds.length+" instead of 1)");
-		}
-		Class<? extends Type> parameterClass = bounds[0].getClass();
-		if(targetClass.isAssignableFrom(parameterClass)) {
-			throw new AssertionError("Invalid type parameter '"+typeVariable.getName()+"' bound for an instance of class "+adapterClass.getName()+" ('"+parameterClass.getName()+"' cannot be casted from '"+targetClass.getName()+"')");
-		}
-	}
-
 }

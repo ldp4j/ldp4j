@@ -1,0 +1,146 @@
+#
+# #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+#   This file is part of the LDP4j Project:
+#     http://www.ldp4j.org/
+#
+#   Center for Open Middleware
+#     http://www.centeropenmiddleware.com/
+# #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+#   Copyright (C) 2014 Center for Open Middleware.
+# #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#             http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+# #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+#   Artifact    : org.ldp4j.commons.rmf:integration-sesame:1.0.0-SNAPSHOT
+#   Bundle      : integration-sesame-1.0.0-SNAPSHOT.jar
+# #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+#
+
+@prefix ex : <http://delicias.dia.fi.upm.es/alm-istack/example#> .
+@prefix rdf : <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix svc : <http://delicias.dia.fi.upm.es/alm-istack/transactions/services#> .
+@prefix tx : <http://delicias.dia.fi.upm.es/alm-istack/transactions/transactions#> .
+
+ex:lock
+	rdf:type
+		svc:Service,
+		tx:ExclusiveLock,
+		tx:Lock ;
+	svc:hasCapabilities [
+		rdf:type svc:Capabilities, tx:LockCapabilities ;
+		svc:hasControl
+			[
+				rdf:type svc:HypermediaControl ;
+				svc:link <http://delicias.dia.fi.upm.es/alm-istack/example/rm> ;
+				svc:rel tx:Undo
+			],
+			[
+				rdf:type svc:HypermediaControl ;
+				svc:link <http://delicias.dia.fi.upm.es/alm-istack/example/rm> ;
+				svc:rel tx:Release
+			],
+			[
+				rdf:type svc:HypermediaControl ;
+				svc:link <http://delicias.dia.fi.upm.es/alm-istack/example/rm> ;
+				svc:rel tx:Prepare
+			],
+			[
+				rdf:type svc:HypermediaControl ;
+				svc:link <http://delicias.dia.fi.upm.es/alm-istack/example/rm> ;
+				svc:rel tx:Confirm
+			],
+			[
+				rdf:type svc:HypermediaControl ;
+				svc:link <http://delicias.dia.fi.upm.es/alm-istack/example/rm> ;
+				svc:rel tx:Cancel
+			]
+	] ;
+	tx:access tx:Exclusive ;
+	tx:guards ex:resource1 ;
+	tx:hasProvisionalResource ex:ppr1 ;
+	tx:hasStatus tx:Ready ;
+	tx:hasWorkingCopy ex:ppr1 .
+
+ex:ppr1
+	rdf:type tx:PersistentProvisionalResource, tx:ProvisionalResource ;
+	tx:associatedTo ex:resource1 ;
+	tx:isWorkingCopyOf ex:resource1 ;
+	tx:ownedBy ex:lock ;
+	tx:state tx:Persistent ;
+	tx:uid "abcd1234" .
+
+ex:resource1
+	rdf:type tx:ManageableResource, tx:TransactionalResource ;
+	tx:controlledBy ex:transactionManager ;
+	tx:managedBy ex:resourceManager .
+
+ex:resource2
+	rdf:type tx:ManageableResource, tx:TransactionalResource ;
+	tx:controlledBy ex:transactionManager ;
+	tx:managedBy ex:resourceManager .
+
+ex:resourceManager
+	rdf:type tx:ResourceManager .
+
+ex:t1
+	rdf:type
+		svc:Service,
+		tx:ActiveTransaction,
+		tx:OngoingTransaction,
+		tx:Transaction ;
+	svc:hasCapabilities [
+		rdf:type svc:Capabilities, tx:TransactionCapabilities ;
+		svc:hasControl
+			[
+				rdf:type svc:HypermediaControl ;
+				svc:link <http://delicias.dia.fi.upm.es/alm-istack/example/tm> ;
+				svc:rel tx:Enroll
+			],
+			[
+				rdf:type svc:HypermediaControl ;
+				svc:link <http://delicias.dia.fi.upm.es/alm-istack/example/tm> ;
+				svc:rel tx:Commit
+			],
+			[
+				rdf:type svc:HypermediaControl ;
+				svc:link <http://delicias.dia.fi.upm.es/alm-istack/example/tm> ;
+				svc:rel tx:Rollback
+			],
+			[
+				rdf:type svc:HypermediaControl ;
+				svc:link <http://delicias.dia.fi.upm.es/alm-istack/example/tm> ;
+				svc:rel tx:Notify
+			]
+	] ;
+	tx:hasStatus tx:Active ;
+	tx:involves ex:resource1 ;
+	tx:uses ex:ppr1 ;
+	tx:writes ex:resource1 .
+
+ex:transactionManager
+	rdf:type tx:TransactionManager .
+
+<http://delicias.dia.fi.upm.es/alm-istack/example/rm>
+	rdf:type svc:Controller .
+
+<http://delicias.dia.fi.upm.es/alm-istack/example/tm>
+	rdf:type svc:Controller .
+
+_:8f57d8eeffbf45f0addfe6d6ed5eb0b3enroll
+	rdf:type
+		svc:Command,
+		tx:EnrollCommand,
+		tx:TransactionCommand,
+		tx:TransactionLifecycleCommand ;
+	tx:exclusiveResource ex:resource1 ;
+	tx:operation tx:Enroll ;
+	tx:resource ex:resource1 .

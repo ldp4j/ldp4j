@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project>
+	<Folder FolderName="XML Files" ExtStr="xml;cml;math;rdf;smil;svg;wml">
+		<File FilePath="running-example.xml" HomeFolder="Yes"/>
+	</Folder>
+	<Folder FolderName="XSL Files" ExtStr="xsl;xslt">
+		<File FilePath="deployment-descriptor-validator.xslt" HomeFolder="Yes"/>
+	</Folder>
+	<Folder FolderName="XQuery Files" ExtStr="xq;xql;xquery"/>
+	<Folder FolderName="HTML Files" ExtStr="html;htm;xhtml;asp"/>
+	<Folder FolderName="DTD/Schemas" ExtStr="dtd;dcd;xdr;biz;xsd">
+		<File FilePath="D:\iStack\workspaces\git\ldp4j\framework\server\command\src\main\resources\org\ldp4j\server\commands\ldp4j-command-api.xsd" HomeFolder="Yes"/>
+		<File FilePath="D:\iStack\workspaces\git\ldp4j\framework\server\command\src\main\resources\org\ldp4j\server\deployment\ldp4j-deployment-descriptor.xsd" HomeFolder="Yes"/>
+	</Folder>
+	<Folder FolderName="Entities" ExtStr="ent"/>
+</Project>
