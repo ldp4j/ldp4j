@@ -47,6 +47,7 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.ldp4j.application.impl.InMemoryRuntimeInstance;
 import org.ldp4j.server.api.impl.RDFXMLMediaTypeProvider;
 import org.ldp4j.server.api.impl.RuntimeInstanceImpl;
 import org.ldp4j.server.api.impl.TurtleMediaTypeProvider;
@@ -69,8 +70,11 @@ public final class IntegrationTestHelper {
 
 	private URL url;
 
+	private boolean legacy;
+
 	public IntegrationTestHelper(Logger logger) {
-		this.logger = logger;
+		this.logger=logger;
+		this.legacy=true;
 		this.httpclient = HttpClients.createDefault();
 		this.commandUtil = CommandDescriptionUtil.newInstance();
 	}
@@ -79,12 +83,20 @@ public final class IntegrationTestHelper {
 		this.url = url;
 	}
 	
+	public void setLegacy(boolean legacy) {
+		this.legacy = legacy;
+	}
+
 	private URI resolve(String... path) throws URISyntaxException {
 		return url.toURI().resolve(Joiner.on("/").join(Arrays.asList(path)));
 	}
 
 	private URI resourceLocation(String path) throws URISyntaxException {
-		return resolve("ldp4j/api",path);
+		String subpath="ldp4j/api";
+		if(this.legacy) {
+			subpath="ldp4j/legacy";
+		}
+		return resolve(subpath,path);
 	}
 
 
@@ -161,16 +173,19 @@ public final class IntegrationTestHelper {
 		JavaArchive coreArchive= 
 			ShrinkWrap.
 				create(JavaArchive.class,"ldp4j-server-command.jar").
-				addPackages(true, "org.ldp4j.model.vocabulary").
-				addPackages(true, "org.ldp4j.sdk").
+				addPackages(true, "org.ldp4j.application").
 				addPackages(true, "org.ldp4j.server.api").
-				addPackages(true, "org.ldp4j.server.blueprints").
+				addPackages(true, "org.ldp4j.server.blueprint").
 				addPackages(true, "org.ldp4j.server.commands").
 				addPackages(true, "org.ldp4j.server.deployment").
+				addPackages(true, "org.ldp4j.server.frontend").
 				addPackages(true, "org.ldp4j.server.resources").
 				addPackages(true, "org.ldp4j.server.templates").
 				addPackages(true, "org.ldp4j.server.xml").
+				addAsResource(ClassLoader.getSystemResource("web-fragment.xml"), "META-INF/web-fragment.xml").
+				addAsResource(ClassLoader.getSystemResource("beans.xml"), "beans.xml").
 				addAsServiceProvider(RuntimeInstance.class, RuntimeInstanceImpl.class).
+				addAsServiceProvider(org.ldp4j.application.spi.RuntimeInstance.class, InMemoryRuntimeInstance.class).
 				addAsServiceProvider(IMediaTypeProvider.class,TurtleMediaTypeProvider.class,RDFXMLMediaTypeProvider.class);
 		return coreArchive;
 	}

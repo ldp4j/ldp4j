@@ -70,16 +70,23 @@
 	</bean>
 
 	<bean 
-		id="frontend"
+		id="legacy"
 		scope="singleton"
 		class="org.ldp4j.server.frontend.JAXRSFrontend">
 		<constructor-arg index="0" ref="endpointRegistry" />
 		<constructor-arg index="1" ref="commandService" />
 	</bean>
 
+	<bean 
+		id="frontend"
+		scope="singleton"
+		class="org.ldp4j.server.frontend.ServerFrontend">
+	</bean>
+
 	<jaxrs:server id="api" address="/ldp4j">
 		<jaxrs:serviceBeans>
-			<ref bean="frontend" />
+			<ref bean="legacy"/>
+			<ref bean="frontend"/>
 		</jaxrs:serviceBeans>
 		<jaxrs:inInterceptors>
 			<ref bean="logInInterceptor" />

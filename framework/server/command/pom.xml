@@ -143,6 +143,12 @@
 			<artifactId>ldp4j-server-application</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-server-application</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+		</dependency>
 
 		<dependency>
 			<groupId>org.ldp4j.commons.rmf</groupId>
@@ -177,11 +183,18 @@
 			<artifactId>jaxb2-basics-runtime</artifactId>
 		</dependency>
 
-		<!-- TODO: Replace by a standard one -->
+		<!-- CXF -->
 		<dependency>
-			<groupId>org.apache.openejb</groupId>
-			<artifactId>javaee-api</artifactId>
-			<scope>provided</scope>
+			<groupId>org.apache.cxf</groupId>
+			<artifactId>cxf-bundle-jaxrs</artifactId>
+			<version>${cxf.version}</version>
+		</dependency>
+
+		<!-- Spring (CXF required)  -->
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>${spring.version}</version>
 		</dependency>
 
 		<dependency>
@@ -334,27 +347,6 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!-- CXF -->
-		<dependency>
-			<groupId>org.apache.cxf</groupId>
-			<artifactId>cxf-bundle-jaxrs</artifactId>
-			<version>${cxf.version}</version>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- Spring (CXF required)  -->
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-context</artifactId>
-			<version>${spring.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework</groupId>
-			<artifactId>spring-web</artifactId>
-			<version>${spring.version}</version>
-			<scope>test</scope>
-		</dependency>
 	</dependencies>
 	
 	<build>

@@ -24,22 +24,26 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.endpoint;
 
-import org.ldp4j.application.resource.Container;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.resource.ResourceId;
+public class EndpointDeletedException extends Exception {
 
-public interface ResourceRepository {
+	private static final long serialVersionUID = -1614436905619286840L;
 
-	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);
+	public EndpointDeletedException() {
+		super();
+	}
 
-	Resource resourceOfId(ResourceId id);
+	public EndpointDeletedException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-	Container containerOfId(ResourceId id);
+	public EndpointDeletedException(String message) {
+		super(message);
+	}
 
-	void add(Resource resource);
-
-	void remove(Resource resource);
+	public EndpointDeletedException(Throwable cause) {
+		super(cause);
+	}
 
 }

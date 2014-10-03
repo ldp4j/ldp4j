@@ -20,26 +20,22 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-application:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-command:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.server.frontend;
 
-import org.ldp4j.application.resource.Container;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.resource.ResourceId;
+import javax.ws.rs.core.Response;
 
-public interface ResourceRepository {
+import org.ldp4j.application.endpoint.Endpoint;
 
-	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);
+public interface EndpointController {
+	
+	Endpoint endpoint();
+	
+	Response getResource(OperationContext context);
 
-	Resource resourceOfId(ResourceId id);
-
-	Container containerOfId(ResourceId id);
-
-	void add(Resource resource);
-
-	void remove(Resource resource);
-
+	Response createResource(OperationContext context);
+	
 }

@@ -27,20 +27,48 @@
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
-<web-app
+<web-fragment
 	metadata-complete="false"
 	version="3.0"
 	xmlns="http://java.sun.com/xml/ns/javaee"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
 		http://java.sun.com/xml/ns/javaee 
-		http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
+		http://java.sun.com/xml/ns/javaee/web_fragment_3_0.xsd">
 
-	<display-name>LDP Server Core Integration Test</display-name>
+	<display-name>LDP4j Server</display-name>
 
 	<context-param>
-		<param-name>ldp4jTargetApplication</param-name>
-		<param-value>org.ldp4j.server.example.MyApplication</param-value>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>classpath:beans.xml</param-value>
 	</context-param>
 
-</web-app>
+	<listener>
+		<listener-class>
+			org.springframework.web.context.ContextLoaderListener
+		</listener-class>
+	</listener>
+
+	<servlet>
+		<display-name>CXF Servlet</display-name>
+		<servlet-name>CXFServlet</servlet-name>
+		<servlet-class>
+			org.apache.cxf.transport.servlet.CXFServlet
+		</servlet-class>
+		<init-param>
+			<param-name>static-welcome-file</param-name>
+			<param-value>/index.html</param-value>
+		</init-param>
+		<init-param>
+			<param-name>static-resources-list</param-name>
+			<param-value>/index.html</param-value>
+		</init-param> 
+		<load-on-startup>1</load-on-startup>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>CXFServlet</servlet-name>
+		<url-pattern>/*</url-pattern>
+	</servlet-mapping>
+
+</web-fragment>

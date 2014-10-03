@@ -45,9 +45,37 @@ import org.ldp4j.application.template.AttachedTemplate;
 import org.ldp4j.application.template.ContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateManagementService;
+import org.ldp4j.application.util.ListenerManager;
+import org.ldp4j.application.util.Notification;
 
 public final class EndpointManagementService implements Service {
 	
+	private static final class EndpointCreationNotification implements Notification<EndpointLifecycleListener> {
+		private final Endpoint endpoint;
+
+		private EndpointCreationNotification(Endpoint endpoint) {
+			this.endpoint = endpoint;
+		}
+
+		@Override
+		public void propagate(EndpointLifecycleListener listener) {
+			listener.endpointCreated(endpoint);
+		}
+	}
+
+	private static final class EndpointDeletionNotification implements Notification<EndpointLifecycleListener> {
+		private final Endpoint endpoint;
+
+		private EndpointDeletionNotification(Endpoint endpoint) {
+			this.endpoint = endpoint;
+		}
+
+		@Override
+		public void propagate(EndpointLifecycleListener listener) {
+			listener.endpointDeleted(endpoint);
+		}
+	}
+
 	private static final class EndpointManagementServiceBuilder extends ServiceBuilder<EndpointManagementService> {
 		
 		private EndpointManagementServiceBuilder() {
@@ -84,12 +112,14 @@ public final class EndpointManagementService implements Service {
 	private final EndpointFactoryService factoryService;
 	private final TemplateManagementService templateManagementService;
 	private final ResourceRepository resourceRepository;
+	private final ListenerManager<EndpointLifecycleListener> listenerManager;
 
 	private EndpointManagementService(EndpointRepository endpointRepository, EndpointFactoryService endpointFactoryService, ResourceRepository resourceRepository, TemplateManagementService templateManagementService) {
 		this.endpointRepository = endpointRepository;
 		this.factoryService = endpointFactoryService;
 		this.resourceRepository = resourceRepository;
 		this.templateManagementService = templateManagementService;
+		this.listenerManager=ListenerManager.<EndpointLifecycleListener>newInstance();
 	}
 
 	private String calculateResourcePath(Resource resource) throws EndpointNotFoundException {
@@ -142,6 +172,14 @@ public final class EndpointManagementService implements Service {
 		return null;
 	}
 
+	public void registerEndpointLifecycleListener(EndpointLifecycleListener listener) {
+		this.listenerManager.registerListener(listener);
+	}
+	
+	public void deregisterEndpointLifecycleListener(EndpointLifecycleListener listener) {
+		this.listenerManager.deregisterListener(listener);
+	}
+	
 	public Endpoint getResourceEndpoint(ResourceId resourceId) throws EndpointNotFoundException {
 		checkNotNull(resourceId,"Resource identifier cannot be null");
 		Endpoint endpoint = endpointRepository.endpointOfResource(resourceId);
@@ -151,14 +189,20 @@ public final class EndpointManagementService implements Service {
 		return endpoint;
 	}
 	
+	public Endpoint resolveEndpoint(String path) {
+		checkNotNull(path,"Path cannot be null");
+		return this.endpointRepository.endpointOfPath(path);
+	}
+	
 	public Endpoint createEndpointForResource(Resource resource, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
-		checkNotNull(resource,"ResourceSnapshot cannot be null");
+		checkNotNull(resource,"Resource cannot be null");
 		checkNotNull(entityTag,"Entity tag cannot be null");
 		checkNotNull(lastModified,"Last modified cannot be null");
 		try {
 			String basePath = calculateResourcePath(resource);
-			Endpoint newEndpoint = factoryService.createEndpoint(resource,basePath,entityTag,lastModified);
-			endpointRepository.add(newEndpoint);
+			final Endpoint newEndpoint = this.factoryService.createEndpoint(resource,basePath,entityTag,lastModified);
+			this.endpointRepository.add(newEndpoint);
+			this.listenerManager.notify(new EndpointCreationNotification(newEndpoint));
 			return newEndpoint;
 		} catch (EndpointNotFoundException e) {
 			throw new EndpointCreationException("Could not calculate path for resource '"+resource.id()+"'",e);
@@ -179,11 +223,12 @@ public final class EndpointManagementService implements Service {
 
 	public Endpoint deleteResourceEndpoint(Resource resource) throws EndpointNotFoundException {
 		checkNotNull(resource,"ResourceSnapshot cannot be null");
-		Endpoint endpoint = endpointRepository.endpointOfResource(resource.id());
+		Endpoint endpoint = this.endpointRepository.endpointOfResource(resource.id());
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resource.id());
 		}
-		endpointRepository.remove(endpoint);
+		this.endpointRepository.remove(endpoint);
+		this.listenerManager.notify(new EndpointDeletionNotification(endpoint));
 		return endpoint;
 	}
 	

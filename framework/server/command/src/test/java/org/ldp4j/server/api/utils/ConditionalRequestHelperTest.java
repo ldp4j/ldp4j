@@ -278,6 +278,24 @@ public class ConditionalRequestHelperTest {
 			
 		}
 
+		@Override
+		public String getHeaderString(String name) {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public Date getDate() {
+			// TODO Auto-generated method stub
+			return null;
+		}
+
+		@Override
+		public int getLength() {
+			// TODO Auto-generated method stub
+			return 0;
+		}
+
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ConditionalRequestHelperTest.class);

@@ -35,11 +35,11 @@ import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.spi.Service;
 import org.ldp4j.application.spi.ServiceBuilder;
-import org.ldp4j.application.ext.ResourceHandler;
 
-public class TemplateManagementService implements Service {
+public final class TemplateManagementService implements Service {
 
 	private static class TemplateManagementServiceBuilder extends ServiceBuilder<TemplateManagementService> {
 		
@@ -59,31 +59,54 @@ public class TemplateManagementService implements Service {
 	private volatile TemplateManager manager=null;
 	
 	private TemplateManagementService() {
-		
 	}
 	
+	@Deprecated
 	public void register(Class<?>... newClasses) throws TemplateRegistrationException {
 		lock.lock();
 		try {
 			if(registeredClasses.addAll(Arrays.asList(newClasses))) {
-				this.manager=TemplateManager.newInstance(this.registeredClasses);
+				this.manager=TemplateManager.builder().withHandlerClasses(this.registeredClasses).build();
 			}
-		} catch (TemplateLibraryLoadingException e) {
+		} catch (InvalidTemplateManagerConfigurationException e) {
 			throw new TemplateRegistrationException(e);
 		} finally {
 			lock.unlock();
 		}
 	}
 	
+	public void setTemplateManager(TemplateManager manager) {
+		if(manager==null) {
+			return;
+		}
+		lock.lock();
+		try {
+			this.manager=manager;
+		} finally {
+			lock.unlock();
+		}
+	}
+
 	public ResourceTemplate findTemplateById(String templateId) {
 		checkNotNull(templateId,"Template identifier cannot be null");
-		checkState(manager!=null,"No classes have been registered yet");
+		checkState(manager!=null,"Template Management Service has not been initialized yet");
 		return this.manager.getTemplate(templateId);
+	}
+
+	public <T extends ResourceTemplate> T findTemplateById(String templateId, Class<? extends T> templateClass) {
+		ResourceTemplate found = findTemplateById(templateId);
+		if(found==null) {
+			return null;
+		} else if(!templateClass.isInstance(found)) {
+			// TODO: Define a specialized runtime exception
+			throw new IllegalArgumentException("Cannot cast template '"+templateId+"' to '"+templateClass.getCanonicalName()+"' ("+found.getClass().getCanonicalName()+")");
+		}
+		return templateClass.cast(found);
 	}
 
 	public ResourceTemplate findTemplateByHandler(Class<? extends ResourceHandler> handlerClass) {
 		checkNotNull(handlerClass,"Resource handler cannot be null");
-		checkState(manager!=null,"No classes have been registered yet");
+		checkState(manager!=null,"Template Management Service has not been initialized yet");
 		return this.manager.getTemplate(handlerClass);
 	}
 	
@@ -98,17 +121,6 @@ public class TemplateManagementService implements Service {
 	
 	public static TemplateManagementService defaultService() {
 		return serviceBuilder().build();
-	}
-
-	public <T extends ResourceTemplate> T findTemplateById(String templateId, Class<? extends T> templateClass) {
-		ResourceTemplate found = findTemplateById(templateId);
-		if(found==null) {
-			return null;
-		} else if(!templateClass.isInstance(found)) {
-			// TODO: Define a specialized runtime exception
-			throw new IllegalArgumentException("Cannot cast template '"+templateId+"' to '"+templateClass.getCanonicalName()+"' ("+found.getClass().getCanonicalName()+")");
-		}
-		return templateClass.cast(found);
 	}
 
 }

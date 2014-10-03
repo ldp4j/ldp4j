@@ -45,7 +45,11 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
+import org.ldp4j.application.ApplicationContext;
+import org.ldp4j.application.lifecycle.ApplicationLifecycleListener;
+import org.ldp4j.application.lifecycle.ApplicationState;
 import org.ldp4j.server.api.Endpoint;
+import org.ldp4j.server.api.EndpointFactory;
 import org.ldp4j.server.api.EndpointRegistry;
 import org.ldp4j.server.commands.Command;
 import org.ldp4j.server.commands.CommandExecutionException;
@@ -61,15 +65,33 @@ public class JAXRSFrontend {
 	private static final Logger LOGGER=LoggerFactory.getLogger(JAXRSFrontend.class);
 	
 	private static final String ENDPOINT_PATH_PARAM = "path";
-	private static final String ENDPOINT_PATH = "/api/{path:.*}";
+	private static final String ENDPOINT_PATH = "/legacy/{"+ENDPOINT_PATH_PARAM+":.*}";
 
 	private final EndpointRegistry registry;
 
 	private final CommandProcessingService service;
 
+	protected ApplicationState state;
+
 	public JAXRSFrontend(EndpointRegistry registry, CommandProcessingService service) {
 		this.registry=registry;
 		this.service=service;
+		ApplicationContext.
+			currentContext().
+				registerApplicationLifecycleListener( 
+					new ApplicationLifecycleListener() {
+						@Override
+						public void applicationStateChanged(ApplicationState newState) {
+							JAXRSFrontend.this.state=newState;
+							LOGGER.debug("{} :: Application state changed to '{}'",this,newState);
+							if(ApplicationState.SHUTDOWN.equals(newState)) {
+								ApplicationContext.
+									currentContext().
+										deregisterApplicationLifecycleListener(this);
+							}
+						}
+					}
+			);
 	}
 	
 	private URI normalizePath(String path) {
@@ -83,7 +105,22 @@ public class JAXRSFrontend {
 	}
 
 	private Endpoint findEndpoint(String path) {
-		return registry.findEndpoint(normalizePath(path));
+		URI resourceUri = normalizePath(path);
+		Endpoint result=null;
+		switch(this.state) {
+		case AVAILABLE:
+			result=registry.findEndpoint(resourceUri);
+			break;
+		case SHUTDOWN:
+			result=EndpointFactory.unavailable(resourceUri);
+			break;
+		case UNAVAILABLE:
+			result=EndpointFactory.serverError(resourceUri);
+			break;
+		case UNDEFINED:
+			result=EndpointFactory.serverError(resourceUri);
+		}
+		return result;
 	}
 
 	@POST

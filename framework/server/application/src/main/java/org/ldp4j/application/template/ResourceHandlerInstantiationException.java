@@ -24,22 +24,26 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.template;
 
-import org.ldp4j.application.resource.Container;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.ext.ResourceHandler;
 
-public interface ResourceRepository {
+public class ResourceHandlerInstantiationException extends RuntimeException {
 
-	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8196721343454749249L;
 
-	Resource resourceOfId(ResourceId id);
+	private final Class<? extends ResourceHandler> handlerClass;
 
-	Container containerOfId(ResourceId id);
+	public ResourceHandlerInstantiationException(String message, Class<? extends ResourceHandler> handlerClass) {
+		super(message);
+		this.handlerClass = handlerClass;
+	}
 
-	void add(Resource resource);
-
-	void remove(Resource resource);
+	public Class<? extends ResourceHandler> getHandlerClass() {
+		return handlerClass;
+	}
 
 }

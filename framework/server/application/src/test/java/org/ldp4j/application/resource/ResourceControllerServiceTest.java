@@ -50,7 +50,7 @@ import org.ldp4j.application.example.BookHandler;
 import org.ldp4j.application.example.InMemoryContainerHandler.NameProvider;
 import org.ldp4j.application.example.PersonHandler;
 import org.ldp4j.application.ext.ResourceHandler;
-import org.ldp4j.application.impl.InMemoryApplication;
+import org.ldp4j.application.impl.InMemoryRuntimeInstance;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.template.TemplateManagementService;
 
@@ -62,10 +62,10 @@ public class ResourceControllerServiceTest {
 	private <T extends Resource> T publishResource(Class<? extends T> clazz, String templateId, Name<?> resourceName, String path) {
 		T resource=ResourceFactoryService.defaultFactory().createResource(templateId,resourceName,null,clazz);
 		RuntimeInstance.
-		getInstance().
-			getRepositoryRegistry().
-				getResourceRepository().
-					add(resource);
+			getInstance().
+				getRepositoryRegistry().
+					getResourceRepository().
+						add(resource);
 	
 		Endpoint endpoint=EndpointFactoryService.defaultFactory().createEndpoint(resource,path,new EntityTag(path),new Date());
 		RuntimeInstance.
@@ -118,7 +118,7 @@ public class ResourceControllerServiceTest {
 
 	@BeforeClass
 	public static void setUpBefore() throws Exception {
-		RuntimeInstance.setInstance(new InMemoryApplication());
+		RuntimeInstance.setInstance(new InMemoryRuntimeInstance());
 		RuntimeInstance.
 			getInstance().
 				getServiceRegistry().

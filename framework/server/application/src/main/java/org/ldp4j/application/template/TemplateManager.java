@@ -26,15 +26,20 @@
  */
 package org.ldp4j.application.template;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.List;
 
 import org.ldp4j.application.ext.ResourceHandler;
 
+import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.Lists;
+import com.google.common.collect.MutableClassToInstanceMap;
 
 public final class TemplateManager {
 
@@ -136,6 +141,7 @@ public final class TemplateManager {
 		return builder.build();
 	}
 
+	@Deprecated
 	public static TemplateManager newInstance(Collection<Class<?>> handlerClasses) throws TemplateLibraryLoadingException {
 		checkNotNull(handlerClasses,"Handler class collection cannot be null");
 		checkArgument(!handlerClasses.isEmpty(),"No handler classes specified");
@@ -144,8 +150,123 @@ public final class TemplateManager {
 		return new TemplateManager(library,handlers);
 	}
 
+	@Deprecated
 	public static TemplateManager newInstance(Class<?>... handlerClasses) throws TemplateLibraryLoadingException {
 		return newInstance(Arrays.asList(handlerClasses));
+	}
+	
+	public static TemplateManagerBuilder builder() {
+		return new TemplateManagerBuilder();
+	}
+	
+	public static final class TemplateManagerBuilder {
+		
+		private static final class HandlerMapBuilder implements TemplateVisitor {
+
+			private final Builder<HandlerId, ResourceHandler> builder;
+			private final ClassToInstanceMap<ResourceHandler> handlers;
+
+			private HandlerMapBuilder(Builder<HandlerId, ResourceHandler> builder, ClassToInstanceMap<ResourceHandler> handlers) {
+				this.builder = builder;
+				this.handlers = handlers;
+			}
+
+			@Override
+			public void visitResourceTemplate(ResourceTemplate template) {
+				Class<? extends ResourceHandler> handlerClass = template.handlerClass();
+				ResourceHandler handler=this.handlers.getInstance(handlerClass);
+				if(handler==null) {
+					try {
+						handler=handlerClass.newInstance();
+					} catch (InstantiationException e) {
+						throw new ResourceHandlerInstantiationException("Could not instantiate resource handler from template '"+template.id()+"' ("+handlerClass.getCanonicalName()+")",handlerClass);
+					} catch (IllegalAccessException e) {
+						throw new ResourceHandlerInstantiationException("Could not instantiate resource handler from template '"+template.id()+"' ("+handlerClass.getCanonicalName()+")",handlerClass);
+					}
+				}
+				this.builder.put(HandlerId.createId(handlerClass), handler);
+			}
+
+			@Override
+			public void visitContainerTemplate(ContainerTemplate template) {
+				visitResourceTemplate(template);
+			}
+
+			@Override
+			public void visitBasicContainerTemplate(BasicContainerTemplate template) {
+				visitResourceTemplate(template);
+			}
+
+			@Override
+			public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
+				visitResourceTemplate(template);
+			}
+
+			@Override
+			public void visitDirectContainerTemplate(DirectContainerTemplate template) {
+				visitResourceTemplate(template);
+			}
+
+			@Override
+			public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
+				visitResourceTemplate(template);
+			}
+		}
+
+		private final List<Class<?>> handlerClasses;
+		private final ClassToInstanceMap<ResourceHandler> handlers;
+		
+		
+		private TemplateManagerBuilder() {
+			this.handlerClasses=Lists.newArrayList();
+			this.handlers=MutableClassToInstanceMap.<ResourceHandler>create();
+		}
+		
+		public TemplateManagerBuilder withHandlerClasses(Class<?>... classes) {
+			checkNotNull(classes,"Handler class collection cannot be null");
+			return withHandlerClasses(Arrays.asList(classes));
+		}
+
+		public TemplateManagerBuilder withHandlerClasses(Collection<Class<?>> classes) {
+			checkNotNull(classes,"Handler class collection cannot be null");
+			for(Class<?> clazz:classes) {
+				if(!this.handlerClasses.contains(clazz)) {
+					this.handlerClasses.add(clazz);
+				}
+			}
+			return this;
+		}
+
+		public TemplateManagerBuilder withHandlers(ResourceHandler... handlers) {
+			checkNotNull(handlers,"Handler collection cannot be null");
+			return withHandlers(Arrays.asList(handlers));
+		}
+
+		public TemplateManagerBuilder withHandlers(Collection<ResourceHandler> handlers) {
+			checkNotNull(handlers,"Handler collection cannot be null");
+			for(ResourceHandler handler:handlers) {
+				Class<? extends ResourceHandler> handlerClass = handler.getClass();
+				if(!this.handlerClasses.contains(handlerClass)) {
+					this.handlerClasses.add(handlerClass);
+					this.handlers.put(handlerClass, handler);
+				}
+			}
+			return this;
+		}
+		
+		public TemplateManager build() throws InvalidTemplateManagerConfigurationException {
+			try {
+				TemplateLibrary library = new TemplateLibraryLoader().createLibrary(this.handlerClasses);
+				Builder<HandlerId, ResourceHandler> builder = ImmutableMap.<HandlerId, ResourceHandler>builder();
+				library.accept(new HandlerMapBuilder(builder,this.handlers));
+				return new TemplateManager(library, builder.build());
+			} catch (ResourceHandlerInstantiationException e) {
+				throw new InvalidTemplateManagerConfigurationException(e);
+			} catch (TemplateLibraryLoadingException e) {
+				throw new InvalidTemplateManagerConfigurationException(e);
+			}
+		}
+		
 	}
 
 }

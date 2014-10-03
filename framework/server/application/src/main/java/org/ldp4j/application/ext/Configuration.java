@@ -24,34 +24,8 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.impl;
+package org.ldp4j.application.ext;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import org.ldp4j.application.ext.ResourceHandler;
-import org.ldp4j.application.spi.ResourceHandlerRegistry;
-
-import com.google.common.collect.ClassToInstanceMap;
-import com.google.common.collect.MutableClassToInstanceMap;
-
-final class InMemoryResourceHandlerRegistry implements ResourceHandlerRegistry {
-
-	private ClassToInstanceMap<ResourceHandler> map=MutableClassToInstanceMap.<ResourceHandler>create();
-
-	InMemoryResourceHandlerRegistry() {
-	}
-	
-	@Override
-	public <T extends ResourceHandler> void registerHandler(Class<? extends T> handlerClass, T instance) {
-		checkNotNull(handlerClass,"ResourceSnapshot handler class cannot be null");
-		checkNotNull(instance,"ResourceSnapshot handler cannot be null");
-		map.put(handlerClass, instance);
-	}
-
-	@Override
-	public <T extends ResourceHandler> T getHandler(Class<? extends T> handlerClass) {
-		checkNotNull(handlerClass,"ResourceSnapshot handler class cannot be null");
-		return map.getInstance(handlerClass);
-	}
+public class Configuration {
 
 }

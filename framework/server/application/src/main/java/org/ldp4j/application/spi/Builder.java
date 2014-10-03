@@ -75,10 +75,6 @@ public abstract class Builder<T,B extends Builder<T,B>> {
 		return service(EndpointFactoryService.class);
 	}
 
-	protected final ResourceHandlerRegistry resourceHandlerRegistry() {
-		return runtimeInstance().getResourceHandlerRegistry();
-	}
-
 	protected final <S extends Service> S service(Class<? extends S> serviceClass) {
 		return runtimeInstance().getServiceRegistry().getService(serviceClass);
 	}

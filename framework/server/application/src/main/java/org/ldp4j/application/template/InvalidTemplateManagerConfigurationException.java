@@ -24,22 +24,30 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.template;
 
-import org.ldp4j.application.resource.Container;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.resource.ResourceId;
+public class InvalidTemplateManagerConfigurationException extends Exception {
 
-public interface ResourceRepository {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3232432603895128046L;
 
-	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);
+	public InvalidTemplateManagerConfigurationException() {
+		super();
+	}
 
-	Resource resourceOfId(ResourceId id);
+	public InvalidTemplateManagerConfigurationException(String message,
+			Throwable cause) {
+		super(message, cause);
+	}
 
-	Container containerOfId(ResourceId id);
+	public InvalidTemplateManagerConfigurationException(String message) {
+		super(message);
+	}
 
-	void add(Resource resource);
-
-	void remove(Resource resource);
+	public InvalidTemplateManagerConfigurationException(Throwable cause) {
+		super(cause);
+	}
 
 }

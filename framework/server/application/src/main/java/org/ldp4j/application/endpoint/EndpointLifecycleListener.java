@@ -24,22 +24,12 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.endpoint;
 
-import org.ldp4j.application.resource.Container;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.resource.ResourceId;
+public interface EndpointLifecycleListener {
 
-public interface ResourceRepository {
+	void endpointCreated(Endpoint endpoint);
 
-	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);
-
-	Resource resourceOfId(ResourceId id);
-
-	Container containerOfId(ResourceId id);
-
-	void add(Resource resource);
-
-	void remove(Resource resource);
+	void endpointDeleted(Endpoint endpoint);
 
 }

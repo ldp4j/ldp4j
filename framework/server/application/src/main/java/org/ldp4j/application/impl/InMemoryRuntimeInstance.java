@@ -24,22 +24,30 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.impl;
 
-import org.ldp4j.application.resource.Container;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.spi.RepositoryRegistry;
+import org.ldp4j.application.spi.RuntimeInstance;
+import org.ldp4j.application.spi.ServiceRegistry;
 
-public interface ResourceRepository {
+public final class InMemoryRuntimeInstance extends RuntimeInstance {
 
-	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);
+	private final ServiceRegistry serviceRegistry;
+	private final RepositoryRegistry repositoryRegistry;
 
-	Resource resourceOfId(ResourceId id);
+	public InMemoryRuntimeInstance() {
+		this.serviceRegistry = new InMemoryServiceRegistry();
+		this.repositoryRegistry = new InMemoryRepositoryRegistry();
+	}
+	
+	@Override
+	public RepositoryRegistry getRepositoryRegistry() {
+		return repositoryRegistry;
+	}
 
-	Container containerOfId(ResourceId id);
-
-	void add(Resource resource);
-
-	void remove(Resource resource);
+	@Override
+	public ServiceRegistry getServiceRegistry() {
+		return serviceRegistry;
+	}
 
 }

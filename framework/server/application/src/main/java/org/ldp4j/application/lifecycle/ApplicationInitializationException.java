@@ -24,38 +24,26 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.impl;
+package org.ldp4j.application.lifecycle;
 
-import org.ldp4j.application.spi.RepositoryRegistry;
-import org.ldp4j.application.spi.ResourceHandlerRegistry;
-import org.ldp4j.application.spi.RuntimeInstance;
-import org.ldp4j.application.spi.ServiceRegistry;
 
-public final class InMemoryApplication extends RuntimeInstance {
+public class ApplicationInitializationException extends Exception {
 
-	private final ServiceRegistry serviceRegistry;
-	private final ResourceHandlerRegistry resourceHandlerRegistry;
-	private final RepositoryRegistry repositoryRegistry;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -66733720651527415L;
 
-	public InMemoryApplication() {
-		this.serviceRegistry = new InMemoryServiceRegistry();
-		this.resourceHandlerRegistry=new InMemoryResourceHandlerRegistry();
-		this.repositoryRegistry = new InMemoryRepositoryRegistry();
-	}
-	
-	@Override
-	public RepositoryRegistry getRepositoryRegistry() {
-		return repositoryRegistry;
+	public ApplicationInitializationException(Throwable e) {
+		super(e);
 	}
 
-	@Override
-	public ServiceRegistry getServiceRegistry() {
-		return serviceRegistry;
+	public ApplicationInitializationException(String message) {
+		super(message);
 	}
 
-	@Override
-	public ResourceHandlerRegistry getResourceHandlerRegistry() {
-		return resourceHandlerRegistry;
+	public ApplicationInitializationException(String message, Throwable e) {
+		super(message,e);
 	}
 
 }

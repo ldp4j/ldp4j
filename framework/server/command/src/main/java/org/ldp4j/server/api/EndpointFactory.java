@@ -142,6 +142,32 @@ public final class EndpointFactory {
 		
 	}
 	
+	private static final class UnavailableEndpoint extends EndpointFactory.FixedBehaviourEndpoint {
+
+		private UnavailableEndpoint(URI path) {
+			super(path);
+		}
+
+		@Override
+		protected Response getDefaultResponse() {
+			return Response.status(Status.SERVICE_UNAVAILABLE).build();
+		}
+		
+	}
+	
+	private static final class ServerErrorEndpoint extends EndpointFactory.FixedBehaviourEndpoint {
+
+		private ServerErrorEndpoint(URI path) {
+			super(path);
+		}
+
+		@Override
+		protected Response getDefaultResponse() {
+			return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+		}
+		
+	}
+
 	private EndpointFactory() {
 	}
 	
@@ -151,6 +177,14 @@ public final class EndpointFactory {
 	
 	static Endpoint notFoundEndpoint(URI path) {
 		return new NotFoundEndpoint(path);
+	}
+	
+	public static Endpoint unavailable(URI path) {
+		return new UnavailableEndpoint(path);
+	}
+
+	public static Endpoint serverError(URI path) {
+		return new ServerErrorEndpoint(path);
 	}
 	
 	public static <R extends Resource> Endpoint newEndpoint(URI path, Configuration<R> config, ComponentRegistry registry) {

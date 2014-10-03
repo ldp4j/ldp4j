@@ -52,6 +52,7 @@ import org.jboss.arquillian.junit.Arquillian;
 import org.jboss.arquillian.test.api.ArquillianResource;
 import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
@@ -59,6 +60,7 @@ import org.junit.runner.RunWith;
 import org.ldp4j.server.commands.xml.CreateEndpoint;
 import org.ldp4j.server.commands.xml.EntityType;
 import org.ldp4j.server.commands.xml.ResourceStateType;
+import org.ldp4j.server.example.MyApplication;
 import org.ldp4j.server.testing.TestingApplicationBuilder;
 import org.ldp4j.testing.categories.DEBUG;
 import org.ldp4j.testing.categories.DELETE;
@@ -100,8 +102,9 @@ public class LinkedDataPlatformServerITest {
 				excludeMiddleware().
 				withControlPhrase(CONTROL_PHRASE).
 				withDeployableName(DEPLOYMENT.concat(".war")).
-				withBeans("beans.xml").
+//				withBeans("beans.xml").
 				withWebXml("web.xml").
+				withPom("pom.xml").
 				build(IntegrationTestHelper.getCommandArchive());
 	}
 	
@@ -116,6 +119,11 @@ public class LinkedDataPlatformServerITest {
 		if(HELPER!=null) {
 			HELPER.shutdown();
 		}
+	}
+
+	@Before
+	public void setUp() {
+		HELPER.setLegacy(true);
 	}
 	
 	// -------------------------------------------------------------------------
@@ -143,7 +151,6 @@ public class LinkedDataPlatformServerITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		LDP.class,
 		HappyPath.class
 	})
@@ -162,7 +169,20 @@ public class LinkedDataPlatformServerITest {
 		HELPER.executeCommand(command);
 		HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
 	}
-
+	
+	@Test
+	@Category({
+		DEBUG.class,
+		LDP.class,
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testEnhancedGet(@ArquillianResource final URL url) throws Exception {
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_PATH,HttpGet.class));
+	}
+	
 	@Test
 	@Category({
 		LDP.class,

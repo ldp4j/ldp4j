@@ -24,22 +24,38 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.ext;
 
-import org.ldp4j.application.resource.Container;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.session.WriteSession;
+import org.ldp4j.application.setup.Bootstrap;
+import org.ldp4j.application.setup.Environment;
+import org.ldp4j.application.util.Generics;
 
-public interface ResourceRepository {
+public abstract class Application<T extends Configuration> {
 
-	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);
+	/**
+	 * Returns the {@link Class} of the configuration class type parameter.
+	 * 
+	 * @return the configuration class
+	 * @see Generics#getTypeParameter(Class, Class)
+	 */
+	public final Class<T> getConfigurationClass() {
+		return Generics.getTypeParameter(getClass(), Configuration.class);
+	}
 
-	Resource resourceOfId(ResourceId id);
+	/**
+	 * Returns the name of the application.
+	 * 
+	 * @return the application's name
+	 */
+	public String getName() {
+		return getClass().getSimpleName();
+	}
 
-	Container containerOfId(ResourceId id);
+	public abstract void setup(Environment environment, Bootstrap<T> bootstrap);
 
-	void add(Resource resource);
-
-	void remove(Resource resource);
-
+	public abstract void initialize(WriteSession session);
+		
+	public abstract void shutdown();
+	
 }

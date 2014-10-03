@@ -24,22 +24,25 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.lifecycle;
 
-import org.ldp4j.application.resource.Container;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.resource.ResourceId;
+public class ApplicationConfigurationException extends ApplicationBootstrapException {
 
-public interface ResourceRepository {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8942830494173394816L;
 
-	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);
+	public ApplicationConfigurationException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-	Resource resourceOfId(ResourceId id);
+	public ApplicationConfigurationException(String message) {
+		super(message);
+	}
 
-	Container containerOfId(ResourceId id);
-
-	void add(Resource resource);
-
-	void remove(Resource resource);
+	public ApplicationConfigurationException(Throwable cause) {
+		super(cause);
+	}
 
 }

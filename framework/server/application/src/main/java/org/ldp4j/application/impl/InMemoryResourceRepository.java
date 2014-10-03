@@ -48,8 +48,7 @@ final class InMemoryResourceRepository implements ResourceRepository {
 	InMemoryResourceRepository() {
 	}
 
-	@Override
-	public Resource find(ResourceId id) {
+	private Resource find(ResourceId id) {
 		lock.readLock().lock();
 		try {
 			Resource result=resources.get(id);

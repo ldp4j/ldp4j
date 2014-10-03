@@ -49,7 +49,7 @@ import org.ldp4j.application.example.PersonHandler;
 import org.ldp4j.application.example.RelativeContainerHandler;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
-import org.ldp4j.application.impl.InMemoryApplication;
+import org.ldp4j.application.impl.InMemoryRuntimeInstance;
 import org.ldp4j.application.resource.ResourceFactoryService;
 import org.ldp4j.application.session.UnitOfWork.Visitor;
 import org.ldp4j.application.spi.RuntimeInstance;
@@ -107,7 +107,7 @@ public class WriteSessionTest {
 	
 	@Before
 	public void setUp() throws Exception {
-		RuntimeInstance.setInstance(new InMemoryApplication());
+		RuntimeInstance.setInstance(new InMemoryRuntimeInstance());
 		RuntimeInstance.
 			getInstance().
 				getServiceRegistry().

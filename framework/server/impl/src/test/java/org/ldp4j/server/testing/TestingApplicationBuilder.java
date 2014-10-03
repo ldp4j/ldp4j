@@ -263,6 +263,11 @@ public class TestingApplicationBuilder {
 				LOGGER.debug("- Custom libraries:");
 				for(JavaArchive archive:archives) {
 					LOGGER.debug("  + "+archive);
+					if(LOGGER.isTraceEnabled() && 
+						Boolean.parseBoolean(System.getProperty("org.ldp4j.testing.logging.setup")) && 
+						Boolean.parseBoolean(System.getProperty("org.ldp4j.testing.logging.archive"))) {
+						LOGGER.trace(archive.toString(true));
+					}
 				}
 			}
 		}

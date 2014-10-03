@@ -41,7 +41,7 @@ import org.ldp4j.server.api.spi.ContentTransformationException;
 import org.ldp4j.server.api.spi.IMediaTypeProvider;
 import org.ldp4j.server.api.spi.RuntimeInstance;
 
-final class EntityFactory {
+public final class EntityFactory {
 
 	private static final class BaseEntity implements Entity {
 

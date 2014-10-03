@@ -52,6 +52,15 @@ public final class VariantHelper {
 		return matched;
 	}
 
+	public Variant select(Collection<? extends Variant> supportedVariants) {
+		for(Variant variant:supportedVariants) {
+			if(isSupported(variant)) {
+				return variant;
+			}
+		}
+		return null;
+	}
+
 	private static boolean isLanguageMatched(Locale supported, Locale required) {
 		String language = supported.getLanguage();
 		return 

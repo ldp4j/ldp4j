@@ -24,22 +24,17 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.setup;
 
-import org.ldp4j.application.resource.Container;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.ext.Configuration;
+import org.ldp4j.application.ext.ResourceHandler;
 
-public interface ResourceRepository {
+public interface Bootstrap<T extends Configuration> {
 
-	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);
+	T configuration(); 
+	
+	void addHandler(ResourceHandler handler);
 
-	Resource resourceOfId(ResourceId id);
-
-	Container containerOfId(ResourceId id);
-
-	void add(Resource resource);
-
-	void remove(Resource resource);
+	void addHandlerClass(Class<? extends ResourceHandler> handlerClass);
 
 }

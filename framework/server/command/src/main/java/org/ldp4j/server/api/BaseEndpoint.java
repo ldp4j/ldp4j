@@ -126,7 +126,6 @@ class BaseEndpoint<R extends Resource> implements Endpoint {
 				}
 				URI parentRelative=URI.create(tmp.toString());
 				URI base=fullPath.resolve(parentRelative);
-//				URI base=uriInfo.getBaseUri();
 				body=entity.serialize(variant,ImmutableContext.newInstance(base, registry.getComponent(ResourceIndex.class)));
 				status=entity.isEmpty()?Status.NO_CONTENT:Status.OK;
 				builder.type(variant.getMediaType());

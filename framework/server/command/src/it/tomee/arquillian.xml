@@ -35,7 +35,9 @@
 		<container qualifier="tomcat-7.0.20">
 				<configuration>
 					<property name="bindHttpPort">${tomcat.http.port}</property>
+<!-- 
 					<property name="unpackArchive">true</property>
+ -->
 				</configuration>
 		</container>
 	</group>
