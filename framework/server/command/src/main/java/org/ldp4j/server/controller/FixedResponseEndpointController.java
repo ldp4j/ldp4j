@@ -24,38 +24,53 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.commands.xml;
+package org.ldp4j.server.controller;
 
-import org.ldp4j.server.api.MutableCapabilities;
-import org.ldp4j.server.commands.xml.EndpointConfiguration.Capabilities;
+import javax.ws.rs.core.Response;
 
-public final class CapabilitiesAdapter {
+import org.ldp4j.application.endpoint.Endpoint;
 
-	private CapabilitiesAdapter() {
+abstract class FixedResponseEndpointController extends AbstractEndpointController {
+
+	FixedResponseEndpointController(Endpoint endpoint) {
+		super(endpoint);
 	}
+
+	protected abstract Response defaultResponse(OperationContext context);
 	
-	public static org.ldp4j.server.api.Capabilities toEndpointCapabilities(Capabilities capabilities) {
-		Capabilities tmp=capabilities;
-		if(tmp==null) {
-			tmp=new Capabilities();
-		}
-		return 
-			new MutableCapabilities().
-				withDeletable(tmp.deletable).
-				withModifiable(tmp.modifiable).
-				withPatchable(tmp.patchable);
+	@Override
+	public final Response getResource(OperationContext context) {
+		return defaultResponse(context);
 	}
-	
-	public static Capabilities fromEndpointCapabilities(org.ldp4j.server.api.Capabilities capabilities) {
-		org.ldp4j.server.api.Capabilities tmp=capabilities;
-		if(tmp==null) {
-			tmp=new MutableCapabilities();
-		}
-		return 
-			new Capabilities().
-				withDeletable(tmp.isDeletable()).
-				withModifiable(tmp.isModifiable()).
-				withPatchable(tmp.isPatchable());
+
+	@Override
+	public final Response patchResource(OperationContext context) {
+		return defaultResponse(context);
+	}
+
+	@Override
+	public final Response createResource(OperationContext context) {
+		return defaultResponse(context);
+	}
+
+	@Override
+	public final Response modifyResource(OperationContext context) {
+		return defaultResponse(context);
+	}
+
+	@Override
+	public final Response options(OperationContext context) {
+		return defaultResponse(context);
+	}
+
+	@Override
+	public final Response head(OperationContext context) {
+		return defaultResponse(context);
+	}
+
+	@Override
+	public Response deleteResource(OperationContext context) {
+		return defaultResponse(context);
 	}
 	
 }

@@ -32,7 +32,6 @@ import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.server.api.Context;
-import org.ldp4j.server.api.ResourceIndex;
 
 public interface IMediaTypeProvider {
 
@@ -55,11 +54,5 @@ public interface IMediaTypeProvider {
 	Marshaller newMarshaller(Context configuration);
 
 	Unmarshaller newUnmarshaller(Context configuration);
-	
-	@Deprecated
-	DataSet unmarshallContent(String content, MediaType type, ResourceIndex index) throws ContentTransformationException;
-
-	@Deprecated
-	String marshallcontent(DataSet content, MediaType type, ResourceIndex index) throws ContentTransformationException;
 	
 }

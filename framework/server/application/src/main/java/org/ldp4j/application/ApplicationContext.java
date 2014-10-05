@@ -32,6 +32,9 @@ import org.ldp4j.application.endpoint.EndpointLifecycleListener;
 import org.ldp4j.application.endpoint.EndpointManagementService;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
+import org.ldp4j.application.ext.Deletable;
+import org.ldp4j.application.ext.Modifiable;
+import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.lifecycle.ApplicationInitializationException;
 import org.ldp4j.application.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.lifecycle.ApplicationLifecycleService;
@@ -46,6 +49,7 @@ import org.ldp4j.application.spi.ResourceRepository;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.spi.ServiceRegistry;
 import org.ldp4j.application.template.ResourceTemplate;
+import org.ldp4j.application.template.TemplateIntrospector;
 import org.ldp4j.application.template.TemplateManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,8 +61,6 @@ public final class ApplicationContext {
 	private static ApplicationContext context;
 
 	private ResourceRepository resourceRepository;
-
-	@SuppressWarnings("unused")
 	private EndpointRepository endpointRepository;
 	private ApplicationLifecycleService applicationLifecycleService;
 	private TemplateManagementService templateManagementService;
@@ -178,8 +180,57 @@ public final class ApplicationContext {
 		}
 	}
 
+	public void deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
+		ResourceId resourceId=endpoint.resourceId();
+		Container resource = this.resourceRepository.find(resourceId,Container.class);
+		if(resource==null) {
+			String errorMessage = applicationFailureMessage("Could not find container for endpoint '%s'",endpoint);
+			LOGGER.error(errorMessage);
+			throw new ApplicationExecutionException(errorMessage);
+		}
+		try {
+			this.resourceControllerService.deleteResource(resource);
+		} catch (Exception e) {
+			String errorMessage = applicationFailureMessage("Resource deletion failed at ''%s'",endpoint);
+			LOGGER.error(errorMessage,e);
+			throw new ApplicationExecutionException(errorMessage,e);
+		}
+	}
+
+	public void modifyResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
+		ResourceId resourceId=endpoint.resourceId();
+		Resource resource = this.resourceRepository.find(resourceId,Resource.class);
+		if(resource==null) {
+			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
+			LOGGER.error(errorMessage);
+			throw new ApplicationExecutionException(errorMessage);
+		}
+		try {
+			this.resourceControllerService.updateResource(resource,dataSet);
+		} catch (Exception e) {
+			String errorMessage = applicationFailureMessage("Resource modification failed at ''%s'",endpoint);
+			LOGGER.error(errorMessage,e);
+			throw new ApplicationExecutionException(errorMessage,e);
+		}
+	}
+	
+
 	public ResourceTemplate resourceTemplate(Resource resource) {
 		return this.templateManagementService.findTemplateById(resource.id().templateId());
+	}
+	
+	public Capabilities endpointCapabilities(Endpoint endpoint) {
+		MutableCapabilities result=new MutableCapabilities();
+		Resource resource = resolveResource(endpoint);
+		ResourceTemplate template=resourceTemplate(resource);
+		Class<? extends ResourceHandler> handlerClass = template.handlerClass();
+		result.setModifiable(Modifiable.class.isAssignableFrom(handlerClass));
+		result.setDeletable(Deletable.class.isAssignableFrom(handlerClass) && !resource.isRoot());
+		// TODO: Analyze how to provide patch support
+		result.setPatchable(false);
+		TemplateIntrospector introspector = TemplateIntrospector.newInstance(template);
+		result.setFactory(introspector.isContainer());
+		return result;
 	}
 
 	public Endpoint findResourceEndpoint(ResourceId id) {
@@ -249,5 +300,5 @@ public final class ApplicationContext {
 		setCurrentContext(context);
 		return currentContext();
 	}
-	
+
 }

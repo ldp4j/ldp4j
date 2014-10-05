@@ -24,38 +24,25 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.commands.xml;
+package org.ldp4j.server.controller;
 
-import org.ldp4j.server.api.MutableCapabilities;
-import org.ldp4j.server.commands.xml.EndpointConfiguration.Capabilities;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 
-public final class CapabilitiesAdapter {
+import org.ldp4j.application.endpoint.Endpoint;
 
-	private CapabilitiesAdapter() {
+final class NotFoundEndpointController extends FixedResponseEndpointController {
+
+	NotFoundEndpointController(Endpoint endpoint) {
+		super(endpoint);
 	}
-	
-	public static org.ldp4j.server.api.Capabilities toEndpointCapabilities(Capabilities capabilities) {
-		Capabilities tmp=capabilities;
-		if(tmp==null) {
-			tmp=new Capabilities();
-		}
+
+	protected Response defaultResponse(OperationContext context) {
 		return 
-			new MutableCapabilities().
-				withDeletable(tmp.deletable).
-				withModifiable(tmp.modifiable).
-				withPatchable(tmp.patchable);
-	}
-	
-	public static Capabilities fromEndpointCapabilities(org.ldp4j.server.api.Capabilities capabilities) {
-		org.ldp4j.server.api.Capabilities tmp=capabilities;
-		if(tmp==null) {
-			tmp=new MutableCapabilities();
-		}
-		return 
-			new Capabilities().
-				withDeletable(tmp.isDeletable()).
-				withModifiable(tmp.isModifiable()).
-				withPatchable(tmp.isPatchable());
+			Response.
+				status(Status.NOT_FOUND).
+				entity("No endpoint found at '"+context.path()+"'").
+				build();
 	}
 	
 }

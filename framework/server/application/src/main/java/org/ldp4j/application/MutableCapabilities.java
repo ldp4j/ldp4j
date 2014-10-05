@@ -20,42 +20,53 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-command:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-application:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.commands.xml;
+package org.ldp4j.application;
 
-import org.ldp4j.server.api.MutableCapabilities;
-import org.ldp4j.server.commands.xml.EndpointConfiguration.Capabilities;
+final class MutableCapabilities implements Capabilities {
 
-public final class CapabilitiesAdapter {
+	private boolean modifiable;
+	private boolean deletable;
+	private boolean patchable;
+	private boolean factory;
 
-	private CapabilitiesAdapter() {
+	@Override
+	public boolean isModifiable() {
+		return this.modifiable;
 	}
-	
-	public static org.ldp4j.server.api.Capabilities toEndpointCapabilities(Capabilities capabilities) {
-		Capabilities tmp=capabilities;
-		if(tmp==null) {
-			tmp=new Capabilities();
-		}
-		return 
-			new MutableCapabilities().
-				withDeletable(tmp.deletable).
-				withModifiable(tmp.modifiable).
-				withPatchable(tmp.patchable);
+
+	@Override
+	public boolean isDeletable() {
+		return deletable;
 	}
-	
-	public static Capabilities fromEndpointCapabilities(org.ldp4j.server.api.Capabilities capabilities) {
-		org.ldp4j.server.api.Capabilities tmp=capabilities;
-		if(tmp==null) {
-			tmp=new MutableCapabilities();
-		}
-		return 
-			new Capabilities().
-				withDeletable(tmp.isDeletable()).
-				withModifiable(tmp.isModifiable()).
-				withPatchable(tmp.isPatchable());
+
+	@Override
+	public boolean isPatchable() {
+		return patchable;
 	}
-	
+
+	@Override
+	public boolean isFactory() {
+		return factory;
+	}
+
+	void setModifiable(boolean modifiable) {
+		this.modifiable=modifiable;
+	}
+
+	void setDeletable(boolean deletable) {
+		this.deletable = deletable;
+	}
+
+	void setPatchable(boolean patchable) {
+		this.patchable = patchable;
+	}
+
+	void setFactory(boolean factory) {
+		this.factory = factory;
+	}
+
 }

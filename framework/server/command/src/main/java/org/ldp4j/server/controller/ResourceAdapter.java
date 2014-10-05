@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.frontend;
+package org.ldp4j.server.controller;
 
 import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.endpoint.Endpoint;
@@ -42,6 +42,7 @@ import org.ldp4j.server.resources.impl.ResourceBuilder.ContainerBuilder;
 import org.ldp4j.server.resources.impl.ResourceBuilder.SimpleResourceBuilder;
 
 final class ResourceAdapter implements TemplateVisitor {
+
 	private final Endpoint endpoint;
 	private org.ldp4j.server.resources.Resource result;
 	private final ApplicationContext applicationContext;

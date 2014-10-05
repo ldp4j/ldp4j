@@ -27,7 +27,6 @@
 package org.ldp4j.server.api.impl;
 
 
-import java.net.URI;
 import java.util.Iterator;
 import java.util.Set;
 
@@ -40,14 +39,57 @@ import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.util.TripleSet;
 import org.ldp4j.server.api.Context;
-import org.ldp4j.server.api.ImmutableContext;
-import org.ldp4j.server.api.ResourceIndex;
 import org.ldp4j.server.api.spi.ContentTransformationException;
 import org.ldp4j.server.api.spi.IMediaTypeProvider;
 
 abstract class AbstractMediaTypeProvider implements IMediaTypeProvider {
 
-	private static final URI DEFAULT_BASE = URI.create("http://www.ldp4j.org/to-do#");
+	private final class MarshallerImplementation implements Marshaller {
+
+		private final Context context;
+
+		private MarshallerImplementation(Context context) {
+			this.context = context;
+		}
+
+		@Override
+		public String marshall(DataSet content, MediaType targetMediaType) throws ContentTransformationException {
+			validateContent(content);
+			validateMediaType(targetMediaType);
+			TripleSetBuilder tripleSetBuilder = new TripleSetBuilder(context.getResourceIndex(),context.getBase());
+			for(Individual<?,?> individual:content) {
+				tripleSetBuilder.generateTriples(individual);
+			}
+			TripleSet triples=tripleSetBuilder.build();
+			return doMarshallContent(context,triples,targetMediaType);
+		}
+	}
+
+	private final class UnmarshallerImpl implements Unmarshaller {
+
+		private final Context context;
+
+		private UnmarshallerImpl(Context context) {
+			this.context = context;
+		}
+
+		@Override
+		public DataSet unmarshall(String content, MediaType type) throws ContentTransformationException {
+			validateContent(content);
+			validateMediaType(type);
+			Iterable<Triple> triples = doUnmarshallContent(context,content,type);
+			final DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(context.getBase()));
+			final ValueAdapter adapter=new ValueAdapter(context.getResourceIndex(),dataSet);
+			for(Triple triple:triples) {
+				Individual<?,?> individual=adapter.getIndividual(triple.getSubject());
+				individual.
+					addValue(
+						triple.getPredicate().getIdentity(), 
+						adapter.getValue(triple.getObject()));
+			}
+			return dataSet;
+		}
+	}
 
 	@Override
 	public final boolean isSupported(MediaType type) {
@@ -79,57 +121,16 @@ abstract class AbstractMediaTypeProvider implements IMediaTypeProvider {
 
 	@Override
 	public Marshaller newMarshaller(final Context context) {
-		return new Marshaller() {
-			@Override
-			public String marshall(DataSet content, MediaType targetMediaType) throws ContentTransformationException {
-				validateContent(content);
-				validateMediaType(targetMediaType);
-				TripleSetBuilder tripleSetBuilder = new TripleSetBuilder(context.getResourceIndex(),context.getBase());
-				for(Individual<?,?> individual:content) {
-					tripleSetBuilder.generateTriples(individual);
-				}
-				TripleSet triples=tripleSetBuilder.build();
-				return doMarshalContent(triples,targetMediaType);
-			}
-		};
+		return new MarshallerImplementation(context);
 	}
 
 	@Override
 	public Unmarshaller newUnmarshaller(final Context context) {
-		return new Unmarshaller() {
-			@Override
-			public DataSet unmarshall(String content, MediaType type) throws ContentTransformationException {
-				validateContent(content);
-				validateMediaType(type);
-				Iterable<Triple> triples = doUnmarshallContent(content,type);
-				final DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(context.getBase()));
-				final ValueAdapter adapter=new ValueAdapter(context.getResourceIndex(),dataSet);
-				for(Triple triple:triples) {
-					Individual<?,?> individual=adapter.getIndividual(triple.getSubject());
-					individual.
-						addValue(
-							triple.getPredicate().getIdentity(), 
-							adapter.getValue(triple.getObject()));
-				}
-				return dataSet;
-			}
-		};
+		return new UnmarshallerImpl(context);
 	}
 
-	@Deprecated
-	@Override
-	public final DataSet unmarshallContent(String content, MediaType type, final ResourceIndex index) throws ContentTransformationException {
-		return newUnmarshaller(ImmutableContext.newInstance(DEFAULT_BASE, index)).unmarshall(content, type);
-	}
+	protected abstract Iterable<Triple> doUnmarshallContent(Context context,String content, MediaType type) throws ContentTransformationException;
 
-	@Deprecated
-	@Override
-	public String marshallcontent(DataSet content, MediaType type, ResourceIndex index) throws ContentTransformationException {
-		return newMarshaller(ImmutableContext.newInstance(DEFAULT_BASE, index)).marshall(content, type);
-	}
-
-	protected abstract Iterable<Triple> doUnmarshallContent(String content, MediaType type) throws ContentTransformationException;
-
-	protected abstract String doMarshalContent(Iterable<Triple> content, MediaType type) throws ContentTransformationException;
+	protected abstract String doMarshallContent(Context context, Iterable<Triple> content, MediaType type) throws ContentTransformationException;
 
 }

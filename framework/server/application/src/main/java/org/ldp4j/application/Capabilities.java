@@ -20,18 +20,20 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-command:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-application:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.deployment;
+package org.ldp4j.application;
 
 public interface Capabilities {
 
-	boolean isDeletable();
-
 	boolean isModifiable();
 
+	boolean isDeletable();
+
 	boolean isPatchable();
+
+	boolean isFactory();
 
 }

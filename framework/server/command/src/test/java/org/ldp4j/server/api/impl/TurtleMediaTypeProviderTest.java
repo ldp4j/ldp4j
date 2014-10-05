@@ -54,9 +54,8 @@ import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.rdf.URIRef;
+import org.ldp4j.server.api.ImmutableContext;
 import org.ldp4j.server.api.ResourceIndex;
-
-import com.hp.hpl.jena.sparql.util.ModelUtils;
 
 @RunWith(JMockit.class)
 public class TurtleMediaTypeProviderTest {
@@ -73,10 +72,12 @@ public class TurtleMediaTypeProviderTest {
 	private static final URI VOCABULARY_PATH=URI.create("http://www.example.org/entities/vocabulary1");
 	private static final ResourceId VOCABULARY_NAME = ResourceId.createId(NamingScheme.getDefault().name(VOCABULARY_PATH),"templateId");
 	private TurtleMediaTypeProvider sut;
+	private URI BASE;
 
 	@Before
 	public void setUp() throws Exception {
 		sut=new TurtleMediaTypeProvider();
+		BASE=URI.create("http://www.example.org/");
 	}
 	
 	@Test
@@ -85,8 +86,9 @@ public class TurtleMediaTypeProviderTest {
 			mock.resolveLocation(DATA_SET_PATH);result=DATA_SET_NAME;minTimes=1;
 			mock.resolveLocation(VOCABULARY_PATH);result=VOCABULARY_NAME;minTimes=1;
 		}};
-
-		DataSet result = sut.unmarshallContent(EXAMPLE_BODY, sut.getSupportedMediaTypes().iterator().next(), mock);
+		DataSet result = 
+			sut.newUnmarshaller(ImmutableContext.newInstance(BASE, mock)).
+				unmarshall(EXAMPLE_BODY, sut.getSupportedMediaTypes().iterator().next());
 		System.out.println(result.toString());
 	}
 
@@ -109,7 +111,9 @@ public class TurtleMediaTypeProviderTest {
 							referringTo(IndividualReferenceBuilder.newReference().toLocalIndividual().named(DATA_SET_PATH)).
 						build();
 		
-		String result = sut.marshallcontent(dataSet, sut.getSupportedMediaTypes().iterator().next(), mock);
+		String result=
+			sut.newMarshaller(ImmutableContext.newInstance(BASE, mock)).
+				marshall(dataSet, sut.getSupportedMediaTypes().iterator().next());
 		System.out.println(dataSet);
 		System.out.println(result);
 	}

@@ -34,7 +34,6 @@ import javax.xml.bind.JAXBException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.server.api.ComponentRegistryFactory;
 import org.ldp4j.server.api.Endpoint;

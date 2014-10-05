@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.frontend;
+package org.ldp4j.server.controller;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -32,9 +32,9 @@ import java.net.URI;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -42,22 +42,29 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationContext;
+import org.ldp4j.application.Capabilities;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
-import org.ldp4j.application.data.Name;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EntityTag;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.server.api.ContentProcessingException;
 import org.ldp4j.server.api.Entity;
+import org.ldp4j.server.api.ImmutableContext;
 import org.ldp4j.server.api.MissingContentException;
 import org.ldp4j.server.api.MissingContentTypeException;
 import org.ldp4j.server.api.NotAcceptableException;
 import org.ldp4j.server.api.PreconditionFailedException;
 import org.ldp4j.server.api.ResourceIndex;
 import org.ldp4j.server.api.UnsupportedContentException;
+import org.ldp4j.server.api.spi.ContentTransformationException;
+import org.ldp4j.server.api.spi.IMediaTypeProvider;
+import org.ldp4j.server.api.spi.IMediaTypeProvider.Unmarshaller;
+import org.ldp4j.server.api.spi.RuntimeInstance;
 import org.ldp4j.server.api.utils.VariantHelper;
+import org.ldp4j.server.api.utils.VariantUtils;
 import org.ldp4j.server.blueprint.ComponentRegistry;
 import org.ldp4j.server.resources.ResourceType;
 import org.ldp4j.server.resources.impl.EntityFactory;
@@ -81,7 +88,7 @@ public final class OperationContext {
 	private final ApplicationContext applicationContext;
 	private final ResourceAdapter adapter;
 	
-	private OperationContext(ApplicationContext applicationContext, Endpoint endpoint, UriInfo uriInfo, HttpHeaders headers, Request request, String entity, DataSet dataSet) {
+	private OperationContext(ApplicationContext applicationContext, Endpoint endpoint, UriInfo uriInfo, HttpHeaders headers, Request request, String entity) {
 		this.applicationContext = applicationContext;
 		this.endpoint = endpoint;
 		this.adapter = new ResourceAdapter(this.applicationContext, this.endpoint);
@@ -89,7 +96,6 @@ public final class OperationContext {
 		this.headers=headers;
 		this.request=request;
 		this.entity = entity;
-		this.dataSet = dataSet;
 	}
 	
 	private Variant contentVariant() {
@@ -109,6 +115,10 @@ public final class OperationContext {
 		return variants.get(0);
 	}
 
+	public ApplicationContext applicationContext() {
+		return this.applicationContext;
+	}
+	
 	public UriInfo uriInfo() {
 		return this.uriInfo;
 	}
@@ -126,6 +136,26 @@ public final class OperationContext {
 	}
 
 	public DataSet dataSet() {
+		if(this.dataSet==null) {
+			MediaType mediaType = contentVariant().getMediaType();
+			IMediaTypeProvider provider = 
+				RuntimeInstance.
+					getInstance().
+						getMediaTypeProvider(mediaType);
+	
+			if(provider==null) {
+				throw new UnsupportedContentException(this.adapter.getResource(), VariantUtils.defaultVariants());
+			}
+			
+			Unmarshaller unmarshaller = 
+				provider.
+					newUnmarshaller(ImmutableContext.newInstance(base(),resourceIndex()));
+			try {
+				this.dataSet=unmarshaller.unmarshall(this.entity, mediaType);
+			} catch (ContentTransformationException e) {
+				throw new ContentProcessingException("Entity cannot be parsed as '"+mediaType+"' ", this.adapter.getResource(), VariantUtils.defaultVariants());
+			}
+		}
 		return this.dataSet;
 	}
 
@@ -146,15 +176,15 @@ public final class OperationContext {
 
 	public OperationContext evaluatePreconditions(EntityTag entityTag, Date lastModified) {
 		ResponseBuilder builder = 
-				request().
-					evaluatePreconditions(
-						lastModified,
-						new javax.ws.rs.core.EntityTag(entityTag.getValue()));
-			if(builder!=null) {
-				Response response = builder.build();
-				throw new PreconditionFailedException(this.adapter.getResource(),response.getStatus());
-			}
-			return this;
+			request().
+				evaluatePreconditions(
+					lastModified,
+					new javax.ws.rs.core.EntityTag(entityTag.getValue()));
+		if(builder!=null) {
+			Response response = builder.build();
+			throw new PreconditionFailedException(this.adapter.getResource(),response.getStatus());
+		}
+		return this;
 	}
 
 	public Variant expectedVariant(List<Variant> variants) {
@@ -179,16 +209,17 @@ public final class OperationContext {
 	
 	public static final class OperationContextBuilder {
 
+		private final ApplicationContext applicationContext;
+		private final Endpoint endpoint;
+
 		private UriInfo uriInfo;
 		private Request request;
 		private HttpHeaders headers;
 		private String entity;
-		private final ApplicationContext applicationContext;
-		private final Endpoint endpoint;
 
 		private OperationContextBuilder(ApplicationContext applicationContext, Endpoint endpoint) {
-			this.applicationContext=checkNotNull(applicationContext,"Uri info cannot be null");
-			this.endpoint=checkNotNull(endpoint,"Request cannot be null");
+			this.applicationContext=applicationContext;
+			this.endpoint=endpoint;
 		}
 		
 		public OperationContextBuilder withUriInfo(UriInfo uriInfo) {
@@ -212,14 +243,11 @@ public final class OperationContext {
 		}
 		
 		public OperationContext build() {
+			checkNotNull(applicationContext,"Application context cannot be null");
 			checkNotNull(uriInfo,"Uri info cannot be null");
 			checkNotNull(request,"Request cannot be null");
 			checkNotNull(headers,"Http headers cannot be null");
-			DataSet dataSet=null;
-			if(this.entity!=null) {
-				// TODO: create data set
-			}
-			return new OperationContext(this.applicationContext,this.endpoint,this.uriInfo,this.headers,this.request,this.entity,dataSet);
+			return new OperationContext(this.applicationContext,this.endpoint,this.uriInfo,this.headers,this.request,this.entity);
 		}
 		
 	}
@@ -250,6 +278,18 @@ public final class OperationContext {
 		return fullPath.resolve(parentRelative);
 	}
 
+	public String path() {
+		List<String> matchedURIs = this.uriInfo.getMatchedURIs(true);
+		StringBuilder tmp=new StringBuilder();
+		for(Iterator<String> it=matchedURIs.iterator();it.hasNext();) {
+			tmp.append(it.next());
+			if(it.hasNext()) {
+				tmp.append("/");
+			}
+		}
+		return tmp.toString();
+	}
+
 	public ResourceIndex resourceIndex() {
 		return new ResourceIndex() {
 			@Override
@@ -259,7 +299,12 @@ public final class OperationContext {
 			
 			@Override
 			public ResourceId resolveLocation(URI path) {
-				throw new UnsupportedOperationException("Method not implemented yet");
+				Endpoint resolveEndpoint = applicationContext.resolveEndpoint(base().relativize(path).toString());
+				ResourceId result=null;
+				if(resolveEndpoint!=null) {
+					result=resolveEndpoint.resourceId();
+				}
+				return result;
 			}
 			
 			@Override
@@ -287,6 +332,10 @@ public final class OperationContext {
 				throw new UnsupportedOperationException("Method not supported");
 			}
 		};
+	}
+
+	public Capabilities endpointCapabilities() {
+		return this.applicationContext.endpointCapabilities(this.endpoint);
 	}
 
 }

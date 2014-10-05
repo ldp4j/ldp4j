@@ -173,20 +173,12 @@ public final class IntegrationTestHelper {
 		JavaArchive coreArchive= 
 			ShrinkWrap.
 				create(JavaArchive.class,"ldp4j-server-command.jar").
-				addPackages(true, "org.ldp4j.application").
-				addPackages(true, "org.ldp4j.server.api").
-				addPackages(true, "org.ldp4j.server.blueprint").
-				addPackages(true, "org.ldp4j.server.commands").
-				addPackages(true, "org.ldp4j.server.deployment").
-				addPackages(true, "org.ldp4j.server.frontend").
-				addPackages(true, "org.ldp4j.server.resources").
-				addPackages(true, "org.ldp4j.server.templates").
-				addPackages(true, "org.ldp4j.server.xml").
+				addPackages(true, "org.ldp4j.server").
 				addAsResource(ClassLoader.getSystemResource("web-fragment.xml"), "META-INF/web-fragment.xml").
 				addAsResource(ClassLoader.getSystemResource("beans.xml"), "beans.xml").
 				addAsServiceProvider(RuntimeInstance.class, RuntimeInstanceImpl.class).
-				addAsServiceProvider(org.ldp4j.application.spi.RuntimeInstance.class, InMemoryRuntimeInstance.class).
-				addAsServiceProvider(IMediaTypeProvider.class,TurtleMediaTypeProvider.class,RDFXMLMediaTypeProvider.class);
+				addAsServiceProvider(IMediaTypeProvider.class,TurtleMediaTypeProvider.class,RDFXMLMediaTypeProvider.class).
+				addAsServiceProvider(org.ldp4j.application.spi.RuntimeInstance.class, InMemoryRuntimeInstance.class);
 		return coreArchive;
 	}
 

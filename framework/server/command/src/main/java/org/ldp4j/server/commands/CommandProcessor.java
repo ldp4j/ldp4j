@@ -39,6 +39,7 @@ import org.ldp4j.server.api.Endpoint;
 import org.ldp4j.server.api.EndpointFactory;
 import org.ldp4j.server.api.EndpointRegistrationException;
 import org.ldp4j.server.api.EndpointRegistry;
+import org.ldp4j.server.api.ImmutableContext;
 import org.ldp4j.server.api.MutableConfiguration;
 import org.ldp4j.server.api.ResourceIndex;
 import org.ldp4j.server.api.spi.ContentTransformationException;
@@ -219,7 +220,7 @@ abstract class CommandProcessor<T> {
 				if(resourceState!=null) {
 					EntityType rawEntity = resourceState.getEntity();
 					if(rawEntity!=null) {
-						builder.withContent(unmarshallContent(rawEntity,resourceIndex));
+						builder.withContent(unmarshallContent(path,rawEntity,resourceIndex));
 					}
 					String rawEtag = resourceState.getEtag();
 					if(rawEtag!=null) {
@@ -245,7 +246,7 @@ abstract class CommandProcessor<T> {
 		 * @throws AssertionError
 		 * @throws ContentTransformationException
 		 */
-		private DataSet unmarshallContent(EntityType rawEntity, ResourceIndex index) throws ContentTransformationException {
+		private DataSet unmarshallContent(String path,EntityType rawEntity, ResourceIndex index) throws ContentTransformationException {
 			MediaType mediaType=
 				FormatConverter.
 					parseFormat(rawEntity.getFormat().value());
@@ -253,7 +254,7 @@ abstract class CommandProcessor<T> {
 			if(provider==null){
 				throw new AssertionError("Could not create entity for unsupported media type '"+mediaType+"'");
 			}
-			return provider.unmarshallContent(rawEntity.getValue(),mediaType,index);
+			return provider.newUnmarshaller(ImmutableContext.newInstance(URI.create("http://www.example.org/").resolve(path),index)).unmarshall(rawEntity.getValue(),mediaType);
 		}
 
 	}

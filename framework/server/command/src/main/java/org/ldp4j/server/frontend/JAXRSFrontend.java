@@ -246,7 +246,6 @@ public class JAXRSFrontend {
 	}
 
 	@PATCH
-	// TODO: Need to define a mime for our patch format
 	@Path(ENDPOINT_PATH)
 	public Response patch(
 		@Context UriInfo uriInfo, 

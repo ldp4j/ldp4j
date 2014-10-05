@@ -24,18 +24,14 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.frontend;
+package org.ldp4j.server.api;
 
-import javax.ws.rs.core.Response;
+public interface Capabilities {
 
-import org.ldp4j.application.endpoint.Endpoint;
+	boolean isDeletable();
 
-public interface EndpointController {
-	
-	Endpoint endpoint();
-	
-	Response getResource(OperationContext context);
+	boolean isModifiable();
 
-	Response createResource(OperationContext context);
-	
+	boolean isPatchable();
+
 }

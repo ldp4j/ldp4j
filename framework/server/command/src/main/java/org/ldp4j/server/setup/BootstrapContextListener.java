@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.frontend;
+package org.ldp4j.server.setup;
 
 import java.util.Collection;
 import java.util.Enumeration;
@@ -49,8 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ServletContextListener to control the life cycle of the Linked Data Platform 
- * Server.
+ * ServletContextListener to control the life cycle of the LDP4j Server 
  * @since 1.0.0
  * @version 1.0
  */

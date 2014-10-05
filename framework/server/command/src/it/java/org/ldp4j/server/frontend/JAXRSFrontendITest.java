@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.api;
+package org.ldp4j.server.frontend;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -57,12 +57,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.ldp4j.server.api.CommandHelper;
+import org.ldp4j.server.api.IntegrationTestHelper;
 import org.ldp4j.server.commands.xml.CreateEndpoint;
 import org.ldp4j.server.commands.xml.EntityType;
 import org.ldp4j.server.commands.xml.ResourceStateType;
-import org.ldp4j.server.example.MyApplication;
 import org.ldp4j.server.testing.TestingApplicationBuilder;
-import org.ldp4j.testing.categories.DEBUG;
 import org.ldp4j.testing.categories.DELETE;
 import org.ldp4j.testing.categories.ExceptionPath;
 import org.ldp4j.testing.categories.HappyPath;
@@ -76,7 +76,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.net.HttpHeaders;
 
 @RunWith(Arquillian.class)
-public class LinkedDataPlatformServerITest {
+public class JAXRSFrontendITest {
 
 	private static final String NL = System.getProperty("line.separator");
 
@@ -92,7 +92,7 @@ public class LinkedDataPlatformServerITest {
 
 	private static final String DEPLOYMENT = "ldp4j-server-api-cr";
 	private static final String CONTROL_PHRASE = "Hello from Tomcat 7.0.20 ("+DEPLOYMENT+")";
-	private static final Logger LOGGER=LoggerFactory.getLogger(LinkedDataPlatformServerITest.class);
+	private static final Logger LOGGER=LoggerFactory.getLogger(JAXRSFrontendITest.class);
 
 	@Deployment(name=DEPLOYMENT, testable=false)
 	@TargetsContainer("tomcat-7.0.20")
@@ -146,7 +146,7 @@ public class LinkedDataPlatformServerITest {
 	}
 
 	// -------------------------------------------------------------------------
-	// LDP compliance tests
+	// Linked Data Platform tests
 	// -------------------------------------------------------------------------
 
 	@Test
@@ -168,19 +168,6 @@ public class LinkedDataPlatformServerITest {
 		HELPER.base(url);
 		HELPER.executeCommand(command);
 		HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
-	}
-	
-	@Test
-	@Category({
-		DEBUG.class,
-		LDP.class,
-		HappyPath.class
-	})
-	@OperateOnDeployment(DEPLOYMENT)
-	public void testEnhancedGet(@ArquillianResource final URL url) throws Exception {
-		HELPER.base(url);
-		HELPER.setLegacy(false);
-		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_PATH,HttpGet.class));
 	}
 	
 	@Test

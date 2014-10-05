@@ -43,6 +43,9 @@ import javax.ws.rs.core.UriInfo;
 import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.lifecycle.ApplicationState;
+import org.ldp4j.server.controller.EndpointController;
+import org.ldp4j.server.controller.EndpointControllerFactory;
+import org.ldp4j.server.controller.OperationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,7 +89,7 @@ public class ServerFrontend {
 	private final ApplicationContext applicationContext;
 
 	public ServerFrontend() {
-		this.appLifecyleListener = new LocalApplicationLifecycleListener();
+		this.appLifecyleListener=new LocalApplicationLifecycleListener();
 		this.applicationContext=ApplicationContext.currentContext();
 		this.applicationContext.registerApplicationLifecycleListener(this.appLifecyleListener);
 		this.endpointControllerfactory=
@@ -94,6 +97,36 @@ public class ServerFrontend {
 				newInstance(this.applicationContext);
 	}
 	
+	/**
+	 * LDP 1.0 - 4.2.8.1 : "LDP servers must support the HTTP OPTIONS method."
+	 * HTTP/1.1 - 9.2 : The current support for the OPTIONS method
+	 * <b>discards</b> request entity-bodies and does not return a response
+	 * body.
+	 * 
+	 * @param uriInfo
+	 * @param path
+	 * @param headers
+	 * @param request
+	 * @return
+	 */
+	@OPTIONS
+	@Path(ENDPOINT_PATH)
+	public Response options(
+		@Context UriInfo uriInfo, 
+		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context HttpHeaders headers,
+		@Context Request request) {
+		EndpointController controller=this.endpointControllerfactory.createController(path);
+		OperationContext context = 
+			OperationContext.
+				builder(this.applicationContext,controller.endpoint()).
+					withUriInfo(uriInfo).
+					withHeaders(headers).
+					withRequest(request).
+					build();
+		return controller.options(context);
+	}
+
 	/**
 	 * LDP 1.0 - 4.2.6.1 LDP servers must support the HTTP HEAD method.
 	 * @param uriInfo
@@ -109,7 +142,15 @@ public class ServerFrontend {
 		@PathParam(ENDPOINT_PATH_PARAM) String path, 
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+		EndpointController controller=this.endpointControllerfactory.createController(path);
+		OperationContext context = 
+			OperationContext.
+				builder(this.applicationContext,controller.endpoint()).
+					withUriInfo(uriInfo).
+					withHeaders(headers).
+					withRequest(request).
+					build();
+		return controller.head(context);
 	}
 
 	@GET
@@ -138,7 +179,16 @@ public class ServerFrontend {
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
-		return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+		EndpointController controller=this.endpointControllerfactory.createController(path);
+		OperationContext context = 
+			OperationContext.
+				builder(this.applicationContext,controller.endpoint()).
+					withUriInfo(uriInfo).
+					withHeaders(headers).
+					withRequest(request).
+					withEntity(entity).
+					build();
+		return controller.modifyResource(context);
 	}
 	
 	@POST
@@ -167,13 +217,19 @@ public class ServerFrontend {
 		@Context UriInfo uriInfo, 
 		@PathParam(ENDPOINT_PATH_PARAM) String path, 
 		@Context HttpHeaders headers,
-		@Context Request request,
-		String entity) {
-		return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+		@Context Request request) {
+		EndpointController controller=this.endpointControllerfactory.createController(path);
+		OperationContext context = 
+			OperationContext.
+				builder(this.applicationContext,controller.endpoint()).
+					withUriInfo(uriInfo).
+					withHeaders(headers).
+					withRequest(request).
+					build();
+		return controller.deleteResource(context);
 	}
 
 	@PATCH
-	// TODO: Need to define a mime for our patch format
 	@Path(ENDPOINT_PATH)
 	public Response patch(
 		@Context UriInfo uriInfo, 
@@ -181,28 +237,16 @@ public class ServerFrontend {
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
-		return Response.status(Status.INTERNAL_SERVER_ERROR).build();
+		EndpointController controller=this.endpointControllerfactory.createController(path);
+		OperationContext context = 
+			OperationContext.
+				builder(this.applicationContext,controller.endpoint()).
+					withUriInfo(uriInfo).
+					withHeaders(headers).
+					withRequest(request).
+					withEntity(entity).
+					build();
+		return controller.patchResource(context);
 	}
 
-	/**
-	 * LDP 1.0 - 4.2.8.1 : "LDP servers must support the HTTP OPTIONS method."
-	 * HTTP/1.1 - 9.2 : The current support for the OPTIONS method
-	 * <b>discards</b> request entity-bodies and does not return a response
-	 * body.
-	 * 
-	 * @param uriInfo
-	 * @param path
-	 * @param headers
-	 * @param request
-	 * @return
-	 */
-	@OPTIONS
-	@Path(ENDPOINT_PATH)
-	public Response options(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
-		@Context HttpHeaders headers,
-		@Context Request request) {
-		return Response.status(Status.INTERNAL_SERVER_ERROR).build();
-	}
 }

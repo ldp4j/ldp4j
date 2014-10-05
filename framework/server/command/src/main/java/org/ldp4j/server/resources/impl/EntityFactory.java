@@ -26,6 +26,7 @@
  */
 package org.ldp4j.server.resources.impl;
 
+import java.net.URI;
 import java.nio.charset.Charset;
 
 import javax.ws.rs.core.MediaType;
@@ -35,6 +36,7 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.server.api.Context;
 import org.ldp4j.server.api.Entity;
+import org.ldp4j.server.api.ImmutableContext;
 import org.ldp4j.server.api.ResourceIndex;
 import org.ldp4j.server.api.UnsupportedMediaTypeException;
 import org.ldp4j.server.api.spi.ContentTransformationException;
@@ -85,16 +87,17 @@ public final class EntityFactory {
 	 * 
 	 * @param content
 	 * @param type
+	 * @param base 
 	 * @return
 	 * @throws ContentTransformationException 
 	 * @throws UnsupportedMediaTypeException
 	 */
-	public Entity createEntity(final String content, final MediaType type) throws ContentTransformationException {
+	public Entity createEntity(final String content, final MediaType type, URI base) throws ContentTransformationException {
 		IMediaTypeProvider provider = RuntimeInstance.getInstance().getMediaTypeProvider(type);
 		if(provider==null){
 			throw new UnsupportedMediaTypeException("Could not create entity for unsupported media type '"+type+"'",type);
 		}
-		return createEntity(provider.unmarshallContent(content,type,index));
+		return createEntity(provider.newUnmarshaller(ImmutableContext.newInstance(base, index)).unmarshall(content,type));
 	}
 	
 	/**
@@ -107,8 +110,8 @@ public final class EntityFactory {
 	 * @throws UnsupportedMediaTypeException the unsupported media type exception
 	 * @throws ContentTransformationException the content transformation exception
 	 */
-	public Entity createEntity(byte[] content, Charset charset, MediaType type) throws ContentTransformationException {
-		return createEntity(new String(content,charset),type);
+	public Entity createEntity(byte[] content, Charset charset, MediaType type, URI base) throws ContentTransformationException {
+		return createEntity(new String(content,charset),type,base);
 	}
 
 	public static Entity createEntity(DataSet content) {

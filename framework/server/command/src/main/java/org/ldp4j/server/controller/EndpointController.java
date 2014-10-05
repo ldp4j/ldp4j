@@ -24,38 +24,28 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.commands.xml;
+package org.ldp4j.server.controller;
 
-import org.ldp4j.server.api.MutableCapabilities;
-import org.ldp4j.server.commands.xml.EndpointConfiguration.Capabilities;
+import javax.ws.rs.core.Response;
 
-public final class CapabilitiesAdapter {
+import org.ldp4j.application.endpoint.Endpoint;
 
-	private CapabilitiesAdapter() {
-	}
+public interface EndpointController {
 	
-	public static org.ldp4j.server.api.Capabilities toEndpointCapabilities(Capabilities capabilities) {
-		Capabilities tmp=capabilities;
-		if(tmp==null) {
-			tmp=new Capabilities();
-		}
-		return 
-			new MutableCapabilities().
-				withDeletable(tmp.deletable).
-				withModifiable(tmp.modifiable).
-				withPatchable(tmp.patchable);
-	}
+	Endpoint endpoint();
 	
-	public static Capabilities fromEndpointCapabilities(org.ldp4j.server.api.Capabilities capabilities) {
-		org.ldp4j.server.api.Capabilities tmp=capabilities;
-		if(tmp==null) {
-			tmp=new MutableCapabilities();
-		}
-		return 
-			new Capabilities().
-				withDeletable(tmp.isDeletable()).
-				withModifiable(tmp.isModifiable()).
-				withPatchable(tmp.isPatchable());
-	}
+	Response options(OperationContext context);
+	
+	Response head(OperationContext context);
+	
+	Response createResource(OperationContext context);
+
+	Response getResource(OperationContext context);
+
+	Response modifyResource(OperationContext context);
+
+	Response deleteResource(OperationContext context);
+
+	Response patchResource(OperationContext context);
 	
 }

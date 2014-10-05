@@ -28,7 +28,6 @@ package org.ldp4j.server.api.impl;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.net.URI;
 import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
@@ -36,16 +35,15 @@ import javax.ws.rs.core.MediaType;
 import org.ldp4j.rdf.Format;
 import org.ldp4j.rdf.RDFContext;
 import org.ldp4j.rdf.Triple;
+import org.ldp4j.server.api.Context;
 import org.ldp4j.server.api.spi.ContentTransformationException;
 
 import com.google.common.collect.ImmutableSet;
 
 public class TurtleMediaTypeProvider extends AbstractMediaTypeProvider {
 
-	// TODO: Find out a way for determining the base to be used in the serialization/deserialization...
-	private static final String DEFAULT_BASE = "http://www.ldp4j.org";
-
 	private static final MediaType MEDIA_TYPE = new MediaType("text","turtle");
+
 	private static final Set<MediaType> SUPPORTED_MEDIA_TYPES = ImmutableSet.<MediaType>builder().add(MEDIA_TYPE).build();
 
 	@Override
@@ -54,21 +52,21 @@ public class TurtleMediaTypeProvider extends AbstractMediaTypeProvider {
 	}
 
 	@Override
-	protected Iterable<Triple> doUnmarshallContent(String content, MediaType type) throws ContentTransformationException {
+	protected Iterable<Triple> doUnmarshallContent(Context context, String content, MediaType type) throws ContentTransformationException {
 		try {
-			RDFContext context = RDFContext.createContext(URI.create(DEFAULT_BASE));
-			return context.deserialize(content, Format.TURTLE);
+			RDFContext rdfContext = RDFContext.createContext(context.getBase());
+			return rdfContext.deserialize(content, Format.TURTLE);
 		} catch (IOException e) {
 			throw new ContentTransformationException("Could not unmarshall contents",e);
 		}
 	}
 
 	@Override
-	protected String doMarshalContent(Iterable<Triple> content, MediaType type) throws ContentTransformationException {
+	protected String doMarshallContent(Context context, Iterable<Triple> content, MediaType type) throws ContentTransformationException {
 		try {
-			RDFContext context = RDFContext.createContext(URI.create(DEFAULT_BASE));
+			RDFContext rdfContext = RDFContext.createContext(context.getBase());
 			StringWriter writer = new StringWriter();
-			context.serialize(content, Format.TURTLE, writer);
+			rdfContext.serialize(content, Format.TURTLE, writer);
 			return writer.toString(); 
 		} catch (IOException e) {
 			throw new ContentTransformationException("Could not marshall contents",e);

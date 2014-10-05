@@ -26,7 +26,6 @@
  */
 package org.ldp4j.server.api;
 
-import org.ldp4j.server.deployment.Capabilities;
 
 import com.google.common.base.Objects;
 
