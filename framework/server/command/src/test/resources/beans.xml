@@ -97,11 +97,18 @@
 		</jaxrs:outInterceptors>
  -->
 		<jaxrs:providers>
-			<bean id="pfeMapper" class="org.ldp4j.server.api.providers.PreconditionFailedExceptionMapper"/>
-			<bean id="naeMapper" class="org.ldp4j.server.api.providers.NotAcceptableExceptionMapper"/>
-			<bean id="uceMapper" class="org.ldp4j.server.api.providers.UnsupportedContentExceptionMapper"/>
-			<bean id="mceMapper" class="org.ldp4j.server.api.providers.MissingContentExceptionMapper"/>
-			<bean id="mcteMapper" class="org.ldp4j.server.api.providers.MissingContentTypeExceptionMapper"/>
+			<!-- Legacy mappers -->
+			<bean id="lpfeMapper" class="org.ldp4j.server.api.providers.PreconditionFailedExceptionMapper"/>
+			<bean id="lnaeMapper" class="org.ldp4j.server.api.providers.NotAcceptableExceptionMapper"/>
+			<bean id="liuceMapper" class="org.ldp4j.server.api.providers.UnsupportedContentExceptionMapper"/>
+			<bean id="lmceMapper" class="org.ldp4j.server.api.providers.MissingContentExceptionMapper"/>
+			<bean id="lmcteMapper" class="org.ldp4j.server.api.providers.MissingContentTypeExceptionMapper"/>
+			<bean id="pfeMapper"  class="org.ldp4j.server.controller.providers.PreconditionFailedExceptionMapper"/>
+			<bean id="naeMapper"  class="org.ldp4j.server.controller.providers.NotAcceptableExceptionMapper"/>
+			<bean id="uceMapper"  class="org.ldp4j.server.controller.providers.UnsupportedContentExceptionMapper"/>
+			<bean id="mceMapper"  class="org.ldp4j.server.controller.providers.MissingContentExceptionMapper"/>
+			<bean id="mcteMapper" class="org.ldp4j.server.controller.providers.MissingContentTypeExceptionMapper"/>
+			<bean id="mnaMapper"  class="org.ldp4j.server.controller.providers.MethodNotAllowedExceptionMapper"/>
 		</jaxrs:providers>
 	</jaxrs:server> 
 

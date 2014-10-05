@@ -26,47 +26,37 @@
  */
 package org.ldp4j.server.controller;
 
-import java.net.URI;
-
-import javax.ws.rs.core.Variant;
-
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.controller.OperationContextImpl.InteractionModel;
+import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.server.resources.ResourceType;
 
-public interface OperationContext {
+public class MethodNotAllowedException extends RuntimeException {
 
-	URI base();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3661009844197939466L;
 
-	String path();
+	private final Operation operation;
+	private final Endpoint endpoint;
+	private final ResourceType resourceType;
 
-	InteractionModel interactionModel();
+	public MethodNotAllowedException(Operation operation, Endpoint endpoint, ResourceType resourceType) {
+		this.operation = operation;
+		this.endpoint = endpoint;
+		this.resourceType = resourceType;
+	}
 
-	ApplicationContext applicationContext();
+	public Operation getOperation() {
+		return operation;
+	}
 
-	DataSet dataSet();
+	public Endpoint getEndpoint() {
+		return endpoint;
+	}
 
-	OperationContext checkContents();
+	public ResourceType getResourceType() {
+		return resourceType;
+	}
 
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	URI resolve(Resource newResource);
-
-	ResourceType resourceType();
-
-	Entity createEntity(DataSet resource);
-
-	ResourceIndex resourceIndex();
-
-	Capabilities endpointCapabilities();
-
-	Variant expectedVariant();
 
 }

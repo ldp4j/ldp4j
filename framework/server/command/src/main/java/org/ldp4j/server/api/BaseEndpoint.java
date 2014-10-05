@@ -40,13 +40,13 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.server.api.spi.ContentTransformationException;
-import org.ldp4j.server.api.spi.RuntimeInstance;
 import org.ldp4j.server.api.utils.ProtocolUtils;
-import org.ldp4j.server.api.utils.VariantUtils;
 import org.ldp4j.server.blueprint.ComponentRegistry;
 import org.ldp4j.server.resources.Resource;
 import org.ldp4j.server.resources.ResourceType;
+import org.ldp4j.server.spi.ContentTransformationException;
+import org.ldp4j.server.spi.RuntimeInstance;
+import org.ldp4j.server.utils.VariantUtils;
 
 import com.google.common.base.Throwables;
 

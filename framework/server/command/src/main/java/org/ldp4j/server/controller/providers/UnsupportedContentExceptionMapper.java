@@ -24,49 +24,26 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.controller.providers;
 
-import java.net.URI;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-import javax.ws.rs.core.Variant;
+import org.ldp4j.server.controller.UnsupportedContentException;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.controller.OperationContextImpl.InteractionModel;
-import org.ldp4j.server.resources.ResourceType;
+@Provider
+public class UnsupportedContentExceptionMapper implements ExceptionMapper<UnsupportedContentException> {
 
-public interface OperationContext {
-
-	URI base();
-
-	String path();
-
-	InteractionModel interactionModel();
-
-	ApplicationContext applicationContext();
-
-	DataSet dataSet();
-
-	OperationContext checkContents();
-
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	URI resolve(Resource newResource);
-
-	ResourceType resourceType();
-
-	Entity createEntity(DataSet resource);
-
-	ResourceIndex resourceIndex();
-
-	Capabilities endpointCapabilities();
-
-	Variant expectedVariant();
+	@Override
+	public Response toResponse(UnsupportedContentException throwable) {
+		return 
+			ContentProcessingExceptionSupport.
+				getFailureResponse(
+					Status.UNSUPPORTED_MEDIA_TYPE,
+					"Unsupported media type. Expecting ", 
+					throwable);
+	}
 
 }

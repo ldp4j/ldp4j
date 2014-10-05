@@ -24,49 +24,34 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.controller.providers;
 
-import java.net.URI;
+import java.util.Locale;
 
-import javax.ws.rs.core.Variant;
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.controller.OperationContextImpl.InteractionModel;
-import org.ldp4j.server.resources.ResourceType;
+import org.ldp4j.server.api.PreconditionFailedException;
+import org.ldp4j.server.api.utils.ProtocolUtils;
 
-public interface OperationContext {
+@Provider
+public class PreconditionFailedExceptionMapper implements ExceptionMapper<PreconditionFailedException> {
 
-	URI base();
-
-	String path();
-
-	InteractionModel interactionModel();
-
-	ApplicationContext applicationContext();
-
-	DataSet dataSet();
-
-	OperationContext checkContents();
-
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	URI resolve(Resource newResource);
-
-	ResourceType resourceType();
-
-	Entity createEntity(DataSet resource);
-
-	ResourceIndex resourceIndex();
-
-	Capabilities endpointCapabilities();
-
-	Variant expectedVariant();
+	@Override
+	public Response toResponse(PreconditionFailedException throwable) {
+		String message = String.format("Precondition failed");
+		ResponseBuilder builder=
+			Response.
+				status(throwable.getStatusCode()).
+				language(Locale.ENGLISH).
+				type(MediaType.TEXT_PLAIN).
+				entity(message);
+		ProtocolUtils.populateEndorsedHeaders(throwable.getResource(), builder);
+		ProtocolUtils.populateSpecificHeaders(throwable.getResource(), builder);
+		return builder.build();
+	}
 
 }

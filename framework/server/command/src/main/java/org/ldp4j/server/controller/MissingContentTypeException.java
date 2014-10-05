@@ -24,35 +24,17 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.api.spi;
+package org.ldp4j.server.controller;
 
-import java.util.Set;
+import org.ldp4j.application.endpoint.Endpoint;
 
-import javax.ws.rs.core.MediaType;
 
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.server.api.Context;
+public class MissingContentTypeException extends ContentProcessingException {
 
-public interface IMediaTypeProvider {
+	private static final long serialVersionUID = -4089212032162404842L;
 
-	public interface Marshaller {
-		
-		String marshall(DataSet content, MediaType targetMediaType) throws ContentTransformationException;
-		
-	}
-	
-	public interface Unmarshaller {
-		
-		DataSet unmarshall(String content, MediaType targetMediaType) throws ContentTransformationException;
-		
+	public MissingContentTypeException(Endpoint endpoint, OperationContext context) {
+		super("No content type header specified",endpoint,context);
 	}
 
-	boolean isSupported(MediaType type);
-
-	Set<MediaType> getSupportedMediaTypes();
-
-	Marshaller newMarshaller(Context configuration);
-
-	Unmarshaller newUnmarshaller(Context configuration);
-	
 }

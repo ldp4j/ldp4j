@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.api.impl;
+package org.ldp4j.server.impl;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetUtils;

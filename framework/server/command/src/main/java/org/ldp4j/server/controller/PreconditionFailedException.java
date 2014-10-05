@@ -26,47 +26,28 @@
  */
 package org.ldp4j.server.controller;
 
-import java.net.URI;
+import org.ldp4j.server.resources.Resource;
 
-import javax.ws.rs.core.Variant;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.controller.OperationContextImpl.InteractionModel;
-import org.ldp4j.server.resources.ResourceType;
+public class PreconditionFailedException extends RuntimeException {
 
-public interface OperationContext {
+	private static final long serialVersionUID = 2525728579639037053L;
 
-	URI base();
+	private final int statusCode;
+	private final transient Resource resource;
 
-	String path();
+	public PreconditionFailedException(Resource resource, int statusCode) {
+		this.resource = resource;
+		this.statusCode = statusCode;
 
-	InteractionModel interactionModel();
+	}
 
-	ApplicationContext applicationContext();
+	public int getStatusCode() {
+		return statusCode;
+	}
 
-	DataSet dataSet();
-
-	OperationContext checkContents();
-
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	URI resolve(Resource newResource);
-
-	ResourceType resourceType();
-
-	Entity createEntity(DataSet resource);
-
-	ResourceIndex resourceIndex();
-
-	Capabilities endpointCapabilities();
-
-	Variant expectedVariant();
+	public Resource getResource() {
+		return resource;
+	}
 
 }

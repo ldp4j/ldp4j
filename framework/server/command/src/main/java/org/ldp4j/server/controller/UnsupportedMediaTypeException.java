@@ -26,47 +26,21 @@
  */
 package org.ldp4j.server.controller;
 
-import java.net.URI;
+import javax.ws.rs.core.MediaType;
 
-import javax.ws.rs.core.Variant;
+public class UnsupportedMediaTypeException extends RuntimeException {
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.controller.OperationContextImpl.InteractionModel;
-import org.ldp4j.server.resources.ResourceType;
+	private static final long serialVersionUID = -856966985917886692L;
 
-public interface OperationContext {
+	private final transient MediaType type;
+	
+	public UnsupportedMediaTypeException(String message, MediaType type) {
+		super(message);
+		this.type = type;
+	}
 
-	URI base();
-
-	String path();
-
-	InteractionModel interactionModel();
-
-	ApplicationContext applicationContext();
-
-	DataSet dataSet();
-
-	OperationContext checkContents();
-
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	URI resolve(Resource newResource);
-
-	ResourceType resourceType();
-
-	Entity createEntity(DataSet resource);
-
-	ResourceIndex resourceIndex();
-
-	Capabilities endpointCapabilities();
-
-	Variant expectedVariant();
+	public MediaType getType() {
+		return type;
+	}
 
 }

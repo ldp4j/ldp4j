@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.api.impl;
+package org.ldp4j.server.impl;
 
 
 import static org.ldp4j.rdf.util.RDFModelDSL.uriRef;
@@ -56,6 +56,7 @@ import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.rdf.URIRef;
 import org.ldp4j.server.api.ImmutableContext;
 import org.ldp4j.server.api.ResourceIndex;
+import org.ldp4j.server.impl.TurtleMediaTypeProvider;
 
 @RunWith(JMockit.class)
 public class TurtleMediaTypeProviderTest {

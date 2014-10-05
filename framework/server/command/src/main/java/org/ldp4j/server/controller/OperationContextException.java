@@ -26,47 +26,49 @@
  */
 package org.ldp4j.server.controller;
 
-import java.net.URI;
+import org.ldp4j.application.endpoint.Endpoint;
 
-import javax.ws.rs.core.Variant;
+public class OperationContextException extends RuntimeException {
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.controller.OperationContextImpl.InteractionModel;
-import org.ldp4j.server.resources.ResourceType;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 5924666884556832771L;
 
-public interface OperationContext {
+	private final OperationContext operationContext;
 
-	URI base();
+	private final Endpoint endpoint;
 
-	String path();
+	public OperationContextException(Endpoint endpoint, OperationContext operationContext) {
+		super();
+		this.endpoint = endpoint;
+		this.operationContext = operationContext;
+	}
 
-	InteractionModel interactionModel();
+	public OperationContextException(String message, Throwable cause, Endpoint endpoint, OperationContext operationContext) {
+		super(message, cause);
+		this.endpoint = endpoint;
+		this.operationContext = operationContext;
+	}
 
-	ApplicationContext applicationContext();
+	public OperationContextException(String message, Endpoint endpoint, OperationContext operationContext) {
+		super(message);
+		this.endpoint = endpoint;
+		this.operationContext = operationContext;
+	}
 
-	DataSet dataSet();
+	public OperationContextException(Throwable cause, Endpoint endpoint, OperationContext operationContext) {
+		super(cause);
+		this.endpoint = endpoint;
+		this.operationContext = operationContext;
+	}
 
-	OperationContext checkContents();
+	public OperationContext getOperationContext() {
+		return operationContext;
+	}
 
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	URI resolve(Resource newResource);
-
-	ResourceType resourceType();
-
-	Entity createEntity(DataSet resource);
-
-	ResourceIndex resourceIndex();
-
-	Capabilities endpointCapabilities();
-
-	Variant expectedVariant();
+	public Endpoint getEndpoint() {
+		return endpoint;
+	}
 
 }

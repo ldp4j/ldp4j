@@ -90,7 +90,7 @@ public class JAXRSFrontendITest {
 			"_:inference a sav:Inference ;"+NL+
 			"	sav:uses <dataSet1>, <vocabulary1> .";
 
-	private static final String DEPLOYMENT = "ldp4j-server-api-cr";
+	private static final String DEPLOYMENT = "ldp4j-server-legacy-cr";
 	private static final String CONTROL_PHRASE = "Hello from Tomcat 7.0.20 ("+DEPLOYMENT+")";
 	private static final Logger LOGGER=LoggerFactory.getLogger(JAXRSFrontendITest.class);
 

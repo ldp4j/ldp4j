@@ -24,17 +24,22 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.api.spi;
+package org.ldp4j.server.controller;
 
-public class ContentTransformationException extends Exception {
+import javax.ws.rs.core.Variant;
+
+import org.ldp4j.application.endpoint.Endpoint;
+
+
+public class UnsupportedContentException extends ContentProcessingException {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 6991285594220399831L;
+	private static final long serialVersionUID = -7271633668400276805L;
 
-	public ContentTransformationException(String message, Throwable t) {
-		super(message,t);
+	public UnsupportedContentException(Endpoint endpoint, OperationContext context, Variant variant) {
+		super("Unsupported content exception ("+variant+")",endpoint,context);
 	}
 
 }

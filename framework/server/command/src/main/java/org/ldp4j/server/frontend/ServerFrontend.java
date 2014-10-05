@@ -37,7 +37,6 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
 import org.ldp4j.application.ApplicationContext;
@@ -45,7 +44,9 @@ import org.ldp4j.application.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.lifecycle.ApplicationState;
 import org.ldp4j.server.controller.EndpointController;
 import org.ldp4j.server.controller.EndpointControllerFactory;
+import org.ldp4j.server.controller.Operation;
 import org.ldp4j.server.controller.OperationContext;
+import org.ldp4j.server.controller.OperationContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,9 +85,11 @@ public class ServerFrontend {
 
 	private final LocalApplicationLifecycleListener appLifecyleListener;
 
-	private EndpointControllerFactory endpointControllerfactory;
-
 	private final ApplicationContext applicationContext;
+
+	private final EndpointControllerFactory endpointControllerfactory;
+
+	private final OperationContextFactory operationContextFactory;
 
 	public ServerFrontend() {
 		this.appLifecyleListener=new LocalApplicationLifecycleListener();
@@ -94,6 +97,9 @@ public class ServerFrontend {
 		this.applicationContext.registerApplicationLifecycleListener(this.appLifecyleListener);
 		this.endpointControllerfactory=
 			EndpointControllerFactory.
+				newInstance(this.applicationContext);
+		this.operationContextFactory=
+			OperationContextFactory.
 				newInstance(this.applicationContext);
 	}
 	
@@ -116,17 +122,20 @@ public class ServerFrontend {
 		@PathParam(ENDPOINT_PATH_PARAM) String path, 
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		EndpointController controller=this.endpointControllerfactory.createController(path);
+		EndpointController controller=
+			this.endpointControllerfactory.
+				createController(path);
 		OperationContext context = 
-			OperationContext.
-				builder(this.applicationContext,controller.endpoint()).
+			this.operationContextFactory.
+				forOperation(Operation.OPTIONS).
+					withEndpoint(controller.endpoint()).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
 					build();
 		return controller.options(context);
 	}
-
+	
 	/**
 	 * LDP 1.0 - 4.2.6.1 LDP servers must support the HTTP HEAD method.
 	 * @param uriInfo
@@ -142,10 +151,13 @@ public class ServerFrontend {
 		@PathParam(ENDPOINT_PATH_PARAM) String path, 
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		EndpointController controller=this.endpointControllerfactory.createController(path);
+		EndpointController controller=
+			this.endpointControllerfactory.
+				createController(path);
 		OperationContext context = 
-			OperationContext.
-				builder(this.applicationContext,controller.endpoint()).
+			this.operationContextFactory.
+				forOperation(Operation.HEAD).
+					withEndpoint(controller.endpoint()).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -160,10 +172,13 @@ public class ServerFrontend {
 		@PathParam(ENDPOINT_PATH_PARAM) String path, 
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		EndpointController controller=this.endpointControllerfactory.createController(path);
+		EndpointController controller=
+			this.endpointControllerfactory.
+				createController(path);
 		OperationContext context = 
-			OperationContext.
-				builder(this.applicationContext,controller.endpoint()).
+			this.operationContextFactory.
+				forOperation(Operation.GET).
+					withEndpoint(controller.endpoint()).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -179,10 +194,13 @@ public class ServerFrontend {
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
-		EndpointController controller=this.endpointControllerfactory.createController(path);
+		EndpointController controller=
+			this.endpointControllerfactory.
+				createController(path);
 		OperationContext context = 
-			OperationContext.
-				builder(this.applicationContext,controller.endpoint()).
+			this.operationContextFactory.
+				forOperation(Operation.PUT).
+					withEndpoint(controller.endpoint()).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -199,10 +217,13 @@ public class ServerFrontend {
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
-		EndpointController controller=this.endpointControllerfactory.createController(path);
+		EndpointController controller=
+			this.endpointControllerfactory.
+				createController(path);
 		OperationContext context = 
-			OperationContext.
-				builder(this.applicationContext,controller.endpoint()).
+			this.operationContextFactory.
+				forOperation(Operation.POST).
+					withEndpoint(controller.endpoint()).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -218,10 +239,13 @@ public class ServerFrontend {
 		@PathParam(ENDPOINT_PATH_PARAM) String path, 
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		EndpointController controller=this.endpointControllerfactory.createController(path);
+		EndpointController controller=
+			this.endpointControllerfactory.
+				createController(path);
 		OperationContext context = 
-			OperationContext.
-				builder(this.applicationContext,controller.endpoint()).
+			this.operationContextFactory.
+				forOperation(Operation.DELETE).
+					withEndpoint(controller.endpoint()).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -237,10 +261,13 @@ public class ServerFrontend {
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
-		EndpointController controller=this.endpointControllerfactory.createController(path);
+		EndpointController controller=
+			this.endpointControllerfactory.
+				createController(path);
 		OperationContext context = 
-			OperationContext.
-				builder(this.applicationContext,controller.endpoint()).
+			this.operationContextFactory.
+				forOperation(Operation.PATCH).
+					withEndpoint(controller.endpoint()).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).

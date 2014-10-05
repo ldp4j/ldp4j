@@ -24,12 +24,41 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-/**
- * <h1>LDP4j ServerComponentDirectory SPI</h1>
- * <br />
- * <br />
- * The Service Provider Interfaces that is part of the <i>LDP4j ServerComponentDirectory</i>, which
- * provides the means for creating third party implementations or extensions of 
- * the <i>LDP4j ServerComponentDirectory</i>.
- */
-package org.ldp4j.server.api.spi;
+package org.ldp4j.server.controller.providers;
+
+import javax.ws.rs.core.Context;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
+
+import org.ldp4j.server.controller.EndpointControllerUtils;
+import org.ldp4j.server.controller.MethodNotAllowedException;
+
+@Provider
+public class MethodNotAllowedExceptionMapper implements ExceptionMapper<MethodNotAllowedException> {
+
+	private UriInfo uriInfo;
+	
+	@Context
+	public void setUriInfo(UriInfo info) {
+		uriInfo = info;
+	}
+	
+	public UriInfo getUriInfo() {
+		return uriInfo;
+	}
+	
+	@Override
+	public Response toResponse(MethodNotAllowedException throwable) {
+		ResponseBuilder builder = 
+			Response.
+				status(Status.METHOD_NOT_ALLOWED);
+		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder, throwable.getEndpoint());
+		EndpointControllerUtils.populateProtocolSpecificHeaders(builder, throwable.getResourceType());
+		return builder.build();
+	}
+
+}

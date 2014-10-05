@@ -56,6 +56,10 @@ import org.slf4j.LoggerFactory;
 @WebListener
 public final class BootstrapContextListener implements ServletContextListener {
 	
+	private static final String SERVER_SHUTDOWN_LOGGING       = "org.ldp4j.server.bootstrap.logging.shutdown";
+	private static final String SERVER_UPDATE_LOGGING         = "org.ldp4j.server.bootstrap.logging.update";
+	private static final String SERVER_INITIALIZATION_LOGGING = "org.ldp4j.server.bootstrap.logging.initialization";
+
 	private static final String LDP4J_TARGET_APPLICATION = "ldp4jTargetApplication";
 
 	private static final class BootstrapServletContextAttributeListener implements ServletContextAttributeListener {
@@ -183,7 +187,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
-		if(Boolean.parseBoolean(System.getProperty("org.ldp4j.server.bootstrap.logging.update"))) {
+		if(isEnabled(SERVER_UPDATE_LOGGING)) {
 			sce.
 				getServletContext().
 					addListener(
@@ -191,7 +195,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 					);
 		}
 
-		if(Boolean.parseBoolean(System.getProperty("org.ldp4j.server.bootstrap.logging.initialization"))) {
+		if(isEnabled(SERVER_INITIALIZATION_LOGGING)) {
 			LOGGER.info(dumpContext("Context initialization started",sce.getServletContext()));
 		}
 
@@ -206,12 +210,12 @@ public final class BootstrapContextListener implements ServletContextListener {
 	}
 
 	private String getTargetApplicationClassName(ServletContextEvent sce) {
-		return sce.getServletContext().getInitParameter(LDP4J_TARGET_APPLICATION).toString();
+		return sce.getServletContext().getInitParameter(LDP4J_TARGET_APPLICATION);
 	}
 
 	@Override
 	public void contextDestroyed(ServletContextEvent sce) {
-		if(Boolean.parseBoolean(System.getProperty("org.ldp4j.server.bootstrap.logging.shutdown"))) {
+		if(isEnabled(SERVER_SHUTDOWN_LOGGING)) {
 			LOGGER.info(dumpContext("Context shutdown started",sce.getServletContext()));
 		}
 
@@ -220,6 +224,14 @@ public final class BootstrapContextListener implements ServletContextListener {
 			String targetApplicationClassName = getTargetApplicationClassName(sce);
 			LOGGER.info("LDP4j application "+applicationContext.applicationName()+" ("+targetApplicationClassName+") shutdown");
 		}
+	}
+
+	/**
+	 * @param property
+	 * @return
+	 */
+	protected boolean isEnabled(String property) {
+		return Boolean.parseBoolean(System.getProperty(property));
 	}
 
 }

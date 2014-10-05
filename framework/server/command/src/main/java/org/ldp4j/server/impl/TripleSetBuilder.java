@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.api.impl;
+package org.ldp4j.server.impl;
 
 import static org.ldp4j.rdf.util.RDFModelDSL.blankNode;
 import static org.ldp4j.rdf.util.RDFModelDSL.triple;

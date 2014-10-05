@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.api.utils;
+package org.ldp4j.server.utils;
 
 import java.util.Collection;
 import java.util.Iterator;
@@ -34,7 +34,7 @@ import java.util.Locale;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.server.api.spi.RuntimeInstance;
+import org.ldp4j.server.spi.RuntimeInstance;
 
 public final class VariantUtils {
 

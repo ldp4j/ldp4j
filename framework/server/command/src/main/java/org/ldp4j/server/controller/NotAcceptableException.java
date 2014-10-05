@@ -26,47 +26,31 @@
  */
 package org.ldp4j.server.controller;
 
-import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.controller.OperationContextImpl.InteractionModel;
-import org.ldp4j.server.resources.ResourceType;
+import org.ldp4j.server.resources.Resource;
 
-public interface OperationContext {
+public class NotAcceptableException extends RuntimeException {
 
-	URI base();
+	private static final long serialVersionUID = 6897847237787548607L;
 
-	String path();
+	private final transient List<Variant> variants;
+	private final transient Resource resource;
 
-	InteractionModel interactionModel();
+	public NotAcceptableException(Resource resource, List<Variant> variants) {
+		this.resource=resource;
+		this.variants=new ArrayList<Variant>(variants);
+	}
 
-	ApplicationContext applicationContext();
+	public List<Variant> getVariants() {
+		return variants;
+	}
 
-	DataSet dataSet();
-
-	OperationContext checkContents();
-
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	URI resolve(Resource newResource);
-
-	ResourceType resourceType();
-
-	Entity createEntity(DataSet resource);
-
-	ResourceIndex resourceIndex();
-
-	Capabilities endpointCapabilities();
-
-	Variant expectedVariant();
+	public Resource getResource() {
+		return resource;
+	}
 
 }

@@ -42,9 +42,6 @@ import org.ldp4j.server.api.EndpointRegistry;
 import org.ldp4j.server.api.ImmutableContext;
 import org.ldp4j.server.api.MutableConfiguration;
 import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.api.spi.ContentTransformationException;
-import org.ldp4j.server.api.spi.IMediaTypeProvider;
-import org.ldp4j.server.api.spi.RuntimeInstance;
 import org.ldp4j.server.blueprint.ComponentRegistry;
 import org.ldp4j.server.commands.xml.CreateEndpoint;
 import org.ldp4j.server.commands.xml.DeleteEndpoint;
@@ -59,6 +56,9 @@ import org.ldp4j.server.resources.MembershipRelation;
 import org.ldp4j.server.resources.Resource;
 import org.ldp4j.server.resources.impl.ResourceBuilder;
 import org.ldp4j.server.resources.impl.ResourceBuilder.ContainerBuilder;
+import org.ldp4j.server.spi.ContentTransformationException;
+import org.ldp4j.server.spi.IMediaTypeProvider;
+import org.ldp4j.server.spi.RuntimeInstance;
 import org.ldp4j.server.xml.converters.FormatConverter;
 
 abstract class CommandProcessor<T> {

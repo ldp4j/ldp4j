@@ -24,49 +24,51 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.controller.providers;
 
-import java.net.URI;
+import java.util.List;
+import java.util.Locale;
 
+import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.controller.OperationContextImpl.InteractionModel;
-import org.ldp4j.server.resources.ResourceType;
+import org.ldp4j.server.controller.ContentProcessingException;
+import org.ldp4j.server.controller.EndpointControllerUtils;
+import org.ldp4j.server.utils.VariantUtils;
 
-public interface OperationContext {
+final class ContentProcessingExceptionSupport {
 
-	URI base();
+	private ContentProcessingExceptionSupport() {
+	}
+	
+	static String getFailureMessage(String message, List<Variant> variants) {
+		return 
+			new StringBuilder().
+				append(message).
+				append(variants.size()==1?"":"one of: ").
+				append(VariantUtils.toString(variants)).
+				toString(); 
+	}
 
-	String path();
-
-	InteractionModel interactionModel();
-
-	ApplicationContext applicationContext();
-
-	DataSet dataSet();
-
-	OperationContext checkContents();
-
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	URI resolve(Resource newResource);
-
-	ResourceType resourceType();
-
-	Entity createEntity(DataSet resource);
-
-	ResourceIndex resourceIndex();
-
-	Capabilities endpointCapabilities();
-
-	Variant expectedVariant();
+	static <T extends ContentProcessingException> Response getFailureResponse(
+			Status status,
+			String message, 
+			T throwable) {
+		ResponseBuilder builder=
+			Response.
+				status(status).
+				language(Locale.ENGLISH).
+				type(MediaType.TEXT_PLAIN).
+				entity(
+					getFailureMessage(
+						message,
+						throwable.getSupportedVariants()));
+		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.getEndpoint());
+		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.getOperationContext().resourceType());
+		return builder.build();
+	}
 
 }

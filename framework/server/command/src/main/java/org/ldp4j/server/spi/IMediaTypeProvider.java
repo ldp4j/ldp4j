@@ -24,49 +24,35 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.spi;
 
-import java.net.URI;
+import java.util.Set;
 
-import javax.ws.rs.core.Variant;
+import javax.ws.rs.core.MediaType;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.controller.OperationContextImpl.InteractionModel;
-import org.ldp4j.server.resources.ResourceType;
+import org.ldp4j.server.api.Context;
 
-public interface OperationContext {
+public interface IMediaTypeProvider {
 
-	URI base();
+	public interface Marshaller {
+		
+		String marshall(DataSet content, MediaType targetMediaType) throws ContentTransformationException;
+		
+	}
+	
+	public interface Unmarshaller {
+		
+		DataSet unmarshall(String content, MediaType targetMediaType) throws ContentTransformationException;
+		
+	}
 
-	String path();
+	boolean isSupported(MediaType type);
 
-	InteractionModel interactionModel();
+	Set<MediaType> getSupportedMediaTypes();
 
-	ApplicationContext applicationContext();
+	Marshaller newMarshaller(Context configuration);
 
-	DataSet dataSet();
-
-	OperationContext checkContents();
-
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	URI resolve(Resource newResource);
-
-	ResourceType resourceType();
-
-	Entity createEntity(DataSet resource);
-
-	ResourceIndex resourceIndex();
-
-	Capabilities endpointCapabilities();
-
-	Variant expectedVariant();
-
+	Unmarshaller newUnmarshaller(Context configuration);
+	
 }

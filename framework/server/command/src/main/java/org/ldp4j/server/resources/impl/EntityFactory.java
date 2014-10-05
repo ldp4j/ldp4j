@@ -39,9 +39,9 @@ import org.ldp4j.server.api.Entity;
 import org.ldp4j.server.api.ImmutableContext;
 import org.ldp4j.server.api.ResourceIndex;
 import org.ldp4j.server.api.UnsupportedMediaTypeException;
-import org.ldp4j.server.api.spi.ContentTransformationException;
-import org.ldp4j.server.api.spi.IMediaTypeProvider;
-import org.ldp4j.server.api.spi.RuntimeInstance;
+import org.ldp4j.server.spi.ContentTransformationException;
+import org.ldp4j.server.spi.IMediaTypeProvider;
+import org.ldp4j.server.spi.RuntimeInstance;
 
 public final class EntityFactory {
 

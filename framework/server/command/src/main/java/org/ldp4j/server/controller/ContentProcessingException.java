@@ -26,47 +26,27 @@
  */
 package org.ldp4j.server.controller;
 
-import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.controller.OperationContextImpl.InteractionModel;
-import org.ldp4j.server.resources.ResourceType;
+import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.server.utils.VariantUtils;
 
-public interface OperationContext {
+public class ContentProcessingException extends OperationContextException {
 
-	URI base();
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -7271633668400276805L;
 
-	String path();
+	public ContentProcessingException(String message, Endpoint endpoint, OperationContext context) {
+		super(message,endpoint,context);
+	}
 
-	InteractionModel interactionModel();
-
-	ApplicationContext applicationContext();
-
-	DataSet dataSet();
-
-	OperationContext checkContents();
-
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	URI resolve(Resource newResource);
-
-	ResourceType resourceType();
-
-	Entity createEntity(DataSet resource);
-
-	ResourceIndex resourceIndex();
-
-	Capabilities endpointCapabilities();
-
-	Variant expectedVariant();
+	public final List<Variant> getSupportedVariants() {
+		return Collections.unmodifiableList(VariantUtils.defaultVariants());
+	}
 
 }

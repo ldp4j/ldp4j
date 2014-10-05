@@ -37,7 +37,7 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.server.api.ContentProcessingException;
 import org.ldp4j.server.api.utils.ProtocolUtils;
-import org.ldp4j.server.api.utils.VariantUtils;
+import org.ldp4j.server.utils.VariantUtils;
 
 final class ContentProcessingExceptionSupport {
 

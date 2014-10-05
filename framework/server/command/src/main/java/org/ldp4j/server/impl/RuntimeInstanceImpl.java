@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.api.impl;
+package org.ldp4j.server.impl;
 
 import java.util.Collections;
 import java.util.HashSet;
@@ -35,8 +35,8 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.ws.rs.core.MediaType;
 
-import org.ldp4j.server.api.spi.IMediaTypeProvider;
-import org.ldp4j.server.api.spi.RuntimeInstance;
+import org.ldp4j.server.spi.IMediaTypeProvider;
+import org.ldp4j.server.spi.RuntimeInstance;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
