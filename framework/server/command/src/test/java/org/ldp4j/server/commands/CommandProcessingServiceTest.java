@@ -39,7 +39,7 @@ import org.ldp4j.server.api.ComponentRegistryFactory;
 import org.ldp4j.server.api.Endpoint;
 import org.ldp4j.server.api.EndpointRegistry;
 import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.blueprint.ComponentRegistry;
+import org.ldp4j.server.api.blueprint.ComponentRegistry;
 import org.ldp4j.server.commands.xml.CreateEndpoint;
 import org.ldp4j.server.commands.xml.DeleteEndpoint;
 import org.ldp4j.server.commands.xml.EndpointConfiguration;

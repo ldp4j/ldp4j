@@ -41,8 +41,8 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.server.ImmutableContext;
+import org.ldp4j.server.api.blueprint.ComponentRegistry;
 import org.ldp4j.server.api.utils.ProtocolUtils;
-import org.ldp4j.server.blueprint.ComponentRegistry;
 import org.ldp4j.server.resources.Resource;
 import org.ldp4j.server.resources.ResourceType;
 import org.ldp4j.server.spi.ContentTransformationException;

@@ -36,8 +36,8 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.server.api.utils.ProtocolUtils;
-import org.ldp4j.server.api.utils.VariantHelper;
 import org.ldp4j.server.resources.Resource;
+import org.ldp4j.server.utils.VariantHelper;
 
 public final class EndpointHelper {
 	

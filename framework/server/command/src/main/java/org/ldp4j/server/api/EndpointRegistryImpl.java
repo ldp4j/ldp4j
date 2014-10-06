@@ -36,7 +36,7 @@ import java.util.Set;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.ldp4j.server.blueprint.ComponentRegistry;
+import org.ldp4j.server.api.blueprint.ComponentRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

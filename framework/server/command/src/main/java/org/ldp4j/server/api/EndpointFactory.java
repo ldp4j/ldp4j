@@ -34,7 +34,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.ldp4j.server.blueprint.ComponentRegistry;
+import org.ldp4j.server.api.blueprint.ComponentRegistry;
 import org.ldp4j.server.resources.Resource;
 
 

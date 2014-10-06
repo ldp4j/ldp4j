@@ -44,7 +44,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.server.blueprint.ComponentRegistry;
+import org.ldp4j.server.api.blueprint.ComponentRegistry;
 import org.mockito.Mockito;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;

@@ -26,8 +26,8 @@
  */
 package org.ldp4j.server.api;
 
-import org.ldp4j.server.blueprint.Component;
-import org.ldp4j.server.blueprint.ComponentRegistry;
+import org.ldp4j.server.api.blueprint.Component;
+import org.ldp4j.server.api.blueprint.ComponentRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

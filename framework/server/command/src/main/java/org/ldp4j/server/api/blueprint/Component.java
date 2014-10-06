@@ -24,27 +24,10 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.blueprint;
+package org.ldp4j.server.api.blueprint;
 
-import org.ldp4j.server.api.ComponentRegistryFactory;
-import org.ldp4j.server.api.EndpointRegistry;
-import org.ldp4j.server.api.ResourceIndex;
+public interface Component {
 
-public abstract class ComponentRegistry {
+	ComponentRegistry getRegistry();
 
-	private static ComponentRegistry INSTANCE;
-
-	public static synchronized ComponentRegistry getInstance() {
-		if(INSTANCE==null) {
-			INSTANCE=ComponentRegistryFactory.newInstance();
-		}
-		return INSTANCE;
-	}
-	
-	public abstract <T extends Component> T getComponent(Class<? extends T> componentClass);
-	
-	public abstract ResourceIndex getResourceIndex();
-	
-	public abstract EndpointRegistry getEndpointRegistry();
-	
 }

@@ -66,13 +66,13 @@ import org.ldp4j.application.template.TemplateVisitor;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.server.ImmutableContext;
 import org.ldp4j.server.ResourceResolver;
-import org.ldp4j.server.api.utils.VariantHelper;
 import org.ldp4j.server.resources.ResourceType;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;
 import org.ldp4j.server.spi.IMediaTypeProvider.Marshaller;
 import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;
 import org.ldp4j.server.spi.RuntimeInstance;
+import org.ldp4j.server.utils.VariantHelper;
 import org.ldp4j.server.utils.VariantUtils;
 
 

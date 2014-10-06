@@ -26,7 +26,7 @@
  */
 package org.ldp4j.server.api;
 
-import org.ldp4j.server.blueprint.ComponentRegistry;
+import org.ldp4j.server.api.blueprint.ComponentRegistry;
 
 public final class ComponentRegistryFactory {
 

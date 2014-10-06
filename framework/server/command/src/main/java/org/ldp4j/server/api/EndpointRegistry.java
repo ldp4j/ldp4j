@@ -28,7 +28,7 @@ package org.ldp4j.server.api;
 
 import java.net.URI;
 
-import org.ldp4j.server.blueprint.Component;
+import org.ldp4j.server.api.blueprint.Component;
 
 public interface EndpointRegistry extends Component {
 

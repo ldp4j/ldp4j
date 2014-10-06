@@ -30,7 +30,7 @@ import java.net.URI;
 
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.server.ResourceResolver;
-import org.ldp4j.server.blueprint.Component;
+import org.ldp4j.server.api.blueprint.Component;
 
 public interface ResourceIndex extends Component, ResourceResolver {
 
