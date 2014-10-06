@@ -28,18 +28,18 @@ package org.ldp4j.server.controller;
 
 import java.net.URI;
 
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.Capabilities;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ResourceIndex;
-import org.ldp4j.server.controller.OperationContextImpl.InteractionModel;
 import org.ldp4j.server.resources.ResourceType;
 
 public interface OperationContext {
+
+	ApplicationContext applicationContext();
 
 	URI base();
 
@@ -47,9 +47,9 @@ public interface OperationContext {
 
 	InteractionModel interactionModel();
 
-	ApplicationContext applicationContext();
-
 	DataSet dataSet();
+
+	Variant expectedVariant();
 
 	OperationContext checkContents();
 
@@ -59,14 +59,10 @@ public interface OperationContext {
 
 	URI resolve(Resource newResource);
 
-	ResourceType resourceType();
-
-	Entity createEntity(DataSet resource);
-
-	ResourceIndex resourceIndex();
-
 	Capabilities endpointCapabilities();
 
-	Variant expectedVariant();
+	ResourceType resourceType();
+
+	String serializeResource(DataSet resource, MediaType mediaType);
 
 }

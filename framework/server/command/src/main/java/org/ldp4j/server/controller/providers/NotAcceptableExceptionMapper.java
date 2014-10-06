@@ -40,7 +40,6 @@ import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.ldp4j.server.api.utils.ProtocolUtils;
 import org.ldp4j.server.controller.EndpointControllerUtils;
 import org.ldp4j.server.controller.NotAcceptableException;
 import org.ldp4j.server.utils.VariantUtils;
@@ -63,7 +62,7 @@ public class NotAcceptableExceptionMapper implements ExceptionMapper<NotAcceptab
 	public Response toResponse(NotAcceptableException throwable) {
 		List<Variant> variants = VariantUtils.defaultVariants();
 		URI resourceLocation = throwable.getOperationContext().base().resolve(throwable.getEndpoint().path());
-		String message = ProtocolUtils.getAcceptableContent(variants, resourceLocation);
+		String message = EndpointControllerUtils.getAcceptableContent(variants, resourceLocation);
 		ResponseBuilder builder=
 			Response.
 				status(Status.NOT_ACCEPTABLE).

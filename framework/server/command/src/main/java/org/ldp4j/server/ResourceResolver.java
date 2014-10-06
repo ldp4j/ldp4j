@@ -24,22 +24,16 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.api;
+package org.ldp4j.server;
 
 import java.net.URI;
 
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.server.ResourceResolver;
-import org.ldp4j.server.blueprint.Component;
 
-public interface ResourceIndex extends Component, ResourceResolver {
+public interface ResourceResolver {
 
-	boolean isPublished(ResourceId id);
+	URI resolveResource(ResourceId id);
 
-	boolean isActive(URI endpoint);
-
-	void publish(ResourceId id, URI path);
-
-	boolean unpublish(ResourceId id);
+	ResourceId resolveLocation(URI path);
 
 }

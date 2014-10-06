@@ -27,7 +27,9 @@
 package org.ldp4j.server.controller;
 
 import java.net.URI;
+import java.util.Locale;
 
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -39,9 +41,6 @@ import org.ldp4j.application.Capabilities;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ImmutableContext;
-import org.ldp4j.server.spi.ContentTransformationException;
 
 import com.google.common.base.Throwables;
 
@@ -54,141 +53,11 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		super(endpoint);
 	}
 
-	public Response options(OperationContext context) {
-		Capabilities capabilities=context.endpointCapabilities(); 
-		ResponseBuilder builder=
-			Response.
-				ok();
-		EndpointControllerUtils.populateAllowedHeaders(builder, capabilities);
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder, endpoint());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder, context.resourceType());
-		return builder.build();
-	}
-
-	public Response head(OperationContext context) {
-		return doGet(context, false);
-	}
-
-	public Response getResource(OperationContext context) {
-		return doGet(context, true);
-	}
-	
-	public Response deleteResource(OperationContext context) {
-		// 1. verify that we can carry out the operation
-		context.
-			checkOperationSupport().
-			checkPreconditions();
-	
-		Response response=null;
-		try {
-			context.applicationContext().deleteResource(endpoint());
-			response=Response.noContent().type(MediaType.TEXT_PLAIN).build();
-			// TODO: This could be improved by returning an OK with an
-			// additional description of all the resources that were deleted
-			// as a side effect.
-		} catch (ApplicationExecutionException e) {
-			ResponseBuilder builder = 
-				Response.
-					serverError().
-					entity(Throwables.getStackTraceAsString(e));
-			EndpointControllerUtils.populateProtocolEndorsedHeaders(builder, endpoint());
-			EndpointControllerUtils.populateProtocolSpecificHeaders(builder, context.resourceType());
-			response=builder.build();
-		}
-		return response;
-	}
-
-	@Override
-	public Response modifyResource(OperationContext context) {
-		// 1. verify that we can carry out the operation
-		context.
-			checkOperationSupport().
-			checkContents().
-			checkPreconditions();
-	
-		ResponseBuilder builder=Response.serverError();
-		String body=null;
-		Status status=null;
-	
-		// 2. determine the body and status of the response
-		try {
-			context.applicationContext().modifyResource(endpoint(),context.dataSet());
-			status=Status.NO_CONTENT;
-			body="";
-		} catch (ApplicationExecutionException e) {
-			status=Status.INTERNAL_SERVER_ERROR;
-			body=Throwables.getStackTraceAsString(e);
-			builder.type(MediaType.TEXT_PLAIN);
-		}
-		// 3. add protocol endorsed headers
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder, endpoint());
-		
-		// 4. add protocol specific headers
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,context.resourceType());
-		
-		// 5. set status and attach response entity as required.
-		builder.
-			status(status.getStatusCode()).
-			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
-		builder.entity(body);
-		return builder.build();
-	}
-
-	@Override
-	public Response patchResource(OperationContext context) {
-		// Verify that we can carry out the operation
-		context.
-			checkOperationSupport().
-			checkContents().
-			checkPreconditions();
-	
-		// Fail as we do not support PATCH yet
-		ResponseBuilder builder = 
-			Response.
-				status(Status.INTERNAL_SERVER_ERROR);
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder, endpoint());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder, context.resourceType());
-		return builder.build();
-	}
-
-	public Response createResource(OperationContext context) {
-		// 1. verify that we can carry out the operation
-		context.
-			checkOperationSupport().
-			checkContents().
-			checkPreconditions();
-	
-		ResponseBuilder builder=Response.serverError();
-		String body=null;
-		Status status=null;
-	
-		// 2. determine the body and status of the response
-		try {
-			Resource newResource = 
-				context.
-					applicationContext().
-						createResource(endpoint(),context.dataSet());
-			URI location = context.resolve(newResource);
-			status=Status.CREATED;
-			body=location.toString();
-			builder.type(MediaType.TEXT_PLAIN);
-		} catch (ApplicationExecutionException e) {
-			status=Status.INTERNAL_SERVER_ERROR;
-			body=Throwables.getStackTraceAsString(e);
-			builder.type(MediaType.TEXT_PLAIN);
-		}
-		// 3. add protocol endorsed headers
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder, endpoint());
-		
-		// 4. add protocol specific headers
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,context.resourceType());
-		
-		// 5. set status and attach response entity as required.
-		builder.
-			status(status.getStatusCode()).
-			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
-		builder.entity(body);
-		return builder.build();
+	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {
+		EndpointControllerUtils.
+			populateProtocolEndorsedHeaders(builder, endpoint());
+		EndpointControllerUtils.
+			populateProtocolSpecificHeaders(builder, context.resourceType());
 	}
 
 	private Response doGet(OperationContext context, boolean includeEntity) {
@@ -212,36 +81,176 @@ final class ExistingEndpointController extends AbstractEndpointController {
 					applicationContext().
 						getResource(endpoint());
 			// 3.2. prepare the associated entity
-			Entity entity=
-				context.
-					createEntity(
-						resource);
+			body=context.serializeResource(resource,variant.getMediaType());
 			// 3.3. serialize the entity
-			body=entity.serialize(variant,ImmutableContext.newInstance(context.base().resolve(context.path()),context.resourceIndex()));
-			status=entity.isEmpty()?Status.NO_CONTENT:Status.OK;
-			builder.type(variant.getMediaType());
-		} catch (ContentTransformationException e) {
-			status=Status.INTERNAL_SERVER_ERROR;
-			body=Throwables.getStackTraceAsString(e);
-			builder.type(MediaType.TEXT_PLAIN);
+			status=Status.OK;
+			builder.variant(variant);
 		} catch (ApplicationExecutionException e) {
 			status=Status.INTERNAL_SERVER_ERROR;
 			body=Throwables.getStackTraceAsString(e);
-			builder.type(MediaType.TEXT_PLAIN);
+			builder.
+				type(MediaType.TEXT_PLAIN).
+				language(Locale.ENGLISH);
 		}
-		// 4. add protocol endorsed headers
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder, endpoint());
 		
-		// 5. add protocol specific headers
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,context.resourceType());
+		// 4. Add the required headers
+		addRequiredHeaders(context, builder);
 		
-		// 6. set status and attach response entity as required.
+		// 6. Complete the response
 		builder.
 			status(status.getStatusCode()).
 			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
 		if(includeEntity) {
 			builder.entity(body);
 		}
+		return builder.build();
+	}
+
+	public Response options(OperationContext context) {
+		Capabilities capabilities=context.endpointCapabilities(); 
+		ResponseBuilder builder=
+			Response.
+				ok();
+		EndpointControllerUtils.populateAllowedHeaders(builder, capabilities);
+		addRequiredHeaders(context, builder);
+		return builder.build();
+	}
+
+	public Response head(OperationContext context) {
+		return doGet(context, false);
+	}
+
+	public Response getResource(OperationContext context) {
+		return doGet(context, true);
+	}
+	
+	@Override
+	public Response deleteResource(OperationContext context) {
+		// 1. Verify that we can carry out the operation
+		context.
+			checkOperationSupport().
+			checkPreconditions();
+	
+		ResponseBuilder builder=
+			Response.serverError();
+
+		Status status=Status.INTERNAL_SERVER_ERROR;
+
+		// 2. Execute operation and determine response body and status
+		try {
+			context.
+				applicationContext().
+					deleteResource(endpoint());
+			status=Status.NO_CONTENT;
+			// TODO: This could be improved by returning an OK with an
+			// additional description of all the resources that were deleted
+			// as a side effect.
+		} catch (ApplicationExecutionException e) {
+			String body=Throwables.getStackTraceAsString(e);
+			builder.
+				type(MediaType.TEXT_PLAIN).
+				language(Locale.ENGLISH).
+				header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length()).
+				entity(body);
+			// 2.a. Add response headers
+			addRequiredHeaders(context, builder);
+
+		}
+		
+		// 3. Complete response
+		builder.status(status.getStatusCode());
+		
+		return builder.build();
+	}
+
+	@Override
+	public Response modifyResource(OperationContext context) {
+		// 1. Verify that we can carry out the operation
+		context.
+			checkOperationSupport().
+			checkContents().
+			checkPreconditions();
+	
+		ResponseBuilder builder=Response.serverError();
+		Status status=Status.INTERNAL_SERVER_ERROR;
+	
+		// 2. Execute operation and determine response body and status
+		try {
+			context.applicationContext().modifyResource(endpoint(),context.dataSet());
+			status=Status.NO_CONTENT;
+			// TODO: This could be improved by returning an OK with an
+			// additional description of all the resources that were modified
+			// (updated, created, deleted) as a side effect.
+		} catch (ApplicationExecutionException e) {
+			String body=Throwables.getStackTraceAsString(e);
+			builder.
+				type(MediaType.TEXT_PLAIN).
+				language(Locale.ENGLISH).
+				header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length()).
+				entity(body);
+		}
+
+		// 3. Add the response headers
+		addRequiredHeaders(context, builder);
+		
+		// 4. set status and attach response entity as required.
+		builder.status(status.getStatusCode());
+
+		return builder.build();
+	}
+
+	@Override
+	public Response patchResource(OperationContext context) {
+		// Verify that we can carry out the operation
+		context.
+			checkOperationSupport().
+			checkContents().
+			checkPreconditions();
+	
+		// Fail as we do not support PATCH yet
+		ResponseBuilder builder = 
+			Response.serverError();
+		addRequiredHeaders(context, builder);
+		return builder.build();
+	}
+
+	public Response createResource(OperationContext context) {
+		// 1. verify that we can carry out the operation
+		context.
+			checkOperationSupport().
+			checkContents().
+			checkPreconditions();
+	
+		ResponseBuilder builder=Response.serverError();
+		String body=null;
+		Status status=null;
+	
+		// 2. Execute operation and determine response body and status
+		try {
+			Resource newResource = 
+				context.
+					applicationContext().
+						createResource(endpoint(),context.dataSet());
+			URI location = context.resolve(newResource);
+			status=Status.CREATED;
+			body=location.toString();
+			// 2.1 Add Location header with the URI of the just created resource
+			builder.header(HttpHeaders.LOCATION, location.toString());
+		} catch (ApplicationExecutionException e) {
+			status=Status.INTERNAL_SERVER_ERROR;
+			body=Throwables.getStackTraceAsString(e);
+			builder.language(Locale.ENGLISH);
+		}
+		
+		// 3. Add required headers
+		addRequiredHeaders(context, builder);
+		
+		// 4. Complete response.
+		builder.
+			status(status.getStatusCode()).
+			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length()).
+			entity(body).
+			type(MediaType.TEXT_PLAIN);
 		return builder.build();
 	}
 

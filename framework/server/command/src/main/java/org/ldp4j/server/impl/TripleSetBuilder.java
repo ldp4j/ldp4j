@@ -55,7 +55,7 @@ import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.rdf.BlankNode;
 import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.util.TripleSet;
-import org.ldp4j.server.api.ResourceIndex;
+import org.ldp4j.server.ResourceResolver;
 
 final class TripleSetBuilder {
 
@@ -138,15 +138,15 @@ final class TripleSetBuilder {
 		}
 	}
 
-	private final ResourceIndex index;
+	private final ResourceResolver resourceResolver;
 	private final Map<Object,Resource<?>> localResources;
 	private final List<Object> visitedIndividuals;
 
 	private final URI base;
 	private TripleSet triples;
 
-	TripleSetBuilder(ResourceIndex index, URI base) {
-		this.index=index;
+	TripleSetBuilder(ResourceResolver resourceResolver, URI base) {
+		this.resourceResolver=resourceResolver;
 		this.base = base;
 		this.localResources=new HashMap<Object,Resource<?>>();
 		this.visitedIndividuals=new ArrayList<Object>();
@@ -160,7 +160,7 @@ final class TripleSetBuilder {
 				@Override
 				public void visitManagedIndividual(ManagedIndividual individual) {
 					ManagedIndividualId id = individual.id();
-					URI path = index.resolveResource(ResourceId.createId(id.name(),id.managerId()));
+					URI path = resourceResolver.resolveResource(ResourceId.createId(id.name(),id.managerId()));
 					if(path==null) {
 						throw new IllegalStateException("Could not resolve individual '"+id+"'");
 					}

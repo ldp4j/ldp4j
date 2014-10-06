@@ -38,7 +38,7 @@ import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.util.TripleSet;
-import org.ldp4j.server.api.Context;
+import org.ldp4j.server.Context;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;
 
@@ -56,7 +56,7 @@ abstract class AbstractMediaTypeProvider implements IMediaTypeProvider {
 		public String marshall(DataSet content, MediaType targetMediaType) throws ContentTransformationException {
 			validateContent(content);
 			validateMediaType(targetMediaType);
-			TripleSetBuilder tripleSetBuilder = new TripleSetBuilder(context.getResourceIndex(),context.getBase());
+			TripleSetBuilder tripleSetBuilder = new TripleSetBuilder(context.getResourceResolver(),context.getBase());
 			for(Individual<?,?> individual:content) {
 				tripleSetBuilder.generateTriples(individual);
 			}
@@ -79,7 +79,7 @@ abstract class AbstractMediaTypeProvider implements IMediaTypeProvider {
 			validateMediaType(type);
 			Iterable<Triple> triples = doUnmarshallContent(context,content,type);
 			final DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(context.getBase()));
-			final ValueAdapter adapter=new ValueAdapter(context.getResourceIndex(),dataSet);
+			final ValueAdapter adapter=new ValueAdapter(context.getResourceResolver(),dataSet);
 			for(Triple triple:triples) {
 				Individual<?,?> individual=adapter.getIndividual(triple.getSubject());
 				individual.

@@ -100,4 +100,16 @@ final class MutableDataSet implements DataSet {
 		return individuals().iterator();
 	}
 
+	@Override
+	public boolean isEmpty() {
+		for(Individual<?,?> individual:this) {
+			for(Property property:individual) {
+				if(property.numberOfValues()>0) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 }

@@ -24,15 +24,11 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.api;
+package org.ldp4j.server.controller;
 
-import java.net.URI;
-
-
-public interface Context {
-
-	URI getBase();
-
-	ResourceIndex getResourceIndex();
-
+enum InteractionModel {
+	RESOURCE,
+	BASIC_CONTAINER,
+	DIRECT_CONTAINER,
+	INDIRECT_CONTAINER
 }

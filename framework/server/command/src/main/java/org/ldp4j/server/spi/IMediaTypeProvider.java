@@ -31,7 +31,7 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.server.api.Context;
+import org.ldp4j.server.Context;
 
 public interface IMediaTypeProvider {
 

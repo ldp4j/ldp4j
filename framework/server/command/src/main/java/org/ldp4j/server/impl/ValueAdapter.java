@@ -45,7 +45,7 @@ import org.ldp4j.rdf.NodeVisitor;
 import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.TypedLiteral;
 import org.ldp4j.rdf.URIRef;
-import org.ldp4j.server.api.ResourceIndex;
+import org.ldp4j.server.ResourceResolver;
 
 final class ValueAdapter {
 	
@@ -53,7 +53,7 @@ final class ValueAdapter {
 
 		@Override
 		public Individual<?,?> visitURIRef(URIRef node, Individual<?,?> defaultResult) {
-			ResourceId resourceId = index.resolveLocation(node.getIdentity());
+			ResourceId resourceId = resourceResolver.resolveLocation(node.getIdentity());
 			if(resourceId==null) {
 				return dataSet.individual(node.getIdentity(),ExternalIndividual.class);
 			}
@@ -88,7 +88,7 @@ final class ValueAdapter {
 
 		@Override
 		public Value visitURIRef(URIRef node, Value defaultResult) {
-			ResourceId resourceId = index.resolveLocation(node.getIdentity());
+			ResourceId resourceId = resourceResolver.resolveLocation(node.getIdentity());
 			if(resourceId==null) {
 				return dataSet.individual(node.getIdentity(),ExternalIndividual.class);
 			}
@@ -104,15 +104,15 @@ final class ValueAdapter {
 
 	}
 
-	private final ResourceIndex index;
+	private final ResourceResolver resourceResolver;
 
 	private final ObjectGenerator objectGenerator;
 	private final NameGenerator nameGenerator;
 
 	private final DataSet dataSet;
 
-	ValueAdapter(ResourceIndex index, DataSet dataSet) {
-		this.index = index;
+	ValueAdapter(ResourceResolver resourceResolver, DataSet dataSet) {
+		this.resourceResolver = resourceResolver;
 		this.dataSet = dataSet;
 		this.nameGenerator = new NameGenerator();
 		this.objectGenerator = new ObjectGenerator();

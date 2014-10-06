@@ -26,7 +26,11 @@
  */
 package org.ldp4j.server.controller;
 
+import java.net.URI;
+import java.util.List;
+
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Variant;
 import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.ldp4j.application.Capabilities;
@@ -49,6 +53,34 @@ public final class EndpointControllerUtils {
 		if(flag) {
 			builder.header(EndpointControllerUtils.ALLOW_HEADER,method);
 		}
+	}
+
+	/**
+	 * Get a text/plain representation that indicates the acceptable media types
+	 * for the specified resource. The current implementation <b>only</b> takes
+	 * care of the media type, nor language, nor encodings are taken into
+	 * consideration for generating the acceptable content.
+	 * 
+	 * @param variants
+	 *            The acceptable variants
+	 * @param resourceLocation
+	 *            The location of the resource
+	 * @return A content instance that outlines the acceptable media types and
+	 *         the locations from where the resource contents for those media
+	 *         types can be retrieved.
+	 */
+	public static String getAcceptableContent(
+			List<Variant> variants,
+			URI resourceLocation) {
+		StringBuilder builder = new StringBuilder();
+		for (Variant variant : variants) {
+			builder.append(variant.getMediaType()).append(" : %1$s%n");
+		}
+		return 
+			String.format(
+				builder.toString(),
+				resourceLocation
+			);
 	}
 
 	public static void populateAllowedHeaders(ResponseBuilder builder, Capabilities capabilities) {

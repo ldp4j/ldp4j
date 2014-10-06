@@ -47,10 +47,8 @@ import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.Value;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
@@ -66,22 +64,21 @@ import org.ldp4j.application.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateVisitor;
 import org.ldp4j.application.vocabulary.Term;
-import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ImmutableContext;
-import org.ldp4j.server.api.ResourceIndex;
+import org.ldp4j.server.ImmutableContext;
+import org.ldp4j.server.ResourceResolver;
 import org.ldp4j.server.api.utils.VariantHelper;
-import org.ldp4j.server.blueprint.ComponentRegistry;
 import org.ldp4j.server.resources.ResourceType;
-import org.ldp4j.server.resources.impl.EntityFactory;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;
+import org.ldp4j.server.spi.IMediaTypeProvider.Marshaller;
 import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;
 import org.ldp4j.server.spi.RuntimeInstance;
 import org.ldp4j.server.utils.VariantUtils;
 
+
 final class OperationContextImpl implements OperationContext {
 
-	private final class ResourceIndexImpl implements ResourceIndex {
+	private final class OperationContextResourceResolver implements ResourceResolver {
 
 		@Override
 		public URI resolveResource(ResourceId id) {
@@ -103,37 +100,6 @@ final class OperationContextImpl implements OperationContext {
 			return result;
 		}
 
-		@Override
-		public ComponentRegistry getRegistry() {
-			throw new UnsupportedOperationException("Method not supported");
-		}
-
-		@Override
-		public boolean unpublish(ResourceId id) {
-			throw new UnsupportedOperationException("Method not supported");
-		}
-
-		@Override
-		public void publish(ResourceId id, URI path) {
-			throw new UnsupportedOperationException("Method not supported");
-		}
-
-		@Override
-		public boolean isPublished(ResourceId id) {
-			throw new UnsupportedOperationException("Method not supported");
-		}
-
-		@Override
-		public boolean isActive(URI endpoint) {
-			throw new UnsupportedOperationException("Method not supported");
-		}
-	}
-
-	enum InteractionModel {
-		RESOURCE,
-		BASIC_CONTAINER,
-		DIRECT_CONTAINER,
-		INDIRECT_CONTAINER
 	}
 
 	private final Operation operation;
@@ -145,8 +111,9 @@ final class OperationContextImpl implements OperationContext {
 
 	private String entity;
 	private DataSet dataSet;
+	private DataSet metadata;
+
 	private ResourceType resourceType;
-	private Entity resourceEntity;
 
 	OperationContextImpl(
 		ApplicationContext applicationContext, 
@@ -196,6 +163,18 @@ final class OperationContextImpl implements OperationContext {
 				build();
 		
 		return variants.get(0);
+	}
+
+	private DataSet populateMetadata(DataSet resource) {
+		if(this.metadata==null) {
+			Resource applicationResource = this.applicationContext.resolveResource(endpoint);
+			ResourceTemplate template = this.applicationContext.resourceTemplate(applicationResource);
+			this.metadata = getMetadata(template);
+		}
+		DataSet dataSet=DataSetFactory.createDataSet(this.endpoint.resourceId().name());
+		DataSetUtils.merge(this.metadata, dataSet);
+		DataSetUtils.merge(resource, dataSet);
+		return dataSet;
 	}
 
 	@Override
@@ -296,7 +275,7 @@ final class OperationContextImpl implements OperationContext {
 			
 			Unmarshaller unmarshaller = 
 				provider.
-					newUnmarshaller(ImmutableContext.newInstance(base().resolve(endpoint.path()),resourceIndex()));
+					newUnmarshaller(ImmutableContext.newInstance(base().resolve(endpoint.path()),resourceResolver()));
 			try {
 				this.dataSet=unmarshaller.unmarshall(this.entity, mediaType);
 			} catch (ContentTransformationException e) {
@@ -337,7 +316,35 @@ final class OperationContextImpl implements OperationContext {
 		return this.resourceType;
 	}
 
-	protected static final class Context {
+	@Override
+	public Capabilities endpointCapabilities() {
+		return this.applicationContext.endpointCapabilities(this.endpoint);
+	}
+
+	@Override
+	public String serializeResource(DataSet resource, MediaType mediaType) {
+		DataSet representation=populateMetadata(resource);
+	
+		IMediaTypeProvider provider = 
+			RuntimeInstance.
+				getInstance().
+					getMediaTypeProvider(mediaType);
+	
+		if(provider==null) {
+			throw new UnsupportedContentException(endpoint,this,contentVariant());
+		}
+		
+		Marshaller marshaller = 
+			provider.
+				newMarshaller(ImmutableContext.newInstance(base().resolve(endpoint.path()),resourceResolver()));
+		try {
+			return marshaller.marshall(representation, mediaType);
+		} catch (ContentTransformationException e) {
+			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",endpoint,this);
+		}
+	}
+
+	private static final class Context {
 		
 		private final DataSet dataSet;
 	
@@ -353,28 +360,10 @@ final class OperationContextImpl implements OperationContext {
 			return dataSet.individual(term.as(URI.class), ExternalIndividual.class);
 		}
 		
-		public Individual<?,?> newIndividual(URI id) {
-			return dataSet.individual(id, ExternalIndividual.class);
-		}
-	
-		@SuppressWarnings("rawtypes")
-		public Individual<?,?> newIndividual(Name<?> id) {
-			return dataSet.individual((Name)id, LocalIndividual.class);
-		}
-		
-		public Individual<?,?> newIndividual(ManagedIndividualId id) {
-			return dataSet.individual(id, ManagedIndividual.class);
-		}
-
-		public Value resourceSurrogate(Resource member) {
-			ResourceId resourceId = member.id();
-			ManagedIndividualId surrogateId = ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
-			return dataSet.individualOfId(surrogateId);
-		}
-
 		public Value value(Object value) {
 			return DataSetUtils.newLiteral(value);
 		}
+
 	}
 
 	private DataSet getMetadata(ResourceTemplate template) {
@@ -484,27 +473,8 @@ final class OperationContextImpl implements OperationContext {
 		return resourceType.get();
 	}
 
-	@Override
-	public Entity createEntity(DataSet resource) {
-		if(this.resourceEntity==null) {
-			Resource applicationResource = this.applicationContext.resolveResource(endpoint);
-			ResourceTemplate template = this.applicationContext.resourceTemplate(applicationResource);
-			DataSet dataSet=DataSetFactory.createDataSet(this.endpoint.resourceId().name());
-			DataSetUtils.merge(getMetadata(template), dataSet);
-			DataSetUtils.merge(resource, dataSet);
-			this.resourceEntity=EntityFactory.createEntity(dataSet);
-		}
-		return this.resourceEntity;
-	}
-
-	@Override
-	public ResourceIndex resourceIndex() {
-		return new ResourceIndexImpl();
-	}
-
-	@Override
-	public Capabilities endpointCapabilities() {
-		return this.applicationContext.endpointCapabilities(this.endpoint);
+	private ResourceResolver resourceResolver() {
+		return new OperationContextResourceResolver();
 	}
 
 }

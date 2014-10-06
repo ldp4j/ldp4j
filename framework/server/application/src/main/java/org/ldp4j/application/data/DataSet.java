@@ -47,4 +47,6 @@ public interface DataSet extends Iterable<Individual<?,?>> {
 	
 	<T, S extends Individual<T,S>> S individual(T id, Class<? extends S> clazz);
 
+	boolean isEmpty();
+
 }

@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.api;
+package org.ldp4j.server;
 
 import java.net.URI;
 
@@ -32,24 +32,24 @@ import java.net.URI;
 public final class ImmutableContext implements Context {
 
 	private final URI base;
-	private final ResourceIndex resourceIndex;
+	private final ResourceResolver resourceResolver;
 
-	private ImmutableContext(URI base, ResourceIndex index) {
+	private ImmutableContext(URI base, ResourceResolver resourceResolver) {
 		this.base = base;
-		resourceIndex = index;
+		this.resourceResolver = resourceResolver;
 	}
 
 	@Override
 	public URI getBase() {
-		return base;
+		return this.base;
 	}
 	
 	@Override
-	public ResourceIndex getResourceIndex() {
-		return resourceIndex;
+	public ResourceResolver getResourceResolver() {
+		return this.resourceResolver;
 	}
 	
-	public static ImmutableContext newInstance(URI base, ResourceIndex index) {
+	public static ImmutableContext newInstance(URI base, ResourceResolver index) {
 		return new ImmutableContext(base,index);
 	}
 	

@@ -54,7 +54,7 @@ import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.rdf.URIRef;
-import org.ldp4j.server.api.ImmutableContext;
+import org.ldp4j.server.ImmutableContext;
 import org.ldp4j.server.api.ResourceIndex;
 import org.ldp4j.server.impl.TurtleMediaTypeProvider;
 

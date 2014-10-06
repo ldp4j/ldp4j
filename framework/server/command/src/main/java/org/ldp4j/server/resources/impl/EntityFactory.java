@@ -34,9 +34,9 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.server.api.Context;
+import org.ldp4j.server.Context;
+import org.ldp4j.server.ImmutableContext;
 import org.ldp4j.server.api.Entity;
-import org.ldp4j.server.api.ImmutableContext;
 import org.ldp4j.server.api.ResourceIndex;
 import org.ldp4j.server.api.UnsupportedMediaTypeException;
 import org.ldp4j.server.spi.ContentTransformationException;

@@ -26,6 +26,9 @@
  */
 package org.ldp4j.server.controller;
 
+import java.util.Locale;
+
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
@@ -41,6 +44,8 @@ final class GoneEndpointController extends FixedResponseEndpointController {
 		return 
 			Response.
 				status(Status.GONE).
+				type(MediaType.TEXT_PLAIN).
+				language(Locale.ENGLISH).
 				entity("Endpoint at "+context.base().resolve(context.path())+" is gone.").
 				build();
 	}
