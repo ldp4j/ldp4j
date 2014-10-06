@@ -93,6 +93,7 @@ public final class ApplicationLifecycleService implements Service {
 
 	private void notifyApplicationStateChange(final ApplicationState state) {
 		this.listenerManager.notify(new ApplicationStateChangeNotification(state));
+		this.state=state;
 	}
 
 	public void registerApplicationLifecycleListener(ApplicationLifecycleListener listener) {
@@ -126,11 +127,11 @@ public final class ApplicationLifecycleService implements Service {
 	
 	public void shutdown() {
 		if(!this.state.isShutdown()) {
-			notifyApplicationStateChange(ApplicationState.SHUTDOWN);
 			if(this.application!=null) {
 				this.application.shutdown();
-				LOGGER.info("Application {} ('{}') shutdown.",this.application.getName(),this.application.getClass().getCanonicalName());
+				LOGGER.info("Application '{}' ({}) shutdown.",this.application.getName(),this.application.getClass().getCanonicalName());
 			}
+			notifyApplicationStateChange(ApplicationState.SHUTDOWN);
 		}
 	}	
 

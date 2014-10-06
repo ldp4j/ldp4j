@@ -29,8 +29,8 @@ package org.ldp4j.server.controller;
 
 import java.net.URI;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -45,10 +45,27 @@ import org.ldp4j.application.Capabilities;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.ExternalIndividual;
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.LocalIndividual;
+import org.ldp4j.application.data.ManagedIndividual;
+import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.Value;
+import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EntityTag;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.template.BasicContainerTemplate;
+import org.ldp4j.application.template.ContainerTemplate;
+import org.ldp4j.application.template.DirectContainerTemplate;
+import org.ldp4j.application.template.IndirectContainerTemplate;
+import org.ldp4j.application.template.MembershipAwareContainerTemplate;
+import org.ldp4j.application.template.ResourceTemplate;
+import org.ldp4j.application.template.TemplateVisitor;
+import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.server.api.Entity;
 import org.ldp4j.server.api.ImmutableContext;
 import org.ldp4j.server.api.ResourceIndex;
@@ -56,11 +73,10 @@ import org.ldp4j.server.api.utils.VariantHelper;
 import org.ldp4j.server.blueprint.ComponentRegistry;
 import org.ldp4j.server.resources.ResourceType;
 import org.ldp4j.server.resources.impl.EntityFactory;
-import org.ldp4j.server.resources.impl.ResourceImpl;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;
-import org.ldp4j.server.spi.RuntimeInstance;
 import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;
+import org.ldp4j.server.spi.RuntimeInstance;
 import org.ldp4j.server.utils.VariantUtils;
 
 final class OperationContextImpl implements OperationContext {
@@ -69,7 +85,9 @@ final class OperationContextImpl implements OperationContext {
 
 		@Override
 		public URI resolveResource(ResourceId id) {
-			return URI.create(applicationContext.findResourceEndpoint(id).path());
+			String path = applicationContext.findResourceEndpoint(id).path();
+			URI uri = base().resolve(path);
+			return uri;
 		}
 
 		@Override
@@ -118,16 +136,17 @@ final class OperationContextImpl implements OperationContext {
 		INDIRECT_CONTAINER
 	}
 
+	private final Operation operation;
 	private final UriInfo uriInfo;
 	private final HttpHeaders headers;
 	private final Request request;
-	private String entity;
-	private DataSet dataSet;
 	private final Endpoint endpoint;
 	private final ApplicationContext applicationContext;
-	private final ResourceAdapter adapter;
-	
-	private final Operation operation;
+
+	private String entity;
+	private DataSet dataSet;
+	private ResourceType resourceType;
+	private Entity resourceEntity;
 
 	OperationContextImpl(
 		ApplicationContext applicationContext, 
@@ -139,7 +158,6 @@ final class OperationContextImpl implements OperationContext {
 		Operation operation) {
 		this.applicationContext = applicationContext;
 		this.endpoint = endpoint;
-		this.adapter = new ResourceAdapter(this.applicationContext, this.endpoint);
 		this.operation = operation;
 		this.uriInfo=uriInfo;
 		this.headers=headers;
@@ -187,31 +205,15 @@ final class OperationContextImpl implements OperationContext {
 	
 	@Override
 	public URI base() {
-		URI fullPath = this.uriInfo.getAbsolutePath();
-		List<String> matchedURIs = this.uriInfo.getMatchedURIs(true);
-		StringBuilder tmp=new StringBuilder();
-		for(Iterator<String> it=matchedURIs.iterator();it.hasNext();) {
-			tmp.append("..");
-			it.next();
-			if(it.hasNext()) {
-				tmp.append("/");
-			}
-		}
-		URI parentRelative=URI.create(tmp.toString());
-		return fullPath.resolve(parentRelative);
+		String path = uriInfo.getPath();
+		String prefix = "/"+path.substring(0,path.indexOf('/')+1);
+		return URI.create(uriInfo.getBaseUri().toString().concat(prefix));
 	}
 
 	@Override
 	public String path() {
-		List<String> matchedURIs = this.uriInfo.getMatchedURIs(true);
-		StringBuilder tmp=new StringBuilder();
-		for(Iterator<String> it=matchedURIs.iterator();it.hasNext();) {
-			tmp.append(it.next());
-			if(it.hasNext()) {
-				tmp.append("/");
-			}
-		}
-		return tmp.toString();
+		String path = uriInfo.getPath();
+		return path.substring(path.indexOf('/')+1);
 	}
 
 	@Override
@@ -242,7 +244,7 @@ final class OperationContextImpl implements OperationContext {
 					new javax.ws.rs.core.EntityTag(entityTag.getValue()));
 		if(builder!=null) {
 			Response response = builder.build();
-			throw new PreconditionFailedException(this.adapter.getResource(),response.getStatus());
+			throw new PreconditionFailedException(endpoint,this,response.getStatus());
 		}
 		return this;
 	}
@@ -309,7 +311,7 @@ final class OperationContextImpl implements OperationContext {
 		List<Variant> variants=VariantUtils.defaultVariants();
 		Variant variant = request.selectVariant(variants);
 		if(variant==null) {
-			throw new NotAcceptableException(this.adapter.getResource(),variants);
+			throw new NotAcceptableException(endpoint,this);
 		}
 		return variant;
 	}
@@ -321,20 +323,178 @@ final class OperationContextImpl implements OperationContext {
 	
 	@Override
 	public URI resolve(Resource newResource) {
-		throw new UnsupportedOperationException("Method not implemented yet");
+		Endpoint endpoint = this.applicationContext.findResourceEndpoint(newResource.id());
+		return base().resolve(endpoint.path());
 	}
 
 	@Override
 	public ResourceType resourceType() {
-		return this.adapter.getResource().type();
+		if(this.resourceType==null) {
+			Resource resource = this.applicationContext.resolveResource(endpoint);
+			ResourceTemplate template = this.applicationContext.resourceTemplate(resource);
+			this.resourceType=getResourceType(template);
+		}
+		return this.resourceType;
+	}
+
+	protected static final class Context {
+		
+		private final DataSet dataSet;
+	
+		private Context(DataSet dataSet) {
+			this.dataSet = dataSet;
+		}
+		
+		public URI property(Term term) {
+			return term.as(URI.class);
+		}
+		
+		public Value reference(Term term) {
+			return dataSet.individual(term.as(URI.class), ExternalIndividual.class);
+		}
+		
+		public Individual<?,?> newIndividual(URI id) {
+			return dataSet.individual(id, ExternalIndividual.class);
+		}
+	
+		@SuppressWarnings("rawtypes")
+		public Individual<?,?> newIndividual(Name<?> id) {
+			return dataSet.individual((Name)id, LocalIndividual.class);
+		}
+		
+		public Individual<?,?> newIndividual(ManagedIndividualId id) {
+			return dataSet.individual(id, ManagedIndividual.class);
+		}
+
+		public Value resourceSurrogate(Resource member) {
+			ResourceId resourceId = member.id();
+			ManagedIndividualId surrogateId = ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
+			return dataSet.individualOfId(surrogateId);
+		}
+
+		public Value value(Object value) {
+			return DataSetUtils.newLiteral(value);
+		}
+	}
+
+	private DataSet getMetadata(ResourceTemplate template) {
+		final DataSet dataSet=
+			DataSetFactory.
+				createDataSet(this.endpoint.resourceId().name());
+		final Context ctx=new Context(dataSet);
+		ManagedIndividualId id=
+			ManagedIndividualId.
+				createId(
+					this.endpoint.resourceId().name(), 
+					this.endpoint.resourceId().templateId());
+		final Individual<?,?> individual=
+			dataSet.individual(id,ManagedIndividual.class);
+		template.accept(
+			new TemplateVisitor() {
+				@Override
+				public void visitResourceTemplate(ResourceTemplate template) {
+					individual.
+						addValue(
+							ctx.property(RDF.TYPE), 
+							ctx.reference(LDP.RESOURCE));
+				}
+				@Override
+				public void visitContainerTemplate(ContainerTemplate template) {
+					visitResourceTemplate(template);
+					individual.
+						addValue(
+							ctx.property(RDF.TYPE), 
+							ctx.reference(LDP.CONTAINER));
+//					for(Resource member:members) {
+//						individual.addValue(
+//							ctx.property(LDP.CONTAINS), 
+//							ctx.resourceSurrogate(member));
+//					}
+				}
+				@Override
+				public void visitBasicContainerTemplate(BasicContainerTemplate template) {
+					visitContainerTemplate(template);
+					individual.
+						addValue(
+							ctx.property(RDF.TYPE), 
+							ctx.reference(LDP.BASIC_CONTAINER));
+				}
+				@Override
+				public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
+					visitContainerTemplate(template);
+					individual.
+						addValue(
+							template.membershipRelation().toURI(), 
+							ctx.value(template.membershipPredicate()));
+				}
+				@Override
+				public void visitDirectContainerTemplate(DirectContainerTemplate template) {
+					visitMembershipAwareContainerTemplate(template);
+					individual.
+						addValue(
+							ctx.property(RDF.TYPE), 
+							ctx.reference(LDP.DIRECT_CONTAINER));
+				}
+				@Override
+				public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
+					visitMembershipAwareContainerTemplate(template);
+					individual.
+						addValue(
+							ctx.property(RDF.TYPE), 
+							ctx.reference(LDP.INDIRECT_CONTAINER)).
+						addValue(
+							ctx.property(LDP.INSERTED_CONTENT_RELATION), 
+							ctx.value(template.insertedContentRelation()));
+				}
+			}
+		);
+		return dataSet;
+	}
+
+	private ResourceType getResourceType(ResourceTemplate template) {
+		final AtomicReference<ResourceType> resourceType=new AtomicReference<ResourceType>();
+		template.accept(
+			new TemplateVisitor() {
+				@Override
+				public void visitResourceTemplate(ResourceTemplate template) {
+					resourceType.set(ResourceType.RESOURCE);
+				}
+				@Override
+				public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
+					resourceType.set(ResourceType.CONTAINER);
+				}
+				@Override
+				public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
+					resourceType.set(ResourceType.INDIRECT_CONTAINER);
+				}
+				@Override
+				public void visitDirectContainerTemplate(DirectContainerTemplate template) {
+					resourceType.set(ResourceType.DIRECT_CONTAINER);
+				}
+				@Override
+				public void visitContainerTemplate(ContainerTemplate template) {
+					resourceType.set(ResourceType.CONTAINER);
+				}
+				@Override
+				public void visitBasicContainerTemplate(BasicContainerTemplate template) {
+					resourceType.set(ResourceType.BASIC_CONTAINER);
+				}
+			}
+		);
+		return resourceType.get();
 	}
 
 	@Override
 	public Entity createEntity(DataSet resource) {
-		DataSet dataSet=DataSetFactory.createDataSet(this.endpoint.resourceId().name());
-		DataSetUtils.merge(((ResourceImpl)this.adapter.getResource()).metadata(), dataSet);
-		DataSetUtils.merge(resource, dataSet);
-		return EntityFactory.createEntity(dataSet);
+		if(this.resourceEntity==null) {
+			Resource applicationResource = this.applicationContext.resolveResource(endpoint);
+			ResourceTemplate template = this.applicationContext.resourceTemplate(applicationResource);
+			DataSet dataSet=DataSetFactory.createDataSet(this.endpoint.resourceId().name());
+			DataSetUtils.merge(getMetadata(template), dataSet);
+			DataSetUtils.merge(resource, dataSet);
+			this.resourceEntity=EntityFactory.createEntity(dataSet);
+		}
+		return this.resourceEntity;
 	}
 
 	@Override

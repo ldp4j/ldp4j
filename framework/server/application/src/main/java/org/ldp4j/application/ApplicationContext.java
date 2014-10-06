@@ -174,7 +174,7 @@ public final class ApplicationContext {
 		try {
 			return this.resourceControllerService.createResource(resource, dataSet);
 		} catch (Exception e) {
-			String errorMessage = applicationFailureMessage("Resource create failed at ''%s'",endpoint);
+			String errorMessage = applicationFailureMessage("Resource create failed at '%s'",endpoint);
 			LOGGER.error(errorMessage,e);
 			throw new ApplicationExecutionException(errorMessage,e);
 		}
@@ -182,7 +182,7 @@ public final class ApplicationContext {
 
 	public void deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Container resource = this.resourceRepository.find(resourceId,Container.class);
+		Resource resource = this.resourceRepository.find(resourceId,Resource.class);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find container for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
@@ -191,7 +191,7 @@ public final class ApplicationContext {
 		try {
 			this.resourceControllerService.deleteResource(resource);
 		} catch (Exception e) {
-			String errorMessage = applicationFailureMessage("Resource deletion failed at ''%s'",endpoint);
+			String errorMessage = applicationFailureMessage("Resource deletion failed at '%s'",endpoint);
 			LOGGER.error(errorMessage,e);
 			throw new ApplicationExecutionException(errorMessage,e);
 		}
@@ -208,7 +208,7 @@ public final class ApplicationContext {
 		try {
 			this.resourceControllerService.updateResource(resource,dataSet);
 		} catch (Exception e) {
-			String errorMessage = applicationFailureMessage("Resource modification failed at ''%s'",endpoint);
+			String errorMessage = applicationFailureMessage("Resource modification failed at '%s'",endpoint);
 			LOGGER.error(errorMessage,e);
 			throw new ApplicationExecutionException(errorMessage,e);
 		}
@@ -299,6 +299,10 @@ public final class ApplicationContext {
 		// Current application context setup
 		setCurrentContext(context);
 		return currentContext();
+	}
+
+	public String applicationClassName() {
+		return this.application.getClass().getName();
 	}
 
 }

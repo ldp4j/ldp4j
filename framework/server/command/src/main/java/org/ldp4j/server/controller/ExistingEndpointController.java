@@ -47,6 +47,7 @@ import com.google.common.base.Throwables;
 
 final class ExistingEndpointController extends AbstractEndpointController {
 
+	
 	private static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
 	public ExistingEndpointController(Endpoint endpoint) {
@@ -156,20 +157,38 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			checkOperationSupport().
 			checkContents().
 			checkPreconditions();
-
-		DataSet dataSet=context.dataSet();
-		
-		Response response=null;
+	
+		ResponseBuilder builder=Response.serverError();
+		String body=null;
+		Status status=null;
+	
+		// 2. determine the body and status of the response
 		try {
 			Resource newResource = 
 				context.
-					applicationContext().createResource(endpoint(),dataSet);
+					applicationContext().
+						createResource(endpoint(),context.dataSet());
 			URI location = context.resolve(newResource);
-			response=Response.created(location).entity(location).type(MediaType.TEXT_PLAIN).build();
+			status=Status.CREATED;
+			body=location.toString();
+			builder.type(MediaType.TEXT_PLAIN);
 		} catch (ApplicationExecutionException e) {
-			response=Response.serverError().entity(Throwables.getStackTraceAsString(e)).build();
+			status=Status.INTERNAL_SERVER_ERROR;
+			body=Throwables.getStackTraceAsString(e);
+			builder.type(MediaType.TEXT_PLAIN);
 		}
-		return response;
+		// 3. add protocol endorsed headers
+		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder, endpoint());
+		
+		// 4. add protocol specific headers
+		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,context.resourceType());
+		
+		// 5. set status and attach response entity as required.
+		builder.
+			status(status.getStatusCode()).
+			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
+		builder.entity(body);
+		return builder.build();
 	}
 
 	private Response doGet(OperationContext context, boolean includeEntity) {
@@ -188,14 +207,17 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		// 3. Determine the body and status of the response
 		try {
 			// 3.1. retrieve the resource
-			DataSet resource = context.applicationContext().getResource(endpoint());
+			DataSet resource = 
+				context.
+					applicationContext().
+						getResource(endpoint());
 			// 3.2. prepare the associated entity
 			Entity entity=
 				context.
 					createEntity(
 						resource);
 			// 3.3. serialize the entity
-			body=entity.serialize(variant,ImmutableContext.newInstance(context.base().resolve(endpoint().path()),context.resourceIndex()));
+			body=entity.serialize(variant,ImmutableContext.newInstance(context.base().resolve(context.path()),context.resourceIndex()));
 			status=entity.isEmpty()?Status.NO_CONTENT:Status.OK;
 			builder.type(variant.getMediaType());
 		} catch (ContentTransformationException e) {

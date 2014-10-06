@@ -31,7 +31,6 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 
 import org.ldp4j.application.Capabilities;
 import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.server.api.utils.ProtocolUtils;
 import org.ldp4j.server.resources.ResourceType;
 import org.ldp4j.server.spi.RuntimeInstance;
 
@@ -85,12 +84,16 @@ public final class EndpointControllerUtils {
 		// URI matching the type of container (see below) the server
 		// supports, and a link relation type of type (that is, rel='type')
 		// in all responses to requests made to the LDPC's HTTP Request-URI"
-		builder.header(EndpointControllerUtils.LINK_HEADER,ProtocolUtils.createLink(type, "type"));
+		builder.header(EndpointControllerUtils.LINK_HEADER,createLink(type, "type"));
 		if(type.isContainer()) {
 			// LDP 1.0 - 5.2.1.4 : "LDP servers may provide additional HTTP
 			// Link: rel='type' headers"
-			builder.header(EndpointControllerUtils.LINK_HEADER,ProtocolUtils.createLink(ResourceType.RESOURCE,"type"));
+			builder.header(EndpointControllerUtils.LINK_HEADER,createLink(ResourceType.RESOURCE,"type"));
 		}
+	}
+
+	public static String createLink(Object uriRef, Object rel) {
+		return String.format("<%s>; rel='%s'",uriRef,rel);
 	}
 
 }

@@ -26,7 +26,21 @@
  */
 package org.ldp4j.application.example;
 
+import java.net.URI;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.ManagedIndividual;
+import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.annotations.BasicContainer;
+import org.ldp4j.application.session.ContainerSnapshot;
+import org.ldp4j.application.session.ResourceSnapshot;
+import org.ldp4j.application.session.WriteSession;
+import org.ldp4j.application.session.WriteSessionException;
 
 @BasicContainer(
 	id = PersonContainerHandler.ID, 
@@ -36,8 +50,44 @@ public class PersonContainerHandler extends InMemoryContainerHandler {
 	
 	public static final String ID="personContainerTemplate";
 
+	private PersonHandler handler;
+
+	private AtomicInteger id;
+
 	public PersonContainerHandler() {
 		super("PersonContainer");
+		this.id=new AtomicInteger();
+	}
+
+	public void setHandler(PersonHandler handler) {
+		this.handler = handler;
+	}
+
+	@Override
+	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
+		Name<?> name=
+			NamingScheme.
+				getDefault().
+					name(id.incrementAndGet());
+		
+		ManagedIndividual individual = 
+			representation.
+				individual(
+					ManagedIndividualId.createId(name,PersonHandler.ID), 
+					ManagedIndividual.class);
+		individual.
+			addValue(
+				URI.create("http://www.example.org/vocab#creationDate"), 
+				DataSetUtils.newLiteral(new Date()));
+		try {
+			handler.add(name, representation);
+			ResourceSnapshot member = container.addMember(name);
+			session.saveChanges();
+			return member;
+		} catch (WriteSessionException e) {
+			handler.remove(name);
+			throw new IllegalStateException("Could not create member",e);
+		}
 	}
 	
 }

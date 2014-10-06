@@ -41,7 +41,7 @@ final class NotFoundEndpointController extends FixedResponseEndpointController {
 		return 
 			Response.
 				status(Status.NOT_FOUND).
-				entity("No endpoint found at '"+context.path()+"'").
+				entity("No endpoint found at "+context.base().resolve(context.path())+".").
 				build();
 	}
 	

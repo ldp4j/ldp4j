@@ -43,6 +43,7 @@ import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPatch;
+import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
@@ -178,7 +179,6 @@ public class ServerFrontendITest {
 	}
 	@Test
 	@Category({
-		DEBUG.class,
 		LDP.class,
 		HappyPath.class
 	})
@@ -222,12 +222,12 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
+//		DEBUG.class,
 		LDP.class,
 		HappyPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
-	public void testClientSimulation(@ArquillianResource final URL url) throws Exception {
+	public void testClientResourceSimulation(@ArquillianResource final URL url) throws Exception {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_PATH,HttpGet.class);
@@ -239,6 +239,34 @@ public class ServerFrontendITest {
 		);
 		HELPER.httpRequest(get);
 		HELPER.httpRequest(put);
+		HELPER.httpRequest(get);
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		LDP.class,
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testClientContainerSimulation(@ArquillianResource final URL url) throws Exception {
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH,HttpGet.class);
+		HttpPost post = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH,HttpPost.class);
+		post.setEntity(
+			new StringEntity(
+				EXAMPLE_BODY,
+				ContentType.create("text/turtle", "UTF-8"))
+		);
+		HELPER.httpRequest(get);
+		String location = HELPER.httpRequest(post);
+		HELPER.httpRequest(get);
+		String path=HELPER.relativize(location);
+		HELPER.httpRequest(HELPER.newRequest(path,HttpOptions.class));
+		HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
+		HELPER.httpRequest(HELPER.newRequest(path,HttpDelete.class));
+		HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
 		HELPER.httpRequest(get);
 	}
 	

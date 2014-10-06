@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ws.rs.core.MediaType;
 
@@ -91,6 +92,18 @@ public final class IntegrationTestHelper {
 		return url.toURI().resolve(Joiner.on("/").join(Arrays.asList(path)));
 	}
 
+	public String relativize(String location) throws URISyntaxException {
+		String path = this.url.toURI().relativize(URI.create(location)).toString();
+		String prefix = "ldp4j/api/";
+		if(this.legacy) {
+			prefix="ldp4j/legacy";
+		}
+		if(path.startsWith(prefix)) {
+			path=path.substring(prefix.length());
+		}
+		return path;
+	}
+
 	private URI resourceLocation(String path) throws URISyntaxException {
 		String subpath="ldp4j/api";
 		if(this.legacy) {
@@ -126,11 +139,13 @@ public final class IntegrationTestHelper {
 		}
 	}
 	
-	public void httpRequest(final HttpUriRequest request) throws Exception {
+	public String httpRequest(final HttpUriRequest request) throws Exception {
+		final AtomicReference<String> body=new AtomicReference<String>();
 		ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
 			public String handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
 				String responseBody = logResponse(response);
 				// TODO: Add validation mechanism here
+				body.set(responseBody);
 				return responseBody;
 			}
 			
@@ -161,6 +176,7 @@ public final class IntegrationTestHelper {
 		logger.debug("-- REQUEST INIT -------------------------------");
 		logger.debug(request.getRequestLine().toString());
 		httpclient.execute(request, responseHandler);
+		return body.get();
 	}
 
 	public void shutdown() throws Exception {

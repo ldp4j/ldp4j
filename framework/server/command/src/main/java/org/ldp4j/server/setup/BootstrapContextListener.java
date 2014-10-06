@@ -185,6 +185,10 @@ public final class BootstrapContextListener implements ServletContextListener {
 		return builder.toString();
 	}
 
+	private String getTargetApplicationClassName(ServletContextEvent sce) {
+		return sce.getServletContext().getInitParameter(LDP4J_TARGET_APPLICATION);
+	}
+
 	@Override
 	public void contextInitialized(ServletContextEvent sce) {
 		if(isEnabled(SERVER_UPDATE_LOGGING)) {
@@ -199,18 +203,14 @@ public final class BootstrapContextListener implements ServletContextListener {
 			LOGGER.info(dumpContext("Context initialization started",sce.getServletContext()));
 		}
 
-		String targetApplicationClassName = getTargetApplicationClassName(sce);
+		ApplicationContext applicationContext = ApplicationContext.currentContext();
 		try {
-			ApplicationContext applicationContext = ApplicationContext.currentContext();
+			String targetApplicationClassName = getTargetApplicationClassName(sce);
 			applicationContext.initialize(targetApplicationClassName);
-			LOGGER.info("LDP4j Application '{}' ({}) initialized",applicationContext.applicationName(),targetApplicationClassName);
+			LOGGER.info("LDP4j Application '{}' ({}) initialized.",applicationContext.applicationName(),applicationContext.applicationClassName());
 		} catch (ApplicationInitializationException e) {
-			LOGGER.error("Could not initialize LDP4j application '"+targetApplicationClassName+"'",e);
+			LOGGER.error("Could not initialize LDP4j Application",e);
 		}
-	}
-
-	private String getTargetApplicationClassName(ServletContextEvent sce) {
-		return sce.getServletContext().getInitParameter(LDP4J_TARGET_APPLICATION);
 	}
 
 	@Override
@@ -221,8 +221,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 
 		ApplicationContext applicationContext = ApplicationContext.currentContext();
 		if(applicationContext.shutdown()) {
-			String targetApplicationClassName = getTargetApplicationClassName(sce);
-			LOGGER.info("LDP4j application "+applicationContext.applicationName()+" ("+targetApplicationClassName+") shutdown");
+			LOGGER.info("LDP4j Application '{}' ({}) shutdown.",applicationContext.applicationName(),applicationContext.applicationClassName());
 		}
 	}
 

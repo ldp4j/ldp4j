@@ -41,6 +41,7 @@ import org.ldp4j.server.resources.impl.ResourceBuilder;
 import org.ldp4j.server.resources.impl.ResourceBuilder.ContainerBuilder;
 import org.ldp4j.server.resources.impl.ResourceBuilder.SimpleResourceBuilder;
 
+@Deprecated
 final class ResourceAdapter implements TemplateVisitor {
 
 	private final Endpoint endpoint;

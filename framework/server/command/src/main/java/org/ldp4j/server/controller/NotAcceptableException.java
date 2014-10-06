@@ -26,31 +26,14 @@
  */
 package org.ldp4j.server.controller;
 
-import java.util.ArrayList;
-import java.util.List;
+import org.ldp4j.application.endpoint.Endpoint;
 
-import javax.ws.rs.core.Variant;
-
-import org.ldp4j.server.resources.Resource;
-
-public class NotAcceptableException extends RuntimeException {
+public class NotAcceptableException extends OperationContextException {
 
 	private static final long serialVersionUID = 6897847237787548607L;
 
-	private final transient List<Variant> variants;
-	private final transient Resource resource;
-
-	public NotAcceptableException(Resource resource, List<Variant> variants) {
-		this.resource=resource;
-		this.variants=new ArrayList<Variant>(variants);
-	}
-
-	public List<Variant> getVariants() {
-		return variants;
-	}
-
-	public Resource getResource() {
-		return resource;
+	public NotAcceptableException(Endpoint endpoint, OperationContext context) {
+		super(endpoint,context);
 	}
 
 }

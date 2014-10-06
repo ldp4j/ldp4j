@@ -26,6 +26,8 @@
  */
 package org.ldp4j.server.controller.providers;
 
+import java.net.URI;
+import java.util.List;
 import java.util.Locale;
 
 import javax.ws.rs.core.Context;
@@ -34,11 +36,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
+import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.ldp4j.server.api.NotAcceptableException;
 import org.ldp4j.server.api.utils.ProtocolUtils;
+import org.ldp4j.server.controller.EndpointControllerUtils;
+import org.ldp4j.server.controller.NotAcceptableException;
+import org.ldp4j.server.utils.VariantUtils;
 
 @Provider
 public class NotAcceptableExceptionMapper implements ExceptionMapper<NotAcceptableException> {
@@ -56,16 +61,18 @@ public class NotAcceptableExceptionMapper implements ExceptionMapper<NotAcceptab
 	
 	@Override
 	public Response toResponse(NotAcceptableException throwable) {
-		String message = ProtocolUtils.getAcceptableContent(throwable.getVariants(), getUriInfo().getAbsolutePath());
+		List<Variant> variants = VariantUtils.defaultVariants();
+		URI resourceLocation = throwable.getOperationContext().base().resolve(throwable.getEndpoint().path());
+		String message = ProtocolUtils.getAcceptableContent(variants, resourceLocation);
 		ResponseBuilder builder=
 			Response.
 				status(Status.NOT_ACCEPTABLE).
-				variants(throwable.getVariants()).
+				variants(variants).
 				language(Locale.ENGLISH).
 				type(MediaType.TEXT_PLAIN).
 				entity(message);
-		ProtocolUtils.populateEndorsedHeaders(throwable.getResource(), builder);
-		ProtocolUtils.populateSpecificHeaders(throwable.getResource(), builder);
+		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.getEndpoint());
+		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.getOperationContext().resourceType());
 		return builder.build();
 	}
 

@@ -34,8 +34,8 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.ldp4j.server.api.PreconditionFailedException;
-import org.ldp4j.server.api.utils.ProtocolUtils;
+import org.ldp4j.server.controller.EndpointControllerUtils;
+import org.ldp4j.server.controller.PreconditionFailedException;
 
 @Provider
 public class PreconditionFailedExceptionMapper implements ExceptionMapper<PreconditionFailedException> {
@@ -49,8 +49,8 @@ public class PreconditionFailedExceptionMapper implements ExceptionMapper<Precon
 				language(Locale.ENGLISH).
 				type(MediaType.TEXT_PLAIN).
 				entity(message);
-		ProtocolUtils.populateEndorsedHeaders(throwable.getResource(), builder);
-		ProtocolUtils.populateSpecificHeaders(throwable.getResource(), builder);
+		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.getEndpoint());
+		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.getOperationContext().resourceType());
 		return builder.build();
 	}
 

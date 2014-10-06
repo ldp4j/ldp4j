@@ -62,7 +62,7 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.ldp4j.commons</groupId>
-				<artifactId>commons-core</artifactId>
+				<artifactId>ldp4j-commons-core</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 		</dependencies>

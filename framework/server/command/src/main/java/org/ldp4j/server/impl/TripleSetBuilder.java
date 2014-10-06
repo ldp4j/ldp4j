@@ -106,63 +106,6 @@ final class TripleSetBuilder {
 		}
 	}
 
-//	private static final class GlobalNameVisitor extends NameVisitor implements NameMapper<URIRef> {
-//
-//		private final URI base;
-//
-//		private URIRef resource=null;
-//
-//		private GlobalNameVisitor(URI base) {
-//			this.base = base;
-//		}
-//		
-//		private URIRef encode(Object id) {
-//			try {
-//				return uriRef(base.resolve(URLEncoder.encode(id.toString(), "UTF-8")));
-//			} catch (UnsupportedEncodingException e) {
-//				throw new IllegalStateException("UTF-8 charset should be supported",e);
-//			}
-//		}
-//
-//		@Override
-//		public URIRef getResource(Name<?> name) {
-//			name.accept(this);
-//			return resource;
-//		}
-//
-//		@Override
-//		public void visitURI(URI id) {
-//			resource=uriRef(id);
-//		}
-//
-//		@Override
-//		public void visitQName(QName id) {
-//			resource=uriRef(id);
-//		}
-//
-//		@Override
-//		public void visitTerm(Term id) {
-//			resource=uriRef(id.as(URI.class));
-//		}
-//
-//		@Override
-//		public void visitString(String id) {
-//			resource=encode(id);
-//		}
-//
-//		@Override
-//		public void visitNumber(Number id) {
-//			resource=encode(id);
-//		}
-//
-//		@Override
-//		public void visitObject(Object id) {
-//			resource=encode(id);
-//		}
-//
-//	}
-
-
 	private final class TripleGenerator implements ValueVisitor {
 	
 		private final Resource<?> subject;
@@ -176,7 +119,7 @@ final class TripleSetBuilder {
 		private void addTriple(Object object) {
 			triples.add(
 				triple(
-					subject, 
+					subject,
 					predicate, 
 					object
 				)

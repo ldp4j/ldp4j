@@ -26,28 +26,22 @@
  */
 package org.ldp4j.server.controller;
 
-import org.ldp4j.server.resources.Resource;
+import org.ldp4j.application.endpoint.Endpoint;
 
 
-public class PreconditionFailedException extends RuntimeException {
+public class PreconditionFailedException extends OperationContextException {
 
 	private static final long serialVersionUID = 2525728579639037053L;
 
 	private final int statusCode;
-	private final transient Resource resource;
 
-	public PreconditionFailedException(Resource resource, int statusCode) {
-		this.resource = resource;
+	public PreconditionFailedException(Endpoint endpoint, OperationContext context, int statusCode) {
+		super("",endpoint,context);
 		this.statusCode = statusCode;
-
 	}
 
 	public int getStatusCode() {
 		return statusCode;
-	}
-
-	public Resource getResource() {
-		return resource;
 	}
 
 }
