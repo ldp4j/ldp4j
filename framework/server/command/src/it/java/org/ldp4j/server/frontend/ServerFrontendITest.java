@@ -165,7 +165,7 @@ public class ServerFrontendITest {
 	public void testEnhancedGet(@ArquillianResource final URL url) throws Exception {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
-		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_PATH,HttpGet.class));
+		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpGet.class));
 	}
 	@Test
 	@Category({
@@ -177,7 +177,7 @@ public class ServerFrontendITest {
 	public void testEnhancedHead(@ArquillianResource final URL url) throws Exception {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
-		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_PATH,HttpHead.class));
+		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpHead.class));
 	}
 	@Test
 	@Category({
@@ -188,7 +188,7 @@ public class ServerFrontendITest {
 	public void testEnhancedOptions(@ArquillianResource final URL url) throws Exception {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
-		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_PATH,HttpOptions.class));
+		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpOptions.class));
 	}
 
 	@Test
@@ -201,7 +201,7 @@ public class ServerFrontendITest {
 	public void testEnhancedDelete(@ArquillianResource final URL url) throws Exception {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
-		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_PATH,HttpDelete.class));
+		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpDelete.class));
 	}
 
 	@Test
@@ -213,7 +213,7 @@ public class ServerFrontendITest {
 	public void testEnhancedPut(@ArquillianResource final URL url) throws Exception {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
-		HttpPut request = HELPER.newRequest(MyApplication.ROOT_PERSON_PATH,HttpPut.class);
+		HttpPut request = HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpPut.class);
 		request.setEntity(
 			new StringEntity(
 				EXAMPLE_BODY,
@@ -224,7 +224,7 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-//		DEBUG.class,
+		DEBUG.class,
 		LDP.class,
 		HappyPath.class
 	})
@@ -232,21 +232,43 @@ public class ServerFrontendITest {
 	public void testClientResourceSimulation(@ArquillianResource final URL url) throws Exception {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
-		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_PATH,HttpGet.class);
-		HttpPut put = HELPER.newRequest(MyApplication.ROOT_PERSON_PATH,HttpPut.class);
+		String relativeContainerPath = MyApplication.ROOT_PERSON_RESOURCE_PATH.concat("/relatives");
+
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpGet.class);
+		HttpPut put = HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpPut.class);
 		put.setEntity(
 			new StringEntity(
 				EXAMPLE_BODY,
 				ContentType.create("text/turtle", "UTF-8"))
 		);
+		HttpGet rcGet = HELPER.newRequest(relativeContainerPath,HttpGet.class);
+		HttpPost rcPost = HELPER.newRequest(relativeContainerPath,HttpPost.class);
+		rcPost.setEntity(
+			new StringEntity(
+				EXAMPLE_BODY,
+				ContentType.create("text/turtle", "UTF-8"))
+		);
+
 		HELPER.httpRequest(get);
 		HELPER.httpRequest(put);
 		HELPER.httpRequest(get);
+
+		HELPER.httpRequest(rcGet);
+		String location = HELPER.httpRequest(rcPost);
+		HELPER.httpRequest(get);
+		HELPER.httpRequest(rcGet);
+		String path=HELPER.relativize(location);
+		HELPER.httpRequest(HELPER.newRequest(path,HttpOptions.class));
+		HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
+		HELPER.httpRequest(HELPER.newRequest(path,HttpDelete.class));
+		HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
+		HELPER.httpRequest(get);
+		HELPER.httpRequest(rcGet);
 	}
 
 	@Test
 	@Category({
-		DEBUG.class,
+//		DEBUG.class,
 		LDP.class,
 		HappyPath.class
 	})

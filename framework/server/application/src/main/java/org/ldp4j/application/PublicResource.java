@@ -148,7 +148,7 @@ public abstract class PublicResource extends Public {
 			AttachedTemplate attachedTemplate = template().attachedTemplate(entry.getKey());
 			individual.addValue(
 				attachedTemplate.predicate().or(HAS_ATTACHMENT), 
-				ctx.resourceSurrogate(entry.getValue()));
+				ctx.newIndividual(entry.getValue()));
 			populateAdditionalMetadata(individual, ctx, entry.getValue());
 		}
 	}
@@ -168,12 +168,12 @@ public abstract class PublicResource extends Public {
 				}
 				@Override
 				public Void visitDirectContainer(PublicDirectContainer resource) {
-					resource.fillInResourceMetadata(individual, ctx);
+					resource.fillInMemberMetadata(individual, ctx);
 					return null;
 				}
 				@Override
 				public Void visitIndirectContainer(PublicIndirectContainer resource) {
-					resource.fillInResourceMetadata(individual, ctx);
+					resource.fillInMemberMetadata(individual, ctx);
 					return null;
 				}
 			}

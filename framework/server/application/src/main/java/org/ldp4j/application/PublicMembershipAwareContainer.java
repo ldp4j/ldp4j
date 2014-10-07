@@ -26,7 +26,10 @@
  */
 package org.ldp4j.application;
 
+import java.net.URI;
+
 import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.template.MembershipAwareContainerTemplate;
@@ -52,8 +55,34 @@ public abstract class PublicMembershipAwareContainer<T extends MembershipAwareCo
 	
 	protected abstract Term containerType();
 
-	final void fillInResourceMetadata(Individual<?,?> individual, Context ctx) {
-		// TODO: implement this
+	final void fillInMemberMetadata(Individual<?,?> individual, Context ctx) {
+		URI predicate = containerTemplate().membershipPredicate();
+		switch(containerTemplate().membershipRelation()) {
+		case HAS_MEMBER:
+			populateHasMember(individual, ctx, predicate);
+			break;
+		case IS_MEMBER_OF:
+			populateIsMemberOf(individual, ctx, predicate);
+			break;
+		
+		}
+	}
+
+	private void populateIsMemberOf(Individual<?, ?> individual, Context ctx, URI predicate) {
+		for(PublicResource member:members()) {
+			Individual<?,?> tmp=ctx.newIndividual(member);
+			tmp.addValue(
+				predicate, 
+				individual);
+		}
+	}
+
+	private void populateHasMember(Individual<?, ?> individual, Context ctx, URI predicate) {
+		for(PublicResource member:members()) {
+			individual.addValue(
+				predicate, 
+				ctx.newIndividual(member));
+		}
 	}
 	
 	@Override
@@ -64,6 +93,9 @@ public abstract class PublicMembershipAwareContainer<T extends MembershipAwareCo
 			addValue(
 				ctx.property(RDF.TYPE), 
 				ctx.reference(containerType())).
+			addValue(
+				ctx.property(LDP.MEMBERSHIP_RESOURCE),
+				ctx.newIndividual(parent())).	
 			addValue(
 				ctx.property(template.membershipRelation().term()), 
 				ctx.value(template.membershipPredicate()));

@@ -32,7 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
+import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.server.resources.ResourceType;
@@ -57,9 +57,9 @@ public interface OperationContext {
 
 	OperationContext checkOperationSupport();
 
+	PublicResource resource();
+	
 	URI resolve(Resource newResource);
-
-	Capabilities endpointCapabilities();
 
 	ResourceType resourceType();
 

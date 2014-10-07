@@ -34,8 +34,10 @@ import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
+import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
+import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.application.setup.Bootstrap;
 import org.ldp4j.application.setup.Environment;
 import org.slf4j.Logger;
@@ -43,20 +45,23 @@ import org.slf4j.LoggerFactory;
 
 public class MyApplication extends Application<Configuration> {
 
-	private static final String CONTAINER_NAME = "PersonContainer";
-	private static final String RESOURCE_NAME  = "Miguel";
+	private static final String PERSON_CONTAINER_NAME    = "PersonContainer";
+	private static final String PERSON_RESOURCE_NAME     = "PersonResource";
+	private static final String RELATIVE_CONTAINER_NAME  = "RelativeContainer";
 	
-	public static final String ROOT_PERSON_PATH           = "rootPerson";
+	public static final String ROOT_PERSON_RESOURCE_PATH  = "rootPersonResource";
 	public static final String ROOT_PERSON_CONTAINER_PATH = "rootPersonContainer";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(MyApplication.class);
 
 	private final Name<String> personResourceName;
 	private final Name<String> personContainerName;
+	private final Name<String> relativeContainerName;
 	
 	public MyApplication() {
-		this.personResourceName = NamingScheme.getDefault().name(RESOURCE_NAME);
-		this.personContainerName = NamingScheme.getDefault().name(CONTAINER_NAME);
+		this.personResourceName = NamingScheme.getDefault().name(PERSON_RESOURCE_NAME);
+		this.personContainerName = NamingScheme.getDefault().name(PERSON_CONTAINER_NAME);
+		this.relativeContainerName = NamingScheme.getDefault().name(RELATIVE_CONTAINER_NAME);
 	}
 
 	private DataSet getInitialData(String templateId, String name) {
@@ -76,27 +81,43 @@ public class MyApplication extends Application<Configuration> {
 
 	@Override
 	public void setup(Environment environment, Bootstrap<Configuration> bootstrap) {
-		LOGGER.info("Configuring application: "+bootstrap);
+		LOGGER.info("Configuring application: {}, {}",environment,bootstrap);
 
 		PersonHandler resourceHandler = new PersonHandler();
 		PersonContainerHandler containerHandler=new PersonContainerHandler();
-		containerHandler.setHandler(resourceHandler);
+		RelativeContainerHandler relativesHandler=new RelativeContainerHandler();
 
-		resourceHandler.add(this.personResourceName, getInitialData(PersonHandler.ID,RESOURCE_NAME));
-		containerHandler.add(this.personContainerName, getInitialData(PersonContainerHandler.ID,CONTAINER_NAME));
+		containerHandler.setHandler(resourceHandler);
+		relativesHandler.setHandler(resourceHandler);
+
+		resourceHandler.add(this.personResourceName, getInitialData(PersonHandler.ID,PERSON_RESOURCE_NAME));
+		containerHandler.add(this.personContainerName, getInitialData(PersonContainerHandler.ID,PERSON_CONTAINER_NAME));
+		relativesHandler.add(this.relativeContainerName, getInitialData(RelativeContainerHandler.ID,RELATIVE_CONTAINER_NAME));
 
 		bootstrap.addHandler(resourceHandler);
 		bootstrap.addHandler(containerHandler);
+		bootstrap.addHandler(relativesHandler);
 
-		environment.publishResource(this.personResourceName, PersonHandler.class, ROOT_PERSON_PATH);
+		environment.publishResource(this.personResourceName, PersonHandler.class, ROOT_PERSON_RESOURCE_PATH);
 		environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
+		LOGGER.info("Configuration completed.");
 	}
 
 	@Override
 	public void initialize(WriteSession session) {
-		LOGGER.info("Initializing application: "+session);
-		LOGGER.info("Root resource.......: "+session.find(ResourceSnapshot.class,this.personResourceName,PersonHandler.class));
+		LOGGER.info("Initializing application: {}",session);
+		ResourceSnapshot person = session.find(ResourceSnapshot.class,this.personResourceName,PersonHandler.class);
+		LOGGER.info("Root resource.......: "+person);
 		LOGGER.info("Root basic container: "+session.find(ResourceSnapshot.class,this.personContainerName,PersonContainerHandler.class));
+
+		ContainerSnapshot relativesContainer = person.createAttachedResource(ContainerSnapshot.class, PersonHandler.RELATIVES_ID, this.relativeContainerName, RelativeContainerHandler.class);
+		LOGGER.info("Attached resource...: "+relativesContainer);
+		try {
+			session.saveChanges();
+		} catch (WriteSessionException e) {
+			throw new IllegalStateException("Could not initialize application");
+		}
+		LOGGER.info("Initialization completed.");
 	}
 
 	@Override

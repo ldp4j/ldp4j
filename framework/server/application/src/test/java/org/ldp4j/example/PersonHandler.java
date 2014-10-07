@@ -48,14 +48,17 @@ import org.ldp4j.application.session.WriteSessionException;
 			path="books",
 			handler=BookContainerHandler.class),	
 		@Attachment(
-			id="personRelatives",
-			path="relatives",
+			id=PersonHandler.RELATIVES_ID,
+			path=PersonHandler.RELATIVES_PATH,
 			handler=RelativeContainerHandler.class)	
 	}
 )
 public class PersonHandler extends InMemoryResourceHandler implements Modifiable, Deletable {
 
 	public static final String ID="personTemplate";
+	
+	public static final String RELATIVES_ID   = "personRelatives";
+	public static final String RELATIVES_PATH = "relatives";
 	
 	public PersonHandler() {
 		super("Person");

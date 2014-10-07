@@ -39,8 +39,10 @@ public abstract class Public {
 	private final Endpoint endpoint;
 	private final ApplicationContext applicationContext;
 	private final PublicResourceFactory factory;
+
 	private ResourceTemplate template;
 	private Resource resource;
+	private Capabilities capabilities;
 
 	protected Public(ApplicationContext applicationContext, Endpoint endpoint) {
 		this.applicationContext = applicationContext;
@@ -48,6 +50,10 @@ public abstract class Public {
 		this.factory = PublicResourceFactory.newInstance(applicationContext());
 	}
 	
+	protected final PublicResource parent() {
+		return createResource(resolveAs(Resource.class).parentId());
+	}
+
 	protected final Endpoint endpoint() {
 		return this.endpoint;
 	}
@@ -93,6 +99,13 @@ public abstract class Public {
 
 	public final Date lastModified() {
 		return new Date(endpoint.lastModified().getTime());
+	}
+	
+	public final Capabilities capabilities() {
+		if(this.capabilities==null) {
+			this.capabilities = this.applicationContext.endpointCapabilities(this.endpoint);
+		}
+		return this.capabilities;
 	}
 	
 	public abstract <T> T accept(PublicVisitor<T> visitor);

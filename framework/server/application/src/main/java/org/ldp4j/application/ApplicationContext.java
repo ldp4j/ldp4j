@@ -226,7 +226,7 @@ public final class ApplicationContext {
 		return this.templateManagementService.findTemplateById(resource.id().templateId());
 	}
 	
-	public Capabilities endpointCapabilities(Endpoint endpoint) {
+	Capabilities endpointCapabilities(Endpoint endpoint) {
 		MutableCapabilities result=new MutableCapabilities();
 		Resource resource = resolveResource(endpoint);
 		ResourceTemplate template=resourceTemplate(resource);

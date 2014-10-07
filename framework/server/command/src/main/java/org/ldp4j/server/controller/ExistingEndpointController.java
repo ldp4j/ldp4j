@@ -42,15 +42,11 @@ import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.resource.Resource;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
 
 final class ExistingEndpointController extends AbstractEndpointController {
-
 	
-	private final static Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
 	private static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
 	public ExistingEndpointController(Endpoint endpoint) {
@@ -113,7 +109,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 	}
 
 	public Response options(OperationContext context) {
-		Capabilities capabilities=context.endpointCapabilities(); 
+		Capabilities capabilities=context.resource().capabilities(); 
 		ResponseBuilder builder=
 			Response.
 				ok();

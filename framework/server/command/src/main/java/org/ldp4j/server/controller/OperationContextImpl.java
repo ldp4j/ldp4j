@@ -41,7 +41,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
+import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EntityTag;
@@ -107,6 +107,7 @@ final class OperationContextImpl implements OperationContext {
 	private DataSet dataSet;
 
 	private ResourceType resourceType;
+	private PublicResource resource;
 
 	OperationContextImpl(
 		ApplicationContext applicationContext, 
@@ -223,16 +224,16 @@ final class OperationContextImpl implements OperationContext {
 			allowed=true;
 			break;
 		case DELETE:
-			allowed=endpointCapabilities().isDeletable();
+			allowed=resource().capabilities().isDeletable();
 			break;
 		case PATCH:
-			allowed=endpointCapabilities().isPatchable();
+			allowed=resource().capabilities().isPatchable();
 			break;
 		case POST:
-			allowed=endpointCapabilities().isFactory();
+			allowed=resource().capabilities().isFactory();
 			break;
 		case PUT:
-			allowed=endpointCapabilities().isModifiable();
+			allowed=resource().capabilities().isModifiable();
 			break;
 		}
 		if(!allowed) {
@@ -298,11 +299,6 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	@Override
-	public Capabilities endpointCapabilities() {
-		return this.applicationContext.endpointCapabilities(this.endpoint);
-	}
-
-	@Override
 	public String serializeResource(DataSet representation, MediaType mediaType) {
 		IMediaTypeProvider provider = 
 			RuntimeInstance.
@@ -358,6 +354,14 @@ final class OperationContextImpl implements OperationContext {
 
 	private ResourceResolver resourceResolver() {
 		return new OperationContextResourceResolver();
+	}
+
+	@Override
+	public PublicResource resource() {
+		if(this.resource==null) {
+			this.resource=this.applicationContext.resolvePublicResource(this.endpoint);
+		}
+		return this.resource;
 	}
 
 }
