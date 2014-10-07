@@ -24,21 +24,29 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.lifecycle;
 
-import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.application.resource.ResourceId;
+public class LifecycleException extends Exception {
 
-public interface EndpointRepository {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 9030385860866188522L;
 
-	Endpoint endpointOfPath(String path);
+	public LifecycleException() {
+		super();
+	}
 
-	Endpoint endpointOfResource(ResourceId id);
+	public LifecycleException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-	void add(Endpoint endpoint);
+	public LifecycleException(String message) {
+		super(message);
+	}
 
-	void remove(Endpoint endpoint);
-
-	long nextIdentifier();
+	public LifecycleException(Throwable cause) {
+		super(cause);
+	}
 
 }

@@ -33,13 +33,15 @@ import java.util.Map;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.ldp4j.application.lifecycle.LifecycleException;
+import org.ldp4j.application.lifecycle.Managed;
 import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.resource.ResourceVisitor;
 import org.ldp4j.application.spi.ResourceRepository;
 
-final class InMemoryResourceRepository implements ResourceRepository {
+final class InMemoryResourceRepository implements ResourceRepository, Managed {
 
 	private final ReadWriteLock lock=new ReentrantReadWriteLock();
 	private final Map<ResourceId,Resource> resources=new LinkedHashMap<ResourceId,Resource>();
@@ -120,6 +122,22 @@ final class InMemoryResourceRepository implements ResourceRepository {
 		try {
 			resources.remove(resource.id());
 			containers.remove(resource.id());
+		} finally {
+			lock.writeLock().unlock();
+		}
+	}
+
+	@Override
+	public void init() throws LifecycleException {
+		// Nothing to do
+	}
+
+	@Override
+	public void shutdown() throws LifecycleException {
+		lock.writeLock().lock();
+		try {
+			resources.clear();
+			containers.clear();
 		} finally {
 			lock.writeLock().unlock();
 		}

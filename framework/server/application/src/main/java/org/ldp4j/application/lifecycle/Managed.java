@@ -24,21 +24,12 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.lifecycle;
 
-import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.application.resource.ResourceId;
+public interface Managed {
 
-public interface EndpointRepository {
-
-	Endpoint endpointOfPath(String path);
-
-	Endpoint endpointOfResource(ResourceId id);
-
-	void add(Endpoint endpoint);
-
-	void remove(Endpoint endpoint);
-
-	long nextIdentifier();
-
+	void init() throws LifecycleException;
+	
+	void shutdown() throws LifecycleException;
+	
 }

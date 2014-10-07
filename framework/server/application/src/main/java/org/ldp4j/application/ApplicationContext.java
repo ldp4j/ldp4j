@@ -38,6 +38,8 @@ import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.lifecycle.ApplicationInitializationException;
 import org.ldp4j.application.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.lifecycle.ApplicationLifecycleService;
+import org.ldp4j.application.lifecycle.LifecycleException;
+import org.ldp4j.application.lifecycle.LifecycleManager;
 import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceControllerService;
@@ -65,7 +67,6 @@ public final class ApplicationContext {
 	private ApplicationLifecycleService applicationLifecycleService;
 	private TemplateManagementService templateManagementService;
 	private EndpointManagementService endpointManagementService;
-	@SuppressWarnings("unused")
 	private WriteSessionService writeSessionService;
 
 	private Application<Configuration> application;
@@ -121,36 +122,41 @@ public final class ApplicationContext {
 		return application;
 	}
 
-	public void initialize(String applicationClassName) throws ApplicationInitializationException {
+	private void initializeComponents() throws LifecycleException {
+		LifecycleManager.init(this.resourceRepository);
+		LifecycleManager.init(this.endpointRepository);
+		LifecycleManager.init(this.endpointManagementService);
+		LifecycleManager.init(this.resourceControllerService);
+		LifecycleManager.init(this.templateManagementService);
+		LifecycleManager.init(this.writeSessionService);
+	}
+
+	private void initializeApplication(String applicationClassName) throws ApplicationInitializationException {
 		try {
 			this.application = this.applicationLifecycleService.initialize(applicationClassName);
 		} catch (ApplicationInitializationException e) {
 			String errorMessage = "Application '"+applicationClassName+"' initilization failed";
 			LOGGER.error(errorMessage,e);
+			shutdownComponents();
 			throw e;
 		}
 	}
-	
-	public String applicationName() {
-		return application().getName();
+
+	private void shutdownComponents() {
+		shutdown(this.endpointManagementService);
+		shutdown(this.resourceControllerService);
+		shutdown(this.templateManagementService);
+		shutdown(this.writeSessionService);
+		shutdown(this.endpointRepository);
+		shutdown(this.resourceRepository);
 	}
 
-	public boolean shutdown() {
-		this.applicationLifecycleService.shutdown();
-		return this.applicationLifecycleService.isShutdown();
-	}
-
-	public PublicResource resolvePublicResource(Endpoint endpoint) {
-		return this.factory.createResource(endpoint);
-	}
-	
-	public Endpoint resolveEndpoint(String path) {
-		checkNotNull(path,"Endpoint path cannot be null");
-		return this.endpointManagementService.resolveEndpoint(path);
-	}
-
-	public Resource resolveResource(Endpoint endpoint) {
-		return this.resourceRepository.find(endpoint.resourceId(), Resource.class);
+	private <T> void shutdown(T object) {
+		try {
+			LifecycleManager.shutdown(object);
+		} catch (LifecycleException e) {
+			LOGGER.error("Could not shutdown "+object,e);
+		}
 	}
 
 	DataSet getResource(Endpoint endpoint) throws ApplicationExecutionException {
@@ -168,6 +174,54 @@ public final class ApplicationContext {
 			LOGGER.error(errorMessage,e);
 			throw new ApplicationExecutionException(errorMessage,e);
 		}
+	}
+
+	Capabilities endpointCapabilities(Endpoint endpoint) {
+		MutableCapabilities result=new MutableCapabilities();
+		Resource resource = resolveResource(endpoint);
+		ResourceTemplate template=resourceTemplate(resource);
+		Class<? extends ResourceHandler> handlerClass = template.handlerClass();
+		result.setModifiable(Modifiable.class.isAssignableFrom(handlerClass));
+		result.setDeletable(Deletable.class.isAssignableFrom(handlerClass) && !resource.isRoot());
+		// TODO: Analyze how to provide patch support
+		result.setPatchable(false);
+		TemplateIntrospector introspector = TemplateIntrospector.newInstance(template);
+		result.setFactory(introspector.isContainer());
+		return result;
+	}
+
+	public void initialize(String applicationClassName) throws ApplicationInitializationException {
+		try {
+			initializeComponents();
+			initializeApplication(applicationClassName);
+		} catch (LifecycleException e) {
+			String errorMessage = "Could not initialize components";
+			LOGGER.error(errorMessage,e);
+			throw new IllegalStateException(errorMessage,e);
+		}
+	}
+
+	public boolean shutdown() {
+		this.applicationLifecycleService.shutdown();
+		shutdownComponents();
+		return this.applicationLifecycleService.isShutdown();
+	}
+
+	public String applicationName() {
+		return application().getName();
+	}
+
+	public PublicResource resolvePublicResource(Endpoint endpoint) {
+		return this.factory.createResource(endpoint);
+	}
+	
+	public Endpoint resolveEndpoint(String path) {
+		checkNotNull(path,"Endpoint path cannot be null");
+		return this.endpointManagementService.resolveEndpoint(path);
+	}
+
+	public Resource resolveResource(Endpoint endpoint) {
+		return this.resourceRepository.find(endpoint.resourceId(), Resource.class);
 	}
 
 	public Resource createResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
@@ -226,20 +280,6 @@ public final class ApplicationContext {
 		return this.templateManagementService.findTemplateById(resource.id().templateId());
 	}
 	
-	Capabilities endpointCapabilities(Endpoint endpoint) {
-		MutableCapabilities result=new MutableCapabilities();
-		Resource resource = resolveResource(endpoint);
-		ResourceTemplate template=resourceTemplate(resource);
-		Class<? extends ResourceHandler> handlerClass = template.handlerClass();
-		result.setModifiable(Modifiable.class.isAssignableFrom(handlerClass));
-		result.setDeletable(Deletable.class.isAssignableFrom(handlerClass) && !resource.isRoot());
-		// TODO: Analyze how to provide patch support
-		result.setPatchable(false);
-		TemplateIntrospector introspector = TemplateIntrospector.newInstance(template);
-		result.setFactory(introspector.isContainer());
-		return result;
-	}
-
 	public Endpoint findResourceEndpoint(ResourceId id) {
 		return this.endpointRepository.endpointOfResource(id);
 	}

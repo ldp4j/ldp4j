@@ -33,10 +33,12 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.lifecycle.LifecycleException;
+import org.ldp4j.application.lifecycle.Managed;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.spi.EndpointRepository;
 
-final class InMemoryEndpointRepository implements EndpointRepository {
+final class InMemoryEndpointRepository implements EndpointRepository, Managed {
 
 	private final AtomicLong counter=new AtomicLong();
 
@@ -108,6 +110,23 @@ final class InMemoryEndpointRepository implements EndpointRepository {
 			endpointsById.put(endpoint.id(), endpoint);
 			endpointsByPath.put(endpoint.path(), endpoint.id());
 			endpointsByResourceName.put(endpoint.resourceId(), endpoint.id());
+		} finally {
+			lock.writeLock().unlock();
+		}
+	}
+
+	@Override
+	public void init() throws LifecycleException {
+		// Nothing to do
+	}
+
+	@Override
+	public void shutdown() throws LifecycleException {
+		lock.writeLock().lock();
+		try {
+			endpointsById.clear();
+			endpointsByPath.clear();
+			endpointsByResourceName.clear();
 		} finally {
 			lock.writeLock().unlock();
 		}
