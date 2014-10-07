@@ -180,4 +180,12 @@ public abstract class PublicResource extends Public {
 		);
 	}
 
+	public void delete() throws ApplicationExecutionException {
+		applicationContext().deleteResource(endpoint());
+	}
+
+	public void modify(DataSet dataSet) throws ApplicationExecutionException {
+		applicationContext().modifyResource(endpoint(),dataSet);
+	}
+
 }

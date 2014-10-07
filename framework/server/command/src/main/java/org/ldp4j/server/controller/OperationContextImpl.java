@@ -30,7 +30,6 @@ package org.ldp4j.server.controller;
 import java.net.URI;
 import java.util.Date;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -41,19 +40,17 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationContext;
+import org.ldp4j.application.PublicBasicContainer;
+import org.ldp4j.application.PublicContainer;
+import org.ldp4j.application.PublicDirectContainer;
+import org.ldp4j.application.PublicIndirectContainer;
+import org.ldp4j.application.PublicRDFSource;
 import org.ldp4j.application.PublicResource;
+import org.ldp4j.application.PublicVisitor;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EntityTag;
-import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.application.template.BasicContainerTemplate;
-import org.ldp4j.application.template.ContainerTemplate;
-import org.ldp4j.application.template.DirectContainerTemplate;
-import org.ldp4j.application.template.IndirectContainerTemplate;
-import org.ldp4j.application.template.MembershipAwareContainerTemplate;
-import org.ldp4j.application.template.ResourceTemplate;
-import org.ldp4j.application.template.TemplateVisitor;
 import org.ldp4j.server.ImmutableContext;
 import org.ldp4j.server.ResourceResolver;
 import org.ldp4j.server.resources.ResourceType;
@@ -68,11 +65,33 @@ import org.ldp4j.server.utils.VariantUtils;
 
 final class OperationContextImpl implements OperationContext {
 
+	private static final class ResourceTypeInspector implements PublicVisitor<ResourceType> {
+		@Override
+		public ResourceType visitRDFSource(PublicRDFSource resource) {
+			return ResourceType.RESOURCE;
+		}
+
+		@Override
+		public ResourceType visitBasicContainer(PublicBasicContainer resource) {
+			return ResourceType.BASIC_CONTAINER;
+		}
+
+		@Override
+		public ResourceType visitDirectContainer(PublicDirectContainer resource) {
+			return ResourceType.DIRECT_CONTAINER;
+		}
+
+		@Override
+		public ResourceType visitIndirectContainer(PublicIndirectContainer resource) {
+			return ResourceType.INDIRECT_CONTAINER;
+		}
+	}
+
 	private final class OperationContextResourceResolver implements ResourceResolver {
 
 		@Override
 		public URI resolveResource(ResourceId id) {
-			Endpoint resourceEndpoint = applicationContext.findResourceEndpoint(id);
+			Endpoint resourceEndpoint = applicationContext.resolveResource(id);
 			URI result = null;
 			if(resourceEndpoint==null) {
 				throw new IllegalStateException("Could not resolve resource "+id);
@@ -283,17 +302,16 @@ final class OperationContextImpl implements OperationContext {
 	}
 	
 	@Override
-	public URI resolve(Resource newResource) {
-		Endpoint endpoint = this.applicationContext.findResourceEndpoint(newResource.id());
-		return base().resolve(endpoint.path());
+	public URI resolve(PublicResource newResource) {
+		return base().resolve(newResource.path());
 	}
 
 	@Override
 	public ResourceType resourceType() {
 		if(this.resourceType==null) {
-			Resource resource = this.applicationContext.resolveResource(endpoint);
-			ResourceTemplate template = this.applicationContext.resourceTemplate(resource);
-			this.resourceType=getResourceType(template);
+			this.resourceType=
+				resource().
+					accept(new ResourceTypeInspector());
 		}
 		return this.resourceType;
 	}
@@ -319,39 +337,6 @@ final class OperationContextImpl implements OperationContext {
 		}
 	}
 
-	private ResourceType getResourceType(ResourceTemplate template) {
-		final AtomicReference<ResourceType> resourceType=new AtomicReference<ResourceType>();
-		template.accept(
-			new TemplateVisitor() {
-				@Override
-				public void visitResourceTemplate(ResourceTemplate template) {
-					resourceType.set(ResourceType.RESOURCE);
-				}
-				@Override
-				public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
-					resourceType.set(ResourceType.CONTAINER);
-				}
-				@Override
-				public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
-					resourceType.set(ResourceType.INDIRECT_CONTAINER);
-				}
-				@Override
-				public void visitDirectContainerTemplate(DirectContainerTemplate template) {
-					resourceType.set(ResourceType.DIRECT_CONTAINER);
-				}
-				@Override
-				public void visitContainerTemplate(ContainerTemplate template) {
-					resourceType.set(ResourceType.CONTAINER);
-				}
-				@Override
-				public void visitBasicContainerTemplate(BasicContainerTemplate template) {
-					resourceType.set(ResourceType.BASIC_CONTAINER);
-				}
-			}
-		);
-		return resourceType.get();
-	}
-
 	private ResourceResolver resourceResolver() {
 		return new OperationContextResourceResolver();
 	}
@@ -359,9 +344,18 @@ final class OperationContextImpl implements OperationContext {
 	@Override
 	public PublicResource resource() {
 		if(this.resource==null) {
-			this.resource=this.applicationContext.resolvePublicResource(this.endpoint);
+			this.resource=this.applicationContext.findResource(this.endpoint);
 		}
 		return this.resource;
+	}
+
+	@Override
+	public PublicContainer container() {
+		PublicResource tmp = resource();
+		if(!(tmp instanceof PublicContainer)) {
+			throw new IllegalStateException("Expected an instance of class "+PublicContainer.class.getCanonicalName()+" but got an instance of class "+tmp.getClass().getCanonicalName());
+		}
+		return (PublicContainer)tmp;
 	}
 
 }

@@ -38,10 +38,10 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationExecutionException;
 import org.ldp4j.application.Capabilities;
+import org.ldp4j.application.PublicContainer;
 import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.application.resource.Resource;
 
 import com.google.common.base.Throwables;
 
@@ -80,7 +80,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			PublicResource resource = 
 				context.
 					applicationContext().
-						resolvePublicResource(endpoint());
+						findResource(endpoint());
 			// 3.2. prepare the associated entity
 			DataSet entity=resource.entity();
 			// 3.3. serialize the entity
@@ -140,9 +140,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 
 		// 2. Execute operation and determine response body and status
 		try {
-			context.
-				applicationContext().
-					deleteResource(endpoint());
+			context.resource().delete();
 			status=Status.NO_CONTENT;
 			// TODO: This could be improved by returning an OK with an
 			// additional description of all the resources that were deleted
@@ -178,7 +176,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 	
 		// 2. Execute operation and determine response body and status
 		try {
-			context.applicationContext().modifyResource(endpoint(),context.dataSet());
+			context.resource().modify(context.dataSet());
 			status=Status.NO_CONTENT;
 			// TODO: This could be improved by returning an OK with an
 			// additional description of all the resources that were modified
@@ -229,10 +227,9 @@ final class ExistingEndpointController extends AbstractEndpointController {
 	
 		// 2. Execute operation and determine response body and status
 		try {
-			Resource newResource = 
-				context.
-					applicationContext().
-						createResource(endpoint(),context.dataSet());
+			PublicContainer container=context.container();
+			PublicResource newResource = 
+				container.createResource(context.dataSet());
 			URI location = context.resolve(newResource);
 			status=Status.CREATED;
 			body=location.toString();

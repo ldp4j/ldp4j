@@ -30,11 +30,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 
 import com.google.common.collect.Lists;
@@ -65,6 +67,11 @@ public abstract class PublicContainer extends PublicRDFSource {
 				ctx.property(LDP.CONTAINS), 
 				ctx.newIndividual(member));
 		}
+	}
+
+	public PublicResource createResource(DataSet dataSet) throws ApplicationExecutionException {
+		Resource resource=applicationContext().createResource(endpoint(), dataSet);
+		return createResource(resource.id());
 	}
 
 }

@@ -86,32 +86,39 @@ public final class ApplicationContext {
 		return object;
 	}
 
-	private void setWriteSessionService(WriteSessionService service) {
+	private ApplicationContext withWriteSessionService(WriteSessionService service) {
 		this.writeSessionService = checkNotNull(service,"Write session service cannot be null");
+		return this;
 	}
 
-	private void setEndpointManagementService(EndpointManagementService service) {
+	private ApplicationContext withEndpointManagementService(EndpointManagementService service) {
 		this.endpointManagementService = checkNotNull(service,"Endpoint management service cannot be null");
+		return this;
 	}
 
-	private void setApplicationLifecycleService(ApplicationLifecycleService service) {
+	private ApplicationContext withApplicationLifecycleService(ApplicationLifecycleService service) {
 		this.applicationLifecycleService = checkNotNull(service,"Application lifecycle service cannot be null");
+		return this;
 	}
 
-	private void setTemplateManagementService(TemplateManagementService service) {
+	private ApplicationContext withTemplateManagementService(TemplateManagementService service) {
 		this.templateManagementService = checkNotNull(service,"Template management service cannot be null");
+		return this;
 	}
 
-	private void setResourceControllerService(ResourceControllerService service) {
+	private ApplicationContext withResourceControllerService(ResourceControllerService service) {
 		this.resourceControllerService = checkNotNull(service,"Resource controller service cannot be null");
+		return this;
 	}
 
-	private void setResourceRepository(ResourceRepository resourceRepository) {
+	private ApplicationContext withResourceRepository(ResourceRepository resourceRepository) {
 		this.resourceRepository=checkNotNull(resourceRepository,"Resource repository cannot be null");
+		return this;
 	}
 
-	private void setEndpointRepository(EndpointRepository endpointRepository) {
+	private ApplicationContext withEndpointRepository(EndpointRepository endpointRepository) {
 		this.endpointRepository=checkNotNull(endpointRepository,"Endpoint repository cannot be null");
+		return this;
 	}
 
 	private String applicationFailureMessage(String message, Object... objects) {
@@ -129,17 +136,6 @@ public final class ApplicationContext {
 		LifecycleManager.init(this.resourceControllerService);
 		LifecycleManager.init(this.templateManagementService);
 		LifecycleManager.init(this.writeSessionService);
-	}
-
-	private void initializeApplication(String applicationClassName) throws ApplicationInitializationException {
-		try {
-			this.application = this.applicationLifecycleService.initialize(applicationClassName);
-		} catch (ApplicationInitializationException e) {
-			String errorMessage = "Application '"+applicationClassName+"' initilization failed";
-			LOGGER.error(errorMessage,e);
-			shutdownComponents();
-			throw e;
-		}
 	}
 
 	private void shutdownComponents() {
@@ -176,55 +172,11 @@ public final class ApplicationContext {
 		}
 	}
 
-	Capabilities endpointCapabilities(Endpoint endpoint) {
-		MutableCapabilities result=new MutableCapabilities();
-		Resource resource = resolveResource(endpoint);
-		ResourceTemplate template=resourceTemplate(resource);
-		Class<? extends ResourceHandler> handlerClass = template.handlerClass();
-		result.setModifiable(Modifiable.class.isAssignableFrom(handlerClass));
-		result.setDeletable(Deletable.class.isAssignableFrom(handlerClass) && !resource.isRoot());
-		// TODO: Analyze how to provide patch support
-		result.setPatchable(false);
-		TemplateIntrospector introspector = TemplateIntrospector.newInstance(template);
-		result.setFactory(introspector.isContainer());
-		return result;
-	}
-
-	public void initialize(String applicationClassName) throws ApplicationInitializationException {
-		try {
-			initializeComponents();
-			initializeApplication(applicationClassName);
-		} catch (LifecycleException e) {
-			String errorMessage = "Could not initialize components";
-			LOGGER.error(errorMessage,e);
-			throw new IllegalStateException(errorMessage,e);
-		}
-	}
-
-	public boolean shutdown() {
-		this.applicationLifecycleService.shutdown();
-		shutdownComponents();
-		return this.applicationLifecycleService.isShutdown();
-	}
-
-	public String applicationName() {
-		return application().getName();
-	}
-
-	public PublicResource resolvePublicResource(Endpoint endpoint) {
-		return this.factory.createResource(endpoint);
-	}
-	
-	public Endpoint resolveEndpoint(String path) {
-		checkNotNull(path,"Endpoint path cannot be null");
-		return this.endpointManagementService.resolveEndpoint(path);
-	}
-
-	public Resource resolveResource(Endpoint endpoint) {
+	Resource resolveResource(Endpoint endpoint) {
 		return this.resourceRepository.find(endpoint.resourceId(), Resource.class);
 	}
 
-	public Resource createResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
+	Resource createResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Container resource = this.resourceRepository.find(resourceId,Container.class);
 		if(resource==null) {
@@ -241,7 +193,7 @@ public final class ApplicationContext {
 		}
 	}
 
-	public void deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
+	void deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = this.resourceRepository.find(resourceId,Resource.class);
 		if(resource==null) {
@@ -258,7 +210,7 @@ public final class ApplicationContext {
 		}
 	}
 
-	public void modifyResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
+	void modifyResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = this.resourceRepository.find(resourceId,Resource.class);
 		if(resource==null) {
@@ -274,13 +226,60 @@ public final class ApplicationContext {
 			throw new ApplicationExecutionException(errorMessage,e);
 		}
 	}
-	
 
-	public ResourceTemplate resourceTemplate(Resource resource) {
+	Capabilities endpointCapabilities(Endpoint endpoint) {
+		MutableCapabilities result=new MutableCapabilities();
+		Resource resource = resolveResource(endpoint);
+		ResourceTemplate template=resourceTemplate(resource);
+		Class<? extends ResourceHandler> handlerClass = template.handlerClass();
+		result.setModifiable(Modifiable.class.isAssignableFrom(handlerClass));
+		result.setDeletable(Deletable.class.isAssignableFrom(handlerClass) && !resource.isRoot());
+		// TODO: Analyze how to provide patch support
+		result.setPatchable(false);
+		TemplateIntrospector introspector = TemplateIntrospector.newInstance(template);
+		result.setFactory(introspector.isContainer());
+		return result;
+	}
+
+	ResourceTemplate resourceTemplate(Resource resource) {
 		return this.templateManagementService.findTemplateById(resource.id().templateId());
 	}
-	
-	public Endpoint findResourceEndpoint(ResourceId id) {
+
+	public void initialize(String applicationClassName) throws ApplicationInitializationException {
+		try {
+			this.application = this.applicationLifecycleService.initialize(applicationClassName);
+		} catch (ApplicationInitializationException e) {
+			String errorMessage = "Application '"+applicationClassName+"' initilization failed";
+			LOGGER.error(errorMessage,e);
+			shutdownComponents();
+			throw e;
+		}
+	}
+
+	public boolean shutdown() {
+		this.applicationLifecycleService.shutdown();
+		shutdownComponents();
+		return this.applicationLifecycleService.isShutdown();
+	}
+
+	public String applicationName() {
+		return application().getName();
+	}
+
+	public String applicationClassName() {
+		return this.application.getClass().getName();
+	}
+
+	public PublicResource findResource(Endpoint endpoint) {
+		return this.factory.createResource(endpoint);
+	}
+
+	public Endpoint resolveEndpoint(String path) {
+		checkNotNull(path,"Endpoint path cannot be null");
+		return this.endpointManagementService.resolveEndpoint(path);
+	}
+
+	public Endpoint resolveResource(ResourceId id) {
 		return this.endpointRepository.endpointOfResource(id);
 	}
 
@@ -312,14 +311,15 @@ public final class ApplicationContext {
 		RuntimeInstance instance = RuntimeInstance.getInstance();
 		RepositoryRegistry repositoryRegistry = instance.getRepositoryRegistry();
 		ServiceRegistry serviceRegistry = instance.getServiceRegistry();
-		ApplicationContext context=new ApplicationContext();
-		context.setEndpointRepository(repositoryRegistry.getEndpointRepository());
-		context.setResourceRepository(repositoryRegistry.getResourceRepository());
-		context.setApplicationLifecycleService(serviceRegistry.getService(ApplicationLifecycleService.class));
-		context.setTemplateManagementService(serviceRegistry.getService(TemplateManagementService.class));
-		context.setEndpointManagementService(serviceRegistry.getService(EndpointManagementService.class));
-		context.setWriteSessionService(serviceRegistry.getService(WriteSessionService.class));
-		context.setResourceControllerService(serviceRegistry.getService(ResourceControllerService.class));
+		ApplicationContext context=
+			new ApplicationContext().
+				withEndpointRepository(repositoryRegistry.getEndpointRepository()).
+				withResourceRepository(repositoryRegistry.getResourceRepository()).
+				withApplicationLifecycleService(serviceRegistry.getService(ApplicationLifecycleService.class)).
+				withTemplateManagementService(serviceRegistry.getService(TemplateManagementService.class)).
+				withEndpointManagementService(serviceRegistry.getService(EndpointManagementService.class)).
+				withWriteSessionService(serviceRegistry.getService(WriteSessionService.class)).
+				withResourceControllerService(serviceRegistry.getService(ResourceControllerService.class));
 		return context;
 	}
 
@@ -334,22 +334,28 @@ public final class ApplicationContext {
 		// Candidate application context configuration
 		ApplicationContext context = newApplicationContext();
 
-		// Candidate application context initialization
+		// Candidate application context component initialization
+		try {
+			context.initializeComponents();
+		} catch (LifecycleException e) {
+			String errorMessage = "Could not initialize application context components";
+			LOGGER.error(errorMessage,e);
+			throw new ApplicationContextException(errorMessage,e);
+		}
+		
+		// Candidate application context target application initialization
 		try {
 			context.initialize(applicationClassName);
 		} catch (ApplicationInitializationException e) {
 			String errorMessage = "Application '"+applicationClassName+"' initilization failed";
 			LOGGER.error(errorMessage,e);
+			context.shutdownComponents();
 			throw new ApplicationContextException(errorMessage,e);
 		}
 
 		// Current application context setup
 		setCurrentContext(context);
 		return currentContext();
-	}
-
-	public String applicationClassName() {
-		return this.application.getClass().getName();
 	}
 
 }

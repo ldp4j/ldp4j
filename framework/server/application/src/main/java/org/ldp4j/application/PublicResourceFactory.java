@@ -41,7 +41,7 @@ final class PublicResourceFactory {
 	}
 	
 	PublicResource createResource(ResourceId memberId) {
-		return createResource(this.applicationContext.findResourceEndpoint(memberId));
+		return createResource(this.applicationContext.resolveResource(memberId));
 	}
 	
 	PublicResource createResource(Endpoint endpoint) {

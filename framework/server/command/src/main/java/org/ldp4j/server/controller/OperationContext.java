@@ -32,9 +32,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationContext;
+import org.ldp4j.application.PublicContainer;
 import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
 import org.ldp4j.server.resources.ResourceType;
 
 public interface OperationContext {
@@ -58,11 +58,14 @@ public interface OperationContext {
 	OperationContext checkOperationSupport();
 
 	PublicResource resource();
+
+	PublicContainer container();
 	
-	URI resolve(Resource newResource);
+	URI resolve(PublicResource newResource);
 
 	ResourceType resourceType();
 
 	String serializeResource(DataSet entity, MediaType mediaType);
+
 
 }
