@@ -62,6 +62,7 @@
 	<modules>
 		<module>server</module>
 		<module>client</module>
+		<module>application</module>
 	</modules>
 
 </project>

@@ -21,60 +21,46 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-server:1.0.0-SNAPSHOT
-      Bundle      : ldp4j-server-1.0.0-SNAPSHOT.pom
+      Artifact    : org.ldp4j.framework:ldp4j-application:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-application-1.0.0-SNAPSHOT.pom
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project 
+	xmlns="http://maven.apache.org/POM/4.0.0" 
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- =================================================================== -->
 	<!--   MODULE COORDINATES                                                -->
 	<!-- =================================================================== -->
-	
+
 	<parent>
 		<groupId>org.ldp4j.framework</groupId>
 		<artifactId>ldp4j-framework</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
-		<relativePath>../pom.xml</relativePath>
+		<relativePath>../build/pom.xml</relativePath>
 	</parent>
 
-	<artifactId>ldp4j-server</artifactId>
+	<artifactId>ldp4j-application</artifactId>
 	<packaging>pom</packaging>
 
 	<!-- =================================================================== -->
 	<!--   MODULE INFORMATION                                                -->
 	<!-- =================================================================== -->
 
-	<name>LDP4j :: Framework :: Server</name>
-	<description>LDP4j Server-side implementation</description>
+	<name>LDP4j :: Framework :: Application</name>
 
-	<modules>
-		<module>bom</module>
-		<module>api</module>
-		<module>impl</module>
-		<module>depchain</module>
-	</modules>
-	
+	<description>Parent for all the modules of the LDP4j application kernel</description>
+
 	<!-- =================================================================== -->
 	<!--   BUILD SETTINGS                                                    -->
 	<!-- =================================================================== -->
 
-	<dependencyManagement>
-		<dependencies>
-			<!--  Bill-of-Materials -->
-		</dependencies>
-	</dependencyManagement>
-	
-	<profiles>
-		<profile>
-			<id>experimental</id>
-			<modules>
-				<module>command</module>
-			</modules>
-		</profile>
-	</profiles>
-	
+	<modules>
+		<module>api</module>
+		<module>core</module>
+	</modules>
+
 </project>

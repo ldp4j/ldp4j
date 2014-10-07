@@ -21,8 +21,8 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-server:1.0.0-SNAPSHOT
-      Bundle      : ldp4j-server-1.0.0-SNAPSHOT.pom
+      Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
@@ -33,48 +33,68 @@
 	<!-- =================================================================== -->
 	<!--   MODULE COORDINATES                                                -->
 	<!-- =================================================================== -->
-	
+
 	<parent>
 		<groupId>org.ldp4j.framework</groupId>
-		<artifactId>ldp4j-framework</artifactId>
+		<artifactId>ldp4j-application</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-
-	<artifactId>ldp4j-server</artifactId>
-	<packaging>pom</packaging>
+	
+	<artifactId>ldp4j-application-api</artifactId>
 
 	<!-- =================================================================== -->
 	<!--   MODULE INFORMATION                                                -->
 	<!-- =================================================================== -->
 
-	<name>LDP4j :: Framework :: Server</name>
-	<description>LDP4j Server-side implementation</description>
+	<name>LDP4j :: Framework :: Application :: API</name>
+	<description>LDP4j Server-side Command Util</description>
 
-	<modules>
-		<module>bom</module>
-		<module>api</module>
-		<module>impl</module>
-		<module>depchain</module>
-	</modules>
-	
 	<!-- =================================================================== -->
 	<!--   BUILD SETTINGS                                                    -->
 	<!-- =================================================================== -->
 
-	<dependencyManagement>
-		<dependencies>
-			<!--  Bill-of-Materials -->
-		</dependencies>
-	</dependencyManagement>
-	
-	<profiles>
-		<profile>
-			<id>experimental</id>
-			<modules>
-				<module>command</module>
-			</modules>
-		</profile>
-	</profiles>
-	
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<scope>provided</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-integration</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.mockito</groupId>
+			<artifactId>mockito-core</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jmockit</groupId>
+			<artifactId>jmockit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+	</dependencies>
+
 </project>
