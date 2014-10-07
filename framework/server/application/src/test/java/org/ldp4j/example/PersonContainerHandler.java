@@ -24,69 +24,70 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.example;
+package org.ldp4j.example;
+
+import java.net.URI;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.ext.Deletable;
-import org.ldp4j.application.ext.Modifiable;
-import org.ldp4j.application.ext.annotations.Attachment;
-import org.ldp4j.application.ext.annotations.Resource;
+import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.ManagedIndividual;
+import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.ext.annotations.BasicContainer;
+import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 
-@Resource(
-	id=PersonHandler.ID,
-	attachments={
-		@Attachment(
-			id="address",
-			path="address",
-			predicate="http://www.ldp4j.org/vocabularies/example#address",
-			handler=AddressHandler.class),
-		@Attachment(
-			id="books",
-			path="books",
-			handler=BookContainerHandler.class),	
-		@Attachment(
-			id="personRelatives",
-			path="relatives",
-			handler=RelativeContainerHandler.class)	
-	}
+@BasicContainer(
+	id = PersonContainerHandler.ID, 
+	memberHandler = PersonHandler.class
 )
-public class PersonHandler extends InMemoryResourceHandler implements Modifiable, Deletable {
-
-	public static final String ID="personTemplate";
+public class PersonContainerHandler extends InMemoryContainerHandler {
 	
-	public PersonHandler() {
-		super("Person");
+	public static final String ID="personContainerTemplate";
+
+	private PersonHandler handler;
+
+	private AtomicInteger id;
+
+	public PersonContainerHandler() {
+		super("PersonContainer");
+		this.id=new AtomicInteger();
+	}
+
+	public void setHandler(PersonHandler handler) {
+		this.handler = handler;
 	}
 
 	@Override
-	public void delete(ResourceSnapshot resource, WriteSession session) {
-		DataSet dataSet = get(resource);
+	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
+		Name<?> name=
+			NamingScheme.
+				getDefault().
+					name(id.incrementAndGet());
+		
+		ManagedIndividual individual = 
+			representation.
+				individual(
+					ManagedIndividualId.createId(name,PersonHandler.ID), 
+					ManagedIndividual.class);
+		individual.
+			addValue(
+				URI.create("http://www.example.org/vocab#creationDate"), 
+				DataSetUtils.newLiteral(new Date()));
 		try {
-			remove(resource.name());
-			session.delete(resource);
+			handler.add(name, representation);
+			ResourceSnapshot member = container.addMember(name);
 			session.saveChanges();
+			return member;
 		} catch (WriteSessionException e) {
-			// Recover if failed
-			add(resource.name(),dataSet);
-			throw new IllegalStateException("Deletion failed",e);
+			handler.remove(name);
+			throw new IllegalStateException("Could not create member",e);
 		}
 	}
-
-	@Override
-	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) {
-		DataSet dataSet = get(resource);
-		try {
-			add(resource.name(),content);
-			session.modify(resource);
-			session.saveChanges();
-		} catch (WriteSessionException e) {
-			// Recover if failed
-			add(resource.name(),dataSet);
-			throw new IllegalStateException("Update failed",e);
-		}
-	}
-
+	
 }

@@ -43,15 +43,6 @@ import javax.ws.rs.core.Variant;
 import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.Capabilities;
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
-import org.ldp4j.application.data.DataSetUtils;
-import org.ldp4j.application.data.ExternalIndividual;
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.ManagedIndividual;
-import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.data.Value;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EntityTag;
 import org.ldp4j.application.resource.Resource;
@@ -63,7 +54,6 @@ import org.ldp4j.application.template.IndirectContainerTemplate;
 import org.ldp4j.application.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateVisitor;
-import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.server.ImmutableContext;
 import org.ldp4j.server.ResourceResolver;
 import org.ldp4j.server.resources.ResourceType;
@@ -82,9 +72,13 @@ final class OperationContextImpl implements OperationContext {
 
 		@Override
 		public URI resolveResource(ResourceId id) {
-			String path = applicationContext.findResourceEndpoint(id).path();
-			URI uri = base().resolve(path);
-			return uri;
+			Endpoint resourceEndpoint = applicationContext.findResourceEndpoint(id);
+			URI result = null;
+			if(resourceEndpoint==null) {
+				throw new IllegalStateException("Could not resolve resource "+id);
+			}
+			result=base().resolve(resourceEndpoint.path());
+			return result;
 		}
 
 		@Override
@@ -102,16 +96,15 @@ final class OperationContextImpl implements OperationContext {
 
 	}
 
-	private final Operation operation;
-	private final UriInfo uriInfo;
-	private final HttpHeaders headers;
-	private final Request request;
-	private final Endpoint endpoint;
+	private final Operation          operation;
+	private final UriInfo            uriInfo;
+	private final HttpHeaders        headers;
+	private final Request            request;
+	private final Endpoint           endpoint;
 	private final ApplicationContext applicationContext;
 
-	private String entity;
+	private String  entity;
 	private DataSet dataSet;
-	private DataSet metadata;
 
 	private ResourceType resourceType;
 
@@ -163,18 +156,6 @@ final class OperationContextImpl implements OperationContext {
 				build();
 		
 		return variants.get(0);
-	}
-
-	private DataSet populateMetadata(DataSet resource) {
-		if(this.metadata==null) {
-			Resource applicationResource = this.applicationContext.resolveResource(endpoint);
-			ResourceTemplate template = this.applicationContext.resourceTemplate(applicationResource);
-			this.metadata = getMetadata(template);
-		}
-		DataSet dataSet=DataSetFactory.createDataSet(this.endpoint.resourceId().name());
-		DataSetUtils.merge(this.metadata, dataSet);
-		DataSetUtils.merge(resource, dataSet);
-		return dataSet;
 	}
 
 	@Override
@@ -322,9 +303,7 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	@Override
-	public String serializeResource(DataSet resource, MediaType mediaType) {
-		DataSet representation=populateMetadata(resource);
-	
+	public String serializeResource(DataSet representation, MediaType mediaType) {
 		IMediaTypeProvider provider = 
 			RuntimeInstance.
 				getInstance().
@@ -342,102 +321,6 @@ final class OperationContextImpl implements OperationContext {
 		} catch (ContentTransformationException e) {
 			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",endpoint,this);
 		}
-	}
-
-	private static final class Context {
-		
-		private final DataSet dataSet;
-	
-		private Context(DataSet dataSet) {
-			this.dataSet = dataSet;
-		}
-		
-		public URI property(Term term) {
-			return term.as(URI.class);
-		}
-		
-		public Value reference(Term term) {
-			return dataSet.individual(term.as(URI.class), ExternalIndividual.class);
-		}
-		
-		public Value value(Object value) {
-			return DataSetUtils.newLiteral(value);
-		}
-
-	}
-
-	private DataSet getMetadata(ResourceTemplate template) {
-		final DataSet dataSet=
-			DataSetFactory.
-				createDataSet(this.endpoint.resourceId().name());
-		final Context ctx=new Context(dataSet);
-		ManagedIndividualId id=
-			ManagedIndividualId.
-				createId(
-					this.endpoint.resourceId().name(), 
-					this.endpoint.resourceId().templateId());
-		final Individual<?,?> individual=
-			dataSet.individual(id,ManagedIndividual.class);
-		template.accept(
-			new TemplateVisitor() {
-				@Override
-				public void visitResourceTemplate(ResourceTemplate template) {
-					individual.
-						addValue(
-							ctx.property(RDF.TYPE), 
-							ctx.reference(LDP.RESOURCE));
-				}
-				@Override
-				public void visitContainerTemplate(ContainerTemplate template) {
-					visitResourceTemplate(template);
-					individual.
-						addValue(
-							ctx.property(RDF.TYPE), 
-							ctx.reference(LDP.CONTAINER));
-//					for(Resource member:members) {
-//						individual.addValue(
-//							ctx.property(LDP.CONTAINS), 
-//							ctx.resourceSurrogate(member));
-//					}
-				}
-				@Override
-				public void visitBasicContainerTemplate(BasicContainerTemplate template) {
-					visitContainerTemplate(template);
-					individual.
-						addValue(
-							ctx.property(RDF.TYPE), 
-							ctx.reference(LDP.BASIC_CONTAINER));
-				}
-				@Override
-				public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
-					visitContainerTemplate(template);
-					individual.
-						addValue(
-							template.membershipRelation().toURI(), 
-							ctx.value(template.membershipPredicate()));
-				}
-				@Override
-				public void visitDirectContainerTemplate(DirectContainerTemplate template) {
-					visitMembershipAwareContainerTemplate(template);
-					individual.
-						addValue(
-							ctx.property(RDF.TYPE), 
-							ctx.reference(LDP.DIRECT_CONTAINER));
-				}
-				@Override
-				public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
-					visitMembershipAwareContainerTemplate(template);
-					individual.
-						addValue(
-							ctx.property(RDF.TYPE), 
-							ctx.reference(LDP.INDIRECT_CONTAINER)).
-						addValue(
-							ctx.property(LDP.INSERTED_CONTENT_RELATION), 
-							ctx.value(template.insertedContentRelation()));
-				}
-			}
-		);
-		return dataSet;
 	}
 
 	private ResourceType getResourceType(ResourceTemplate template) {

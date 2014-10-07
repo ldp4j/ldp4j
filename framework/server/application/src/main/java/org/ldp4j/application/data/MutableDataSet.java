@@ -111,5 +111,39 @@ final class MutableDataSet implements DataSet {
 		}
 		return false;
 	}
+	
+	private static final String NL=System.getProperty("line.separator");
+	
+	@Override
+	public String toString() {
+		final StringBuilder builder=new StringBuilder();
+		builder.append("DataSet(").append(name).append(") {").append(NL);
+		for(Individual<?,?> individual:this) {
+			if(individual.hasProperties()) {
+				builder.append("\t").append(" - Individual(").append(individual.id()).append(") {").append(NL);
+				for(Property property:individual) {
+					builder.append("\t").append("\t").append(" + Property(").append(property.predicate()).append(") {").append(NL);
+					for(Value value:property) {
+						value.accept(
+							new ValueVisitor() {
+								@Override
+								public void visitLiteral(Literal<?> value) {
+									builder.append("\t").append("\t").append("\t").append(" * ").append(value.get()).append(NL);
+								}
+								@Override
+								public void visitIndividual(Individual<?, ?> value) {
+									builder.append("\t").append("\t").append("\t").append(" * ").append(value.id()).append(NL);
+								}
+							}
+						);
+					}
+					builder.append("\t").append("\t").append("}").append(NL);
+				}
+			builder.append("\t").append("}").append(NL);
+			}
+		}
+		builder.append("}");
+		return builder.toString();
+	}
 
 }

@@ -185,16 +185,24 @@ public final class IntegrationTestHelper {
 		}
 	}
 
-	public static JavaArchive getCommandArchive() {
+	public static JavaArchive getServerArchive() {
 		JavaArchive coreArchive= 
 			ShrinkWrap.
-				create(JavaArchive.class,"ldp4j-server-command.jar").
+				create(JavaArchive.class,"ldp4j-server-frontend.jar").
 				addPackages(true, "org.ldp4j.server").
 				addAsResource(ClassLoader.getSystemResource("web-fragment.xml"), "META-INF/web-fragment.xml").
 				addAsResource(ClassLoader.getSystemResource("beans.xml"), "beans.xml").
 				addAsServiceProvider(RuntimeInstance.class, RuntimeInstanceImpl.class).
 				addAsServiceProvider(IMediaTypeProvider.class,TurtleMediaTypeProvider.class,RDFXMLMediaTypeProvider.class).
 				addAsServiceProvider(org.ldp4j.application.spi.RuntimeInstance.class, InMemoryRuntimeInstance.class);
+		return coreArchive;
+	}
+
+	public static JavaArchive getExampleArchive() {
+		JavaArchive coreArchive= 
+			ShrinkWrap.
+				create(JavaArchive.class,"ldp4j-application-example.jar").
+				addPackages(true, "org.ldp4j.example");
 		return coreArchive;
 	}
 

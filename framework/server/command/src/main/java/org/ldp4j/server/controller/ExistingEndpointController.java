@@ -38,15 +38,19 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationExecutionException;
 import org.ldp4j.application.Capabilities;
+import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.resource.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
 
 final class ExistingEndpointController extends AbstractEndpointController {
 
 	
+	private final static Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
 	private static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
 	public ExistingEndpointController(Endpoint endpoint) {
@@ -60,11 +64,12 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			populateProtocolSpecificHeaders(builder, context.resourceType());
 	}
 
+	
 	private Response doGet(OperationContext context, boolean includeEntity) {
-		// 1. validate output expectations
+		// 1. Validate output expectations
 		Variant variant=context.expectedVariant();
 	
-		// 2. verify that we can carry out the operation
+		// 2. Verify that we can carry out the operation
 		context.
 			checkOperationSupport().
 			checkPreconditions();
@@ -76,13 +81,14 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		// 3. Determine the body and status of the response
 		try {
 			// 3.1. retrieve the resource
-			DataSet resource = 
+			PublicResource resource = 
 				context.
 					applicationContext().
-						getResource(endpoint());
+						resolvePublicResource(endpoint());
 			// 3.2. prepare the associated entity
-			body=context.serializeResource(resource,variant.getMediaType());
+			DataSet entity=resource.entity();
 			// 3.3. serialize the entity
+			body=context.serializeResource(entity,variant.getMediaType());
 			status=Status.OK;
 			builder.variant(variant);
 		} catch (ApplicationExecutionException e) {
@@ -96,7 +102,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		// 4. Add the required headers
 		addRequiredHeaders(context, builder);
 		
-		// 6. Complete the response
+		// 5. Complete the response
 		builder.
 			status(status.getStatusCode()).
 			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
@@ -253,5 +259,4 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			type(MediaType.TEXT_PLAIN);
 		return builder.build();
 	}
-
 }

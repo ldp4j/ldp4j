@@ -24,19 +24,31 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.example;
+package org.ldp4j.application;
 
-import org.ldp4j.application.ext.annotations.Resource;
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.endpoint.Endpoint;
 
-@Resource(
-	id=AddressHandler.ID
-)
-public class AddressHandler extends InMemoryResourceHandler {
-	
-	public static final String ID="addressTemplate";
+public class PublicRDFSource extends PublicResource {
 
-	public AddressHandler() {
-		super("Address");
+	protected PublicRDFSource(ApplicationContext applicationContext, Endpoint endpoint) {
+		super(applicationContext, endpoint);
 	}
-	
+
+	@Override
+	public <T> T accept(PublicVisitor<T> visitor) {
+		return visitor.visitRDFSource(this);
+	}
+
+	@Override
+	protected void fillInMetadata(Individual<?, ?> individual, Context ctx) {
+		super.fillInMetadata(individual, ctx);
+		individual.
+			addValue(
+				ctx.property(RDF.TYPE), 
+				ctx.reference(LDP.RDF_SOURCE));
+	}
+
 }

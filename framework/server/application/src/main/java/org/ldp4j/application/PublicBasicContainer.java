@@ -20,49 +20,30 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-command:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-application:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.application;
 
-import java.net.URI;
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.endpoint.Endpoint;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Variant;
+public class PublicBasicContainer extends PublicContainer {
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.resources.ResourceType;
+	protected PublicBasicContainer(ApplicationContext applicationContext, Endpoint endpoint) {
+		super(applicationContext, endpoint);
+	}
 
-public interface OperationContext {
+	@Override
+	public <T> T accept(PublicVisitor<T> visitor) {
+		return visitor.visitBasicContainer(this);
+	}
 
-	ApplicationContext applicationContext();
+	@Override
+	protected void fillInMetadata(Individual<?, ?> individual, Context ctx) {
+		super.fillInMetadata(individual, ctx);
+	}
 
-	URI base();
-
-	String path();
-
-	InteractionModel interactionModel();
-
-	DataSet dataSet();
-
-	Variant expectedVariant();
-
-	OperationContext checkContents();
-
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	URI resolve(Resource newResource);
-
-	Capabilities endpointCapabilities();
-
-	ResourceType resourceType();
-
-	String serializeResource(DataSet entity, MediaType mediaType);
-
+	
 }

@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.example;
+package org.ldp4j.example;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;

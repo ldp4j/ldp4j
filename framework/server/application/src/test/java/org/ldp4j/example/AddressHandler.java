@@ -24,27 +24,19 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.example;
+package org.ldp4j.example;
 
-import org.ldp4j.application.ext.annotations.Attachment;
 import org.ldp4j.application.ext.annotations.Resource;
 
 @Resource(
-	id=BookHandler.ID,
-	attachments={
-		@Attachment(
-			id="authors",
-			path="authors",
-			predicate="http://www.ldp4j.org/vocabularies/example#authors",
-			handler=PersonContainerHandler.class)
-	}
+	id=AddressHandler.ID
 )
-public class BookHandler extends InMemoryResourceHandler {
+public class AddressHandler extends InMemoryResourceHandler {
 	
-	public static final String ID="bookTemplate";
+	public static final String ID="addressTemplate";
 
-	public BookHandler() {
-		super("Book");
+	public AddressHandler() {
+		super("Address");
 	}
 	
 }

@@ -72,7 +72,10 @@ public final class ApplicationContext {
 
 	private ResourceControllerService resourceControllerService;
 
+	private final PublicResourceFactory factory;
+
 	private ApplicationContext() {
+		this.factory = PublicResourceFactory.newInstance(this);
 	}
 
 	private static <T> T checkNotNull(T object, String message) {
@@ -127,7 +130,7 @@ public final class ApplicationContext {
 			throw e;
 		}
 	}
-
+	
 	public String applicationName() {
 		return application().getName();
 	}
@@ -137,6 +140,10 @@ public final class ApplicationContext {
 		return this.applicationLifecycleService.isShutdown();
 	}
 
+	public PublicResource resolvePublicResource(Endpoint endpoint) {
+		return this.factory.createResource(endpoint);
+	}
+	
 	public Endpoint resolveEndpoint(String path) {
 		checkNotNull(path,"Endpoint path cannot be null");
 		return this.endpointManagementService.resolveEndpoint(path);
@@ -146,7 +153,7 @@ public final class ApplicationContext {
 		return this.resourceRepository.find(endpoint.resourceId(), Resource.class);
 	}
 
-	public DataSet getResource(Endpoint endpoint) throws ApplicationExecutionException {
+	DataSet getResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = this.resourceRepository.find(resourceId,Resource.class);
 		if(resource==null) {

@@ -20,49 +20,20 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-command:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-server-command-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-application:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.application;
 
-import java.net.URI;
+public interface PublicVisitor<T> {
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Variant;
+	T visitRDFSource(PublicRDFSource resource);
+	
+	T visitBasicContainer(PublicBasicContainer resource);
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.Capabilities;
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.resource.Resource;
-import org.ldp4j.server.resources.ResourceType;
+	T visitDirectContainer(PublicDirectContainer resource);
 
-public interface OperationContext {
-
-	ApplicationContext applicationContext();
-
-	URI base();
-
-	String path();
-
-	InteractionModel interactionModel();
-
-	DataSet dataSet();
-
-	Variant expectedVariant();
-
-	OperationContext checkContents();
-
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	URI resolve(Resource newResource);
-
-	Capabilities endpointCapabilities();
-
-	ResourceType resourceType();
-
-	String serializeResource(DataSet entity, MediaType mediaType);
+	T visitIndirectContainer(PublicIndirectContainer resource);
 
 }

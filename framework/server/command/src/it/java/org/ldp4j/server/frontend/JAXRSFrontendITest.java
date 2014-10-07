@@ -102,10 +102,12 @@ public class JAXRSFrontendITest {
 				excludeMiddleware().
 				withControlPhrase(CONTROL_PHRASE).
 				withDeployableName(DEPLOYMENT.concat(".war")).
-//				withBeans("beans.xml").
 				withWebXml("web.xml").
 				withPom("pom.xml").
-				build(IntegrationTestHelper.getCommandArchive());
+				build(
+					IntegrationTestHelper.getServerArchive(),
+					IntegrationTestHelper.getServerArchive()
+				);
 	}
 	
 	@BeforeClass

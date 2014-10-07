@@ -45,14 +45,14 @@ import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EndpointFactoryService;
 import org.ldp4j.application.endpoint.EntityTag;
-import org.ldp4j.application.example.BookContainerHandler;
-import org.ldp4j.application.example.BookHandler;
-import org.ldp4j.application.example.InMemoryContainerHandler.NameProvider;
-import org.ldp4j.application.example.PersonHandler;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.impl.InMemoryRuntimeInstance;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.template.TemplateManagementService;
+import org.ldp4j.example.BookContainerHandler;
+import org.ldp4j.example.BookHandler;
+import org.ldp4j.example.PersonHandler;
+import org.ldp4j.example.InMemoryContainerHandler.NameProvider;
 
 public class ResourceControllerServiceTest {
 

@@ -24,23 +24,47 @@
  *   Bundle      : ldp4j-server-application-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.example;
+package org.ldp4j.application;
 
-import org.ldp4j.application.ext.annotations.DirectContainer;
-import org.ldp4j.application.ext.annotations.MembershipRelation;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
 
-@DirectContainer(
-	id=RelativeContainerHandler.ID, 
-	memberHandler=PersonHandler.class,
-	membershipRelation=MembershipRelation.HAS_MEMBER,
-	membershipPredicate="http://www.ldp4j.org/vocabularies/example#hasRelative"
-)
-public class RelativeContainerHandler extends InMemoryContainerHandler {
-	
-	public static final String ID="relativeContainerTemplate";
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.ResourceId;
 
-	public RelativeContainerHandler() {
-		super("RelativeContainer");
+import com.google.common.collect.Lists;
+
+public abstract class PublicContainer extends PublicRDFSource {
+
+	protected PublicContainer(ApplicationContext applicationContext, Endpoint endpoint) {
+		super(applicationContext, endpoint);
 	}
 	
+	public final Collection<PublicResource> members() {
+		List<PublicResource> members=Lists.newArrayList();
+		for(ResourceId memberId:resolveAs(Container.class).memberIds()) {
+			members.add(createResource(memberId));
+		}
+		return Collections.unmodifiableList(members);
+	}
+
+	@Override
+	protected void fillInMetadata(Individual<?, ?> individual, Context ctx) {
+		super.fillInMetadata(individual, ctx);
+		individual.
+			addValue(
+				ctx.property(RDF.TYPE), 
+				ctx.reference(LDP.CONTAINER));
+		for(PublicResource member:members()) {
+			individual.addValue(
+				ctx.property(LDP.CONTAINS), 
+				ctx.newIndividual(member));
+		}
+	}
+
 }

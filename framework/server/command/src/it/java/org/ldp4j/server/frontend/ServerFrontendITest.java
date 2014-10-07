@@ -59,12 +59,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
+import org.ldp4j.example.MyApplication;
 import org.ldp4j.server.api.CommandHelper;
 import org.ldp4j.server.api.IntegrationTestHelper;
 import org.ldp4j.server.commands.xml.CreateEndpoint;
 import org.ldp4j.server.commands.xml.EntityType;
 import org.ldp4j.server.commands.xml.ResourceStateType;
-import org.ldp4j.server.example.MyApplication;
 import org.ldp4j.server.testing.TestingApplicationBuilder;
 import org.ldp4j.testing.categories.DEBUG;
 import org.ldp4j.testing.categories.DELETE;
@@ -106,10 +106,12 @@ public class ServerFrontendITest {
 				excludeMiddleware().
 				withControlPhrase(CONTROL_PHRASE).
 				withDeployableName(DEPLOYMENT.concat(".war")).
-//				withBeans("beans.xml").
 				withWebXml("web.xml").
 				withPom("pom.xml").
-				build(IntegrationTestHelper.getCommandArchive());
+				build(
+					IntegrationTestHelper.getServerArchive(),
+					IntegrationTestHelper.getServerArchive()
+				);
 	}
 	
 	@BeforeClass
