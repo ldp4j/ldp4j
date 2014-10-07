@@ -45,7 +45,7 @@ import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.vocabulary.Term;
-import org.ldp4j.server.api.Entity;
+import org.ldp4j.server.Entity;
 import org.ldp4j.server.resources.Resource;
 import org.ldp4j.server.resources.ResourceType;
 

@@ -26,7 +26,7 @@
  */
 package org.ldp4j.server.commands.xml;
 
-import org.ldp4j.server.api.MutableCapabilities;
+import org.ldp4j.server.MutableCapabilities;
 import org.ldp4j.server.commands.xml.EndpointConfiguration.Capabilities;
 
 public final class CapabilitiesAdapter {
@@ -34,7 +34,7 @@ public final class CapabilitiesAdapter {
 	private CapabilitiesAdapter() {
 	}
 	
-	public static org.ldp4j.server.api.Capabilities toEndpointCapabilities(Capabilities capabilities) {
+	public static org.ldp4j.server.Capabilities toEndpointCapabilities(Capabilities capabilities) {
 		Capabilities tmp=capabilities;
 		if(tmp==null) {
 			tmp=new Capabilities();
@@ -46,8 +46,8 @@ public final class CapabilitiesAdapter {
 				withPatchable(tmp.patchable);
 	}
 	
-	public static Capabilities fromEndpointCapabilities(org.ldp4j.server.api.Capabilities capabilities) {
-		org.ldp4j.server.api.Capabilities tmp=capabilities;
+	public static Capabilities fromEndpointCapabilities(org.ldp4j.server.Capabilities capabilities) {
+		org.ldp4j.server.Capabilities tmp=capabilities;
 		if(tmp==null) {
 			tmp=new MutableCapabilities();
 		}

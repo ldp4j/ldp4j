@@ -27,7 +27,7 @@
 package org.ldp4j.server.commands;
 
 
-import org.ldp4j.server.api.blueprint.ComponentRegistry;
+import org.ldp4j.server.blueprint.ComponentRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

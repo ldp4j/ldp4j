@@ -34,7 +34,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
 		http://java.sun.com/xml/ns/javaee 
-		http://java.sun.com/xml/ns/javaee/web_fragment_3_0.xsd">
+		http://www.oracle.com/webfolder/technetwork/jsc/xml/ns/javaee/web-fragment_3_0.xsd">
 
 	<display-name>LDP4j Server</display-name>
 

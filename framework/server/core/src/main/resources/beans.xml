@@ -1,0 +1,81 @@
+<!--
+
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      This file is part of the LDP4j Project:
+        http://www.ldp4j.org/
+
+      Center for Open Middleware
+        http://www.centeropenmiddleware.com/
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Copyright (C) 2014 Center for Open Middleware.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+                http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Artifact    : org.ldp4j.framework:ldp4j-server-core:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+
+-->
+<beans
+	xmlns="http://www.springframework.org/schema/beans"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:jaxws="http://cxf.apache.org/jaxws"
+	xmlns:jaxrs="http://cxf.apache.org/jaxrs"
+	xsi:schemaLocation="
+		http://www.springframework.org/schema/beans
+		http://www.springframework.org/schema/beans/spring-beans-2.0.xsd
+		http://cxf.apache.org/jaxws
+		http://cxf.apache.org/schemas/jaxws.xsd
+		http://cxf.apache.org/jaxrs
+		http://cxf.apache.org/schemas/jaxrs.xsd">
+
+	<import resource="classpath:META-INF/cxf/cxf.xml" />
+	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
+
+	<bean
+		id="logInInterceptor" 
+		class="org.apache.cxf.interceptor.LoggingInInterceptor" />
+		
+	<bean
+		id="logOutInterceptor" 
+		class="org.apache.cxf.interceptor.LoggingOutInterceptor" />
+
+	<bean 
+		id="frontend"
+		scope="singleton"
+		class="org.ldp4j.server.frontend.ServerFrontend">
+	</bean>
+
+	<jaxrs:server id="api" address="/ldp4j">
+		<jaxrs:serviceBeans>
+			<ref bean="frontend"/>
+		</jaxrs:serviceBeans>
+		<jaxrs:inInterceptors>
+			<ref bean="logInInterceptor" />
+		</jaxrs:inInterceptors>
+<!-- 
+		<jaxrs:outInterceptors>
+			<ref bean="logOutInterceptor" />
+		</jaxrs:outInterceptors>
+ -->
+		<jaxrs:providers>
+			<bean id="pfeMapper"  class="org.ldp4j.server.controller.providers.PreconditionFailedExceptionMapper"/>
+			<bean id="naeMapper"  class="org.ldp4j.server.controller.providers.NotAcceptableExceptionMapper"/>
+			<bean id="uceMapper"  class="org.ldp4j.server.controller.providers.UnsupportedContentExceptionMapper"/>
+			<bean id="mceMapper"  class="org.ldp4j.server.controller.providers.MissingContentExceptionMapper"/>
+			<bean id="mcteMapper" class="org.ldp4j.server.controller.providers.MissingContentTypeExceptionMapper"/>
+			<bean id="mnaMapper"  class="org.ldp4j.server.controller.providers.MethodNotAllowedExceptionMapper"/>
+		</jaxrs:providers>
+	</jaxrs:server> 
+
+</beans>

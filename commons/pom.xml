@@ -61,6 +61,9 @@
 	<modules>
 		<module>cbd</module>
 		<module>depchain</module>
+		<module>core</module>
+		<module>testing</module>
+		<module>rmf</module>
 	</modules>
 
 	<dependencyManagement>
@@ -72,16 +75,6 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-
-	<profiles>
-		<profile>
-			<id>experimental</id>
-			<modules>
-				<module>core</module>
-				<module>rmf</module>
-			</modules>
-		</profile>
-	</profiles>
 
 	<!-- =================================================================== -->
 	<!--   ENVIRONMENT SETTINGS                                              -->

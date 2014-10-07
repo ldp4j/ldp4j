@@ -55,6 +55,7 @@
 		<module>bom</module>
 		<module>api</module>
 		<module>impl</module>
+		<module>core</module>
 		<module>depchain</module>
 	</modules>
 	

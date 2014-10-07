@@ -57,19 +57,20 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.runner.RunWith;
-import org.ldp4j.server.api.CommandHelper;
-import org.ldp4j.server.api.IntegrationTestHelper;
+import org.ldp4j.commons.testing.categories.DELETE;
+import org.ldp4j.commons.testing.categories.ExceptionPath;
+import org.ldp4j.commons.testing.categories.HappyPath;
+import org.ldp4j.commons.testing.categories.LDP;
+import org.ldp4j.commons.testing.categories.PUT;
+import org.ldp4j.commons.testing.categories.REST;
+import org.ldp4j.commons.testing.categories.Setup;
+import org.ldp4j.server.CommandHelper;
+import org.ldp4j.server.IntegrationTestHelper;
+import org.ldp4j.server.ServerFrontendTestHelper;
 import org.ldp4j.server.commands.xml.CreateEndpoint;
 import org.ldp4j.server.commands.xml.EntityType;
 import org.ldp4j.server.commands.xml.ResourceStateType;
 import org.ldp4j.server.testing.TestingApplicationBuilder;
-import org.ldp4j.testing.categories.DELETE;
-import org.ldp4j.testing.categories.ExceptionPath;
-import org.ldp4j.testing.categories.HappyPath;
-import org.ldp4j.testing.categories.LDP;
-import org.ldp4j.testing.categories.PUT;
-import org.ldp4j.testing.categories.REST;
-import org.ldp4j.testing.categories.Setup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -105,8 +106,8 @@ public class JAXRSFrontendITest {
 				withWebXml("web.xml").
 				withPom("pom.xml").
 				build(
-					IntegrationTestHelper.getServerArchive(),
-					IntegrationTestHelper.getServerArchive()
+					ServerFrontendTestHelper.getServerArchive(),
+					ServerFrontendTestHelper.getServerArchive()
 				);
 	}
 	

@@ -55,7 +55,7 @@ import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.rdf.URIRef;
 import org.ldp4j.server.ImmutableContext;
-import org.ldp4j.server.api.ResourceIndex;
+import org.ldp4j.server.ResourceIndex;
 import org.ldp4j.server.impl.TurtleMediaTypeProvider;
 
 @RunWith(JMockit.class)
