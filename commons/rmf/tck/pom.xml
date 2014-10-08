@@ -49,7 +49,7 @@
 	<!--   PROJECT INFORMATION                                                 -->
 	<!-- ===================================================================== -->
 
-	<name>LDP4j :: Commons :: RMF :: Test Comnpatibility Kit</name>
+	<name>LDP4j :: Commons :: RMF :: Test Compatibility Kit</name>
 
 	<description>The Test Compatibility Kit (TCK) for validating implementations of the RDF Manipulation Framework</description>
 	

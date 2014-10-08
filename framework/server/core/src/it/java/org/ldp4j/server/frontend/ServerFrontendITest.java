@@ -77,7 +77,7 @@ public class ServerFrontendITest {
 			"_:inference a sav:Inference ;"+NL+
 			"	sav:uses <dataSet1>, <vocabulary1> .";
 
-	private static final String DEPLOYMENT = "ldp4j-server-api-cr";
+	private static final String DEPLOYMENT = "ldp4j-server-core";
 	private static final String CONTROL_PHRASE = "Hello from Tomcat 7.0.20 ("+DEPLOYMENT+")";
 	private static final Logger LOGGER=LoggerFactory.getLogger(ServerFrontendITest.class);
 
@@ -91,10 +91,7 @@ public class ServerFrontendITest {
 				withDeployableName(DEPLOYMENT.concat(".war")).
 				withWebXml("web.xml").
 				withPom("pom.xml").
-				build(
-					ServerFrontendTestHelper.getServerArchive(),
-					ServerFrontendTestHelper.getExampleArchive()
-				);
+				build(ServerFrontendTestHelper.getServerArchive());
 	}
 	
 	@BeforeClass

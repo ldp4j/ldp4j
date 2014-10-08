@@ -73,6 +73,13 @@
 				<scope>import</scope>
 			</dependency>
 			<dependency>
+				<groupId>org.ldp4j.framework</groupId>
+				<artifactId>ldp4j-application-bom</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+			<dependency>
 				<groupId>org.openrdf.sesame</groupId>
 				<artifactId>sesame-repository-sail</artifactId>
 				<version>${sesame.version}</version>
@@ -99,8 +106,8 @@
 
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-application-core</artifactId>
-			<version>${project.version}</version>
+			<artifactId>ldp4j-application-depchain</artifactId>
+			<type>pom</type>
 		</dependency>
 
 		<dependency>
@@ -114,6 +121,32 @@
 			<groupId>org.apache.cxf</groupId>
 			<artifactId>cxf-bundle-jaxrs</artifactId>
 			<version>${cxf.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>jetty-security</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-http</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-server</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-util</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-io</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-continuation</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<!-- Spring (CXF required)  -->
@@ -126,9 +159,7 @@
 		<!-- Required for testing -->
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-application-core</artifactId>
-			<version>${project.version}</version>
-			<type>test-jar</type>
+			<artifactId>ldp4j-application-examples</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -137,6 +168,7 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
+		<!-- TODO: Extract integration testing stuff to its own module -->
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-server-impl</artifactId>

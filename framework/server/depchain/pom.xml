@@ -77,6 +77,11 @@
 			<artifactId>ldp4j-server-impl</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-server-core</artifactId>
+			<scope>runtime</scope>
+		</dependency>
 	</dependencies>
 	
 </project>

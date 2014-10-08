@@ -169,12 +169,4 @@ public final class ServerFrontendTestHelper {
 		return coreArchive;
 	}
 
-	public static JavaArchive getExampleArchive() {
-		JavaArchive coreArchive= 
-			ShrinkWrap.
-				create(JavaArchive.class,"ldp4j-application-example.jar").
-				addPackages(true, "org.ldp4j.example");
-		return coreArchive;
-	}
-
 }
