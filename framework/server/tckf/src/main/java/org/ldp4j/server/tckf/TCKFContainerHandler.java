@@ -44,11 +44,13 @@ import org.ldp4j.example.InMemoryContainerHandler;
 
 public class TCKFContainerHandler extends InMemoryContainerHandler {
 
+	private final AtomicInteger id;
+
 	private TCKFResourceHandler handler;
-	private AtomicInteger id;
 
 	protected TCKFContainerHandler(String handlerName) {
 		super(handlerName);
+		this.id=new AtomicInteger();
 	}
 
 	public final void setHandler(TCKFResourceHandler handler) {
