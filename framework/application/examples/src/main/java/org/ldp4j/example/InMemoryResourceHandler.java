@@ -44,7 +44,7 @@ public class InMemoryResourceHandler implements ResourceHandler {
 	private final String handlerName;
 	private final Map<Name<?>, DataSet> resources;
 	
-	InMemoryResourceHandler(String handlerName) {
+	protected InMemoryResourceHandler(String handlerName) {
 		this.handlerName=handlerName;
 		this.resources=new LinkedHashMap<Name<?>,DataSet>();
 	}

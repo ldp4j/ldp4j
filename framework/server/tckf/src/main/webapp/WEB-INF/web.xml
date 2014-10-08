@@ -40,7 +40,7 @@
 
 	<context-param>
 		<param-name>ldp4jTargetApplication</param-name>
-		<param-value>org.ldp4j.example.MyApplication</param-value>
+		<param-value>org.ldp4j.server.tckf.TCKFApplication</param-value>
 	</context-param>
 
 </web-app>

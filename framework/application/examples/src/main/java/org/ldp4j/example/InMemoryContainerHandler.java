@@ -155,7 +155,7 @@ public class InMemoryContainerHandler extends InMemoryResourceHandler implements
 	
 	private final Map<Name<?>,NameProvider> nameProviders;
 
-	InMemoryContainerHandler(String handlerName) {
+	protected InMemoryContainerHandler(String handlerName) {
 		super(handlerName);
 		this.nameProviders=new HashMap<Name<?>, NameProvider>();
 	}
