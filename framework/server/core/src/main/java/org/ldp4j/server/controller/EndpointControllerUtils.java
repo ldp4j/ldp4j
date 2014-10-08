@@ -160,7 +160,7 @@ public final class EndpointControllerUtils {
 	}
 
 	public static String createLink(Object uriRef, Object rel) {
-		return String.format("<%s>; rel='%s'",uriRef,rel);
+		return String.format("<%s>; rel=\"%s\"",uriRef,rel);
 	}
 
 }
