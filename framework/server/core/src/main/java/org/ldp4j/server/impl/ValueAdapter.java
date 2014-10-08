@@ -96,10 +96,9 @@ final class ValueAdapter {
 			return dataSet.individual(surrogateId, ManagedIndividual.class);
 		}
 
-		@SuppressWarnings("rawtypes")
 		@Override
 		public Value visitBlankNode(BlankNode node, Value defaultResult) {
-			return dataSet.individual((Name)nameGenerator.visitBlankNode(node, null),LocalIndividual.class);
+			return nameGenerator.visitBlankNode(node, null);
 		}
 
 	}
