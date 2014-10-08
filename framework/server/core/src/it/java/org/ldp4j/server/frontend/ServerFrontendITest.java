@@ -74,10 +74,17 @@ public class ServerFrontendITest {
 	private static ServerFrontendTestHelper HELPER;
 
 	private static final String EXAMPLE_BODY = 
-			"@prefix sav : <http://test/vocab#> ."+NL+
-			"<> a sav:Inference ;"+NL+
-			"	sav:uses <dataSet1>, <vocabulary1> .";
+		"@prefix sav : <http://test/vocab#> ."+NL+
+		"<> a sav:Inference ;"+NL+
+		"	sav:uses <dataSet1>, <vocabulary1> .";
+	
+	private static final String TEST_SUITE_BODY = 
+		"<> a <http://www.w3.org/ns/ldp#RDFSource> , <http://example.com/ns#Bug> ;"+NL+
+		"\t<http://example.com/ns#severity> \"High\" ;"+NL+
+		"\t<http://purl.org/dc/terms/description>  \"Issues that need to be fixed.\" ;"+NL+
+		"\t<http://purl.org/dc/terms/title> \"Another bug to test.\" .";
 
+			 
 	private static final String DEPLOYMENT = "ldp4j-server-core";
 	private static final String CONTROL_PHRASE = "Hello from Tomcat 7.0.20 ("+DEPLOYMENT+")";
 	private static final Logger LOGGER=LoggerFactory.getLogger(ServerFrontendITest.class);
@@ -228,7 +235,7 @@ public class ServerFrontendITest {
 		HttpPost rcPost = HELPER.newRequest(relativeContainerPath,HttpPost.class);
 		rcPost.setEntity(
 			new StringEntity(
-				EXAMPLE_BODY,
+				TEST_SUITE_BODY,
 				ContentType.create("text/turtle", "UTF-8"))
 		);
 

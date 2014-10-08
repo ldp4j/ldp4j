@@ -26,9 +26,7 @@
  */
 package org.ldp4j.server.impl;
 
-import static org.ldp4j.rdf.util.RDFModelDSL.blankNode;
-import static org.ldp4j.rdf.util.RDFModelDSL.triple;
-import static org.ldp4j.rdf.util.RDFModelDSL.uriRef;
+import static org.ldp4j.rdf.util.RDFModelDSL.*;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -116,25 +114,27 @@ final class TripleSetBuilder {
 			this.predicate = property.predicate();
 		}
 
-		private void addTriple(Object object) {
+		@Override
+		public void visitIndividual(Individual<?,?> individual) {
 			triples.add(
 				triple(
 					subject,
 					predicate, 
-					object
+					toResource(individual)
 				)
 			);
-		}
-
-		@Override
-		public void visitIndividual(Individual<?,?> individual) {
-			addTriple(toResource(individual));
 			TripleSetBuilder.this.generateTriples(individual);
 		}
 	
 		@Override
 		public void visitLiteral(Literal<?> literal) {
-			addTriple(literal.get());
+			triples.add(
+				triple(
+					subject,
+					predicate, 
+					literal(literal.get())
+				)
+			);
 		}
 	}
 
