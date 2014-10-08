@@ -105,6 +105,11 @@
 			<artifactId>integration-sesame</artifactId>
 		</dependency>
 		<dependency>
+			<groupId>com.github.jsonld-java</groupId>
+			<artifactId>jsonld-java-sesame</artifactId>
+			<version>0.5.0</version>
+		</dependency>
+		<dependency>
 			<groupId>org.apache.jena</groupId>
 			<artifactId>jena-arq</artifactId>
 			<exclusions>

@@ -53,6 +53,9 @@ import org.openrdf.rio.RDFWriter;
 import org.openrdf.rio.RDFWriterFactory;
 import org.openrdf.rio.RDFWriterRegistry;
 import org.openrdf.rio.Rio;
+import org.openrdf.rio.helpers.BasicWriterSettings;
+import org.openrdf.rio.helpers.JSONLDMode;
+import org.openrdf.rio.helpers.JSONLDSettings;
 import org.openrdf.rio.turtle.TurtleUtil;
 import org.openrdf.rio.turtle.TurtleWriter;
 import org.openrdf.sail.memory.model.MemValueFactory;
@@ -245,6 +248,10 @@ final class RDFModelFormater {
 			RDFFormat rawFormat=RDFFormat.forMIMEType(format.getMime(),RDFFormat.RDFXML);
 			RDFWriterFactory factory=registry.get(rawFormat);
 			result=factory.getWriter(writer);
+			if(format.equals(Format.JSON_LD)) {
+				result.getWriterConfig().set(JSONLDSettings.JSONLD_MODE,JSONLDMode.FLATTEN);
+				result.getWriterConfig().set(BasicWriterSettings.PRETTY_PRINT,true);
+			}
 		}
 		return result;
 	}

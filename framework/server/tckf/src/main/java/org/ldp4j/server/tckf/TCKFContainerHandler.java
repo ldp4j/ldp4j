@@ -36,13 +36,14 @@ import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.example.InMemoryContainerHandler;
 
-public class TCKFContainerHandler extends InMemoryContainerHandler {
+public class TCKFContainerHandler extends InMemoryContainerHandler implements Modifiable {
 
 	private final AtomicInteger id;
 
@@ -89,6 +90,20 @@ public class TCKFContainerHandler extends InMemoryContainerHandler {
 		} catch (WriteSessionException e) {
 			handler().remove(name);
 			throw new IllegalStateException("Could not create member",e);
+		}
+	}
+
+	@Override
+	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) {
+		DataSet dataSet = get(resource);
+		try {
+			add(resource.name(),content);
+			session.modify(resource);
+			session.saveChanges();
+		} catch (WriteSessionException e) {
+			// Recover if failed
+			add(resource.name(),dataSet);
+			throw new IllegalStateException("Update failed",e);
 		}
 	}
 

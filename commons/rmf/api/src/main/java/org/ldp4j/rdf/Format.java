@@ -51,6 +51,7 @@ public final class Format implements Comparable<Format> {
 	private static final String WILDCARD = "*";
 	public static final Format TURTLE;
 	public static final Format RDF_XML;
+	public static final Format JSON_LD;
 
 	private static final Format[] EMPTY_FORMAT_ARRAY = new Format[]{};
 
@@ -59,6 +60,7 @@ public final class Format implements Comparable<Format> {
 	static {
 		TURTLE=registerFormat("text","turtle","Turtle");
 		RDF_XML=registerFormat("application","rdf+xml","RDF/XML");
+		JSON_LD=registerFormat("application","ld+json","JSON-LD");
 	}
 	
 	private final String subtype;
