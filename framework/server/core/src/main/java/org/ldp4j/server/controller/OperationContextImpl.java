@@ -45,6 +45,7 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EntityTag;
 import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.server.Context;
 import org.ldp4j.server.ImmutableContext;
 import org.ldp4j.server.ResourceResolver;
 import org.ldp4j.server.spi.ContentTransformationException;
@@ -72,6 +73,7 @@ final class OperationContextImpl implements OperationContext {
 				throw new IllegalStateException("Could not resolve resource "+id);
 			}
 			result=base().resolve(resourceEndpoint.path());
+			LOGGER.trace("Resolved resource {} URI to '{}'",id,result);
 			return result;
 		}
 
@@ -84,6 +86,7 @@ final class OperationContextImpl implements OperationContext {
 			ResourceId result=null;
 			if(resolveEndpoint!=null) {
 				result=resolveEndpoint.resourceId();
+				LOGGER.trace("Resolved path '{}' to resource {}",path,result);
 			}
 			return result;
 		}
@@ -150,6 +153,10 @@ final class OperationContextImpl implements OperationContext {
 				build();
 		
 		return variants.get(0);
+	}
+
+	private Context createContext() {
+		return ImmutableContext.newInstance(base().resolve(endpoint.path().concat("/")),resourceResolver());
 	}
 
 	@Override
@@ -250,10 +257,12 @@ final class OperationContextImpl implements OperationContext {
 				throw new UnsupportedContentException(endpoint,this,contentVariant());
 			}
 			
+			Context context = createContext();
 			Unmarshaller unmarshaller = 
 				provider.
-					newUnmarshaller(ImmutableContext.newInstance(base().resolve(endpoint.path()),resourceResolver()));
+					newUnmarshaller(context);
 			try {
+				LOGGER.trace("Unmarshalling using base '{}'",context.getBase());
 				this.dataSet=unmarshaller.unmarshall(this.entity, mediaType);
 			} catch (ContentTransformationException e) {
 				throw new ContentProcessingException("Entity cannot be parsed as '"+mediaType+"' ",endpoint,this);
@@ -293,10 +302,12 @@ final class OperationContextImpl implements OperationContext {
 			throw new UnsupportedContentException(endpoint,this,contentVariant());
 		}
 		
+		Context context = createContext();
 		Marshaller marshaller = 
 			provider.
-				newMarshaller(ImmutableContext.newInstance(base().resolve(endpoint.path()),resourceResolver()));
+				newMarshaller(context);
 		try {
+			LOGGER.trace("Marshalling using base '{}'",context.getBase());
 			return marshaller.marshall(representation, mediaType);
 		} catch (ContentTransformationException e) {
 			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",endpoint,this);
