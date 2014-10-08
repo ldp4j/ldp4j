@@ -75,8 +75,7 @@ public class ServerFrontendITest {
 
 	private static final String EXAMPLE_BODY = 
 			"@prefix sav : <http://test/vocab#> ."+NL+
-			"@base <http://www.example.org/entities/> ." +NL+
-			"_:inference a sav:Inference ;"+NL+
+			"<> a sav:Inference ;"+NL+
 			"	sav:uses <dataSet1>, <vocabulary1> .";
 
 	private static final String DEPLOYMENT = "ldp4j-server-core";

@@ -37,7 +37,6 @@ import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.setup.Bootstrap;
 import org.ldp4j.application.setup.Environment;
-import org.ldp4j.example.PersonContainerHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -108,6 +107,7 @@ public class TCKFApplication extends Application<Configuration> {
 		environment.publishResource(this.basicContainerName, TCKFBasicContainerHandler.class, ROOT_BASIC_CONTAINER_PATH);
 		environment.publishResource(this.directContainerName, TCKFDirectContainerHandler.class, ROOT_DIRECT_CONTAINER_PATH);
 		environment.publishResource(this.indirectContainerName, TCKFIndirectContainerHandler.class, ROOT_INDIRECT_CONTAINER_PATH);
+
 		LOGGER.info("Configuration completed.");
 	}
 

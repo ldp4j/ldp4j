@@ -94,11 +94,15 @@ public abstract class PublicMembershipAwareContainer<T extends MembershipAwareCo
 				ctx.property(RDF.TYPE), 
 				ctx.reference(containerType())).
 			addValue(
-				ctx.property(LDP.MEMBERSHIP_RESOURCE),
-				ctx.newIndividual(parent())).	
-			addValue(
 				ctx.property(template.membershipRelation().term()), 
 				ctx.value(template.membershipPredicate()));
+		if(!isRoot()) {
+			individual.
+				addValue(
+					ctx.property(LDP.MEMBERSHIP_RESOURCE),
+					ctx.newIndividual(parent()));	
+		}
 	}
+
 
 }

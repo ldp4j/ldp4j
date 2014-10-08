@@ -49,7 +49,11 @@ public abstract class Public {
 		this.endpoint = endpoint;
 		this.factory = PublicResourceFactory.newInstance(applicationContext());
 	}
-	
+
+	protected final boolean isRoot() {
+		return resolveAs(Resource.class).isRoot();
+	}
+
 	protected final PublicResource parent() {
 		return createResource(resolveAs(Resource.class).parentId());
 	}

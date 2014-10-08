@@ -273,6 +273,8 @@ final class OperationContextImpl implements OperationContext {
 			} catch (ContentTransformationException e) {
 				throw new ContentProcessingException("Entity cannot be parsed as '"+mediaType+"' ",endpoint,this);
 			}
+			
+			LOGGER.trace("Unmarshalled data set: \n{}",this.dataSet);
 		}
 		return this.dataSet;
 	}
@@ -314,7 +316,9 @@ final class OperationContextImpl implements OperationContext {
 				newMarshaller(context);
 		try {
 			LOGGER.trace("Marshalling using base '{}'",context.getBase());
-			return marshaller.marshall(representation, mediaType);
+			String rawEntity = marshaller.marshall(representation, mediaType);
+			LOGGER.trace("Marshalled entity: \n{}",rawEntity);
+			return rawEntity;
 		} catch (ContentTransformationException e) {
 			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",endpoint,this);
 		}
