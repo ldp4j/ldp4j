@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0"?>
 <!--
 
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
@@ -22,13 +22,14 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-server:1.0.0-SNAPSHOT
-      Bundle      : ldp4j-server-1.0.0-SNAPSHOT.pom
+      Artifact    : org.ldp4j.framework:ldp4j-server-tckf:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-server-tckf-1.0.0-SNAPSHOT.war
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> 
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- =================================================================== -->
@@ -37,47 +38,71 @@
 	
 	<parent>
 		<groupId>org.ldp4j.framework</groupId>
-		<artifactId>ldp4j-framework</artifactId>
+		<artifactId>ldp4j-server</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>ldp4j-server</artifactId>
-	<packaging>pom</packaging>
+	<artifactId>ldp4j-server-tckf</artifactId>
+	<packaging>war</packaging>
 
 	<!-- =================================================================== -->
 	<!--   MODULE INFORMATION                                                -->
 	<!-- =================================================================== -->
 
-	<name>LDP4j :: Framework :: Server</name>
-	<description>LDP4j Server-side implementation</description>
+	<name>LDP4j :: Framework :: Server :: Test Compatibility Kit Fixture</name>
+	<description>LDP4j Server Test Compatibility Kit Fixture</description>
 
-	<modules>
-		<module>bom</module>
-		<module>api</module>
-		<module>impl</module>
-		<module>core</module>
-		<module>depchain</module>
-		<module>tckf</module>
-	</modules>
-	
 	<!-- =================================================================== -->
 	<!--   BUILD SETTINGS                                                    -->
 	<!-- =================================================================== -->
 
-	<dependencyManagement>
-		<dependencies>
-			<!--  Bill-of-Materials -->
-		</dependencies>
-	</dependencyManagement>
-	
-	<profiles>
-		<profile>
-			<id>experimental</id>
-			<modules>
-				<module>command</module>
-			</modules>
-		</profile>
-	</profiles>
-	
+	<dependencies>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-server-core</artifactId>
+			<version>${project.version}</version>
+			<exclusions>
+				<exclusion>
+					<artifactId>geronimo-servlet_3.0_spec</artifactId>
+					<groupId>org.apache.geronimo.specs</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-security</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-http</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-server</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-util</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-io</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+				<exclusion>
+					<artifactId>jetty-continuation</artifactId>
+					<groupId>org.eclipse.jetty</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-core</artifactId>
+			<version>${project.version}</version>
+			<type>test-jar</type>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+		</dependency>
+	</dependencies>
+
 </project>
