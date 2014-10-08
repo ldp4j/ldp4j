@@ -71,6 +71,13 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		EndpointControllerUtils.
 			populateProtocolSpecificHeaders(builder, context.resource());
 	}
+	
+	private void addOptionsMandatoryHeaders(OperationContext context, ResponseBuilder builder) {
+		addRequiredHeaders(context,builder);
+		EndpointControllerUtils.
+			populateAllowedHeaders(builder, context.resource().capabilities());
+		addAcceptPostHeaders(context, builder);
+	}
 
 	
 	private Response doGet(OperationContext context, boolean includeEntity) {
@@ -109,7 +116,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		}
 		
 		// 4. Add the required headers
-		addRequiredHeaders(context, builder);
+		addOptionsMandatoryHeaders(context, builder);
 		
 		// 5. Complete the response
 		builder.
@@ -122,22 +129,14 @@ final class ExistingEndpointController extends AbstractEndpointController {
 	}
 
 	public Response options(OperationContext context) {
-		Capabilities capabilities=context.resource().capabilities(); 
 		ResponseBuilder builder=
 			Response.
 				ok();
-		EndpointControllerUtils.populateAllowedHeaders(builder, capabilities);
-		addRequiredHeaders(context, builder);
-		addAcceptPostHeaders(context, builder);
+		addOptionsMandatoryHeaders(context, builder);
 		return builder.build();
 	}
 
-	/**
-	 * @param context
-	 * @param builder
-	 */
-	protected void addAcceptPostHeaders(OperationContext context,
-			ResponseBuilder builder) {
+	private void addAcceptPostHeaders(OperationContext context, ResponseBuilder builder) {
 		List<Variant> acceptPostVariants=
 			context.
 			resource().
@@ -157,7 +156,9 @@ final class ExistingEndpointController extends AbstractEndpointController {
 					@Override
 					public List<Variant> visitIndirectContainer(PublicIndirectContainer resource) {
 						return VariantUtils.defaultVariants();
-					}});
+					}
+				}
+			);
 		/**
 		 * 5.2.3.14
 		 */

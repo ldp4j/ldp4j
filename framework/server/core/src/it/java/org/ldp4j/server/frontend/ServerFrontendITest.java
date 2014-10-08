@@ -228,6 +228,7 @@ public class ServerFrontendITest {
 				ContentType.create("text/turtle", "UTF-8"))
 		);
 
+		HELPER.httpRequest(HELPER.newRequest(relativeContainerPath,HttpOptions.class));
 		HELPER.httpRequest(get);
 		HELPER.httpRequest(put);
 		HELPER.httpRequest(get);
