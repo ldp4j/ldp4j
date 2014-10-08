@@ -63,11 +63,9 @@
 		<jaxrs:inInterceptors>
 			<ref bean="logInInterceptor" />
 		</jaxrs:inInterceptors>
-<!-- 
 		<jaxrs:outInterceptors>
 			<ref bean="logOutInterceptor" />
 		</jaxrs:outInterceptors>
- -->
 		<jaxrs:providers>
 			<bean id="pfeMapper"  class="org.ldp4j.server.controller.providers.PreconditionFailedExceptionMapper"/>
 			<bean id="naeMapper"  class="org.ldp4j.server.controller.providers.NotAcceptableExceptionMapper"/>
@@ -75,6 +73,7 @@
 			<bean id="mceMapper"  class="org.ldp4j.server.controller.providers.MissingContentExceptionMapper"/>
 			<bean id="mcteMapper" class="org.ldp4j.server.controller.providers.MissingContentTypeExceptionMapper"/>
 			<bean id="mnaMapper"  class="org.ldp4j.server.controller.providers.MethodNotAllowedExceptionMapper"/>
+			<bean id="preMapper"  class="org.ldp4j.server.controller.providers.PreconditionRequiredExceptionMapper"/>
 		</jaxrs:providers>
 	</jaxrs:server> 
 

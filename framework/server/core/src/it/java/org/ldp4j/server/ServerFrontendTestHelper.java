@@ -31,9 +31,10 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
-import java.util.concurrent.atomic.AtomicReference;
 
+import org.apache.http.Header;
 import org.apache.http.HttpEntity;
+import org.apache.http.HttpHeaders;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.ResponseHandler;
@@ -111,13 +112,35 @@ public final class ServerFrontendTestHelper {
 		}
 	}
 	
-	public String httpRequest(final HttpUriRequest request) throws Exception {
-		final AtomicReference<String> body=new AtomicReference<String>();
+	
+	public static class Metadata {
+		
+		public String body;
+		public String etag;
+		public String lastModified;
+		public String location;
+		
+	}
+	
+	public Metadata httpRequest(final HttpUriRequest request) throws Exception {
+		final Metadata metadata=new Metadata();
 		ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
 			public String handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
 				String responseBody = logResponse(response);
 				// TODO: Add validation mechanism here
-				body.set(responseBody);
+				metadata.body=responseBody;
+				Header etagHeader = response.getFirstHeader(HttpHeaders.ETAG);
+				if(etagHeader!=null) {
+					metadata.etag=etagHeader.getValue();
+				}
+				Header lastModifiedHeader = response.getFirstHeader(HttpHeaders.LAST_MODIFIED);
+				if(lastModifiedHeader!=null) {
+					metadata.lastModified=lastModifiedHeader.getValue();
+				}
+				Header locationHeader = response.getFirstHeader(HttpHeaders.LOCATION);
+				if(locationHeader!=null) {
+					metadata.location=locationHeader.getValue();
+				}
 				return responseBody;
 			}
 			
@@ -148,7 +171,7 @@ public final class ServerFrontendTestHelper {
 		logger.debug("-- REQUEST INIT -------------------------------");
 		logger.debug(request.getRequestLine().toString());
 		httpclient.execute(request, responseHandler);
-		return body.get();
+		return metadata;
 	}
 
 	public void shutdown() throws Exception {

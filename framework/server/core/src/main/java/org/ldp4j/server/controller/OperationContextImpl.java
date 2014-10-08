@@ -196,8 +196,14 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public OperationContext checkPreconditions() {
-		EntityTag entityTag=endpoint.entityTag(); 
-		Date lastModified=endpoint.lastModified();
+		EntityTag entityTag=this.endpoint.entityTag(); 
+		Date lastModified=this.endpoint.lastModified();
+		if(Operation.PUT.equals(this.operation)) {
+			List<String> requestHeader = this.headers.getRequestHeader(HttpHeaders.IF_MATCH);
+			if((requestHeader==null || requestHeader.isEmpty())) {
+				throw new PreconditionRequiredException(this,this.endpoint);
+			}
+		}
 		ResponseBuilder builder = 
 			request().
 				evaluatePreconditions(

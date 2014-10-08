@@ -34,6 +34,7 @@ import java.io.InputStream;
 import java.net.URL;
 
 import org.apache.commons.io.IOUtils;
+import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
@@ -60,6 +61,7 @@ import org.ldp4j.commons.testing.categories.LDP;
 import org.ldp4j.commons.testing.categories.Setup;
 import org.ldp4j.example.MyApplication;
 import org.ldp4j.server.ServerFrontendTestHelper;
+import org.ldp4j.server.ServerFrontendTestHelper.Metadata;
 import org.ldp4j.server.testing.TestingApplicationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -192,13 +194,16 @@ public class ServerFrontendITest {
 	public void testEnhancedPut(@ArquillianResource final URL url) throws Exception {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
-		HttpPut request = HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpPut.class);
-		request.setEntity(
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpGet.class);
+		HttpPut put = HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpPut.class);
+		put.setEntity(
 			new StringEntity(
 				EXAMPLE_BODY,
 				ContentType.create("text/turtle", "UTF-8"))
 		);
-		HELPER.httpRequest(request);
+		Metadata getResponse=HELPER.httpRequest(get);
+		put.addHeader(HttpHeaders.IF_MATCH,getResponse.etag);
+		HELPER.httpRequest(put);
 	}
 
 	@Test
@@ -229,12 +234,13 @@ public class ServerFrontendITest {
 		);
 
 		HELPER.httpRequest(HELPER.newRequest(relativeContainerPath,HttpOptions.class));
-		HELPER.httpRequest(get);
+		Metadata getResponse=HELPER.httpRequest(get);
+		put.addHeader(HttpHeaders.IF_MATCH,getResponse.etag);
 		HELPER.httpRequest(put);
 		HELPER.httpRequest(get);
 
 		HELPER.httpRequest(rcGet);
-		String location = HELPER.httpRequest(rcPost);
+		String location = HELPER.httpRequest(rcPost).location;
 		HELPER.httpRequest(get);
 		HELPER.httpRequest(rcGet);
 		String path=HELPER.relativize(location);
@@ -264,7 +270,7 @@ public class ServerFrontendITest {
 				ContentType.create("text/turtle", "UTF-8"))
 		);
 		HELPER.httpRequest(get);
-		String location = HELPER.httpRequest(post);
+		String location = HELPER.httpRequest(post).location;
 		HELPER.httpRequest(get);
 		String path=HELPER.relativize(location);
 		HELPER.httpRequest(HELPER.newRequest(path,HttpOptions.class));
