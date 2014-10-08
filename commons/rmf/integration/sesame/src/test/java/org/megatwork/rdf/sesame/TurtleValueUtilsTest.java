@@ -54,27 +54,27 @@ public class TurtleValueUtilsTest {
 
 	@Test
 	public void testToString$child() throws Exception {
-		System.out.println(sut.toString(vf.createURI(BASE+"child")));
+		System.out.println("Child: "+sut.toString(vf.createURI(BASE+"child")));
 	}
 
 	@Test
 	public void testToString$ancestor() throws Exception {
-		System.out.println(sut.toString(vf.createURI(BASE+"..")));
+		System.out.println("Ancestor: "+sut.toString(vf.createURI(BASE+"..")));
 	}
 
 	@Test
 	public void testToString$self() throws Exception {
-		System.out.println(sut.toString(vf.createURI(BASE.concat("."))));
+		System.out.println("Self: "+sut.toString(vf.createURI(BASE.concat("."))));
 	}
 
 	@Test
 	public void testToString$sameAsBase() throws Exception {
-		System.out.println(sut.toString(vf.createURI(BASE)));
+		System.out.println("Same as base: "+sut.toString(vf.createURI(BASE)));
 	}
 
 	@Test
 	public void testToString$baseAsResource() throws Exception {
-		System.out.println(sut.toString(vf.createURI(BASE.substring(0,BASE.length()-1))));
+		System.out.println("Base as resource: "+sut.toString(vf.createURI(BASE.substring(0,BASE.length()-1))));
 	}
 
 }

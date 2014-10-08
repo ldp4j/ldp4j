@@ -112,7 +112,8 @@ final class TurtleValueUtils {
 			result=String.format("%s:%s",prefix,uri.getLocalName());
 		} else {
 			// Namespace is not mapped to a prefix; write the resolved URI
-			result=String.format("<%s>",TurtleUtil.encodeURIString(resolve(uri).toString()));
+//			result=String.format("<%s>",TurtleUtil.encodeURIString(resolve(uri).toString()));
+			result=String.format("<%s>",TurtleUtil.encodeURIString(uri.toString()));
 		}
 		return result;
 	}

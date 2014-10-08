@@ -35,10 +35,12 @@ import java.net.MalformedURLException;
 import java.net.URI;
 
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ldp4j.commons.net.ProtocolHandlerConfigurator;
 import org.ldp4j.commons.net.URIUtils;
 
+@Ignore
 public class URIUtilsTest {
 
 	private static final String BASE = "http://www.megatwork.org/smart-aggregator/entity/component/";
@@ -102,6 +104,12 @@ public class URIUtilsTest {
 	}
 
 	@Test
+	public void testResolve$cornerCase() {
+		String base = BASE.substring(0,BASE.length()-1);
+		verifyResolution(BASE, base, "../component", false, false);
+	}
+
+	@Test
 	public void testResolve$siblings$baseBigger() {
 		String base = "http://www.megatwork.org/smart-aggregator/common/segment1/segment2/base/";
 		String target = "http://www.megatwork.org/smart-aggregator/common/segment3/target";
@@ -117,6 +125,7 @@ public class URIUtilsTest {
 		String base = "http://www.megatwork.org/smart-aggregator/common/segment1/base/";
 		String target = "http://www.megatwork.org/smart-aggregator/common/segment2/segment3/target";
 		String resolution = "../../segment2/segment3/target";
+		assertThat(URI.create(base).resolve(URI.create(resolution)),equalTo(URI.create(target)));
 		verifyResolution(base, target, resolution, false, false);
 		verifyResolution(base, target, resolution, false, true);
 		verifyResolution(base, target, resolution, true, false);
@@ -136,13 +145,16 @@ public class URIUtilsTest {
 	}
 	
 	private void verifyResolution(String base, String target, String resolution, boolean query, boolean fragment) {
+		assertThat(URI.create(base).resolve(URI.create(resolution)),equalTo(URI.create(target)));
 		String extendedTarget = extend(target,query,fragment);
 		String extendedResolution = extend(resolution,query,fragment);
 		URI baseURI =URI.create(base);
 		URI targetURI = URI.create(extendedTarget);
 		URI resolutionURI = URI.create(extendedResolution);
-		assertThat(URIUtils.resolve(baseURI, targetURI),equalTo(resolutionURI));
+		URI relative = URIUtils.resolve(baseURI, targetURI);
+		assertThat(relative,equalTo(resolutionURI));
 		assertThat(baseURI.resolve(resolutionURI),equalTo(targetURI));
+		assertThat(baseURI.resolve(relative),equalTo(targetURI));
 	}
 
 }

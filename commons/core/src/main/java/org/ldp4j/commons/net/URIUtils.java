@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.StringTokenizer;
 
 import org.ldp4j.commons.Assertions;
 import org.slf4j.Logger;
@@ -97,21 +98,64 @@ public final class URIUtils {
 			!base.getAuthority().equals(target.getAuthority())) {
 			return target;
 		}
-		return walkthrough(base.normalize(),target.normalize());
+		URI result = walkthrough(base.normalize(),target.normalize());
+		System.out.printf(", Resolution: %s%n",base,target,result);
+		System.out.flush();
+		return result;
 	}
 
+	private static String[] tokenize(String path) {
+		StringTokenizer tokenizer=new StringTokenizer(path,"/");
+		List<String> segments=new ArrayList<String>();
+		while(tokenizer.hasMoreTokens()) {
+			segments.add(tokenizer.nextToken());
+		}
+		if(path.endsWith("/")) {
+			segments.add("");
+		}
+		return segments.toArray(new String[segments.size()]);
+	}
+	
+	
 	private static URI walkthrough(URI base, URI target) {
+//		if(base.equals(target)){
+//			return URI.create("");
+//		} else if(base.getPath().endsWith("/") && target.toString().startsWith(base.toString())) {
+//			return URI.create(target.toString().substring(base.toString().length()));
+//		}
+//		String[] basePath=tokenize(base.getPath());
+//		String[] targetPath=tokenize(target.getPath());
+		System.out.printf("Base: %s, Target: %s%n",base,target);
 		String[] basePath=base.getPath().split("/");
 		String[] targetPath=target.getPath().split("/");
 		int common = findCommons(basePath, targetPath);
-		
-		List<String> segments=
-			getSegments(
-				targetPath, 
-				common,
-				basePath.length-common);
+		System.out.printf("- Base path: %s%n", base.getPath());
+		System.out.printf("- Base segments: %s%n", Arrays.toString(basePath));
+		System.out.printf("- Target path: %s%n", base.getPath());
+		System.out.printf("- Target segments: %s%n", Arrays.toString(basePath));
+		System.out.printf("- # of common segments: %d%n ", common);
 
-		return recreateFromSegments(segments, target);
+		if(targetPath.length==common) {
+			URI result=null;
+			if(base.getPath().endsWith("/") && !target.getPath().endsWith("/")) {
+				result=URI.create("../"+basePath[common-1]);
+			} else if(!base.getPath().endsWith("/") && target.getPath().endsWith("/")) {
+				result=URI.create("./"+basePath[common-1]+"/");
+			} else if(base.getPath().equals(target.getPath())) {
+				result=URI.create("");
+			} else {
+				throw new IllegalStateException("Don't know how to shorten...");
+			}
+			return result;
+		} else {
+			List<String> segments=
+					getSegments(
+						targetPath, 
+						common,
+						basePath.length-common);
+
+			return recreateFromSegments(segments, target);
+		}
 	}
 
 	private static int findCommons(String[] basePath, String[] targetPath) {
