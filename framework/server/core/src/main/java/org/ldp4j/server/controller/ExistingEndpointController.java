@@ -27,6 +27,8 @@
 package org.ldp4j.server.controller;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -38,10 +40,18 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationExecutionException;
 import org.ldp4j.application.Capabilities;
+import org.ldp4j.application.PublicBasicContainer;
 import org.ldp4j.application.PublicContainer;
+import org.ldp4j.application.PublicDirectContainer;
+import org.ldp4j.application.PublicIndirectContainer;
+import org.ldp4j.application.PublicRDFSource;
 import org.ldp4j.application.PublicResource;
+import org.ldp4j.application.PublicVisitor;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.server.utils.VariantUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
 
@@ -49,6 +59,8 @@ final class ExistingEndpointController extends AbstractEndpointController {
 	
 	private static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
+	private static final Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
+	
 	public ExistingEndpointController(Endpoint endpoint) {
 		super(endpoint);
 	}
@@ -83,6 +95,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 						findResource(endpoint());
 			// 3.2. prepare the associated entity
 			DataSet entity=resource.entity();
+			LOGGER.trace("Data set to serialize: \n {}",entity);
 			// 3.3. serialize the entity
 			body=context.serializeResource(entity,variant.getMediaType());
 			status=Status.OK;
@@ -115,7 +128,42 @@ final class ExistingEndpointController extends AbstractEndpointController {
 				ok();
 		EndpointControllerUtils.populateAllowedHeaders(builder, capabilities);
 		addRequiredHeaders(context, builder);
+		addAcceptPostHeaders(context, builder);
 		return builder.build();
+	}
+
+	/**
+	 * @param context
+	 * @param builder
+	 */
+	protected void addAcceptPostHeaders(OperationContext context,
+			ResponseBuilder builder) {
+		List<Variant> acceptPostVariants=
+			context.
+			resource().
+				accept(new PublicVisitor<List<Variant>>() {
+					@Override
+					public List<Variant> visitRDFSource(PublicRDFSource resource) {
+						return Collections.emptyList();
+					}
+					@Override
+					public List<Variant> visitBasicContainer(PublicBasicContainer resource) {
+						return VariantUtils.defaultVariants();
+					}
+					@Override
+					public List<Variant> visitDirectContainer(PublicDirectContainer resource) {
+						return VariantUtils.defaultVariants();
+					}
+					@Override
+					public List<Variant> visitIndirectContainer(PublicIndirectContainer resource) {
+						return VariantUtils.defaultVariants();
+					}});
+		/**
+		 * 5.2.3.14
+		 */
+		for(Variant variant:acceptPostVariants) {
+			builder.header("Accept-Post",variant.getMediaType());
+		}
 	}
 
 	public Response head(OperationContext context) {
@@ -250,6 +298,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length()).
 			entity(body).
 			type(MediaType.TEXT_PLAIN);
+		
 		return builder.build();
 	}
 }

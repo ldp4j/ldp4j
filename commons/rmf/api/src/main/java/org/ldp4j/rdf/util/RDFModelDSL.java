@@ -27,6 +27,7 @@
 package org.ldp4j.rdf.util;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 
 import org.ldp4j.commons.Assertions;
@@ -277,8 +278,16 @@ public final class RDFModelDSL {
 		} else if(object instanceof URL) {
 			result=uriRef((URL)object);
 		} else if(object instanceof String) {
-			result=uriRef((String)object);
-		} else if(!nullable) {
+			Assertions.notNull(object, IDENTITY_PARAM);
+			try {
+				result=uriRef(new URI((String)object));
+			} catch (URISyntaxException e) {
+				if(!nullable) {
+					throw new IllegalArgumentException("Invalid URI",e);
+				}
+			}
+		}
+		if(result==null && !nullable) {
 			throw new IllegalArgumentException(
 					"Cannot crete URIRef from source object of type '"
 							+ object.getClass().getName() + "'");
@@ -340,7 +349,11 @@ public final class RDFModelDSL {
 
 	public static URIRef uriRef(String identity) {
 		Assertions.notNull(identity, IDENTITY_PARAM);
-		return uriRef(URI.create(identity));
+		try {
+			return uriRef(new URI(identity));
+		} catch (URISyntaxException e) {
+			return null;
+		}
 	}
 
 	public static URIRef uriRef(URI identity) {

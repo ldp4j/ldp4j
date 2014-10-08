@@ -54,9 +54,13 @@ import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;
 import org.ldp4j.server.spi.RuntimeInstance;
 import org.ldp4j.server.utils.VariantHelper;
 import org.ldp4j.server.utils.VariantUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 final class OperationContextImpl implements OperationContext {
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(OperationContextImpl.class);
 
 	private final class OperationContextResourceResolver implements ResourceResolver {
 
@@ -234,6 +238,8 @@ final class OperationContextImpl implements OperationContext {
 	@Override
 	public DataSet dataSet() {
 		if(this.dataSet==null) {
+			LOGGER.trace("Raw entity to unmarshall: \n{}",this.entity);
+			
 			MediaType mediaType = contentVariant().getMediaType();
 			IMediaTypeProvider provider = 
 				RuntimeInstance.
