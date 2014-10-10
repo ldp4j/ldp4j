@@ -59,6 +59,7 @@ final class EnvironmentImpl implements Environment {
 		private final Name<?> resourceName;
 		private final Class<? extends ResourceHandler> handlerClass;
 		private final String path;
+		private ResourceTemplate template;
 	
 		RootResource(Name<?> resourceName, Class<? extends ResourceHandler> handlerClass, String path) {
 			this.resourceName = resourceName;
@@ -66,28 +67,32 @@ final class EnvironmentImpl implements Environment {
 			this.path = path;
 		}
 		
-		ResourceId resourceId() throws ApplicationConfigurationException {
+		ResourceId resourceId() {
+			return ResourceId.createId(this.resourceName, this.template.id());
+		}
+		
+		String path() {
+			return path;
+		}
+		
+		
+		void validate() throws ApplicationConfigurationException {
 			if(this.resourceName==null) {
 				throw new ApplicationConfigurationException("Resource name cannot be null");
 			}
 			if(this.handlerClass==null) {
-				throw new ApplicationConfigurationException("Resource handler class cannot be null");
+				throw new ApplicationConfigurationException("No handler class specified for resource '"+this.resourceName+"'");
 			}
-			ResourceTemplate template = EnvironmentImpl.this.templateManagementService.findTemplateByHandler(handlerClass);
-			if(template==null) {
-				throw new ApplicationConfigurationException("Unknown resource handler '"+this.handlerClass.getCanonicalName()+"'");
+			this.template = EnvironmentImpl.this.templateManagementService.findTemplateByHandler(handlerClass);
+			if(this.template==null) {
+				throw new ApplicationConfigurationException("Unknown resource handler '"+this.handlerClass.getCanonicalName()+"' specified for resource '"+this.resourceName+"'");
 			}
-			return ResourceId.createId(this.resourceName, template.id());
-		}
-		
-		String path() throws ApplicationConfigurationException {
-			String tPath=path;
-			if(tPath==null) {
-				tPath="";
-			} else {
-				tPath = tPath.trim();
+			if(this.path==null) {
+				throw new ApplicationConfigurationException("No path specified for resource '"+this.resourceName+"'");
 			}
-			return tPath;
+			if(!this.path.endsWith("/") || this.path.endsWith("//") || this.path.length()==1) {
+				throw new ApplicationConfigurationException("Invalid path '"+this.path+"' specified for resource '"+this.resourceName+"': it must end with a single '/' and have at least one segment");
+			}
 		}
 	
 	}
@@ -132,6 +137,7 @@ final class EnvironmentImpl implements Environment {
 	}
 
 	private void addPublication(final BiMap<ResourceId, String> rootResourceMap, RootResource candidateResource) throws ApplicationConfigurationException {
+		candidateResource.validate();
 		ResourceId resourceId = candidateResource.resourceId();
 		String path = candidateResource.path();
 		String prevPath=rootResourceMap.get(resourceId);

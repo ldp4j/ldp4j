@@ -60,13 +60,14 @@ final class MutableDataSet implements DataSet {
 
 		@Override
 		public void visitLocalIndividual(LocalIndividual individual) {
-			Name<?> id = individual.id();
+			Name<?> name = individual.id();
+			Object id=name.id();
 			log("%s [%s] {Local}",id,id.getClass().getCanonicalName());
 		}
 
 		@Override
 		public void visitExternalIndividual(ExternalIndividual individual) {
-			log("%s {External}",individual.id());
+			log("<%s> {External}",individual.id());
 		}
 
 		public static String formatName(Name<?> tmp) {
@@ -164,20 +165,20 @@ final class MutableDataSet implements DataSet {
 		builder.append("DataSet(").append(FormatUtils.formatName(name)).append(") {").append(NL);
 		for(Individual<?,?> individual:this) {
 			if(individual.hasProperties()) {
-				builder.append("\t").append(" - Individual(").append(FormatUtils.formatId(individual)).append(") {").append(NL);
+				builder.append("\t").append("- Individual(").append(FormatUtils.formatId(individual)).append(") {").append(NL);
 				for(Property property:individual) {
-					builder.append("\t").append("\t").append(" + Property(").append(property.predicate()).append(") {").append(NL);
+					builder.append("\t").append("\t").append("+ Property(").append(property.predicate()).append(") {").append(NL);
 					for(Value value:property) {
 						value.accept(
 							new ValueVisitor() {
 								@Override
 								public void visitLiteral(Literal<?> value) {
 									Object rawValue = value.get();
-									builder.append("\t").append("\t").append("\t").append(" * ").append(rawValue).append(" [").append(rawValue.getClass().getCanonicalName()).append("]").append(NL);
+									builder.append("\t").append("\t").append("\t").append("* ").append(rawValue).append(" [").append(rawValue.getClass().getCanonicalName()).append("]").append(NL);
 								}
 								@Override
 								public void visitIndividual(Individual<?, ?> value) {
-									builder.append("\t").append("\t").append("\t").append(" * ").append(FormatUtils.formatId(value)).append(NL);
+									builder.append("\t").append("\t").append("\t").append("* ").append(FormatUtils.formatId(value)).append(NL);
 								}
 							}
 						);
@@ -189,6 +190,33 @@ final class MutableDataSet implements DataSet {
 		}
 		builder.append("}");
 		return builder.toString();
+	}
+
+	@Override
+	public void remove(final Individual<?, ?> src) {
+		if(this==src.dataSet()) {
+			for(final Individual<?,?> individual:this) {
+				for(final Property property:individual) {
+					for(Value value:property) {
+						value.accept(
+							new ValueVisitor() {
+								@Override
+								public void visitLiteral(Literal<?> value) {
+									// Nothing todo
+								}
+								@Override
+								public void visitIndividual(Individual<?, ?> value) {
+									if(value==src) {
+										individual.removeValue(property.predicate(), value);
+									}
+								}
+							}
+						);
+					}
+				}
+				this.individuals.remove(src.id());
+			}
+		}
 	}
 
 }

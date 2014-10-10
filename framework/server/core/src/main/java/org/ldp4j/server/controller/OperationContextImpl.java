@@ -156,7 +156,7 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	private Context createContext() {
-		return ImmutableContext.newInstance(base().resolve(endpoint.path().concat("/")),resourceResolver());
+		return ImmutableContext.newInstance(base().resolve(endpoint.path()),resourceResolver());
 	}
 
 	@Override

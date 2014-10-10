@@ -153,7 +153,10 @@ public final class EndpointManagementService implements Service {
 		Endpoint endpoint=getResourceEndpoint(parent.id());
 		ResourceTemplate parentTemplate=this.templateManagementService.findTemplateById(parent.id().templateId());
 		AttachedTemplate attachedTemplate = parentTemplate.attachedTemplate(attachment.id());
-		return endpoint.path()+"/"+attachedTemplate.path();
+		StringBuilder builder=new StringBuilder();
+		addSegment(builder,endpoint.path());
+		addSegment(builder,attachedTemplate.path());
+		return builder.toString();
 	}
 
 	private String generatePathForMember(Resource child, Container parent) throws EndpointNotFoundException {
@@ -163,13 +166,25 @@ public final class EndpointManagementService implements Service {
 			if(parentTemplate==null) {
 				throw new IllegalStateException("Could not find template resource '"+parent+"'");
 			}
-			String memberPath = parentTemplate.memberPath().or("");
-			if(memberPath.length()>0) {
-				memberPath="/"+memberPath;
-			}
-			return endpoint.path()+memberPath+"/"+IdGenerator.nextMemberId(parent);
+			StringBuilder builder=new StringBuilder();
+			addSegment(builder,endpoint.path());
+			addSegment(builder,parentTemplate.memberPath().or(""));
+			addSegment(builder,IdGenerator.nextMemberId(parent));
+			return builder.toString();
 		}
 		return null;
+	}
+
+	protected <T> void addSegment(StringBuilder builder, T segment) {
+		if(segment!=null) {
+			String strSegment=segment.toString();
+			if(strSegment!=null && strSegment.length()>0) {
+				builder.append(strSegment);
+				if(!strSegment.endsWith("/")) {
+					builder.append("/");
+				}
+			}
+		}
 	}
 
 	public void registerEndpointLifecycleListener(EndpointLifecycleListener listener) {

@@ -49,4 +49,6 @@ public interface DataSet extends Iterable<Individual<?,?>> {
 
 	boolean isEmpty();
 
+	void remove(Individual<?, ?> src);
+
 }

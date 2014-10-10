@@ -80,6 +80,7 @@ public class ServerFrontendITest {
 	
 	private static final String TEST_SUITE_BODY = 
 		"<> a <http://www.w3.org/ns/ldp#RDFSource> , <http://example.com/ns#Bug> ;"+NL+
+		"\t<http://example.com/ns#refersTo> <relativeResource> ;"+NL+
 		"\t<http://example.com/ns#severity> \"High\" ;"+NL+
 		"\t<http://purl.org/dc/terms/description>  \"Issues that need to be fixed.\" ;"+NL+
 		"\t<http://purl.org/dc/terms/title> \"Another bug to test.\" .";
@@ -222,7 +223,7 @@ public class ServerFrontendITest {
 	public void testClientResourceSimulation(@ArquillianResource final URL url) throws Exception {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
-		String relativeContainerPath = MyApplication.ROOT_PERSON_RESOURCE_PATH.concat("/relatives");
+		String relativeContainerPath = MyApplication.ROOT_PERSON_RESOURCE_PATH.concat("relatives/");
 
 		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpGet.class);
 		HttpPut put = HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpPut.class);
@@ -272,7 +273,7 @@ public class ServerFrontendITest {
 		HttpPost post = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH,HttpPost.class);
 		post.setEntity(
 			new StringEntity(
-				EXAMPLE_BODY,
+					TEST_SUITE_BODY,
 				ContentType.create("text/turtle", "UTF-8"))
 		);
 		HELPER.httpRequest(get);

@@ -26,6 +26,8 @@
  */
 package org.ldp4j.server.impl;
 
+import java.net.URI;
+
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ExternalIndividual;
@@ -55,7 +57,7 @@ final class ValueAdapter {
 		public Individual<?,?> visitURIRef(URIRef node, Individual<?,?> defaultResult) {
 			ResourceId resourceId = resourceResolver.resolveLocation(node.getIdentity());
 			if(resourceId==null) {
-				return dataSet.individual(node.getIdentity(),ExternalIndividual.class);
+				return dataSet.individual(base.relativize(node.getIdentity()),ExternalIndividual.class);
 			}
 			ManagedIndividualId surrogateId=ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
 			return dataSet.individual(surrogateId, ManagedIndividual.class);
@@ -90,15 +92,16 @@ final class ValueAdapter {
 		public Value visitURIRef(URIRef node, Value defaultResult) {
 			ResourceId resourceId = resourceResolver.resolveLocation(node.getIdentity());
 			if(resourceId==null) {
-				return dataSet.individual(node.getIdentity(),ExternalIndividual.class);
+				return dataSet.individual(base.relativize(node.getIdentity()),ExternalIndividual.class);
 			}
 			ManagedIndividualId surrogateId=ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
 			return dataSet.individual(surrogateId, ManagedIndividual.class);
 		}
 
+		@SuppressWarnings("rawtypes")
 		@Override
 		public Value visitBlankNode(BlankNode node, Value defaultResult) {
-			return nameGenerator.visitBlankNode(node, null);
+			return dataSet.individual((Name)NamingScheme.getDefault().name(node.getIdentity()), LocalIndividual.class);
 		}
 
 	}
@@ -110,9 +113,12 @@ final class ValueAdapter {
 
 	private final DataSet dataSet;
 
-	ValueAdapter(ResourceResolver resourceResolver, DataSet dataSet) {
+	private final URI base;
+
+	ValueAdapter(ResourceResolver resourceResolver, DataSet dataSet, URI base) {
 		this.resourceResolver = resourceResolver;
 		this.dataSet = dataSet;
+		this.base = base;
 		this.nameGenerator = new NameGenerator();
 		this.objectGenerator = new ObjectGenerator();
 	}

@@ -47,10 +47,10 @@ public class TCKFApplication extends Application<Configuration> {
 	private static final String DIRECT_CONTAINER_NAME  = "DirectContainer";
 	private static final String INDIRECT_CONTAINER_NAME= "IndirectContainer";
 	
-	public static final String ROOT_RESOURCE_PATH           = "resource";
-	public static final String ROOT_BASIC_CONTAINER_PATH    = "basic_container";
-	public static final String ROOT_DIRECT_CONTAINER_PATH   = "direct_container";
-	public static final String ROOT_INDIRECT_CONTAINER_PATH = "indirect_container";
+	public static final String ROOT_RESOURCE_PATH           = "resource/";
+	public static final String ROOT_BASIC_CONTAINER_PATH    = "basic_container/";
+	public static final String ROOT_DIRECT_CONTAINER_PATH   = "direct_container/";
+	public static final String ROOT_INDIRECT_CONTAINER_PATH = "indirect_container/";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(TCKFApplication.class);
 

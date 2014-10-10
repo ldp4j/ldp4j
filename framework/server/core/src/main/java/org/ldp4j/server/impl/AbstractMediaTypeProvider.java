@@ -79,7 +79,7 @@ abstract class AbstractMediaTypeProvider implements IMediaTypeProvider {
 			validateMediaType(type);
 			Iterable<Triple> triples = doUnmarshallContent(context,content,type);
 			final DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(context.getBase()));
-			final ValueAdapter adapter=new ValueAdapter(context.getResourceResolver(),dataSet);
+			final ValueAdapter adapter=new ValueAdapter(context.getResourceResolver(),dataSet,context.getBase());
 			for(Triple triple:triples) {
 				Individual<?,?> individual=adapter.getIndividual(triple.getSubject());
 				individual.

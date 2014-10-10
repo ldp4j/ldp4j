@@ -49,8 +49,8 @@ public class MyApplication extends Application<Configuration> {
 	private static final String PERSON_RESOURCE_NAME     = "PersonResource";
 	private static final String RELATIVE_CONTAINER_NAME  = "RelativeContainer";
 	
-	public static final String ROOT_PERSON_RESOURCE_PATH  = "rootPersonResource";
-	public static final String ROOT_PERSON_CONTAINER_PATH = "rootPersonContainer";
+	public static final String ROOT_PERSON_RESOURCE_PATH  = "rootPersonResource/";
+	public static final String ROOT_PERSON_CONTAINER_PATH = "rootPersonContainer/";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(MyApplication.class);
 
