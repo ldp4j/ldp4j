@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.resource;
 
+
 public class FeatureExecutionException extends FeatureException {
 
 	/**
@@ -33,8 +34,8 @@ public class FeatureExecutionException extends FeatureException {
 	 */
 	private static final long serialVersionUID = 6078331931039311939L;
 
-	public FeatureExecutionException(String templateId, String handlerClassName, String featureClassName) {
-		super(templateId,handlerClassName,featureClassName,String.format("ResourceHandlerAdapter '%s' from template '%s' failed while executing feature '%s'",handlerClassName,templateId,featureClassName));
+	public FeatureExecutionException(String templateId, String handlerClassName, String featureClassName, Throwable t) {
+		super(templateId,handlerClassName,featureClassName,String.format("ResourceHandlerAdapter '%s' from template '%s' failed while executing feature '%s'",handlerClassName,templateId,featureClassName),t);
 	}
 
 }

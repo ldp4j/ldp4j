@@ -98,7 +98,7 @@ final class AdapterFactory {
 			try {
 				as(Modifiable.class).update(resource(), content, writeSession());
 			} catch (InvalidContentException e) {
-				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName());
+				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
 			} finally {
 				finalizeSession();
 			}
