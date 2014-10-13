@@ -53,6 +53,15 @@ public final class ContentPreferences {
 		public URI toURI() {
 			return term.as(URI.class);
 		}
+
+		public static Preference fromString(String value) {
+			for(Preference candidate:values()) {
+				if(candidate.term.qualifiedEntityName().equals(value)) {
+					return candidate;
+				}
+			}
+			return null;
+		}
 	}
 	
 	private final Set<Preference> include;
@@ -97,6 +106,16 @@ public final class ContentPreferences {
 		return this.include.contains(preference) || !this.omit.contains(preference);
 	}
 	
+	@Override
+	public String toString() {
+		StringBuilder builder = new StringBuilder();
+		builder.append("ContentPreferences [");
+		builder.append("include=").append(this.include).append(", ");
+		builder.append("omit=").append(this.omit);
+		builder.append("]");
+		return builder.toString();
+	}
+
 	public static ContentPreferences defaultPreferences() {
 		ContentPreferences tmp = new ContentPreferences();
 		tmp.include(Preference.CONTAINMENT_TRIPLES);

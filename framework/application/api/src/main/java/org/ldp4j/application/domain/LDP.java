@@ -145,6 +145,19 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 */
 	public static final Term INSERTED_CONTENT_RELATION;
 
+	/**
+	 * CONSTRAINED_BY
+	 * <p>
+	 * {@code http://www.w3.org/ns/ldp#constrainedBy}.
+	 * <p>
+	 * Indicates that the resource has publishing constraints. The object of the
+	 * triple should be the URL that provides the constraints that apply.
+	 * 
+	 * @see <a
+	 *      href="http://www.w3.org/ns/ldp#constrainedBy">ldp:constrainedBy</a>
+	 */
+	public static final Term CONSTRAINED_BY;
+
 	/* ---------------------------------------------------------------------- */
 	/* CLASSES                                                                */
 	/* ---------------------------------------------------------------------- */
@@ -323,6 +336,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 		HAS_MEMBER_RELATION=term("hasMemberRelation");
 		IS_MEMBER_OF_RELATION=term("isMemberOfRelation");
 		INSERTED_CONTENT_RELATION=term("insertedContentRelation");
+		CONSTRAINED_BY=term("constrainedBy");
 		// Initialize classes
 		RESOURCE=term("Resource");
 		NON_RDF_SOURCE=term("NonRDFSource");

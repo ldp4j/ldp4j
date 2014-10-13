@@ -32,8 +32,7 @@ import org.ldp4j.application.ext.annotations.MembershipRelation;
 @DirectContainer(
 	id=TCKFDirectContainerHandler.ID, 
 	memberHandler=TCKFResourceHandler.class,
-	membershipRelation=MembershipRelation.HAS_MEMBER,
-	membershipPredicate="http://www.ldp4j.org/vocabularies/example#hasMember"
+	membershipRelation=MembershipRelation.HAS_MEMBER
 )
 public class TCKFDirectContainerHandler extends TCKFContainerHandler {
 

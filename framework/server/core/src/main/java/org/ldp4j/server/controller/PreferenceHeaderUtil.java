@@ -26,10 +26,11 @@
  */
 package org.ldp4j.server.controller;
 
+import java.util.ArrayList;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -59,14 +60,41 @@ public class PreferenceHeaderUtil {
 
 	private static void populatePreferences(ContentPreferencesBuilder builder, String[] refinements) {
 		Pattern pattern = Pattern.compile(option);
+		Set<String> configured=new TreeSet<String>();
 		for(String refinement:refinements) {
 			Matcher matcher = pattern.matcher(refinement);
 			if(!matcher.matches()) {
 				throw new IllegalArgumentException("Invalid preference refinement '"+refinement+"'");
 			}
-			int groupCount = matcher.groupCount();
-			for(int i=1;i<1+groupCount;i++) {
-				System.out.println(i+".- '"+matcher.group(i)+"'");
+			List<String> groups=new ArrayList<String>();
+			while(matcher.find()) {
+				groups.add(matcher.group());
+			}
+		
+			String type=groups.get(0);
+			boolean include=true;
+			if(type.equals("omit")) {
+				include=false;
+			} else if(type.equals("include")) {
+				include=true;
+			} else {
+				throw new IllegalArgumentException("Invalid preference refinement type '"+type+"'");
+			}
+			if(configured.contains(type)) {
+				throw new IllegalArgumentException("Refinement type '"+type+"' has already been configured");
+			}
+			configured.add(type);
+			for(int i=1;i<groups.size();i++) {
+				String rawPreference=groups.get(i);
+				Preference preference = Preference.fromString(rawPreference);
+				if(preference==null) {
+					throw new IllegalArgumentException("Unknown preference '"+rawPreference+"'");
+				}
+				if(include) {
+					builder.withInclude(preference);
+				} else {
+					builder.withOmit(preference);
+				}
 			}
 		}
 	}
@@ -123,9 +151,15 @@ public class PreferenceHeaderUtil {
 	}
 	
 	public static void main(String[] args) {
+		
+		harness();
+		
 		List<String> examples=
 			ImmutableList.<String>builder().
 				add("return=representation; include=\"http://www.w3.org/ns/ldp#PreferMinimalContainer\"").
+				add("return=representation; omit=\"http://www.w3.org/ns/ldp#PreferMembership http://www.w3.org/ns/ldp#PreferContainment\"").
+				add("return=representation; include=\"http://www.w3.org/ns/ldp#PreferMinimalContainer\", omit=\"http://www.w3.org/ns/ldp#PreferMembership http://www.w3.org/ns/ldp#PreferContainment\"").
+				add("return=representation; omit=\"http://www.w3.org/ns/ldp#PreferMembership http://www.w3.org/ns/ldp#PreferContainment\", include=\"http://www.w3.org/ns/ldp#PreferMinimalContainer\"").
 				build();
 		for(String example:examples) {
 			System.out.println(fromHeader(example));
@@ -162,6 +196,36 @@ public class PreferenceHeaderUtil {
 				)
 			);
 
+	}
+
+	private static void harness() {
+	       Console console = System.console();
+	        if (console == null) {
+	            System.err.println("No console.");
+	            System.exit(1);
+	        }
+	        while (true) {
+
+	            Pattern pattern = 
+	            Pattern.compile(console.readLine("%nEnter your regex: "));
+
+	            Matcher matcher = 
+	            pattern.matcher(console.readLine("Enter input string to search: "));
+
+	            boolean found = false;
+	            while (matcher.find()) {
+	                console.format("I found the text" +
+	                    " \"%s\" starting at " +
+	                    "index %d and ending at index %d.%n",
+	                    matcher.group(),
+	                    matcher.start(),
+	                    matcher.end());
+	                found = true;
+	            }
+	            if(!found){
+	                console.format("No match found.%n");
+	            }
+	        }
 	}
 	
 }

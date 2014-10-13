@@ -48,6 +48,7 @@ import org.ldp4j.application.PublicRDFSource;
 import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.PublicVisitor;
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.server.utils.VariantUtils;
@@ -234,6 +235,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		} catch (ApplicationExecutionException e) {
 			if(Throwables.getRootCause(e) instanceof InvalidContentException) {
 				status=Status.CONFLICT;
+				builder.header("Link",EndpointControllerUtils.createLink(context.base(), LDP.CONSTRAINED_BY.qualifiedEntityName()));
 			}
 			String body=Throwables.getStackTraceAsString(e);
 			builder.
