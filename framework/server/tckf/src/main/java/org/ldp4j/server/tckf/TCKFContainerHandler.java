@@ -43,7 +43,6 @@ import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.example.InMemoryContainerHandler;
-import org.ldp4j.example.PersonHandler;
 
 public class TCKFContainerHandler extends InMemoryContainerHandler implements Modifiable {
 
@@ -82,7 +81,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 			helper.
 				replace(
 					DataSetHelper.SELF, 
-					ManagedIndividualId.createId(name,PersonHandler.ID), 
+					ManagedIndividualId.createId(name,TCKFResourceHandler.ID), 
 					ManagedIndividual.class);
 
 		individual.
