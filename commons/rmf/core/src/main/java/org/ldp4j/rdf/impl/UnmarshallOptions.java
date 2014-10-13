@@ -26,31 +26,32 @@
  */
 package org.ldp4j.rdf.impl;
 
-import java.io.IOException;
-import java.io.Writer;
-
-import org.ldp4j.rdf.Triple;
-import org.ldp4j.rdf.spi.Marshaller;
 import org.ldp4j.rdf.spi.Configuration;
 
-final class WriterMarshaller implements Marshaller<Writer> {
+public final class UnmarshallOptions {
 
-	private Configuration options;
+	public static final String TRIPLE_ORDERING="org.ldp4j.rdf.unmarshall.triple_ordering";
 
-	@Override
-	public Configuration getConfiguration() {
-		return options;
+	public enum Ordering {
+		SORT_TRIPLES,
+		KEEP_TRIPLE_ORDER,
+		;
+	}
+	
+	public static final String UNMARSHALL_STYLE="org.ldp4j.rdf.unmarshall.style";
+	
+	public enum UnmarshallStyle {
+		REPOSITORY_BASED,
+		PARSER_BASED,
+		;
 	}
 
-	@Override
-	public void setConfiguration(Configuration options) {
-		this.options = options;
+	static Ordering ordering(Configuration configuration) {
+		return configuration.getOption(TRIPLE_ORDERING, Ordering.class, Ordering.SORT_TRIPLES);
 	}
 
-	@Override
-	public void marshall(Iterable<Triple> triples, Writer target) throws IOException {
-		String output = new RDFModelFormater(getConfiguration().getBase(),getConfiguration().getNamespaces(),getConfiguration().getFormat()).format(triples);
-		target.write(output);
+	static UnmarshallStyle style(Configuration configuration) {
+		return configuration.getOption(UNMARSHALL_STYLE, UnmarshallStyle.class, UnmarshallStyle.REPOSITORY_BASED);
 	}
 
 }

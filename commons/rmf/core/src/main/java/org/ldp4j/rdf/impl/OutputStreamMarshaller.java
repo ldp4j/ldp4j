@@ -31,27 +31,27 @@ import java.io.OutputStream;
 
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.spi.Marshaller;
-import org.ldp4j.rdf.spi.MarshallingOptions;
+import org.ldp4j.rdf.spi.Configuration;
 
 import org.apache.commons.io.IOUtils;
 
 final class OutputStreamMarshaller implements Marshaller<OutputStream> {
 
-	private MarshallingOptions options;
+	private Configuration options;
 
 	@Override
-	public MarshallingOptions getOptions() {
+	public Configuration getConfiguration() {
 		return options;
 	}
 
 	@Override
-	public void setOptions(MarshallingOptions options) {
+	public void setConfiguration(Configuration options) {
 		this.options = options;
 	}
 
 	@Override
 	public void marshall(Iterable<Triple> triples, OutputStream target) throws IOException {
-		String output = new RDFModelFormater(getOptions().getBase(),getOptions().getNamespaces(),getOptions().getFormat()).format(triples);
+		String output = new RDFModelFormater(getConfiguration().getBase(),getConfiguration().getNamespaces(),getConfiguration().getFormat()).format(triples);
 		IOUtils.write(output, target);
 	}
 

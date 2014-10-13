@@ -31,6 +31,7 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.rdf.Triple;
 import org.ldp4j.server.Context;
 
 public interface IMediaTypeProvider {
@@ -42,6 +43,14 @@ public interface IMediaTypeProvider {
 	}
 	
 	public interface Unmarshaller {
+		
+		public interface TripleListener {
+			void handleTriple(Triple triple);
+		}
+		
+		void registerTripleListener(TripleListener listener);
+		
+		void deregisterTripleListener(TripleListener listener);
 		
 		DataSet unmarshall(String content, MediaType targetMediaType) throws ContentTransformationException;
 		

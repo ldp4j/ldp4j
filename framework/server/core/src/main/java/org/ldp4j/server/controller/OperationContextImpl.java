@@ -27,6 +27,7 @@
 package org.ldp4j.server.controller;
 
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.List;
 
@@ -156,7 +157,37 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	private Context createContext() {
-		return ImmutableContext.newInstance(base().resolve(endpoint.path()),resourceResolver());
+		ResourceResolver resolver = resourceResolver();
+		URI endpoint = base().resolve(this.endpoint.path());
+		if(Operation.POST.equals(this.operation)) {
+			try {
+				URI alternative=
+					new URI(
+						endpoint.getScheme(),
+						endpoint.getUserInfo(),
+						"ldp4j".concat(endpoint.getHost()),
+						endpoint.getPort(),
+						endpoint.getPath(),
+						endpoint.getFragment(),
+						endpoint.getQuery()
+					);
+				resolver=
+					SafeResourceResolver.
+						builder().
+							withApplication(base()).
+							withEndpoint(endpoint).
+							withAlternative(alternative).
+							withEntity(entity(), contentVariant().getMediaType()).
+							build();
+			} catch (URISyntaxException e) {
+				AssertionError assertionError = new AssertionError("Alternative URI creation failed");
+				assertionError.initCause(e);
+				throw assertionError;
+			} catch (ContentTransformationException e) {
+				throw new ContentProcessingException("Could not create safe resolver", this.endpoint, this);
+			}
+		}
+		return ImmutableContext.newInstance(endpoint,resolver);
 	}
 
 	@Override

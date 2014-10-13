@@ -29,26 +29,12 @@ package org.ldp4j.rdf.impl;
 import java.io.IOException;
 
 import org.ldp4j.rdf.Triple;
-import org.ldp4j.rdf.spi.MarshallingOptions;
-import org.ldp4j.rdf.spi.Unmarshaller;
 
-final class CharSequenceUnmarshaller implements Unmarshaller<CharSequence> {
-
-	private MarshallingOptions options;
-
-	@Override
-	public MarshallingOptions getOptions() {
-		return options;
-	}
-
-	@Override
-	public void setOptions(MarshallingOptions options) {
-		this.options = options;
-	}
+final class CharSequenceUnmarshaller extends AbstractUnmarshaller<CharSequence> {
 
 	@Override
 	public Iterable<Triple> unmarshall(CharSequence source) throws IOException {
-		return new RDFModelParser(getOptions().getBase(),getOptions().getFormat()).parse(source.toString());
+		return getParser().parse(source.toString());
 	}
 	
 }

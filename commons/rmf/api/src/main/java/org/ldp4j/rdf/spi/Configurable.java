@@ -28,8 +28,8 @@ package org.ldp4j.rdf.spi;
 
 public interface Configurable {
 	
-	MarshallingOptions getOptions();
+	Configuration getConfiguration();
 	
-	void setOptions(MarshallingOptions options);
+	void setConfiguration(Configuration configuration);
 	
 }

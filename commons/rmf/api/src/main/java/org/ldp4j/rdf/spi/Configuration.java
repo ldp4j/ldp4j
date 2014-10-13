@@ -20,37 +20,56 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons.rmf:rmf-core:1.0.0-SNAPSHOT
- *   Bundle      : rmf-core-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.commons.rmf:rmf-api:1.0.0-SNAPSHOT
+ *   Bundle      : rmf-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.rdf.impl;
+package org.ldp4j.rdf.spi;
 
-import java.io.IOException;
-import java.io.Writer;
+import java.net.URI;
+import java.util.HashMap;
+import java.util.Map;
 
-import org.ldp4j.rdf.Triple;
-import org.ldp4j.rdf.spi.Marshaller;
-import org.ldp4j.rdf.spi.Configuration;
+import org.ldp4j.rdf.Format;
+import org.ldp4j.rdf.Namespaces;
 
-final class WriterMarshaller implements Marshaller<Writer> {
+public class Configuration {
+	
+	private final URI base;
+	private final Namespaces namespaces;
+	private final Format format;
+	private final Map<String,Object> options;
 
-	private Configuration options;
-
-	@Override
-	public Configuration getConfiguration() {
-		return options;
+	public Configuration(Namespaces namespaces, Format format, URI base) {
+		this.base = base;
+		this.namespaces = namespaces;
+		this.format = format;
+		this.options=new HashMap<String,Object>();
 	}
 
-	@Override
-	public void setConfiguration(Configuration options) {
-		this.options = options;
+	public final Namespaces getNamespaces() {
+		return namespaces;
 	}
 
-	@Override
-	public void marshall(Iterable<Triple> triples, Writer target) throws IOException {
-		String output = new RDFModelFormater(getConfiguration().getBase(),getConfiguration().getNamespaces(),getConfiguration().getFormat()).format(triples);
-		target.write(output);
+	public final Format getFormat() {
+		return format;
+	}
+
+	public final URI getBase() {
+		return base;
+	}
+	
+	public final <T> void setOption(String option, T value) {
+		this.options.put(option, value);
+	}
+	
+	public final <T> T getOption(String option, Class<? extends T> clazz, T defaultValue) {
+		T value=defaultValue;
+		Object candidate=this.options.get(option);
+		if(candidate!=null && clazz.isInstance(candidate)) {
+			value=clazz.cast(candidate);
+		}
+		return value;
 	}
 
 }

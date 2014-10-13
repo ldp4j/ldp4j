@@ -35,6 +35,7 @@ import javax.ws.rs.core.MediaType;
 import org.ldp4j.rdf.Format;
 import org.ldp4j.rdf.RDFContext;
 import org.ldp4j.rdf.Triple;
+import org.ldp4j.rdf.impl.UnmarshallOptions;
 import org.ldp4j.server.Context;
 import org.ldp4j.server.spi.ContentTransformationException;
 
@@ -54,6 +55,7 @@ public class RDFXMLMediaTypeProvider extends AbstractMediaTypeProvider {
 	protected Iterable<Triple> doUnmarshallContent(Context context, String content, MediaType type) throws ContentTransformationException {
 		try {
 			RDFContext rdfContext = RDFContext.createContext(context.getBase());
+			rdfContext.setOption(UnmarshallOptions.TRIPLE_ORDERING, UnmarshallOptions.Ordering.KEEP_TRIPLE_ORDER);
 			return rdfContext.deserialize(content, Format.RDF_XML);
 		} catch (IOException e) {
 			throw new ContentTransformationException("Could not unmarshall contents",e);

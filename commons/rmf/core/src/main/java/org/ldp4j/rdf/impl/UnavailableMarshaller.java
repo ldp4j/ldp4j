@@ -31,7 +31,7 @@ import java.io.IOException;
 import org.ldp4j.rdf.Format;
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.spi.Marshaller;
-import org.ldp4j.rdf.spi.MarshallingOptions;
+import org.ldp4j.rdf.spi.Configuration;
 
 final class UnavailableMarshaller<T> implements Marshaller<T> {
 
@@ -42,12 +42,12 @@ final class UnavailableMarshaller<T> implements Marshaller<T> {
 	}
 
 	@Override
-	public MarshallingOptions getOptions() {
+	public Configuration getConfiguration() {
 		throw new UnsupportedOperationException(error);
 	}
 
 	@Override
-	public void setOptions(MarshallingOptions options) {
+	public void setConfiguration(Configuration options) {
 		throw new UnsupportedOperationException(error);
 	}
 

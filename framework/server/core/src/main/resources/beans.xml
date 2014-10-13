@@ -60,12 +60,14 @@
 		<jaxrs:serviceBeans>
 			<ref bean="frontend"/>
 		</jaxrs:serviceBeans>
+<!-- 
 		<jaxrs:inInterceptors>
 			<ref bean="logInInterceptor" />
 		</jaxrs:inInterceptors>
 		<jaxrs:outInterceptors>
 			<ref bean="logOutInterceptor" />
 		</jaxrs:outInterceptors>
+ -->
 		<jaxrs:providers>
 			<bean id="pfeMapper"  class="org.ldp4j.server.controller.providers.PreconditionFailedExceptionMapper"/>
 			<bean id="naeMapper"  class="org.ldp4j.server.controller.providers.NotAcceptableExceptionMapper"/>

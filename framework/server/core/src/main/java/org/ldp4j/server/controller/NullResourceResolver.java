@@ -20,39 +20,25 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons.rmf:rmf-api:1.0.0-SNAPSHOT
- *   Bundle      : rmf-api-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.rdf.spi;
+package org.ldp4j.server.controller;
 
 import java.net.URI;
 
-import org.ldp4j.rdf.Format;
-import org.ldp4j.rdf.Namespaces;
+import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.server.ResourceResolver;
 
-public final class MarshallingOptions {
-	
-	private final URI base;
-	private final Namespaces namespaces;
-	private final Format format;
-
-	public MarshallingOptions(Namespaces namespaces, Format format, URI base) {
-		this.base = base;
-		this.namespaces = namespaces;
-		this.format = format;
+final class NullResourceResolver implements ResourceResolver {
+	@Override
+	public URI resolveResource(ResourceId id) {
+		return null;
 	}
 
-	public Namespaces getNamespaces() {
-		return namespaces;
+	@Override
+	public ResourceId resolveLocation(URI path) {
+		return null;
 	}
-
-	public Format getFormat() {
-		return format;
-	}
-
-	public URI getBase() {
-		return base;
-	}
-
 }

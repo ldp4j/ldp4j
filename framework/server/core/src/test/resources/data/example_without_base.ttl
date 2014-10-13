@@ -1,0 +1,78 @@
+#
+# #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+#   This file is part of the LDP4j Project:
+#     http://www.ldp4j.org/
+#
+#   Center for Open Middleware
+#     http://www.centeropenmiddleware.com/
+# #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+#   Copyright (C) 2014 Center for Open Middleware.
+# #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+#   Licensed under the Apache License, Version 2.0 (the "License");
+#   you may not use this file except in compliance with the License.
+#   You may obtain a copy of the License at
+#
+#             http://www.apache.org/licenses/LICENSE-2.0
+#
+#   Unless required by applicable law or agreed to in writing, software
+#   distributed under the License is distributed on an "AS IS" BASIS,
+#   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+#   See the License for the specific language governing permissions and
+#   limitations under the License.
+# #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+#   Artifact    : org.ldp4j.framework:ldp4j-server-core:1.0.0-SNAPSHOT
+#   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
+# #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+#
+
+@prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix rdf:  <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix owl:  <http://www.w3.org/2002/07/owl#> .
+@prefix xsd:  <http://www.w3.org/2001/XMLSchema#> .
+@prefix tx:   <http://delicias.dia.fi.upm.es/alm-istack/transactions/transactions#> .
+@prefix svc:  <http://delicias.dia.fi.upm.es/alm-istack/transactions/services#> .
+@prefix ex:   <http://delicias.dia.fi.upm.es/alm-istack/example#> .
+
+<> a tx:TransactionalResource ;
+  ex:resolvableResources 
+    <http://www.example.org/target/other/>,
+    <http://www.example.org/target/resource/other/>,
+    <http://www.example.org/target/resource/other/another/> ;
+  ex:endpointAbsolute <http://www.example.org/target/resource/> ;
+  ex:applicationRelative <..> ;
+  ex:applicationAbsolute <http://www.example.org/target/> ;
+  ex:participatesIn ex:t1 ;
+  ex:relatedTo <attachment1/>, <attachment1/complex/> .
+
+<http://www.example.org/target/resource/> 
+  ex:differentFrom <http://www.ldp4j.org/target/resource/> ;
+  ex:opaqueProperty <urn:opaque:uri> ;
+  ex:hierarchicalNonHttpProperty <urn:/hierarchical/uri> .
+
+<attachment1/> a tx:TransactionalResource ;
+  ex:owner _:at1_owner ;
+  ex:referredBy <> .
+
+<attachment1/complex/> a tx:TransactionalResource ;
+  ex:owner _:at1_cx_owner ;
+  ex:controlledBy <attachment1/> ;
+  ex:referredBy <> .
+
+_:at1_owner a ex:Owner .
+
+_:at1_cx_owner a ex:OwnerSurrogate .
+
+ex:t1 
+  a tx:Transaction ;
+  svc:hasCapabilities [
+    svc:hasControl [
+      svc:rel tx:Enroll ;
+      svc:link <tm>
+    ] , [
+      svc:rel tx:Commit ;
+      svc:link <tm>
+    ] , [
+      svc:rel tx:Rollback ;
+      svc:link <tm>
+    ] 
+  ] .

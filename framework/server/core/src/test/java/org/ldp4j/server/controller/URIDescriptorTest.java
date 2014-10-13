@@ -1,0 +1,69 @@
+/**
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   This file is part of the LDP4j Project:
+ *     http://www.ldp4j.org/
+ *
+ *   Center for Open Middleware
+ *     http://www.centeropenmiddleware.com/
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Copyright (C) 2014 Center for Open Middleware.
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *             http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ */
+package org.ldp4j.server.controller;
+
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
+import java.util.Map;
+import java.util.Map.Entry;
+
+import org.junit.Before;
+import org.junit.Test;
+import org.ldp4j.server.controller.URIDescriptor;
+import org.ldp4j.server.controller.URIDescriptor.Scope;
+import org.ldp4j.server.controller.URIDescriptor.Type;
+
+import com.google.common.collect.ImmutableMap;
+
+public class URIDescriptorTest {
+
+	private Map<URIDescriptor,Boolean> candidateMap;
+
+	@Before
+	public void setUp() throws Exception {
+		candidateMap = ImmutableMap.
+			<URIDescriptor,Boolean>builder().
+				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.SELF),false). 
+				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.CHILD),false).
+				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.ANCESTOR),false).
+				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.ABSOLUTE),true).
+				put(URIDescriptor.newDescriptor(Scope.ENDPOINT,Type.ABSOLUTE),true).
+				put(URIDescriptor.newDescriptor(Scope.APPLICATION,Type.ABSOLUTE),true).
+				put(URIDescriptor.newDescriptor(Scope.EXTERNAL,Type.ABSOLUTE),false).
+				put(URIDescriptor.newDescriptor(Scope.EXTERNAL,Type.OPAQUE),false).
+				build();
+	}
+	
+	@Test
+	public void testIsResolvable() {
+		for(Entry<URIDescriptor,Boolean> entry:candidateMap.entrySet()) {
+			assertThat(entry.getKey().isResolvable(),equalTo(entry.getValue()));
+		}
+	}
+}

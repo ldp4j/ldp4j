@@ -29,10 +29,14 @@ package org.ldp4j.rdf.impl;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.ldp4j.rdf.Format;
 import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.rdf.Triple;
+import org.ldp4j.rdf.impl.UnmarshallOptions.Ordering;
+import org.ldp4j.rdf.impl.UnmarshallOptions.UnmarshallStyle;
 import org.ldp4j.rdf.util.TripleSet;
 import org.megatwork.rdf.sesame.SesameModelParser;
 import org.openrdf.OpenRDFException;
@@ -44,12 +48,206 @@ import org.openrdf.repository.RepositoryException;
 import org.openrdf.repository.RepositoryResult;
 import org.openrdf.repository.sail.SailRepository;
 import org.openrdf.rio.RDFFormat;
+import org.openrdf.rio.RDFHandler;
+import org.openrdf.rio.RDFHandlerException;
 import org.openrdf.rio.RDFParseException;
+import org.openrdf.rio.RDFParser;
+import org.openrdf.rio.Rio;
 import org.openrdf.sail.memory.MemoryStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class RDFModelParser {
+
+	private interface TripleSink {
+		
+		Iterable<Triple> triples();
+		
+		void addTriple(Triple triple);
+		
+	}
+
+	private interface TripleProducer {
+		
+		void injectTriples(TripleSink sink) throws IOException;
+		
+	}
+
+	private final class UnorderedTripleSink implements TripleSink {
+		private List<Triple> triples=new ArrayList<Triple>();
+	
+		@Override
+		public Iterable<Triple> triples() {
+			return triples;
+		}
+	
+		@Override
+		public void addTriple(Triple triple) {
+			triples.add(triple);
+		}
+	}
+
+	private final class SortingTripleSink implements TripleSink {
+		private TripleSet triples=new TripleSet();
+	
+		@Override
+		public Iterable<Triple> triples() {
+			return triples;
+		}
+	
+		@Override
+		public void addTriple(Triple triple) {
+			triples.add(triple);
+		}
+	}
+
+	private static final class RepositoryBasedTripleProducer implements TripleProducer {
+		private final String content;
+		private final RDFFormat format;
+		private final String base;
+	
+		private RepositoryBasedTripleProducer(String content, RDFFormat format, String base) {
+			this.content = content;
+			this.format = format;
+			this.base = base;
+		}
+	
+		private void closeQuietly(RepositoryResult<?> results, String message) {
+			if(results!=null) {
+				try {
+					results.close();
+				} catch (OpenRDFException e) {
+					if(LOGGER.isWarnEnabled()) {
+						LOGGER.warn(message,e);
+					}
+				}
+			}
+		}
+
+		private void shutDownQuietly(Repository repository) {
+			if(repository!=null) {
+				try {
+					repository.shutDown();
+				} catch (OpenRDFException e) {
+					if(LOGGER.isWarnEnabled()) {
+						LOGGER.warn("Could not shutdown internal repository",e);
+					}
+				}
+			}
+		}
+
+		private void closeQuietly(RepositoryConnection connection) {
+			if(connection!=null) {
+				try {
+					connection.close();
+				} catch (OpenRDFException e) {
+					if(LOGGER.isWarnEnabled()) {
+						LOGGER.warn("Could not close connection",e);
+					}
+				}
+			}
+		}
+
+		private void importRepository(RepositoryConnection connection, TripleSink sink) throws RepositoryException {
+			RepositoryResult<Statement> statements = null;
+			try {
+				statements=connection.getStatements(null, null, null, false);
+				SesameModelParser tripleParser=new SesameModelParser(getNamespaces(connection));
+				while(statements.hasNext()) {
+					sink.addTriple(tripleParser.parseStatement(statements.next()));
+				}
+			} finally {
+				closeQuietly(statements, "Could not close results after parsing statements");
+			}
+		}
+
+		private void populateRepository(String content, RepositoryConnection connection) throws IOException, RDFParseException, RepositoryException {
+			connection.add(new StringReader(content), this.base, this.format);
+		}
+
+		private Namespaces getNamespaces(RepositoryConnection connection) throws RepositoryException {
+			Namespaces ns = new Namespaces();
+			RepositoryResult<Namespace> rr = null;
+			try {
+				rr=connection.getNamespaces();
+				while(rr.hasNext()) {
+					Namespace n=rr.next();
+					ns.addPrefix(n.getPrefix(), n.getName());
+				}
+			} finally {
+				closeQuietly(rr,"Could not close results after retrieving namespaces");
+			}
+			return ns;
+		}
+
+		@Override
+		public void injectTriples(TripleSink sink) throws IOException {
+			Repository repository = null;
+			RepositoryConnection connection=null;
+			try {
+				repository = new SailRepository(new MemoryStore());
+				repository.initialize();
+				connection=repository.getConnection();
+				populateRepository(this.content, connection);
+				importRepository(connection,sink);
+			} catch (OpenRDFException e) {
+				throw new IOException(e);
+			} finally {
+				closeQuietly(connection);
+				shutDownQuietly(repository);
+			}
+		}
+	}
+
+	private static final class ParserBasedTripleProducer implements TripleProducer {
+		private final String content;
+		private final RDFFormat format;
+		private final String base;
+	
+		private ParserBasedTripleProducer(String content, RDFFormat format, String base) {
+			this.content = content;
+			this.format = format;
+			this.base = base;
+		}
+	
+		@Override
+		public void injectTriples(TripleSink sink) throws IOException {
+			try {
+				final Namespaces namespaces = new Namespaces();
+				final List<Statement> statements=new ArrayList<Statement>();
+				RDFParser parser = 
+					Rio.createParser(this.format);
+						parser.setRDFHandler(
+							new RDFHandler() {
+								@Override
+								public void startRDF() throws RDFHandlerException {
+								}
+								@Override
+								public void endRDF() throws RDFHandlerException {
+								}
+								@Override
+								public void handleNamespace(String prefix, String uri) throws RDFHandlerException {
+									namespaces.addPrefix(prefix,uri);
+								}
+								@Override
+								public void handleStatement(Statement st) throws RDFHandlerException {
+									statements.add(st);
+								}
+								@Override
+								public void handleComment(String comment) throws RDFHandlerException {
+								}
+							}
+						);
+				parser.parse(new StringReader(this.content), this.base);
+				SesameModelParser tripleParser=new SesameModelParser(namespaces);
+				for(Statement st:statements) {
+					sink.addTriple(tripleParser.parseStatement(st));
+				}
+			} catch (OpenRDFException e) {
+				throw new IOException(e);
+			}
+		}
+	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(RDFModelParser.class);
 	
@@ -57,109 +255,51 @@ final class RDFModelParser {
 	private final URI baseURI;
 	private final Format format;
 
-	RDFModelParser(URI baseURI, Format format) {
+	private final UnmarshallStyle unmarshallStyle;
+	private final Ordering ordering;
+
+	RDFModelParser(URI baseURI, Format format, UnmarshallStyle unmarshallStyle, Ordering ordering) {
 		this.baseURI=baseURI;
 		this.format =format;
+		this.unmarshallStyle = unmarshallStyle;
+		this.ordering = ordering;
 	}
 
-	/**
-	 * @param results
-	 * @param message
-	 */
-	private void closeQuietly(RepositoryResult<?> results, String message) {
-		if(results!=null) {
-			try {
-				results.close();
-			} catch (OpenRDFException e) {
-				if(LOGGER.isWarnEnabled()) {
-					LOGGER.warn(message,e);
-				}
-			}
+	private TripleProducer getProducer(String content) {
+		RDFFormat format = 
+			RDFFormat.
+				forMIMEType(
+					this.format.getMime(), 
+					RDFFormat.TURTLE);
+		TripleProducer producer=null;
+		switch(unmarshallStyle) {
+		case PARSER_BASED:
+			producer=new ParserBasedTripleProducer(content,format,this.baseURI.toString());
+			break;
+		case REPOSITORY_BASED:
+			producer=new RepositoryBasedTripleProducer(content,format,this.baseURI.toString());
+			break;
 		}
+		return producer;
 	}
 
-	/**
-	 * @param repository
-	 */
-	private void shutDownQuietly(Repository repository) {
-		if(repository!=null) {
-			try {
-				repository.shutDown();
-			} catch (OpenRDFException e) {
-				if(LOGGER.isWarnEnabled()) {
-					LOGGER.warn("Could not shutdown internal repository",e);
-				}
-			}
+	private TripleSink getTripleSink() {
+		TripleSink sink=null;
+		switch(ordering) {
+		case KEEP_TRIPLE_ORDER:
+			sink=new UnorderedTripleSink();
+			break;
+		case SORT_TRIPLES:
+			sink=new SortingTripleSink();
+			break;
 		}
+		return sink;
 	}
 
-	/**
-	 * @param connection
-	 */
-	private void closeQuietly(RepositoryConnection connection) {
-		if(connection!=null) {
-			try {
-				connection.close();
-			} catch (OpenRDFException e) {
-				if(LOGGER.isWarnEnabled()) {
-					LOGGER.warn("Could not close connection",e);
-				}
-			}
-		}
-	}
-
-	private RDFFormat getFormat() {
-		return RDFFormat.forMIMEType(format.getMime(), RDFFormat.TURTLE);
-	}
-
-	private TripleSet importRepository(RepositoryConnection connection) throws RepositoryException {
-		RepositoryResult<Statement> statements = null;
-		try {
-			statements=connection.getStatements(null, null, null, false);
-			SesameModelParser tripleParser=new SesameModelParser(getNamespaces(connection));
-			TripleSet result = new TripleSet();
-			while(statements.hasNext()) {
-				result.add(tripleParser.parseStatement(statements.next()));
-			}
-			return result;
-		} finally {
-			closeQuietly(statements, "Could not close results after parsing statements");
-		}
-	}
-
-	private void populateRepository(String content, RepositoryConnection connection) throws IOException, RDFParseException, RepositoryException {
-		connection.add(new StringReader(content), baseURI.toString(), getFormat());
-	}
-
-	private Namespaces getNamespaces(RepositoryConnection connection) throws RepositoryException {
-		Namespaces ns = new Namespaces();
-		RepositoryResult<Namespace> rr = null;
-		try {
-			rr=connection.getNamespaces();
-			while(rr.hasNext()) {
-				Namespace n=rr.next();
-				ns.addPrefix(n.getPrefix(), n.getName());
-			}
-		} finally {
-			closeQuietly(rr,"Could not close results after retrieving namespaces");
-		}
-		return ns;
-	}
-
-	public Iterable<Triple> parse(String content) throws IOException {
-		Repository repository = null;
-		RepositoryConnection connection=null;
-		try {
-			repository = new SailRepository(new MemoryStore());
-			repository.initialize();
-			connection=repository.getConnection();
-			populateRepository(content, connection);
-			return importRepository(connection);
-		} catch (OpenRDFException e) {
-			throw new IOException(e);
-		} finally {
-			closeQuietly(connection);
-			shutDownQuietly(repository);
-		}
+	public Iterable<Triple> parse(final String content) throws IOException {
+		TripleSink sink = getTripleSink();
+		TripleProducer producer = getProducer(content);
+		producer.injectTriples(sink);
+		return sink.triples();
 	}
 }

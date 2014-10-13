@@ -29,30 +29,15 @@ package org.ldp4j.rdf.impl;
 import java.io.IOException;
 import java.io.Reader;
 
-import org.ldp4j.rdf.Triple;
-import org.ldp4j.rdf.spi.MarshallingOptions;
-import org.ldp4j.rdf.spi.Unmarshaller;
-
 import org.apache.commons.io.IOUtils;
+import org.ldp4j.rdf.Triple;
 
-final class ReaderUnmarshaller implements Unmarshaller<Reader> {
-
-	private MarshallingOptions options;
-
-	@Override
-	public MarshallingOptions getOptions() {
-		return options;
-	}
-
-	@Override
-	public void setOptions(MarshallingOptions options) {
-		this.options = options;
-	}
+final class ReaderUnmarshaller extends AbstractUnmarshaller<Reader> {
 
 	@Override
 	public Iterable<Triple> unmarshall(Reader source) throws IOException {
 		String content=IOUtils.toString(source);
-		return new RDFModelParser(getOptions().getBase(),getOptions().getFormat()).parse(content);
+		return getParser().parse(content);
 	}
 	
 }

@@ -31,6 +31,7 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.DataSetHelper;
 import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
@@ -70,22 +71,27 @@ public class PersonContainerHandler extends InMemoryContainerHandler {
 				getDefault().
 					name(id.incrementAndGet());
 		
+		DataSetHelper helper=
+					DataSetHelper.newInstance(representation);
+		
 		ManagedIndividual individual = 
-			representation.
-				individual(
+			helper.
+				replace(
+					DataSetHelper.SELF, 
 					ManagedIndividualId.createId(name,PersonHandler.ID), 
 					ManagedIndividual.class);
+		
 		individual.
 			addValue(
 				URI.create("http://www.example.org/vocab#creationDate"), 
 				DataSetUtils.newLiteral(new Date()));
 		try {
-			handler.add(name, representation);
+			this.handler.add(name, representation);
 			ResourceSnapshot member = container.addMember(name);
 			session.saveChanges();
 			return member;
 		} catch (WriteSessionException e) {
-			handler.remove(name);
+			this.handler.remove(name);
 			throw new IllegalStateException("Could not create member",e);
 		}
 	}

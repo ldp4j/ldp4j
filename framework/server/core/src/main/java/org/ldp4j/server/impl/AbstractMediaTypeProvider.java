@@ -36,6 +36,8 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.util.ListenerManager;
+import org.ldp4j.application.util.Notification;
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.util.TripleSet;
 import org.ldp4j.server.Context;
@@ -67,10 +69,14 @@ abstract class AbstractMediaTypeProvider implements IMediaTypeProvider {
 
 	private final class UnmarshallerImpl implements Unmarshaller {
 
+		
+		private final ListenerManager<TripleListener> listeners;
+
 		private final Context context;
 
 		private UnmarshallerImpl(Context context) {
 			this.context = context;
+			this.listeners=ListenerManager.newInstance();
 		}
 
 		@Override
@@ -80,7 +86,15 @@ abstract class AbstractMediaTypeProvider implements IMediaTypeProvider {
 			Iterable<Triple> triples = doUnmarshallContent(context,content,type);
 			final DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(context.getBase()));
 			final ValueAdapter adapter=new ValueAdapter(context.getResourceResolver(),dataSet,context.getBase());
-			for(Triple triple:triples) {
+			for(final Triple triple:triples) {
+				this.listeners.notify(
+					new Notification<IMediaTypeProvider.Unmarshaller.TripleListener>() {
+						@Override
+						public void propagate(TripleListener listener) {
+							listener.handleTriple(triple);
+						}
+					}
+				);
 				Individual<?,?> individual=adapter.getIndividual(triple.getSubject());
 				individual.
 					addValue(
@@ -88,6 +102,16 @@ abstract class AbstractMediaTypeProvider implements IMediaTypeProvider {
 						adapter.getValue(triple.getObject()));
 			}
 			return dataSet;
+		}
+
+		@Override
+		public void registerTripleListener(TripleListener listener) {
+			this.listeners.registerListener(listener);
+		}
+
+		@Override
+		public void deregisterTripleListener(TripleListener listener) {
+			this.listeners.deregisterListener(listener);
 		}
 	}
 
