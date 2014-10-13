@@ -37,6 +37,9 @@ import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.data.Property;
+import org.ldp4j.application.data.Value;
+import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
@@ -102,8 +105,9 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 	}
 
 	@Override
-	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) {
+	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InvalidContentException {
 		DataSet dataSet = get(resource);
+		enforceConsistency(resource, content, dataSet);
 		try {
 			add(resource.name(),content);
 			session.modify(resource);
@@ -112,6 +116,49 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 			// Recover if failed
 			add(resource.name(),dataSet);
 			throw new IllegalStateException("Update failed",e);
+		}
+	}
+
+	protected void enforceConsistency(ResourceSnapshot resource, DataSet content, DataSet dataSet) throws InvalidContentException {
+		ManagedIndividualId id = ManagedIndividualId.createId(resource.name(),TCKFResourceHandler.ID);
+		ManagedIndividual stateIndividual = 
+			dataSet.
+				individual(
+					id, 
+					ManagedIndividual.class);
+		ManagedIndividual inIndividual = 
+			content.
+				individual(
+					id, 
+					ManagedIndividual.class);
+		Property stateProperty=
+			stateIndividual.property(TCKFContainerHandler.READ_ONLY_PROPERTY);
+		Property inProperty=
+			inIndividual.property(TCKFContainerHandler.READ_ONLY_PROPERTY);
+
+		for(Value value:inProperty) {
+			boolean newAdded=false;
+			for(Value c:stateProperty) {
+				if(c.equals(value)) {
+					newAdded=true;
+					break;
+				}
+			}
+			if(newAdded) {
+				throw new InvalidContentException("New value '"+value+"' for property '"+TCKFContainerHandler.READ_ONLY_PROPERTY+"' has been added");
+			}
+		}
+		for(Value value:stateProperty) {
+			boolean deleted=true;
+			for(Value c:inProperty) {
+				if(c.equals(value)) {
+					deleted=false;
+					break;
+				}
+			}
+			if(deleted) {
+				throw new InvalidContentException("Value '"+value+"' for property '"+TCKFContainerHandler.READ_ONLY_PROPERTY+"' has been deleted");
+			}
 		}
 	}
 
