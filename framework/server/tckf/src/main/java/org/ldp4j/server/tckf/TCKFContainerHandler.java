@@ -26,7 +26,6 @@
  */
 package org.ldp4j.server.tckf;
 
-import java.net.URI;
 import java.util.Date;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -37,8 +36,6 @@ import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.data.Property;
-import org.ldp4j.application.data.Value;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.session.ContainerSnapshot;
@@ -48,8 +45,6 @@ import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.example.InMemoryContainerHandler;
 
 public class TCKFContainerHandler extends InMemoryContainerHandler implements Modifiable {
-
-	public static final URI READ_ONLY_PROPERTY = URI.create("http://www.example.org/vocab#creationDate");
 
 	private final AtomicInteger id;
 
@@ -91,7 +86,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 
 		individual.
 			addValue(
-				READ_ONLY_PROPERTY, 
+				TCKFHelper.READ_ONLY_PROPERTY, 
 				DataSetUtils.newLiteral(new Date()));
 		try {
 			handler().add(name, representation);
@@ -107,7 +102,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 	@Override
 	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InvalidContentException {
 		DataSet dataSet = get(resource);
-		enforceConsistency(resource, content, dataSet);
+		TCKFHelper.enforceConsistency(resource, content, dataSet);
 		try {
 			add(resource.name(),content);
 			session.modify(resource);
@@ -119,47 +114,5 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 		}
 	}
 
-	protected void enforceConsistency(ResourceSnapshot resource, DataSet content, DataSet dataSet) throws InvalidContentException {
-		ManagedIndividualId id = ManagedIndividualId.createId(resource.name(),TCKFResourceHandler.ID);
-		ManagedIndividual stateIndividual = 
-			dataSet.
-				individual(
-					id, 
-					ManagedIndividual.class);
-		ManagedIndividual inIndividual = 
-			content.
-				individual(
-					id, 
-					ManagedIndividual.class);
-		Property stateProperty=
-			stateIndividual.property(TCKFContainerHandler.READ_ONLY_PROPERTY);
-		Property inProperty=
-			inIndividual.property(TCKFContainerHandler.READ_ONLY_PROPERTY);
-
-		for(Value value:inProperty) {
-			boolean newAdded=false;
-			for(Value c:stateProperty) {
-				if(c.equals(value)) {
-					newAdded=true;
-					break;
-				}
-			}
-			if(newAdded) {
-				throw new InvalidContentException("New value '"+value+"' for property '"+TCKFContainerHandler.READ_ONLY_PROPERTY+"' has been added");
-			}
-		}
-		for(Value value:stateProperty) {
-			boolean deleted=true;
-			for(Value c:inProperty) {
-				if(c.equals(value)) {
-					deleted=false;
-					break;
-				}
-			}
-			if(deleted) {
-				throw new InvalidContentException("Value '"+value+"' for property '"+TCKFContainerHandler.READ_ONLY_PROPERTY+"' has been deleted");
-			}
-		}
-	}
 
 }

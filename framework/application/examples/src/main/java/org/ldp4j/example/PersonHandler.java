@@ -117,10 +117,10 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 			stateIndividual.property(PersonHandler.READ_ONLY_PROPERTY);
 		Property inProperty=
 			inIndividual.property(PersonHandler.READ_ONLY_PROPERTY);
+
 		if(stateProperty==null && inProperty==null) {
 			return;
 		}
-
 		if(stateProperty==null && inProperty!=null) {
 			throw new InvalidContentException("Added values to property '"+PersonHandler.READ_ONLY_PROPERTY+"'");
 		}
