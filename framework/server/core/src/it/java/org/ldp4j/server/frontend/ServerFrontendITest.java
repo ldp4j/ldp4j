@@ -252,7 +252,15 @@ public class ServerFrontendITest {
 		HELPER.httpRequest(rcGet);
 		String path=HELPER.relativize(location);
 		HELPER.httpRequest(HELPER.newRequest(path,HttpOptions.class));
-		HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
+		Metadata resourceGetResponse = HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
+		HttpPut resourcePut = HELPER.newRequest(path,HttpPut.class);
+		resourcePut.setEntity(
+			new StringEntity(
+				EXAMPLE_BODY,
+				ContentType.create("text/turtle", "UTF-8"))
+		);
+		resourcePut.addHeader(HttpHeaders.IF_MATCH,resourceGetResponse.etag);
+		HELPER.httpRequest(resourcePut);
 		HELPER.httpRequest(HELPER.newRequest(path,HttpDelete.class));
 		HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
 		HELPER.httpRequest(get);

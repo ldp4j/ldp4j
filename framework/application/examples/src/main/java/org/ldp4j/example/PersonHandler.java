@@ -26,8 +26,15 @@
  */
 package org.ldp4j.example;
 
+import java.net.URI;
+
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.ManagedIndividual;
+import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.data.Property;
+import org.ldp4j.application.data.Value;
 import org.ldp4j.application.ext.Deletable;
+import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.annotations.Attachment;
 import org.ldp4j.application.ext.annotations.Resource;
@@ -59,6 +66,8 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 	
 	public static final String RELATIVES_ID   = "personRelatives";
 	public static final String RELATIVES_PATH = "relatives";
+
+	private static final URI READ_ONLY_PROPERTY = URI.create("http://www.example.org/vocab#creationDate");
 	
 	public PersonHandler() {
 		super("Person");
@@ -79,8 +88,9 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 	}
 
 	@Override
-	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) {
+	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InvalidContentException {
 		DataSet dataSet = get(resource);
+		enforceConsistency(resource, content, dataSet);
 		try {
 			add(resource.name(),content);
 			session.modify(resource);
@@ -89,6 +99,58 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 			// Recover if failed
 			add(resource.name(),dataSet);
 			throw new IllegalStateException("Update failed",e);
+		}
+	}
+	protected void enforceConsistency(ResourceSnapshot resource, DataSet content, DataSet dataSet) throws InvalidContentException {
+		ManagedIndividualId id = ManagedIndividualId.createId(resource.name(),PersonHandler.ID);
+		ManagedIndividual stateIndividual = 
+			dataSet.
+				individual(
+					id, 
+					ManagedIndividual.class);
+		ManagedIndividual inIndividual = 
+			content.
+				individual(
+					id, 
+					ManagedIndividual.class);
+		Property stateProperty=
+			stateIndividual.property(PersonHandler.READ_ONLY_PROPERTY);
+		Property inProperty=
+			inIndividual.property(PersonHandler.READ_ONLY_PROPERTY);
+		if(stateProperty==null && inProperty==null) {
+			return;
+		}
+
+		if(stateProperty==null && inProperty!=null) {
+			throw new InvalidContentException("Added values to property '"+PersonHandler.READ_ONLY_PROPERTY+"'");
+		}
+		if(stateProperty!=null && inProperty==null) {
+			throw new InvalidContentException("Removed all values from property '"+PersonHandler.READ_ONLY_PROPERTY+"'");
+		}
+
+		for(Value value:inProperty) {
+			boolean newAdded=false;
+			for(Value c:stateProperty) {
+				if(c.equals(value)) {
+					newAdded=true;
+					break;
+				}
+			}
+			if(newAdded) {
+				throw new InvalidContentException("New value '"+value+"' for property '"+PersonHandler.READ_ONLY_PROPERTY+"' has been added");
+			}
+		}
+		for(Value value:stateProperty) {
+			boolean deleted=true;
+			for(Value c:inProperty) {
+				if(c.equals(value)) {
+					deleted=false;
+					break;
+				}
+			}
+			if(deleted) {
+				throw new InvalidContentException("Value '"+value+"' for property '"+PersonHandler.READ_ONLY_PROPERTY+"' has been deleted");
+			}
 		}
 	}
 

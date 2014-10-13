@@ -27,7 +27,6 @@
 package org.ldp4j.server.tckf;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetHelper;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Property;
@@ -82,8 +81,7 @@ public class TCKFResourceHandler extends InMemoryResourceHandler implements Modi
 		}
 	}
 
-	protected void enforceConsistency(ResourceSnapshot resource,
-			DataSet content, DataSet dataSet) throws InvalidContentException {
+	protected void enforceConsistency(ResourceSnapshot resource, DataSet content, DataSet dataSet) throws InvalidContentException {
 		ManagedIndividualId id = ManagedIndividualId.createId(resource.name(),TCKFResourceHandler.ID);
 		ManagedIndividual stateIndividual = 
 			dataSet.

@@ -101,6 +101,7 @@ public final class WriteSessionService implements Service {
 
 	public WriteSession createSession() {
 		UnitOfWork.newCurrent();
+		logLifecycleMessage("Created write session...");
 		return new DelegatedWriteSession(this.resourceRepository,this.templateManagementService,this);
 	}
 
@@ -110,11 +111,11 @@ public final class WriteSessionService implements Service {
 		try {
 			switch(session.status()) {
 				case ACTIVE:
-					LOGGER.debug("Force termination of active session. Discarding changes...");
+					logLifecycleMessage("Force termination of active session...");
 					session.discardChanges();
 					break;
 				case ABORTED:
-					LOGGER.debug("Force termination of aborted session. Discarding changes...");
+					logLifecycleMessage("Force termination of aborted session...");
 					session.discardChanges();
 					break;
 				case COMPLETED:
@@ -140,9 +141,16 @@ public final class WriteSessionService implements Service {
 	}
 	
 	void commitSession() {
-		LOGGER.debug("Commiting session...");
-
+		logLifecycleMessage("Commiting session...");
 		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date()));
+	}
+
+	private void logLifecycleMessage(String msg) {
+		if(LOGGER.isDebugEnabled()) {
+			RuntimeException t = new RuntimeException();
+			t.fillInStackTrace();
+			LOGGER.debug(msg,t);
+		}
 	}
 
 	private EntityTag generateEntityTag(Resource resource) {
