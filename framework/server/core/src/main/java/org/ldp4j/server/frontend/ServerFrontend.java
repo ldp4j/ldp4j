@@ -170,6 +170,7 @@ public class ServerFrontend {
 
 	// TODO: Add a proper failure mechanism
 	@GET
+	@Path("/")
 	public Response get(
 		@Context UriInfo uriInfo, 
 		@Context HttpHeaders headers,
@@ -190,6 +191,9 @@ public class ServerFrontend {
 		@PathParam(ENDPOINT_PATH_PARAM) String path, 
 		@Context HttpHeaders headers,
 		@Context Request request) {
+		if(path.equals("") || path.equals("/")) {
+			return get(uriInfo,headers,request);
+		}
 		EndpointController controller=
 			this.endpointControllerfactory.
 				createController(path);
