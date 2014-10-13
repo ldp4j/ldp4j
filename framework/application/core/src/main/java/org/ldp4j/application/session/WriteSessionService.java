@@ -110,9 +110,11 @@ public final class WriteSessionService implements Service {
 		try {
 			switch(session.status()) {
 				case ACTIVE:
+					LOGGER.debug("Force termination of active session. Discarding changes...");
 					session.discardChanges();
 					break;
 				case ABORTED:
+					LOGGER.debug("Force termination of aborted session. Discarding changes...");
 					session.discardChanges();
 					break;
 				case COMPLETED:
@@ -138,6 +140,8 @@ public final class WriteSessionService implements Service {
 	}
 	
 	void commitSession() {
+		LOGGER.debug("Commiting session...");
+
 		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date()));
 	}
 
