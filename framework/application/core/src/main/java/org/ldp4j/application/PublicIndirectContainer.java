@@ -49,8 +49,8 @@ public final class PublicIndirectContainer extends PublicMembershipAwareContaine
 	}
 	
 	@Override
-	protected void fillInMetadata(Individual<?, ?> individual, Context ctx) {
-		super.fillInMetadata(individual, ctx);
+	protected void fillInMetadata(ContentPreferences contentPreferences, Individual<?, ?> individual, Context ctx) {
+		super.fillInMetadata(contentPreferences,individual,ctx);
 		individual.
 			addValue(
 				ctx.property(LDP.INSERTED_CONTENT_RELATION), 

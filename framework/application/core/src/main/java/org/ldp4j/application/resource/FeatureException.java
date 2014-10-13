@@ -24,26 +24,44 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application;
+package org.ldp4j.application.resource;
 
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.endpoint.Endpoint;
+public class FeatureException extends Exception {
 
-public class PublicBasicContainer extends PublicContainer {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3427958905010583776L;
 
-	protected PublicBasicContainer(ApplicationContext applicationContext, Endpoint endpoint) {
-		super(applicationContext, endpoint);
+	private final String templateId;
+	private final String handlerClassName;
+	private final String featureClassName;
+
+	public FeatureException(String templateId, String handlerClassName, String featureClassName, String message) {
+		super(message);
+		this.templateId = templateId;
+		this.handlerClassName = handlerClassName;
+		this.featureClassName = featureClassName;
 	}
 
-	@Override
-	public <T> T accept(PublicVisitor<T> visitor) {
-		return visitor.visitBasicContainer(this);
+	public FeatureException(String templateId, String handlerClassName, String featureClassName, String message, Throwable t) {
+		super(message,t);
+		this.templateId = templateId;
+		this.handlerClassName = handlerClassName;
+		this.featureClassName = featureClassName;
 	}
 
-	@Override
-	protected void fillInMetadata(ContentPreferences contentPreferences, Individual<?, ?> individual, Context ctx) {
-		super.fillInMetadata(contentPreferences,individual,ctx);
+
+	public final String getTemplateId() {
+		return templateId;
 	}
 
-	
+	public final String getHandlerClassName() {
+		return handlerClassName;
+	}
+
+	public final String getFeatureClassName() {
+		return featureClassName;
+	}
+
 }

@@ -40,6 +40,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationContext;
+import org.ldp4j.application.ContentPreferences;
 import org.ldp4j.application.PublicContainer;
 import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.data.DataSet;
@@ -374,6 +375,17 @@ final class OperationContextImpl implements OperationContext {
 			throw new IllegalStateException("Expected an instance of class "+PublicContainer.class.getCanonicalName()+" but got an instance of class "+tmp.getClass().getCanonicalName());
 		}
 		return (PublicContainer)tmp;
+	}
+
+	@Override
+	public ContentPreferences contentPreferences() {
+		ContentPreferences result = ContentPreferences.defaultPreferences();
+		List<String> requestHeader = headers.getRequestHeader("Prefer");
+		// TODO: Change to make it the first valid.
+		if(requestHeader.size()>0) {
+			result=PreferenceHeaderUtil.fromHeader(requestHeader.get(0));
+		}
+		return result;
 	}
 
 }

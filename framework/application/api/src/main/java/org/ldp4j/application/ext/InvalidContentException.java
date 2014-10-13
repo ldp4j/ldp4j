@@ -20,30 +20,33 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-core:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application;
+package org.ldp4j.application.ext;
 
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.endpoint.Endpoint;
+public class InvalidContentException extends Exception {
 
-public class PublicBasicContainer extends PublicContainer {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1090034112299823594L;
 
-	protected PublicBasicContainer(ApplicationContext applicationContext, Endpoint endpoint) {
-		super(applicationContext, endpoint);
+	public InvalidContentException() {
+		super();
 	}
 
-	@Override
-	public <T> T accept(PublicVisitor<T> visitor) {
-		return visitor.visitBasicContainer(this);
+	public InvalidContentException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
-	@Override
-	protected void fillInMetadata(ContentPreferences contentPreferences, Individual<?, ?> individual, Context ctx) {
-		super.fillInMetadata(contentPreferences,individual,ctx);
+	public InvalidContentException(String message) {
+		super(message);
 	}
 
-	
+	public InvalidContentException(Throwable cause) {
+		super(cause);
+	}
+
 }

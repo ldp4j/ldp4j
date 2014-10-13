@@ -34,11 +34,10 @@ interface Adapter {
 	
 	DataSet get();
 
-	void update(DataSet content) throws UnsupportedFeatureException;
+	void update(DataSet content) throws FeatureException;
 
-	void delete() throws UnsupportedFeatureException;
+	void delete() throws FeatureException;
 
-	Resource create(DataSet content);
+	Resource create(DataSet content) throws FeatureException;
 
 }
-

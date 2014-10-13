@@ -34,6 +34,7 @@ import org.ldp4j.application.session.WriteSessionService;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.Deletable;
+import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.ResourceHandler;
 
@@ -93,9 +94,11 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final void update(DataSet content) throws UnsupportedFeatureException {
+		public final void update(DataSet content) throws UnsupportedFeatureException, FeatureExecutionException {
 			try {
 				as(Modifiable.class).update(resource(), content, writeSession());
+			} catch (InvalidContentException e) {
+				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName());
 			} finally {
 				finalizeSession();
 			}

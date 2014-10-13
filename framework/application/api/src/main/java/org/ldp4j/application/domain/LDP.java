@@ -284,6 +284,22 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	public static final Term PREFER_EMPTY_CONTAINER;
 
 	/**
+	 * PREFER_MINIMAL_CONTAINER
+	 * <p>
+	 * {@code http://www.w3.org/ns/ldp#PreferMinimalContainer}.
+	 * <p>
+	 * LDPTerm identifying the subset of a LDPC's triples present in an empty LDPC,
+	 * for example to allow clients to express interest in receiving them.
+	 * Currently this excludes containment and membership triples, but in the
+	 * future other exclusions might be added. This definition is written to
+	 * automatically exclude those new classes of triples.
+	 * 
+	 * @see <a
+	 *      href="http://www.w3.org/ns/ldp#PreferMinimalContainer">ldp:PreferMinimalContainer</a>
+	 */
+	public static final Term PREFER_MINIMAL_CONTAINER;
+
+	/**
 	 * PREFER_MEMBERSHIP
 	 * <p>
 	 * {@code http://www.w3.org/ns/ldp#PreferMembership}.
@@ -319,6 +335,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 		MEMBER_SUBJECT=term("MemberSubject");
 		PREFER_CONTAINMENT=term("PreferContainment");
 		PREFER_EMPTY_CONTAINER=term("PreferEmptyContainer");
+		PREFER_MINIMAL_CONTAINER=term("PreferMinimalContainer");
 		PREFER_MEMBERSHIP=term("PreferMembership");
 		VOCABULARY.initialize();
 	}

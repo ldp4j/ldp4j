@@ -32,6 +32,6 @@ import org.ldp4j.application.data.DataSet;
 
 public interface Modifiable {
 
-	void update(ResourceSnapshot resource, DataSet content, WriteSession session);
+	void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InvalidContentException;
 
 }

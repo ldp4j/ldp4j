@@ -117,7 +117,15 @@ public abstract class PublicResource extends Public {
 	}
 	
 	public final DataSet entity() throws ApplicationExecutionException {
-		DataSet dataSet=applicationContext().getResource(endpoint());
+		return entity(ContentPreferences.defaultPreferences());
+	}
+	
+	protected DataSet resourceData(ContentPreferences contentPreferences) throws ApplicationExecutionException {
+		return applicationContext().getResource(endpoint());
+	}
+	
+	public final DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException {
+		DataSet dataSet=resourceData(contentPreferences);
 		DataSet representation = DataSetFactory.createDataSet(id().name()); 
 		DataSetUtils.
 			merge(
@@ -130,6 +138,7 @@ public abstract class PublicResource extends Public {
 					id().name(), 
 					id().templateId());
 		fillInMetadata(
+			contentPreferences,
 			ctx.newIndividual(id),
 			ctx);
 		return representation;
@@ -139,7 +148,7 @@ public abstract class PublicResource extends Public {
 		return endpoint().resourceId();
 	}
 
-	protected void fillInMetadata(final Individual<?, ?> individual, final Context ctx) {
+	protected void fillInMetadata(ContentPreferences contentPreferences, final Individual<?, ?> individual, final Context ctx) {
 		individual.
 			addValue(
 				ctx.property(RDF.TYPE), 
@@ -149,11 +158,11 @@ public abstract class PublicResource extends Public {
 			individual.addValue(
 				attachedTemplate.predicate().or(HAS_ATTACHMENT), 
 				ctx.newIndividual(entry.getValue()));
-			populateAdditionalMetadata(individual, ctx, entry.getValue());
+			populateAdditionalMetadata(contentPreferences,individual, ctx, entry.getValue());
 		}
 	}
 
-	private void populateAdditionalMetadata(final Individual<?, ?> individual, final Context ctx, PublicResource resource) {
+	private void populateAdditionalMetadata(final ContentPreferences contentPreferences, final Individual<?, ?> individual, final Context ctx, PublicResource resource) {
 		resource.accept(
 			new PublicVisitor<Void>() {
 				@Override
@@ -168,12 +177,12 @@ public abstract class PublicResource extends Public {
 				}
 				@Override
 				public Void visitDirectContainer(PublicDirectContainer resource) {
-					resource.fillInMemberMetadata(individual, ctx);
+					resource.fillInMemberMetadata(contentPreferences,individual,ctx);
 					return null;
 				}
 				@Override
 				public Void visitIndirectContainer(PublicIndirectContainer resource) {
-					resource.fillInMemberMetadata(individual, ctx);
+					resource.fillInMemberMetadata(contentPreferences,individual,ctx);
 					return null;
 				}
 			}

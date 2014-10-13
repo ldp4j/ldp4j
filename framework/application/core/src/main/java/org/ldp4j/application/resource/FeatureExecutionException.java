@@ -24,26 +24,17 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application;
+package org.ldp4j.application.resource;
 
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.endpoint.Endpoint;
+public class FeatureExecutionException extends FeatureException {
 
-public class PublicBasicContainer extends PublicContainer {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 6078331931039311939L;
 
-	protected PublicBasicContainer(ApplicationContext applicationContext, Endpoint endpoint) {
-		super(applicationContext, endpoint);
+	public FeatureExecutionException(String templateId, String handlerClassName, String featureClassName) {
+		super(templateId,handlerClassName,featureClassName,String.format("ResourceHandlerAdapter '%s' from template '%s' failed while executing feature '%s'",handlerClassName,templateId,featureClassName));
 	}
 
-	@Override
-	public <T> T accept(PublicVisitor<T> visitor) {
-		return visitor.visitBasicContainer(this);
-	}
-
-	@Override
-	protected void fillInMetadata(ContentPreferences contentPreferences, Individual<?, ?> individual, Context ctx) {
-		super.fillInMetadata(contentPreferences,individual,ctx);
-	}
-
-	
 }

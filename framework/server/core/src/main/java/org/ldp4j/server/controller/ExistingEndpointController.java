@@ -49,6 +49,7 @@ import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.PublicVisitor;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -231,6 +232,9 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			// additional description of all the resources that were modified
 			// (updated, created, deleted) as a side effect.
 		} catch (ApplicationExecutionException e) {
+			if(Throwables.getRootCause(e) instanceof InvalidContentException) {
+				status=Status.CONFLICT;
+			}
 			String body=Throwables.getStackTraceAsString(e);
 			builder.
 				type(MediaType.TEXT_PLAIN).

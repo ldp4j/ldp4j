@@ -28,6 +28,7 @@ package org.ldp4j.application;
 
 import java.net.URI;
 
+import org.ldp4j.application.ContentPreferences.Preference;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
@@ -55,7 +56,11 @@ public abstract class PublicMembershipAwareContainer<T extends MembershipAwareCo
 	
 	protected abstract Term containerType();
 
-	final void fillInMemberMetadata(Individual<?,?> individual, Context ctx) {
+	final void fillInMemberMetadata(ContentPreferences contentPreferences, Individual<?,?> individual, Context ctx) {
+		if(!contentPreferences.isRequired(Preference.MEMBERSHIP_TRIPLES)) {
+			return;
+		}
+		
 		URI predicate = containerTemplate().membershipPredicate();
 		switch(containerTemplate().membershipRelation()) {
 		case HAS_MEMBER:
@@ -86,8 +91,8 @@ public abstract class PublicMembershipAwareContainer<T extends MembershipAwareCo
 	}
 	
 	@Override
-	protected void fillInMetadata(Individual<?, ?> individual, Context ctx) {
-		super.fillInMetadata(individual, ctx);
+	protected void fillInMetadata(ContentPreferences contentPreferences, Individual<?, ?> individual, Context ctx) {
+		super.fillInMetadata(contentPreferences,individual,ctx);
 		T template = containerTemplate();
 		individual.
 			addValue(

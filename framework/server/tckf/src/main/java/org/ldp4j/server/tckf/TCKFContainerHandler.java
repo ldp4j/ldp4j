@@ -46,6 +46,8 @@ import org.ldp4j.example.InMemoryContainerHandler;
 
 public class TCKFContainerHandler extends InMemoryContainerHandler implements Modifiable {
 
+	public static final URI READ_ONLY_PROPERTY = URI.create("http://www.example.org/vocab#creationDate");
+
 	private final AtomicInteger id;
 
 	private TCKFResourceHandler handler;
@@ -86,7 +88,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 
 		individual.
 			addValue(
-				URI.create("http://www.example.org/vocab#creationDate"), 
+				READ_ONLY_PROPERTY, 
 				DataSetUtils.newLiteral(new Date()));
 		try {
 			handler().add(name, representation);

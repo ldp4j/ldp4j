@@ -41,6 +41,7 @@ import org.ldp4j.application.lifecycle.ApplicationLifecycleService;
 import org.ldp4j.application.lifecycle.LifecycleException;
 import org.ldp4j.application.lifecycle.LifecycleManager;
 import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.FeatureExecutionException;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceControllerService;
 import org.ldp4j.application.resource.ResourceId;

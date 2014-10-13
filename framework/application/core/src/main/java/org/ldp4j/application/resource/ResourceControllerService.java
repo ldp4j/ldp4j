@@ -70,15 +70,15 @@ public class ResourceControllerService implements Service {
 		return adapter(resource).get();
 	}
 	
-	public void updateResource(Resource resource, DataSet dataSet) throws UnsupportedFeatureException {
+	public void updateResource(Resource resource, DataSet dataSet) throws FeatureException {
 		adapter(resource).update(dataSet);
 	}
 
-	public void deleteResource(Resource resource) throws UnsupportedFeatureException {
+	public void deleteResource(Resource resource) throws FeatureException {
 		adapter(resource).delete();
 	}
 
-	public Resource createResource(Container container, DataSet dataSet) {
+	public Resource createResource(Container container, DataSet dataSet) throws FeatureException {
 		return adapter(container).create(dataSet);
 	}
 	
