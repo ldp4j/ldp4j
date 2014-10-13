@@ -26,6 +26,8 @@
  */
 package org.ldp4j.server.frontend;
 
+import java.util.Locale;
+
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
@@ -35,6 +37,7 @@ import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
@@ -163,6 +166,21 @@ public class ServerFrontend {
 					withRequest(request).
 					build();
 		return controller.head(context);
+	}
+
+	// TODO: Add a proper failure mechanism
+	@GET
+	public Response get(
+		@Context UriInfo uriInfo, 
+		@Context HttpHeaders headers,
+		@Context Request request) {
+		return 
+			Response.
+				ok().
+				entity("Constraint validation failure").
+				language(Locale.ENGLISH).
+				type(MediaType.TEXT_PLAIN).
+				build();
 	}
 
 	@GET
