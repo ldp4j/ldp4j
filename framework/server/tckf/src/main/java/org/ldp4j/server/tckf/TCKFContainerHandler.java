@@ -81,7 +81,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 			helper.
 				replace(
 					DataSetHelper.SELF, 
-					ManagedIndividualId.createId(name,getHandlerName()), 
+					ManagedIndividualId.createId(name,TCKFResourceHandler.ID), 
 					ManagedIndividual.class);
 
 		individual.
