@@ -106,7 +106,7 @@ final class TCKFHelper {
 	}
 
 	private static String format(ManagedIndividualId id) {
-		return String.format("%s {Managed by: %s}");
+		return String.format("%s {Managed by: %s}",id.name(),id.managerId());
 	}
 
 	private static String format(Value value) {
