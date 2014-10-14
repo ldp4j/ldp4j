@@ -87,7 +87,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 		individual.
 			addValue(
 				TCKFHelper.READ_ONLY_PROPERTY, 
-				DataSetUtils.newLiteral(new Date()));
+				DataSetUtils.newLiteral(new Date().toString()));
 		try {
 			handler().add(name, representation);
 			ResourceSnapshot member = container.addMember(name);
