@@ -28,6 +28,8 @@ package org.ldp4j.server.tckf;
 
 import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference;
 
+import java.util.Date;
+
 import org.ldp4j.application.data.DataDSL;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
@@ -71,12 +73,8 @@ public class TCKFApplication extends Application<Configuration> {
 			DataDSL.
 				dataSet().
 					individual(newReference().toManagedIndividual(templateId).named(name)).
-						hasProperty("http://www.ldp4j.org/vocabulary/example#age").
-							withValue(34).
-						hasLink("http://www.ldp4j.org/vocabulary/example#hasFather").
-							toIndividual(newReference().toLocalIndividual().named("Michel")).
-								hasLink("http://www.ldp4j.org/vocabulary/example#hasWife").
-									referringTo(newReference().toLocalIndividual().named("Consuelo")).
+						hasProperty(TCKFHelper.READ_ONLY_PROPERTY.toString()).
+							withValue(new Date()).
 						build();
 		return initial;
 	}

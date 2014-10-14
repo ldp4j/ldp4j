@@ -27,12 +27,18 @@
 package org.ldp4j.server.tckf;
 
 import java.net.URI;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.FormatUtils;
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.Literal;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.Value;
+import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.session.ResourceSnapshot;
 
@@ -50,13 +56,14 @@ final class TCKFHelper {
 				individual(
 					id, 
 					ManagedIndividual.class);
+		Property stateProperty=
+				stateIndividual.property(READ_ONLY_PROPERTY);
+
 		ManagedIndividual inIndividual = 
 			content.
 				individual(
 					id, 
 					ManagedIndividual.class);
-		Property stateProperty=
-			stateIndividual.property(READ_ONLY_PROPERTY);
 		Property inProperty=
 			inIndividual.property(READ_ONLY_PROPERTY);
 
@@ -71,29 +78,32 @@ final class TCKFHelper {
 		}
 
 		for(Value value:inProperty) {
-			boolean newAdded=false;
-			for(Value c:stateProperty) {
-				if(c.equals(value)) {
-					newAdded=true;
-					break;
-				}
-			}
-			if(newAdded) {
-				throw new InvalidContentException("New value '"+value+"' for property '"+READ_ONLY_PROPERTY+"' has been added");
+			if(DataSetUtils.hasValue(value, stateProperty)) {
+				throw new InvalidContentException("New value '"+format(value)+"' for property '"+READ_ONLY_PROPERTY+"' has been added");
 			}
 		}
 		for(Value value:stateProperty) {
-			boolean deleted=true;
-			for(Value c:inProperty) {
-				if(c.equals(value)) {
-					deleted=false;
-					break;
-				}
-			}
-			if(deleted) {
-				throw new InvalidContentException("Value '"+value+"' for property '"+READ_ONLY_PROPERTY+"' has been deleted");
+			if(!DataSetUtils.hasValue(value, inProperty)) {
+				throw new InvalidContentException("Value '"+value+"' has been removed from property '"+READ_ONLY_PROPERTY+"'");
 			}
 		}
+	}
+
+	private static String format(Value value) {
+		final AtomicReference<String> result=new AtomicReference<String>();
+		value.accept(
+			new ValueVisitor() {
+				@Override
+				public void visitLiteral(Literal<?> value) {
+					result.set(String.format("%s [%s]",value.get(),value.get().getClass().getCanonicalName()));
+				}
+				@Override
+				public void visitIndividual(Individual<?, ?> value) {
+					result.set(FormatUtils.formatIndividualId(value));
+				}
+			}
+		);
+		return result.get();
 	}
 
 	
