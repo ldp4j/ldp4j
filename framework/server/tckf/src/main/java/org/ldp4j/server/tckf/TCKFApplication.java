@@ -74,7 +74,7 @@ public class TCKFApplication extends Application<Configuration> {
 				dataSet().
 					individual(newReference().toManagedIndividual(templateId).named(name)).
 						hasProperty(TCKFHelper.READ_ONLY_PROPERTY.toString()).
-							withValue(new Date()).
+							withValue(new Date().toString()).
 						build();
 		return initial;
 	}
