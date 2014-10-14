@@ -91,7 +91,7 @@ final class TCKFHelper {
 
 		for(Value value:inProperty) {
 			LOGGER.debug("Verifing property '{}' input value {}...",READ_ONLY_PROPERTY,format(value));
-			if(DataSetUtils.hasValue(value,stateProperty)) {
+			if(!DataSetUtils.hasValue(value,stateProperty)) {
 				LOGGER.error("New value {} has been added to property '{}'",format(value),READ_ONLY_PROPERTY);
 				throw new InvalidContentException("New value '"+format(value)+"' for property '"+READ_ONLY_PROPERTY+"' has been added");
 			}
