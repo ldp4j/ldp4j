@@ -81,7 +81,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 			helper.
 				replace(
 					DataSetHelper.SELF, 
-					ManagedIndividualId.createId(name,TCKFResourceHandler.ID), 
+					ManagedIndividualId.createId(name,getHandlerName()), 
 					ManagedIndividual.class);
 
 		individual.
@@ -102,7 +102,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 	@Override
 	public void update(ResourceSnapshot resource, DataSet newState, WriteSession session) throws InvalidContentException {
 		DataSet currentState = get(resource);
-		TCKFHelper.enforceConsistency(resource, newState, currentState);
+		TCKFHelper.enforceConsistency(resource, newState, currentState, TCKFResourceHandler.ID);
 		try {
 			add(resource.name(),newState);
 			session.modify(resource);

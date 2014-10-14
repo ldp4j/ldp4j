@@ -53,8 +53,8 @@ final class TCKFHelper {
 	private TCKFHelper() {
 	}
 
-	static void enforceConsistency(ResourceSnapshot resource, DataSet newState, DataSet currentState) throws InvalidContentException {
-		ManagedIndividualId id = ManagedIndividualId.createId(resource.name(),TCKFResourceHandler.ID);
+	static void enforceConsistency(ResourceSnapshot resource, DataSet newState, DataSet currentState, String templateId) throws InvalidContentException {
+		ManagedIndividualId id = ManagedIndividualId.createId(resource.name(),templateId);
 		LOGGER.debug("Checking consistency of {}",id);
 		LOGGER.trace("- Current state:\n{}",currentState);
 		LOGGER.trace("- New state:\n{}",newState);

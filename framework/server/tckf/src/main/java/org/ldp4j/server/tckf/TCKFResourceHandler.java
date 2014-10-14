@@ -68,7 +68,7 @@ public class TCKFResourceHandler extends InMemoryResourceHandler implements Modi
 	@Override
 	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InvalidContentException {
 		DataSet dataSet = get(resource);
-		TCKFHelper.enforceConsistency(resource,content,dataSet);
+		TCKFHelper.enforceConsistency(resource,content,dataSet, TCKFResourceHandler.ID);
 		try {
 			add(resource.name(),content);
 			session.modify(resource);
