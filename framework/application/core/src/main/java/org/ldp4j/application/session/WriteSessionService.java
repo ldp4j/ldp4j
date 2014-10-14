@@ -147,9 +147,7 @@ public final class WriteSessionService implements Service {
 
 	private void logLifecycleMessage(String msg) {
 		if(LOGGER.isDebugEnabled()) {
-			RuntimeException t = new RuntimeException();
-			t.fillInStackTrace();
-			LOGGER.debug(msg,t);
+			LOGGER.debug(msg);
 		}
 	}
 

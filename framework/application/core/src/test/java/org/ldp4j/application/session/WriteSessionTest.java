@@ -49,6 +49,7 @@ import org.ldp4j.application.resource.ResourceFactoryService;
 import org.ldp4j.application.session.UnitOfWork.Visitor;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.template.TemplateManagementService;
+import org.ldp4j.application.template.TemplateManager;
 import org.ldp4j.example.AddressHandler;
 import org.ldp4j.example.BookContainerHandler;
 import org.ldp4j.example.BookHandler;
@@ -108,11 +109,16 @@ public class WriteSessionTest {
 	@Before
 	public void setUp() throws Exception {
 		RuntimeInstance.setInstance(new InMemoryRuntimeInstance());
+		TemplateManager manager=
+				TemplateManager.
+					builder().
+						withHandlerClasses(PersonHandler.class).
+						build();
 		RuntimeInstance.
 			getInstance().
 				getServiceRegistry().
 					getService(TemplateManagementService.class).
-						register(PersonHandler.class);
+						setTemplateManager(manager);
 		writeSessionService=
 			RuntimeInstance.
 				getInstance().

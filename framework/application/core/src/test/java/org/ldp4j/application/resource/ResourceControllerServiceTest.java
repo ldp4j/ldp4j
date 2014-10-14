@@ -30,6 +30,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.fail;
 import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference;
 
 import java.util.Date;
@@ -40,6 +41,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.ldp4j.application.data.DataDSL;
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.IndividualReference;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.endpoint.Endpoint;
@@ -49,6 +51,7 @@ import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.impl.InMemoryRuntimeInstance;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.template.TemplateManagementService;
+import org.ldp4j.application.template.TemplateManager;
 import org.ldp4j.example.BookContainerHandler;
 import org.ldp4j.example.BookHandler;
 import org.ldp4j.example.PersonHandler;
@@ -76,11 +79,13 @@ public class ResourceControllerServiceTest {
 		return resource;
 	}
 
-	private DataSet getInitialData() {
+	private DataSet getInitialData(IndividualReference<?, ?> reference, Date date) {
 		DataSet initial=
 			DataDSL.
 				dataSet().
-					individual(newReference().toLocalIndividual().named("Miguel")). // Initial context
+					individual(reference). // Initial context
+						hasProperty(PersonHandler.READ_ONLY_PROPERTY.toString()).
+							withValue(date).
 						hasProperty("age").
 							withValue(34).
 						hasLink("hasFather").
@@ -95,11 +100,13 @@ public class ResourceControllerServiceTest {
 		return NamingScheme.getDefault().name(id);
 	}
 
-	private DataSet getUpdatedData() {
+	private DataSet getUpdatedData(IndividualReference<?, ?> reference, Date date) {
 		DataSet initial=
 			DataDSL.
 				dataSet().
-					individual(newReference().toLocalIndividual().named("Miguel")). // Initial context
+					individual(reference). // Initial context
+						hasProperty(PersonHandler.READ_ONLY_PROPERTY.toString()).
+							withValue(date).
 						hasProperty("age").
 							withValue(34).
 						hasLink("hasWife").
@@ -119,11 +126,17 @@ public class ResourceControllerServiceTest {
 	@BeforeClass
 	public static void setUpBefore() throws Exception {
 		RuntimeInstance.setInstance(new InMemoryRuntimeInstance());
+		PersonHandler personHandler = new PersonHandler();
+		TemplateManager manager=
+			TemplateManager.
+				builder().
+					withHandlers(personHandler).
+					build();
 		RuntimeInstance.
 			getInstance().
 				getServiceRegistry().
 					getService(TemplateManagementService.class).
-						register(PersonHandler.class);
+						setTemplateManager(manager);
 	}
 
 	@AfterClass
@@ -145,7 +158,7 @@ public class ResourceControllerServiceTest {
 	public void testGetResource() throws Exception {
 		String resourcePath = "get";
 		Name<?> resourceName = name(resourcePath);
-		DataSet initial = getInitialData();
+		DataSet initial = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
 
 		// BEGIN initialization
 		Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
@@ -162,8 +175,10 @@ public class ResourceControllerServiceTest {
 	public void testUpdateResource() throws Exception {
 		String resourcePath = "update";
 		Name<?> resourceName = name(resourcePath);
-		DataSet initial = getInitialData();
-		DataSet updatedDate = getUpdatedData();
+		Date date = new Date();
+		DataSet initial = getInitialData(newReference().toManagedIndividual(PersonHandler.ID).named(resourcePath), date);
+		DataSet updatedDate = getUpdatedData(newReference().toManagedIndividual(PersonHandler.ID).named(resourcePath), date);
+		System.out.println(initial);
 
 		// BEGIN initialization
 		Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
@@ -173,16 +188,21 @@ public class ResourceControllerServiceTest {
 
 		DataSet data = sut.getResource(resource);
 		assertThat(data,sameInstance(initial));
-		sut.updateResource(resource,updatedDate);
-		data = sut.getResource(resource);
-		assertThat(data,sameInstance(updatedDate));
+		try {
+			sut.updateResource(resource,updatedDate);
+			data = sut.getResource(resource);
+			assertThat(data,sameInstance(updatedDate));
+		} catch (FeatureException e) {
+			e.printStackTrace();
+			fail("Should not fail update");
+		}
 	}
 
 	@Test
 	public void testDeleteResource() throws Exception {
 		String resourcePath = "delete";
 		Name<?> resourceName = name(resourcePath);
-		DataSet initial = getInitialData();
+		DataSet initial = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
 
 		// BEGIN initialization
 		Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
@@ -200,7 +220,7 @@ public class ResourceControllerServiceTest {
 	public void testCreateResource() throws Exception {
 		String resourcePath = "post";
 		Name<?> resourceName = name(resourcePath);
-		DataSet initialData = getInitialData();
+		DataSet initialData = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
 
 		// BEGIN initialization
 		Container resource = publishResource(Container.class,BookContainerHandler.ID, resourceName, resourcePath);

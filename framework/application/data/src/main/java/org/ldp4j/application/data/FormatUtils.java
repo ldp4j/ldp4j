@@ -26,61 +26,56 @@
  */
 package org.ldp4j.application.data;
 
-import java.net.URI;
-import java.util.Collection;
-import java.util.Iterator;
+public final class FormatUtils implements IndividualVisitor {
 
-final class ImmutableProperty implements Property {
+	private String id;
 
-	private final Property property;
-
-	ImmutableProperty(MutableProperty property) {
-		this.property = new MutableProperty(property);
+	private FormatUtils() {
 	}
 	
-	@Override
-	public Iterator<Value> iterator() {
-		return this.property.iterator();
+	public String getId() {
+		return id;
+	}
+
+	private void log(String message, Object... args) {
+		this.id=String.format(message,args);
 	}
 
 	@Override
-	public Individual<?, ?> individual() {
-		return this.property.individual();
+	public void visitManagedIndividual(ManagedIndividual individual) {
+		ManagedIndividualId id = individual.id();
+		log("%s {Managed by: %s}",id.name(),id.managerId());
 	}
 
 	@Override
-	public URI predicate() {
-		return this.property.predicate();
+	public void visitLocalIndividual(LocalIndividual individual) {
+		Name<?> name = individual.id();
+		Object id=name.id();
+		log("%s [%s] {Local}",id,id.getClass().getCanonicalName());
 	}
 
 	@Override
-	public Collection<? extends Value> values() {
-		return this.property.values();
+	public void visitExternalIndividual(ExternalIndividual individual) {
+		log("<%s> {External}",individual.id());
 	}
 
-	@Override
-	public int numberOfValues() {
-		return this.property.numberOfValues();
+	public static String formatLiteral(Literal<?> literal) {
+		return String.format("%s [%s]",literal.get(),literal.get().getClass().getCanonicalName());
+	}
+	
+	public static String formatName(Name<?> tmp) {
+		if(tmp==null) {
+			return "<null>";
+		}
+		return String.format("%s [%s]",tmp.id(),tmp.id().getClass().getCanonicalName());
 	}
 
-	@Override
-	public boolean hasValues() {
-		return this.property.hasValues();
+	public static String formatIndividualId(Individual<?, ?> individual) {
+		if(individual==null) {
+			return "<null>";
+		}
+		FormatUtils visitor = new FormatUtils();
+		individual.accept(visitor);
+		return visitor.getId();
 	}
-
-	@Override
-	public void accept(ValueVisitor visitor) {
-		this.property.accept(visitor);
-	}
-
-	@Override
-	public boolean hasLiteralValue(Literal<?> value) {
-		return this.property.hasLiteralValue(value);
-	}
-
-	@Override
-	public boolean hasIdentifiedIndividual(Object id) {
-		return this.property.hasIdentifiedIndividual(id);
-	}
-
 }

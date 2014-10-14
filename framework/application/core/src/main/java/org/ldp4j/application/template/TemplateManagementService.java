@@ -29,9 +29,6 @@ package org.ldp4j.application.template;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.Arrays;
-import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -54,25 +51,10 @@ public final class TemplateManagementService implements Service {
 	}
 
 	private final Lock lock=new ReentrantLock();
-	private final Set<Class<?>> registeredClasses=new LinkedHashSet<Class<?>>();
 
 	private volatile TemplateManager manager=null;
 	
 	private TemplateManagementService() {
-	}
-	
-	@Deprecated
-	public void register(Class<?>... newClasses) throws TemplateRegistrationException {
-		lock.lock();
-		try {
-			if(registeredClasses.addAll(Arrays.asList(newClasses))) {
-				this.manager=TemplateManager.builder().withHandlerClasses(this.registeredClasses).build();
-			}
-		} catch (InvalidTemplateManagerConfigurationException e) {
-			throw new TemplateRegistrationException(e);
-		} finally {
-			lock.unlock();
-		}
 	}
 	
 	public void setTemplateManager(TemplateManager manager) {

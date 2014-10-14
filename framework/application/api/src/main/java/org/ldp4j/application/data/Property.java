@@ -42,5 +42,9 @@ public interface Property extends Iterable<Value> {
 	boolean hasValues();
 	
 	void accept(ValueVisitor visitor);
+
+	boolean hasLiteralValue(Literal<?> value);
+
+	boolean hasIdentifiedIndividual(Object id);
 	
 }

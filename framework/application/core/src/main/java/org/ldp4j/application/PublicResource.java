@@ -41,9 +41,14 @@ import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.Value;
+import org.ldp4j.application.data.validation.ValidationConstraintFactory;
+import org.ldp4j.application.data.validation.ValidationReport;
+import org.ldp4j.application.data.validation.Validator;
+import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.resource.Attachment;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
@@ -120,6 +125,28 @@ public abstract class PublicResource extends Public {
 		return entity(ContentPreferences.defaultPreferences());
 	}
 	
+	/**
+	 * @return
+	 */
+	protected DataSet metadata() {
+		DataSet metadata = 
+			DataSetFactory.
+				createDataSet(id().name()); 
+	
+		Context ctx = new Context(metadata);
+		ManagedIndividualId id=
+			ManagedIndividualId.
+				createId(
+					id().name(), 
+					id().templateId());
+	
+		fillInMetadata(
+			ContentPreferences.defaultPreferences(),
+			ctx.newIndividual(id),
+			ctx);
+		return metadata;
+	}
+
 	protected DataSet resourceData(ContentPreferences contentPreferences) throws ApplicationExecutionException {
 		return applicationContext().getResource(endpoint());
 	}
@@ -189,12 +216,77 @@ public abstract class PublicResource extends Public {
 		);
 	}
 
+	protected void configureValidationConstraints(ValidatorBuilder builder, Individual<?,?> individual, DataSet metadata) {
+		builder.withPropertyConstraint(ValidationConstraintFactory.mandatoryPropertyValues(individual.property(RDF.TYPE.as(URI.class))));
+		for(Entry<String, PublicResource> entry:attachments().entrySet()) {
+			AttachedTemplate attachedTemplate = template().attachedTemplate(entry.getKey());
+			URI propertyId = attachedTemplate.predicate().or(HAS_ATTACHMENT);
+			builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.property(propertyId)));
+			configureAdditionalValidationConstraints(builder,individual,metadata,entry.getValue());
+		}
+	}
+
+	private void configureAdditionalValidationConstraints(final ValidatorBuilder builder, final Individual<?, ?> individual, final DataSet metadata, PublicResource resource) {
+		resource.accept(
+			new PublicVisitor<Void>() {
+				@Override
+				public Void visitRDFSource(PublicRDFSource resource) {
+					// Nothing to do
+					return null;
+				}
+				@Override
+				public Void visitBasicContainer(PublicBasicContainer resource) {
+					// Nothing to do
+					return null;
+				}
+				@Override
+				public Void visitDirectContainer(PublicDirectContainer resource) {
+					resource.configureMemberValidationConstraints(builder,individual,metadata);
+					return null;
+				}
+				@Override
+				public Void visitIndirectContainer(PublicIndirectContainer resource) {
+					resource.configureMemberValidationConstraints(builder,individual,metadata);
+					return null;
+				}
+			}
+		);
+	}
+
 	public void delete() throws ApplicationExecutionException {
 		applicationContext().deleteResource(endpoint());
 	}
 
 	public void modify(DataSet dataSet) throws ApplicationExecutionException {
+		DataSet metadata = metadata();
+
+		// First check that the framework/protocol metadata has not been messed
+		// around
+		validate(dataSet, metadata);
+
+		// Second, remove the framework/protocol metadata from the
+		// representation that will be handed to the application
+		DataSetUtils.remove(metadata, dataSet);
+
+		// Third, request the modification using the cleansed and validated data
 		applicationContext().modifyResource(endpoint(),dataSet);
+	}
+
+	private void validate(DataSet dataSet, DataSet metadata) throws ApplicationExecutionException {
+		ManagedIndividualId id = ManagedIndividualId.createId(id().name(),id().templateId());
+		Individual<?,?> individual=metadata.individualOfId(id);
+
+		ValidatorBuilder builder=Validator.builder();
+
+		configureValidationConstraints(builder,individual,metadata);
+		
+		Validator validator=builder.build();
+
+		ValidationReport report = validator.validate(dataSet);
+		if(!report.isValid()) {
+			InvalidContentException error = new InvalidContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures());
+			throw new ApplicationExecutionException("Protocol/framework managed metadata validation failure",error);
+		}
 	}
 
 }

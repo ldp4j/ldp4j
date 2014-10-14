@@ -256,7 +256,7 @@ public class ServerFrontendITest {
 		HttpPut resourcePut = HELPER.newRequest(path,HttpPut.class);
 		resourcePut.setEntity(
 			new StringEntity(
-				EXAMPLE_BODY,
+				TEST_SUITE_BODY,
 				ContentType.create("text/turtle", "UTF-8"))
 		);
 		resourcePut.addHeader(HttpHeaders.IF_MATCH,resourceGetResponse.etag);

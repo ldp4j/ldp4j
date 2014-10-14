@@ -47,4 +47,5 @@ public final class PublicDirectContainer extends PublicMembershipAwareContainer<
 		return LDP.DIRECT_CONTAINER;
 	}
 
+
 }

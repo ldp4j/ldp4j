@@ -1,0 +1,286 @@
+/**
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   This file is part of the LDP4j Project:
+ *     http://www.ldp4j.org/
+ *
+ *   Center for Open Middleware
+ *     http://www.centeropenmiddleware.com/
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Copyright (C) 2014 Center for Open Middleware.
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *             http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ */
+package org.ldp4j.application.data.validation;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReference;
+
+import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.FormatUtils;
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.Literal;
+import org.ldp4j.application.data.Property;
+import org.ldp4j.application.data.Value;
+import org.ldp4j.application.data.ValueVisitor;
+
+import com.google.common.collect.Maps;
+
+public final class ValidationConstraintFactory {
+
+	private static final class ValidationLogImpl implements ValidationLog {
+	
+		private final Map<Property,Value> removedValues;
+		private final Map<Property,Value> addedValues;
+		private boolean checked;;
+		
+		private ValidationLogImpl() {
+			this.removedValues=Maps.newHashMap();
+			this.addedValues=Maps.newHashMap();
+			this.checked=false;
+		}
+		
+		@Override
+		public boolean success() {
+			return this.removedValues.isEmpty() && this.addedValues.isEmpty();
+		}
+	
+		private void markChecked() {
+			this.checked=true;
+		}
+		
+		@Override
+		public boolean checked() {
+			return this.checked;
+		}
+	
+		private void addRemovedValue(Property property,Value value) {
+			this.removedValues.put(property, value);
+		}
+		
+		private void addAddedValue(Property property,Value value) {
+			this.addedValues.put(property, value);
+		}
+
+		@Override
+		public ValidationFailure validationFailure() {
+			return new ValidationFailure() {
+				@Override
+				public String toString() {
+					StringBuilder builder=new StringBuilder();
+					dump(builder, removedValues, "Removed required", "from");
+					if(!builder.toString().isEmpty() && !addedValues.isEmpty()) {
+						builder.append(", ");
+					}
+					dump(builder, addedValues, "Added undesired", "to");
+					return builder.toString();
+				}
+
+				protected void dump(StringBuilder builder, Map<Property, Value> map, String prefix, String infix) {
+					for(Iterator<Entry<Property,Value>> it=map.entrySet().iterator();it.hasNext();) {
+						Entry<Property, Value> entry = it.next();
+						builder.append(prefix+" value '"+toString(entry.getValue())+"' "+infix+" property '"+entry.getKey().predicate()+"'");
+						if(it.hasNext()) {
+							builder.append(", ");
+						}
+					}
+				}
+
+				protected String toString(Value value) {
+					final AtomicReference<String> strValue=new AtomicReference<String>();
+					value.accept(
+						new ValueVisitor() {
+							@Override
+							public void visitLiteral(Literal<?> value) {
+								strValue.set(FormatUtils.formatLiteral(value));
+							}
+							@Override
+							public void visitIndividual(Individual<?, ?> value) {
+								strValue.set(FormatUtils.formatIndividualId(value));
+							}
+						}
+					);
+					return strValue.get();
+				}
+			};
+		}
+	
+	}
+
+	private static class MandatoryPropertyValuesValidationConstraint implements ValidationConstraint<Property> {
+	
+		private final Object individualId;
+		private final URI predicate;
+		private final Collection<? extends Value> values;
+	
+		private MandatoryPropertyValuesValidationConstraint(Object individualId, URI predicate, Collection<? extends Value> values) {
+			this.individualId = individualId;
+			this.predicate = predicate;
+			this.values = values;
+		}
+	
+		private MandatoryPropertyValuesValidationConstraint(Object individualId, URI predicate, Value... values) {
+			this(individualId,predicate,Arrays.asList(values));
+		}
+	
+		@Override
+		public boolean mustBeChecked() {
+			return this.predicate!=null;
+		}
+
+		@Override
+		public final ValidationLog validate(Property property) {
+			final ValidationLogImpl log = new ValidationLogImpl();
+			if(mustBeAnalyzed(property)) {
+				log.markChecked();
+				analyze(property,log);
+			}
+			return log;
+		}
+	
+		protected void analyze(Property property, ValidationLogImpl log) {
+			checkRemovedValues(property, log);
+		}
+	
+		protected final Collection<? extends Value> constrainedValues() {
+			return this.values;
+		}
+
+		private void checkRemovedValues(final Property property, final ValidationLogImpl log) {
+			ValueVisitor removingVisitor = new ValueVisitor() {
+				@Override
+				public void visitLiteral(Literal<?> value) {
+					if(!property.hasLiteralValue(value)) {
+						log.addRemovedValue(property,value);
+					}
+				}
+				@Override
+				public void visitIndividual(Individual<?, ?> value) {
+					if(!property.hasIdentifiedIndividual(value.id())) {
+						log.addRemovedValue(property,value);
+					}
+				}
+			};
+			for(Value value:constrainedValues()){
+				value.accept(removingVisitor);
+			}
+		}
+	
+		private final boolean mustBeAnalyzed(Property property) {
+			return this.predicate.equals(property.predicate()) && (this.individualId==null || this.individualId.equals(property.individual().id()));
+		}
+
+		@Override
+		public ValidationFailure uncheckedFailure() {
+			return new ValidationFailure() {
+				@Override
+				public String toString() {
+					return "Could not check mandatory values for property '"+predicate+"' of individual "+individualId;
+				}
+			};
+		}
+		
+	}
+
+	private static final class ReadOnlyPropertyValidationConstraint extends MandatoryPropertyValuesValidationConstraint {
+
+		private ReadOnlyPropertyValidationConstraint(Object individualId, URI predicate, Collection<? extends Value> values) {
+			super(individualId,predicate,values);
+		}
+
+		private ReadOnlyPropertyValidationConstraint(Object individualId, URI predicate, Value... values) {
+			this(individualId,predicate,Arrays.asList(values));
+		}
+
+		@Override
+		protected void analyze(Property property, ValidationLogImpl log) {
+			super.analyze(property, log);
+			checkAddedValues(property, log);
+		}
+
+		private void checkAddedValues(final Property property, final ValidationLogImpl log) {
+			ValueVisitor addingVisitor = new ValueVisitor() {
+				@Override
+				public void visitLiteral(Literal<?> value) {
+					if(!DataSetUtils.hasLiteral(value,constrainedValues())) {
+						log.addAddedValue(property,value);
+					}
+				}
+				@Override
+				public void visitIndividual(Individual<?, ?> value) {
+					if(!DataSetUtils.hasIdentifiedIndividual(value.id())) {
+						log.addAddedValue(property,value);
+					}
+				}
+			};
+			for(Value value:property){
+				value.accept(addingVisitor);
+			}
+		}
+		
+	}
+
+	private ValidationConstraintFactory() {
+	}
+	
+	public static ValidationConstraint<Property> readOnlyProperty(Property property) {
+		checkNotNull(property,"Property cannot be null");
+		return new ReadOnlyPropertyValidationConstraint(property.individual().id(), property.predicate(), property.values());
+	}
+
+	public static ValidationConstraint<Property> readOnlyProperty(Object individualId, URI predicate, Value... values) {
+		checkNotNull(individualId,"Individual identifier cannot be null");
+		checkNotNull(predicate,"Predicate cannot be null");
+		return new ReadOnlyPropertyValidationConstraint(individualId, predicate, values);
+	}
+
+	public static ValidationConstraint<Property> readOnlyProperty(URI predicate, Value... values) {
+		checkNotNull(predicate,"Predicate cannot be null");
+		return new ReadOnlyPropertyValidationConstraint(null, predicate, values);
+	}
+
+	public static ValidationConstraint<Property> mandatoryPropertyValues(Property property) {
+		checkNotNull(property,"Individual identifier cannot be null");
+		return new MandatoryPropertyValuesValidationConstraint(property.individual().id(), property.predicate(), property.values());
+	}
+	
+	public static ValidationConstraint<Property> mandatoryPropertyValues(Object individualId, URI predicate, Value... values) {
+		checkNotNull(individualId,"Individual identifier cannot be null");
+		checkNotNull(predicate,"Predicate cannot be null");
+		return new MandatoryPropertyValuesValidationConstraint(individualId, predicate, values);
+	}
+
+	public static ValidationConstraint<Property> mandatoryPropertyValues(URI predicate, Value... values) {
+		checkNotNull(predicate,"Predicate cannot be null");
+		return new MandatoryPropertyValuesValidationConstraint(null, predicate, values);
+	}
+	
+	protected static boolean sameIndividual(Property one, Property another) {
+		return one.individual().id().equals(another.individual().id());
+	}
+
+	protected static boolean samePredicate(Property one, Property another) {
+		return one.predicate().equals(another.predicate());
+	}
+	
+}

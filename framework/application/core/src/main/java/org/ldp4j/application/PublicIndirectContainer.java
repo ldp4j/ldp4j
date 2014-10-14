@@ -26,7 +26,12 @@
  */
 package org.ldp4j.application;
 
+import java.net.URI;
+
+import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.validation.ValidationConstraintFactory;
+import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.template.IndirectContainerTemplate;
@@ -56,4 +61,11 @@ public final class PublicIndirectContainer extends PublicMembershipAwareContaine
 				ctx.property(LDP.INSERTED_CONTENT_RELATION), 
 				ctx.value(containerTemplate().insertedContentRelation()));
 	}
+	
+	@Override
+	protected void configureValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata) {
+		super.configureValidationConstraints(builder, individual, metadata);
+		builder.withPropertyConstraint(ValidationConstraintFactory.mandatoryPropertyValues(individual.property(LDP.INSERTED_CONTENT_RELATION.as(URI.class))));
+	}
+
 }

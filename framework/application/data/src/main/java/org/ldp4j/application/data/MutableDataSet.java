@@ -37,51 +37,6 @@ import java.util.Set;
 
 final class MutableDataSet implements DataSet {
 
-	private static final class FormatUtils implements IndividualVisitor {
-
-		private String id;
-
-		private FormatUtils() {
-		}
-		
-		public String getId() {
-			return id;
-		}
-
-		private void log(String message, Object... args) {
-			this.id=String.format(message,args);
-		}
-
-		@Override
-		public void visitManagedIndividual(ManagedIndividual individual) {
-			ManagedIndividualId id = individual.id();
-			log("%s {Managed by: %s}",id.name(),id.managerId());
-		}
-
-		@Override
-		public void visitLocalIndividual(LocalIndividual individual) {
-			Name<?> name = individual.id();
-			Object id=name.id();
-			log("%s [%s] {Local}",id,id.getClass().getCanonicalName());
-		}
-
-		@Override
-		public void visitExternalIndividual(ExternalIndividual individual) {
-			log("<%s> {External}",individual.id());
-		}
-
-		public static String formatName(Name<?> tmp) {
-			return String.format("%s [%s]",tmp.id(),tmp.id().getClass().getCanonicalName());
-		}
-
-		public static String formatId(Individual<?, ?> value) {
-			FormatUtils visitor = new FormatUtils();
-			value.accept(visitor);
-			return visitor.getId();
-		}
-	}
-	
-
 	private final Name<?> name;
 	private final Map<Object,Individual<?,?>> individuals;
 	private final IndividualFactory factory;
@@ -165,7 +120,7 @@ final class MutableDataSet implements DataSet {
 		builder.append("DataSet(").append(FormatUtils.formatName(name)).append(") {").append(NL);
 		for(Individual<?,?> individual:this) {
 			if(individual.hasProperties()) {
-				builder.append("\t").append("- Individual(").append(FormatUtils.formatId(individual)).append(") {").append(NL);
+				builder.append("\t").append("- Individual(").append(FormatUtils.formatIndividualId(individual)).append(") {").append(NL);
 				for(Property property:individual) {
 					builder.append("\t").append("\t").append("+ Property(").append(property.predicate()).append(") {").append(NL);
 					for(Value value:property) {
@@ -178,7 +133,7 @@ final class MutableDataSet implements DataSet {
 								}
 								@Override
 								public void visitIndividual(Individual<?, ?> value) {
-									builder.append("\t").append("\t").append("\t").append("* ").append(FormatUtils.formatId(value)).append(NL);
+									builder.append("\t").append("\t").append("\t").append("* ").append(FormatUtils.formatIndividualId(value)).append(NL);
 								}
 							}
 						);

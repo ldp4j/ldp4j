@@ -33,6 +33,10 @@ import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.Value;
+import org.ldp4j.application.data.validation.ValidationConstraint;
+import org.ldp4j.application.data.validation.ValidationConstraintFactory;
+import org.ldp4j.application.data.validation.Validator;
+import org.ldp4j.application.data.validation.ValidationReport;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.Modifiable;
@@ -41,6 +45,8 @@ import org.ldp4j.application.ext.annotations.Resource;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Resource(
 	id=PersonHandler.ID,
@@ -62,12 +68,14 @@ import org.ldp4j.application.session.WriteSessionException;
 )
 public class PersonHandler extends InMemoryResourceHandler implements Modifiable, Deletable {
 
+	private static final Logger LOGGER=LoggerFactory.getLogger(PersonHandler.class);
+	
 	public static final String ID="personTemplate";
 	
 	public static final String RELATIVES_ID   = "personRelatives";
 	public static final String RELATIVES_PATH = "relatives";
 
-	private static final URI READ_ONLY_PROPERTY = URI.create("http://www.example.org/vocab#creationDate");
+	public static final URI READ_ONLY_PROPERTY = URI.create("http://www.example.org/vocab#creationDate");
 	
 	public PersonHandler() {
 		super("Person");
@@ -77,6 +85,7 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 	public void delete(ResourceSnapshot resource, WriteSession session) {
 		DataSet dataSet = get(resource);
 		try {
+			logDebug(resource,"Deleting state:%n%s",dataSet);
 			remove(resource.name());
 			session.delete(resource);
 			session.saveChanges();
@@ -90,17 +99,33 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 	@Override
 	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InvalidContentException {
 		DataSet dataSet = get(resource);
-		enforceConsistency(resource, content, dataSet);
+		logDebug(resource, "Enforcing consistency...");
+		enforceConsistency(resource,content,dataSet);
 		try {
+			logDebug(resource,"Persisting new state:%n%s",content);
 			add(resource.name(),content);
 			session.modify(resource);
 			session.saveChanges();
 		} catch (WriteSessionException e) {
 			// Recover if failed
 			add(resource.name(),dataSet);
+			logError(resource,e,"Something went wrong",e);
 			throw new IllegalStateException("Update failed",e);
 		}
 	}
+
+	protected void logDebug(ResourceSnapshot resource, String message, Object... args) {
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("["+resource.name()+"] "+String.format(message,args));
+		}
+	}
+
+	protected void logError(ResourceSnapshot resource, Throwable t, String message, Object... args) {
+		if(LOGGER.isErrorEnabled()) {
+			LOGGER.error("["+resource.name()+"] "+String.format(message,args),t);
+		}
+	}
+
 	protected void enforceConsistency(ResourceSnapshot resource, DataSet content, DataSet dataSet) throws InvalidContentException {
 		ManagedIndividualId id = ManagedIndividualId.createId(resource.name(),PersonHandler.ID);
 		ManagedIndividual stateIndividual = 
@@ -108,49 +133,26 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 				individual(
 					id, 
 					ManagedIndividual.class);
-		ManagedIndividual inIndividual = 
-			content.
-				individual(
-					id, 
-					ManagedIndividual.class);
 		Property stateProperty=
-			stateIndividual.property(PersonHandler.READ_ONLY_PROPERTY);
-		Property inProperty=
-			inIndividual.property(PersonHandler.READ_ONLY_PROPERTY);
+				stateIndividual.property(PersonHandler.READ_ONLY_PROPERTY);
 
-		if(stateProperty==null && inProperty==null) {
-			return;
+		ValidationConstraint<Property> constraint=null;
+		if(stateProperty!=null) {
+			constraint=ValidationConstraintFactory.readOnlyProperty(stateProperty);
+		} else {
+			constraint=ValidationConstraintFactory.readOnlyProperty(id,PersonHandler.READ_ONLY_PROPERTY);
 		}
-		if(stateProperty==null && inProperty!=null) {
-			throw new InvalidContentException("Added values to property '"+PersonHandler.READ_ONLY_PROPERTY+"'");
-		}
-		if(stateProperty!=null && inProperty==null) {
-			throw new InvalidContentException("Removed all values from property '"+PersonHandler.READ_ONLY_PROPERTY+"'");
-		}
-
-		for(Value value:inProperty) {
-			boolean newAdded=false;
-			for(Value c:stateProperty) {
-				if(c.equals(value)) {
-					newAdded=true;
-					break;
-				}
-			}
-			if(newAdded) {
-				throw new InvalidContentException("New value '"+value+"' for property '"+PersonHandler.READ_ONLY_PROPERTY+"' has been added");
-			}
-		}
-		for(Value value:stateProperty) {
-			boolean deleted=true;
-			for(Value c:inProperty) {
-				if(c.equals(value)) {
-					deleted=false;
-					break;
-				}
-			}
-			if(deleted) {
-				throw new InvalidContentException("Value '"+value+"' for property '"+PersonHandler.READ_ONLY_PROPERTY+"' has been deleted");
-			}
+		Validator helper = 
+				Validator.
+					builder().
+						withPropertyConstraint(constraint).
+						build();
+		
+		ValidationReport report = helper.validate(content);
+		if(!report.isValid()) {
+			InvalidContentException error = new InvalidContentException("Validation failed: "+report.validationFailures());
+			logError(resource,error,"Something went wrong when validating %n%s",content);
+			throw error;
 		}
 	}
 

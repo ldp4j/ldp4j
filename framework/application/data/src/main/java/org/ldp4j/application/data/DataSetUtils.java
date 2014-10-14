@@ -26,6 +26,11 @@
  */
 package org.ldp4j.application.data;
 
+import java.net.URI;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 public final class DataSetUtils {
 
 	private static final class IndividualFinder implements IndividualVisitor {
@@ -80,9 +85,72 @@ public final class DataSetUtils {
 		}
 	}
 
+	static abstract class ValueMatcher implements ValueVisitor {
+		
+		private boolean matches;
+		
+		public final boolean matchesValue(Value propertyValue) {
+			this.setMatches(false);
+			propertyValue.accept(this);
+			return this.matches;
+		}
+	
+		protected final void setMatches(boolean matches) {
+			this.matches = matches;
+		}
+		
+	}
+
+	static final class LiteralMatcher extends ValueMatcher {
+	
+		private final Literal<?> literal;
+	
+		LiteralMatcher(Literal<?> literal) {
+			this.literal = literal;
+		}
+	
+		@Override
+		public void visitLiteral(Literal<?> value) {
+			super.setMatches(literal.get().equals(value.get()));
+		}
+	
+		@Override
+		public void visitIndividual(Individual<?, ?> value) {
+		}
+	
+	}
+
+	static final class IndividualReferenceMatcher extends ValueMatcher {
+	
+		private final Object id;
+	
+		IndividualReferenceMatcher(Object id) {
+			this.id = id;
+		}
+	
+		@Override
+		public void visitLiteral(Literal<?> value) {
+		}
+	
+		@Override
+		public void visitIndividual(Individual<?, ?> value) {
+			super.setMatches(value.id().equals(this.id));
+		}
+	
+	}
+
 	private DataSetUtils() {
 	}
 	
+	private static boolean hasValue(ValueMatcher matcher, Collection<? extends Value> values) {
+		for(Value value:values) {
+			if(matcher.matchesValue(value)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static void merge(DataSet source, DataSet target) {
 		IndividualFinder finder=new IndividualFinder(target);
 		for(Individual<?, ?> individual:source) {
@@ -99,8 +167,86 @@ public final class DataSetUtils {
 			}
 		}
 	}
+
+	public static void remove(DataSet source, DataSet target) {
+		IndividualFinder finder=new IndividualFinder(target);
+		for(Individual<?, ?> individual:source) {
+			remove(individual,finder.findOrCreate(individual));
+		}
+		
+	}
 	
+	public static void remove(Individual<?,?> source, final Individual<?,?> target) {
+		for(Property property:source.properties()) {
+			final URI propertyId=property.predicate();
+			ValueVisitor visitor = new ValueVisitor(){
+				@Override
+				public void visitLiteral(Literal<?> value) {
+					target.removeValue(propertyId, value);
+				}
+				@Override
+				public void visitIndividual(Individual<?, ?> value) {
+					Individual<?, ?> cValue = target.dataSet().individualOfId(value.id());
+					if(cValue!=null) {
+						target.removeValue(propertyId, cValue);
+					}
+				}
+			};
+			for(Value value:property) {
+				value.accept(visitor);
+			}
+		}
+	}
+
 	public static <T> Literal<T> newLiteral(T value) {
 		return new ImmutableLiteral<T>(value);
 	}
+	
+	public static boolean hasLiteral(Literal<?> literal, Property property) {
+		return hasLiteral(literal,property.values());
+	}
+
+	public static boolean hasLiteral(Literal<?> literal, Value... values) {
+		return hasLiteral(literal,Arrays.asList(values));
+	}
+
+	public static boolean hasLiteral(Literal<?> literal, Collection<? extends Value> values) {
+		return hasValue(new DataSetUtils.LiteralMatcher(literal),values);
+	}
+
+	public static boolean hasIdentifiedIndividual(Object id, Property property) {
+		return hasIdentifiedIndividual(id,property.values());
+	}
+
+	public static boolean hasIdentifiedIndividual(Object id, Value... values) {
+		return hasIdentifiedIndividual(id,Arrays.asList(values));
+	}
+
+	public static boolean hasIdentifiedIndividual(Object id, Collection<? extends Value> values) {
+		return hasValue(new DataSetUtils.IndividualReferenceMatcher(id),values);
+	}
+	
+	public static boolean hasValue(Value value, Property property) {
+		return hasValue(value,property.values());
+	}
+
+	public static boolean hasValue(Value value, Value... values) {
+		return hasValue(value,Arrays.asList(values));
+	}
+
+	public static boolean hasValue(Value value, final Collection<? extends Value> values) {
+		final AtomicBoolean found=new AtomicBoolean(false);
+		value.accept(new ValueVisitor() {
+			@Override
+			public void visitLiteral(Literal<?> value) {
+				found.set(hasLiteral(value, values));
+			}
+			@Override
+			public void visitIndividual(Individual<?, ?> value) {
+				found.set(hasIdentifiedIndividual(value.id(), values));
+			}
+		});
+		return found.get();
+	}
+	
 }

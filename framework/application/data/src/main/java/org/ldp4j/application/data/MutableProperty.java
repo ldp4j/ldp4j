@@ -95,6 +95,16 @@ final class MutableProperty implements Property {
 		}
 	}
 
+	@Override
+	public boolean hasLiteralValue(Literal<?> value) {
+		return DataSetUtils.hasLiteral(value, this);
+	}
+
+	@Override
+	public boolean hasIdentifiedIndividual(Object id) {
+		return DataSetUtils.hasIdentifiedIndividual(id, this);
+	}
+
 	void addValue(Value value) {
 		value.accept(
 			new ValueVisitor() {

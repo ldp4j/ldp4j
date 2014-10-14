@@ -65,7 +65,7 @@ public final class ManagedIndividualId {
 	@Override
 	public String toString() {
 		return 
-			String.format("%s [name=%s, managerId=%s]",getClass().getCanonicalName(),name(),managerId());
+			String.format("%s [name=%s, managerId=%s]",getClass().getName(),name(),managerId());
 	}
 	
 	public static ManagedIndividualId createId(Name<?> name, String managerId) {
