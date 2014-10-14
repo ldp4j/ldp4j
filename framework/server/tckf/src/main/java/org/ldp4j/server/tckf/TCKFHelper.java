@@ -36,11 +36,11 @@ import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Literal;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.application.ext.InvalidContentException;
-import org.ldp4j.application.session.ResourceSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,9 +53,9 @@ final class TCKFHelper {
 	private TCKFHelper() {
 	}
 
-	static void enforceConsistency(ResourceSnapshot resource, DataSet newState, DataSet currentState, String templateId) throws InvalidContentException {
-		ManagedIndividualId id = ManagedIndividualId.createId(resource.name(),templateId);
-		LOGGER.debug("Checking consistency of {}",id);
+	static void enforceConsistency(Name<?> resourceName, String managerId, DataSet newState, DataSet currentState) throws InvalidContentException {
+		ManagedIndividualId id = ManagedIndividualId.createId(resourceName,managerId);
+		LOGGER.debug("Checking consistency of {}",format(id));
 		LOGGER.trace("- Current state:\n{}",currentState);
 		LOGGER.trace("- New state:\n{}",newState);
 		ManagedIndividual stateIndividual = 
@@ -103,6 +103,10 @@ final class TCKFHelper {
 				throw new InvalidContentException("Value '"+value+"' has been removed from property '"+READ_ONLY_PROPERTY+"'");
 			}
 		}
+	}
+
+	private static String format(ManagedIndividualId id) {
+		return String.format("%s {Managed by: %s}");
 	}
 
 	private static String format(Value value) {

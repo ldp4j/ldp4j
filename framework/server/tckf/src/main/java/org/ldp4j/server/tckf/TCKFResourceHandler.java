@@ -27,10 +27,6 @@
 package org.ldp4j.server.tckf;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.ManagedIndividual;
-import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.data.Property;
-import org.ldp4j.application.data.Value;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.Modifiable;
@@ -68,7 +64,7 @@ public class TCKFResourceHandler extends InMemoryResourceHandler implements Modi
 	@Override
 	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InvalidContentException {
 		DataSet dataSet = get(resource);
-		TCKFHelper.enforceConsistency(resource,content,dataSet, TCKFResourceHandler.ID);
+		TCKFHelper.enforceConsistency(resource.name(),TCKFResourceHandler.ID,content, dataSet);
 		try {
 			add(resource.name(),content);
 			session.modify(resource);
