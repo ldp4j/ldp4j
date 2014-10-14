@@ -100,16 +100,16 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 	}
 
 	@Override
-	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InvalidContentException {
-		DataSet dataSet = get(resource);
-		TCKFHelper.enforceConsistency(resource, content, dataSet);
+	public void update(ResourceSnapshot resource, DataSet newState, WriteSession session) throws InvalidContentException {
+		DataSet currentState = get(resource);
+		TCKFHelper.enforceConsistency(resource, newState, currentState);
 		try {
-			add(resource.name(),content);
+			add(resource.name(),newState);
 			session.modify(resource);
 			session.saveChanges();
 		} catch (WriteSessionException e) {
 			// Recover if failed
-			add(resource.name(),dataSet);
+			add(resource.name(),currentState);
 			throw new IllegalStateException("Update failed",e);
 		}
 	}

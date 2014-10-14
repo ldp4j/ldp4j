@@ -41,49 +41,65 @@ import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.session.ResourceSnapshot;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class TCKFHelper {
 
 	static final URI READ_ONLY_PROPERTY = URI.create("http://www.example.org/vocab#creationDate");
+	
+	private static Logger LOGGER=LoggerFactory.getLogger(TCKFHelper.class);
 
 	private TCKFHelper() {
 	}
 
-	static void enforceConsistency(ResourceSnapshot resource, DataSet content, DataSet dataSet) throws InvalidContentException {
+	static void enforceConsistency(ResourceSnapshot resource, DataSet newState, DataSet currentState) throws InvalidContentException {
 		ManagedIndividualId id = ManagedIndividualId.createId(resource.name(),TCKFResourceHandler.ID);
+		LOGGER.debug("Checking consistency of {}",id);
+		LOGGER.trace("- Current state:\n{}",currentState);
+		LOGGER.trace("- New state:\n{}",newState);
 		ManagedIndividual stateIndividual = 
-			dataSet.
+			currentState.
 				individual(
 					id, 
 					ManagedIndividual.class);
+
 		Property stateProperty=
 				stateIndividual.property(READ_ONLY_PROPERTY);
 
 		ManagedIndividual inIndividual = 
-			content.
+			newState.
 				individual(
 					id, 
 					ManagedIndividual.class);
+
 		Property inProperty=
 			inIndividual.property(READ_ONLY_PROPERTY);
 
 		if(stateProperty==null && inProperty==null) {
+			LOGGER.debug("Property '{}' is not defined in the current state nor in the new state",READ_ONLY_PROPERTY);
 			return;
 		}
 		if(stateProperty==null && inProperty!=null) {
+			LOGGER.error("Property '{}' is not defined in the current state but it is defined in the new state",READ_ONLY_PROPERTY);
 			throw new InvalidContentException("Added values to property '"+READ_ONLY_PROPERTY+"'");
 		}
 		if(stateProperty!=null && inProperty==null) {
+			LOGGER.error("Property '{}' is defined in the current state but it is not defined in the new state",READ_ONLY_PROPERTY);
 			throw new InvalidContentException("Removed all values from property '"+READ_ONLY_PROPERTY+"'");
 		}
 
 		for(Value value:inProperty) {
-			if(DataSetUtils.hasValue(value, stateProperty)) {
+			LOGGER.debug("Verifing property '{}' input value {}...",READ_ONLY_PROPERTY,format(value));
+			if(DataSetUtils.hasValue(value,stateProperty)) {
+				LOGGER.error("New value {} has been added to property '{}'",format(value),READ_ONLY_PROPERTY);
 				throw new InvalidContentException("New value '"+format(value)+"' for property '"+READ_ONLY_PROPERTY+"' has been added");
 			}
 		}
 		for(Value value:stateProperty) {
-			if(!DataSetUtils.hasValue(value, inProperty)) {
+			LOGGER.debug("Verifing property '{}' existing value {}...",READ_ONLY_PROPERTY,format(value));
+			if(!DataSetUtils.hasValue(value,inProperty)) {
+				LOGGER.error("Value {} has been removed from property '{}'",format(value),READ_ONLY_PROPERTY);
 				throw new InvalidContentException("Value '"+value+"' has been removed from property '"+READ_ONLY_PROPERTY+"'");
 			}
 		}
