@@ -32,13 +32,13 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Property;
-import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.validation.ValidationConstraint;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
-import org.ldp4j.application.data.validation.Validator;
 import org.ldp4j.application.data.validation.ValidationReport;
+import org.ldp4j.application.data.validation.Validator;
 import org.ldp4j.application.ext.Deletable;
-import org.ldp4j.application.ext.InvalidContentException;
+import org.ldp4j.application.ext.ContentProcessingException;
+import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.annotations.Attachment;
 import org.ldp4j.application.ext.annotations.Resource;
@@ -97,7 +97,7 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 	}
 
 	@Override
-	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InvalidContentException {
+	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws ContentProcessingException {
 		DataSet dataSet = get(resource);
 		logDebug(resource, "Enforcing consistency...");
 		enforceConsistency(resource,content,dataSet);
@@ -126,7 +126,7 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 		}
 	}
 
-	protected void enforceConsistency(ResourceSnapshot resource, DataSet content, DataSet dataSet) throws InvalidContentException {
+	protected void enforceConsistency(ResourceSnapshot resource, DataSet content, DataSet dataSet) throws ContentProcessingException {
 		ManagedIndividualId id = ManagedIndividualId.createId(resource.name(),PersonHandler.ID);
 		ManagedIndividual stateIndividual = 
 			dataSet.
@@ -150,7 +150,7 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 		
 		ValidationReport report = helper.validate(content);
 		if(!report.isValid()) {
-			InvalidContentException error = new InvalidContentException("Validation failed: "+report.validationFailures());
+			ContentProcessingException error = new InconsistentContentException("Validation failed: "+report.validationFailures());
 			logError(resource,error,"Something went wrong when validating %n%s",content);
 			throw error;
 		}

@@ -32,6 +32,7 @@ import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
@@ -44,6 +45,9 @@ import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.ValueVisitor;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public final class ValidationConstraintFactory {
@@ -99,29 +103,13 @@ public final class ValidationConstraintFactory {
 				protected void dump(StringBuilder builder, Map<Property, Value> map, String prefix, String infix) {
 					for(Iterator<Entry<Property,Value>> it=map.entrySet().iterator();it.hasNext();) {
 						Entry<Property, Value> entry = it.next();
-						builder.append(prefix+" value '"+toString(entry.getValue())+"' "+infix+" property '"+entry.getKey().predicate()+"'");
+						builder.append(prefix+" value '"+FormatUtils.formatValue(entry.getValue())+"' "+infix+" property '"+entry.getKey().predicate()+"'");
 						if(it.hasNext()) {
 							builder.append(", ");
 						}
 					}
 				}
 
-				protected String toString(Value value) {
-					final AtomicReference<String> strValue=new AtomicReference<String>();
-					value.accept(
-						new ValueVisitor() {
-							@Override
-							public void visitLiteral(Literal<?> value) {
-								strValue.set(FormatUtils.formatLiteral(value));
-							}
-							@Override
-							public void visitIndividual(Individual<?, ?> value) {
-								strValue.set(FormatUtils.formatIndividualId(value));
-							}
-						}
-					);
-					return strValue.get();
-				}
 			};
 		}
 	
@@ -200,6 +188,29 @@ public final class ValidationConstraintFactory {
 			};
 		}
 		
+		@Override
+		public String toString() {
+			ToStringHelper stringHelper = 
+				Objects.
+					toStringHelper(constraintName()).
+						add("individual",this.individualId==null?"<any>":FormatUtils.formatId(this.individualId)).
+						add("predicate", this.predicate);
+			List<String> rawValues=Lists.newArrayList();
+			for(Value value:values) {
+				rawValues.add(FormatUtils.formatValue(value));
+			}
+			stringHelper.add(constraintInterpretation(),rawValues);
+			return stringHelper.toString();
+		}
+
+		protected String constraintInterpretation() {
+			return "mandatoryValues";
+		}
+
+		protected String constraintName() {
+			return "MandatoryPropertyValues";
+		}
+		
 	}
 
 	private static final class ReadOnlyPropertyValidationConstraint extends MandatoryPropertyValuesValidationConstraint {
@@ -219,16 +230,17 @@ public final class ValidationConstraintFactory {
 		}
 
 		private void checkAddedValues(final Property property, final ValidationLogImpl log) {
+			final Collection<? extends Value> constrainedValues = constrainedValues();
 			ValueVisitor addingVisitor = new ValueVisitor() {
 				@Override
 				public void visitLiteral(Literal<?> value) {
-					if(!DataSetUtils.hasLiteral(value,constrainedValues())) {
+					if(!DataSetUtils.hasLiteral(value,constrainedValues)) {
 						log.addAddedValue(property,value);
 					}
 				}
 				@Override
 				public void visitIndividual(Individual<?, ?> value) {
-					if(!DataSetUtils.hasIdentifiedIndividual(value.id())) {
+					if(!DataSetUtils.hasIdentifiedIndividual(value.id(),constrainedValues)) {
 						log.addAddedValue(property,value);
 					}
 				}
@@ -236,6 +248,16 @@ public final class ValidationConstraintFactory {
 			for(Value value:property){
 				value.accept(addingVisitor);
 			}
+		}
+
+		@Override
+		protected String constraintInterpretation() {
+			return "uniqueValues";
+		}
+
+		@Override
+		protected String constraintName() {
+			return "ReadOnlyProperty";
 		}
 		
 	}

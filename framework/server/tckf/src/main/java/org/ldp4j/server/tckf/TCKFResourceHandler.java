@@ -28,7 +28,7 @@ package org.ldp4j.server.tckf;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.ext.Deletable;
-import org.ldp4j.application.ext.InvalidContentException;
+import org.ldp4j.application.ext.ContentProcessingException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.annotations.Resource;
 import org.ldp4j.application.session.ResourceSnapshot;
@@ -62,7 +62,7 @@ public class TCKFResourceHandler extends InMemoryResourceHandler implements Modi
 	}
 
 	@Override
-	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InvalidContentException {
+	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws ContentProcessingException {
 		DataSet dataSet = get(resource);
 		TCKFHelper.enforceConsistency(resource.name(),TCKFResourceHandler.ID,content, dataSet);
 		try {

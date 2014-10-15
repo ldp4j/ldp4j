@@ -26,6 +26,9 @@
  */
 package org.ldp4j.application.data;
 
+import java.net.URI;
+import java.util.concurrent.atomic.AtomicReference;
+
 public final class FormatUtils implements IndividualVisitor {
 
 	private String id;
@@ -78,4 +81,42 @@ public final class FormatUtils implements IndividualVisitor {
 		individual.accept(visitor);
 		return visitor.getId();
 	}
+
+	public static String formatId(Object id) {
+		String result = "<null>";
+		if(id==null) {
+			return result;
+		}
+		
+		if(id instanceof URI) {
+			result=String.format("<%s> {External}",id);
+		} else if(id instanceof Name<?>) {
+			Name<?> name=(Name<?>)id;
+			result=String.format("%s [%s] {Local}",name,name.getClass().getCanonicalName());
+		} else if(id instanceof ManagedIndividualId) {
+			ManagedIndividualId mid = (ManagedIndividualId)id;
+			result=String.format("%s {Managed by: %s}",mid.name(),mid.managerId());
+		} else {
+			result=id.toString();
+		}
+		return result;
+	}
+
+	public static String formatValue(Value value) {
+		final AtomicReference<String> strValue=new AtomicReference<String>();
+		value.accept(
+			new ValueVisitor() {
+				@Override
+				public void visitLiteral(Literal<?> value) {
+					strValue.set(FormatUtils.formatLiteral(value));
+				}
+				@Override
+				public void visitIndividual(Individual<?, ?> value) {
+					strValue.set(FormatUtils.formatIndividualId(value));
+				}
+			}
+		);
+		return strValue.get();
+	}
+
 }

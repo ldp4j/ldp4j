@@ -32,6 +32,8 @@ import org.ldp4j.application.ContentPreferences.Preference;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.data.Property;
+import org.ldp4j.application.data.validation.ValidationConstraint;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
 import org.ldp4j.application.domain.LDP;
@@ -127,25 +129,37 @@ public abstract class PublicMembershipAwareContainer<T extends MembershipAwareCo
 	}
 
 	private void configureIsMemberOfValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata, URI predicate) {
-		for(PublicResource member:members()) {
-			ManagedIndividualId id = ManagedIndividualId.createId(member.id().name(), member.id().templateId());
-			Individual<?,?> tmp=metadata.individualOfId(id);
-			builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(tmp.property(predicate)));
+		if(members().isEmpty()) {
+			builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(predicate));
+		} else {
+			for(PublicResource member:members()) {
+				ManagedIndividualId id = ManagedIndividualId.createId(member.id().name(), member.id().templateId());
+				Individual<?,?> tmp=metadata.individualOfId(id);
+				builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(tmp.property(predicate)));
+			}
 		}
 	}
 
 	private void configureHasMemberValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata, URI predicate) {
-		if(!members().isEmpty()) {
-			builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.property(predicate)));
+		ValidationConstraint<Property> constraint=null;
+		Property property = individual.property(predicate);
+		if(property!=null) {
+			constraint=ValidationConstraintFactory.readOnlyProperty(property);
+		} else {
+			constraint=ValidationConstraintFactory.readOnlyProperty(individual.id(),predicate);
 		}
+		builder.withPropertyConstraint(constraint);
 	}
 
 	@Override
 	protected void configureValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata) {
 		super.configureValidationConstraints(builder, individual, metadata);
 		builder.withPropertyConstraint(ValidationConstraintFactory.mandatoryPropertyValues(individual.property(containerTemplate().membershipRelation().term().as(URI.class))));
-		if(!isRoot()) {
-			builder.withPropertyConstraint(ValidationConstraintFactory.mandatoryPropertyValues(individual.property(LDP.MEMBERSHIP_RESOURCE.as(URI.class))));
+		Property rootProperty = individual.property(LDP.MEMBERSHIP_RESOURCE.as(URI.class));
+		if(rootProperty!=null) {
+			builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(rootProperty));
+		} else {
+			builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(LDP.MEMBERSHIP_RESOURCE.as(URI.class)));
 		}
 	}
 

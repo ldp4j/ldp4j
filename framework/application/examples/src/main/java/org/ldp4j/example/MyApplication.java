@@ -28,6 +28,13 @@ package org.ldp4j.example;
 
 import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference;
 
+import java.util.Date;
+import java.util.GregorianCalendar;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.ldp4j.application.data.DataDSL;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
@@ -64,11 +71,16 @@ public class MyApplication extends Application<Configuration> {
 		this.relativeContainerName = NamingScheme.getDefault().name(RELATIVE_CONTAINER_NAME);
 	}
 
-	private DataSet getInitialData(String templateId, String name) {
+	private DataSet getInitialData(String templateId, String name) throws DatatypeConfigurationException {
+		GregorianCalendar gc=new GregorianCalendar();
+		gc.setTime(new Date());
+		XMLGregorianCalendar date=DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
 		DataSet initial=
 			DataDSL.
 				dataSet().
 					individual(newReference().toManagedIndividual(templateId).named(name)).
+						hasProperty("http://www.ldp4j.org/vocabulary/example#creationDate").
+							withValue(date).
 						hasProperty("http://www.ldp4j.org/vocabulary/example#age").
 							withValue(34).
 						hasLink("http://www.ldp4j.org/vocabulary/example#hasFather").
@@ -83,24 +95,28 @@ public class MyApplication extends Application<Configuration> {
 	public void setup(Environment environment, Bootstrap<Configuration> bootstrap) {
 		LOGGER.info("Configuring application: {}, {}",environment,bootstrap);
 
-		PersonHandler resourceHandler = new PersonHandler();
-		PersonContainerHandler containerHandler=new PersonContainerHandler();
-		RelativeContainerHandler relativesHandler=new RelativeContainerHandler();
+		try {
+			PersonHandler resourceHandler = new PersonHandler();
+			PersonContainerHandler containerHandler=new PersonContainerHandler();
+			RelativeContainerHandler relativesHandler=new RelativeContainerHandler();
 
-		containerHandler.setHandler(resourceHandler);
-		relativesHandler.setHandler(resourceHandler);
+			containerHandler.setHandler(resourceHandler);
+			relativesHandler.setHandler(resourceHandler);
 
-		resourceHandler.add(this.personResourceName, getInitialData(PersonHandler.ID,PERSON_RESOURCE_NAME));
-		containerHandler.add(this.personContainerName, getInitialData(PersonContainerHandler.ID,PERSON_CONTAINER_NAME));
-		relativesHandler.add(this.relativeContainerName, getInitialData(RelativeContainerHandler.ID,RELATIVE_CONTAINER_NAME));
+			resourceHandler.add(this.personResourceName, getInitialData(PersonHandler.ID,PERSON_RESOURCE_NAME));
+			containerHandler.add(this.personContainerName, getInitialData(PersonContainerHandler.ID,PERSON_CONTAINER_NAME));
+			relativesHandler.add(this.relativeContainerName, getInitialData(RelativeContainerHandler.ID,RELATIVE_CONTAINER_NAME));
 
-		bootstrap.addHandler(resourceHandler);
-		bootstrap.addHandler(containerHandler);
-		bootstrap.addHandler(relativesHandler);
+			bootstrap.addHandler(resourceHandler);
+			bootstrap.addHandler(containerHandler);
+			bootstrap.addHandler(relativesHandler);
 
-		environment.publishResource(this.personResourceName, PersonHandler.class, ROOT_PERSON_RESOURCE_PATH);
-		environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
-		LOGGER.info("Configuration completed.");
+			environment.publishResource(this.personResourceName, PersonHandler.class, ROOT_PERSON_RESOURCE_PATH);
+			environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
+			LOGGER.info("Configuration completed.");
+		} catch (DatatypeConfigurationException e) {
+			throw new IllegalStateException("Could not setup application",e);
+		}
 	}
 
 	@Override

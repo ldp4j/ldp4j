@@ -65,7 +65,7 @@ public final class PublicIndirectContainer extends PublicMembershipAwareContaine
 	@Override
 	protected void configureValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata) {
 		super.configureValidationConstraints(builder, individual, metadata);
-		builder.withPropertyConstraint(ValidationConstraintFactory.mandatoryPropertyValues(individual.property(LDP.INSERTED_CONTENT_RELATION.as(URI.class))));
+		builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.property(LDP.INSERTED_CONTENT_RELATION.as(URI.class))));
 	}
 
 }

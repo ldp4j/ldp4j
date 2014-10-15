@@ -39,7 +39,6 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationExecutionException;
-import org.ldp4j.application.Capabilities;
 import org.ldp4j.application.PublicBasicContainer;
 import org.ldp4j.application.PublicContainer;
 import org.ldp4j.application.PublicDirectContainer;
@@ -50,6 +49,8 @@ import org.ldp4j.application.PublicVisitor;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.ext.ContentProcessingException;
+import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
@@ -59,6 +60,17 @@ import com.google.common.base.Throwables;
 
 final class ExistingEndpointController extends AbstractEndpointController {
 	
+	
+	/**
+	 * The status code to signal that the content could not be understood by the
+	 * application.
+	 * 
+	 * @see <a href="http://tools.ietf.org/html/rfc4918#section-11.2">RFC 4918:
+	 *      HTTP Extensions for Web Distributed Authoring and Versioning
+	 *      (WebDAV)</a>
+	 */
+	private static final int UNPROCESSABLE_ENTITY_STATUS_CODE = 422;
+
 	private static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
@@ -223,21 +235,31 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			checkPreconditions();
 	
 		ResponseBuilder builder=Response.serverError();
-		Status status=Status.INTERNAL_SERVER_ERROR;
+		int statusCode = Status.INTERNAL_SERVER_ERROR.getStatusCode();
 	
 		// 2. Execute operation and determine response body and status
 		try {
 			context.resource().modify(context.dataSet());
-			status=Status.NO_CONTENT;
+			statusCode=Status.NO_CONTENT.getStatusCode();
 			// TODO: This could be improved by returning an OK with an
 			// additional description of all the resources that were modified
 			// (updated, created, deleted) as a side effect.
 		} catch (ApplicationExecutionException e) {
-			if(Throwables.getRootCause(e) instanceof InvalidContentException) {
-				status=Status.CONFLICT;
+			String body=Throwables.getStackTraceAsString(e);
+			Throwable rootCause = Throwables.getRootCause(e);
+			if(rootCause instanceof ContentProcessingException) {
+				if(rootCause instanceof InconsistentContentException) {
+					statusCode=Status.CONFLICT.getStatusCode();
+					body="Specified values for application-managed properties are not consistent with the actual resource state"+rootCause.getMessage();
+				} else if(rootCause instanceof InvalidContentException) {
+					statusCode=UNPROCESSABLE_ENTITY_STATUS_CODE;
+					body="Could not understand content: "+rootCause.getMessage();
+				} else {
+					statusCode=Status.BAD_REQUEST.getStatusCode();
+					body=Throwables.getStackTraceAsString(rootCause);
+				}
 				builder.header("Link",EndpointControllerUtils.createLink(context.base(), LDP.CONSTRAINED_BY.qualifiedEntityName()));
 			}
-			String body=Throwables.getStackTraceAsString(e);
 			builder.
 				type(MediaType.TEXT_PLAIN).
 				language(Locale.ENGLISH).
@@ -249,7 +271,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		addRequiredHeaders(context, builder);
 		
 		// 4. set status and attach response entity as required.
-		builder.status(status.getStatusCode());
+		builder.status(statusCode);
 
 		return builder.build();
 	}

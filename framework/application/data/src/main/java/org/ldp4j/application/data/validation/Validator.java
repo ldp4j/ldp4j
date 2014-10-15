@@ -35,6 +35,8 @@ import java.util.Set;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Property;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -43,6 +45,8 @@ import static com.google.common.base.Preconditions.*;
 
 public final class Validator {
 
+	private final static Logger LOGGER=LoggerFactory.getLogger(Validator.class);
+	
 	private static final class ValidationReportImpl implements ValidationReport {
 	
 		private final List<ValidationLog> logs;
@@ -102,6 +106,22 @@ public final class Validator {
 	public ValidationReport validate(DataSet dataSet) {
 		checkNotNull(dataSet,"Data set cannot be null");
 		ValidationReportImpl report=new ValidationReportImpl();
+		processValidationConstraints(dataSet, report);
+		verifyValidationConstraints(report);
+		if(LOGGER.isInfoEnabled()) {
+			if(report.isValid()) {
+				LOGGER.info("Validation completed succesfully");
+			} else {
+				LOGGER.info("Validation failed: {} violations found",report.validationFailures().size());
+			}
+		}
+		return report;
+	}
+
+	private void processValidationConstraints(DataSet dataSet, ValidationReportImpl report) {
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Started processing validation constraints...");
+		}
 		verifyConstraints(dataSet,this.dataSetVC,report);
 		for(Individual<?,?> individual:dataSet) {
 			verifyConstraints(individual,this.individualVC,report);
@@ -109,11 +129,12 @@ public final class Validator {
 				verifyConstraints(property,this.propertyVC,report);
 			}
 		}
-		verifyCheckedValidationConstraints(report);
-		return report;
 	}
 	
-	private void verifyCheckedValidationConstraints(ValidationReportImpl report) {
+	private void verifyValidationConstraints(ValidationReportImpl report) {
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Started verifying validation constraints...");
+		}
 		verifyCheckedConstraints(this.dataSetVC,report);
 		verifyCheckedConstraints(this.individualVC,report);
 		verifyCheckedConstraints(this.propertyVC,report);
@@ -123,6 +144,9 @@ public final class Validator {
 		for(ValidationConstraint<T> constraint:constraints) {
 			if(constraint.mustBeChecked() && !isChecked(constraint)) {
 				report.addUncheckedValidationConstraint(constraint);
+				if(LOGGER.isTraceEnabled()) {
+					LOGGER.trace("Validation constraint '"+constraint+"' has not been checked");
+				}
 			}
 		}
 	}
@@ -143,6 +167,17 @@ public final class Validator {
 			if(log.checked()) {
 				report.addValidationLog(log);
 				markChecked(constraint);
+			}
+			if(LOGGER.isTraceEnabled()) {
+				if(!log.checked()) {
+					LOGGER.trace("Validation constraint '"+constraint+"' was not checked for element '"+item+"'");
+				} else {
+					if(log.success()) {
+						LOGGER.trace("Validation constraint '"+constraint+"' for element '"+item+"' succeded");
+					} else {
+						LOGGER.trace("Validation constraint '"+constraint+"' failed for element '"+item+"': "+log.validationFailure());
+					}
+				}
 			}
 		}
 	}

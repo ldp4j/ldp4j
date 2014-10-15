@@ -36,7 +36,7 @@ import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.ext.InvalidContentException;
+import org.ldp4j.application.ext.ContentProcessingException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
@@ -46,13 +46,10 @@ import org.ldp4j.example.InMemoryContainerHandler;
 
 public class TCKFContainerHandler extends InMemoryContainerHandler implements Modifiable {
 
-	private final AtomicInteger id;
-
 	private TCKFResourceHandler handler;
 
 	protected TCKFContainerHandler(String handlerName) {
 		super(handlerName);
-		this.id=new AtomicInteger();
 	}
 
 	public final void setHandler(TCKFResourceHandler handler) {
@@ -63,17 +60,10 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 		return this.handler;
 	}
 	
-	protected final int nextId() {
-		return this.id.incrementAndGet();
-	}
-	
 	@Override
 	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
-		Name<?> name=
-			NamingScheme.
-				getDefault().
-					name(nextId());
-		
+		Name<?> name = TCKFHelper.nextName(getHandlerName());
+
 		DataSetHelper helper=
 				DataSetHelper.newInstance(representation);
 		
@@ -81,7 +71,10 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 			helper.
 				replace(
 					DataSetHelper.SELF, 
-					ManagedIndividualId.createId(name,TCKFResourceHandler.ID), 
+					ManagedIndividualId.
+						createId(
+							name,
+							TCKFResourceHandler.ID), 
 					ManagedIndividual.class);
 
 		individual.
@@ -100,7 +93,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 	}
 
 	@Override
-	public void update(ResourceSnapshot resource, DataSet newState, WriteSession session) throws InvalidContentException {
+	public void update(ResourceSnapshot resource, DataSet newState, WriteSession session) throws ContentProcessingException {
 		DataSet currentState = get(resource);
 		TCKFHelper.enforceConsistency(resource.name(),getHandlerName(),newState,currentState);
 		try {

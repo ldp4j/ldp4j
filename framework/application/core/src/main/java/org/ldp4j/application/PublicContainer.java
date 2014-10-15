@@ -42,6 +42,9 @@ import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.Value;
+import org.ldp4j.application.data.validation.ValidationConstraint;
+import org.ldp4j.application.data.validation.ValidationConstraintFactory;
+import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
@@ -134,6 +137,20 @@ public abstract class PublicContainer extends PublicRDFSource {
 					ctx.newIndividual(member));
 			}
 		}
+	}
+	
+	@Override
+	protected void configureValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata) {
+		super.configureValidationConstraints(builder, individual, metadata);
+		URI propertyId = LDP.CONTAINS.as(URI.class);
+		Property property = individual.property(propertyId);
+		ValidationConstraint<Property> constraint=null;
+		if(property!=null) {
+			constraint=ValidationConstraintFactory.readOnlyProperty(property);
+		} else {
+			constraint=ValidationConstraintFactory.readOnlyProperty(propertyId);
+		}
+		builder.withPropertyConstraint(constraint);
 	}
 
 	public PublicResource createResource(DataSet dataSet) throws ApplicationExecutionException {

@@ -40,6 +40,7 @@ import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.ValidationReport;
@@ -48,7 +49,8 @@ import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.application.ext.InvalidContentException;
+import org.ldp4j.application.ext.ContentProcessingException;
+import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.resource.Attachment;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
@@ -218,11 +220,15 @@ public abstract class PublicResource extends Public {
 
 	protected void configureValidationConstraints(ValidatorBuilder builder, Individual<?,?> individual, DataSet metadata) {
 		builder.withPropertyConstraint(ValidationConstraintFactory.mandatoryPropertyValues(individual.property(RDF.TYPE.as(URI.class))));
-		for(Entry<String, PublicResource> entry:attachments().entrySet()) {
-			AttachedTemplate attachedTemplate = template().attachedTemplate(entry.getKey());
+		for(AttachedTemplate attachedTemplate:template().attachedTemplates()) {
 			URI propertyId = attachedTemplate.predicate().or(HAS_ATTACHMENT);
-			builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.property(propertyId)));
-			configureAdditionalValidationConstraints(builder,individual,metadata,entry.getValue());
+			Property property = individual.property(propertyId);
+			if(property!=null) {
+				builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.property(propertyId)));
+				configureAdditionalValidationConstraints(builder,individual,metadata,attachments().get(attachedTemplate.id()));
+			} else {
+				builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.id(),propertyId));
+			}
 		}
 	}
 
@@ -284,7 +290,7 @@ public abstract class PublicResource extends Public {
 
 		ValidationReport report = validator.validate(dataSet);
 		if(!report.isValid()) {
-			InvalidContentException error = new InvalidContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures());
+			ContentProcessingException error = new InconsistentContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures());
 			throw new ApplicationExecutionException("Protocol/framework managed metadata validation failure",error);
 		}
 	}
