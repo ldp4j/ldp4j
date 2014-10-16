@@ -33,6 +33,7 @@ import java.util.Set;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.vocabulary.Term;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.Sets;
 
 public final class ContentPreferences {
@@ -103,9 +104,44 @@ public final class ContentPreferences {
 	}
 	
 	public boolean isRequired(Preference preference) {
+		boolean result=this.include.contains(preference) || !this.omit.contains(preference);
+		boolean forceMinimal = this.include.contains(Preference.MINIMAL_CONTAINER) || this.include.contains(Preference.EMPTY_CONTAINER);
+		switch(preference) {
+		case CONTAINMENT_TRIPLES:
+			result=result && !forceMinimal;
+			break;
+		case MEMBERSHIP_TRIPLES:
+			result=result && !forceMinimal;
+			break;
+		case EMPTY_CONTAINER:
+			break;
+		case MINIMAL_CONTAINER:
+			break;
+		}
+		return result;
+	}
+
+	private boolean isPositive(Preference preference) {
 		return this.include.contains(preference) || !this.omit.contains(preference);
 	}
 	
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(this.include,this.omit);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj!=null && obj.getClass()==this.getClass()) {
+			ContentPreferences that=(ContentPreferences)obj;
+			result=
+				Objects.equal(this.include,that.include) &&
+				Objects.equal(this.omit,that.omit);
+		}
+		return result;
+	}
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();

@@ -39,6 +39,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationExecutionException;
+import org.ldp4j.application.ContentPreferences;
 import org.ldp4j.application.PublicBasicContainer;
 import org.ldp4j.application.PublicContainer;
 import org.ldp4j.application.PublicDirectContainer;
@@ -61,6 +62,8 @@ import com.google.common.base.Throwables;
 final class ExistingEndpointController extends AbstractEndpointController {
 	
 	
+	private static final String ACCEPT_POST_HEADER = "Accept-Post";
+
 	/**
 	 * The status code to signal that the content could not be understood by the
 	 * application.
@@ -94,62 +97,6 @@ final class ExistingEndpointController extends AbstractEndpointController {
 	}
 
 	
-	private Response doGet(OperationContext context, boolean includeEntity) {
-		// 1. Validate output expectations
-		Variant variant=context.expectedVariant();
-	
-		// 2. Verify that we can carry out the operation
-		context.
-			checkOperationSupport().
-			checkPreconditions();
-	
-		ResponseBuilder builder=Response.serverError();
-		String body=null;
-		Status status=null;
-	
-		// 3. Determine the body and status of the response
-		try {
-			// 3.1. retrieve the resource
-			PublicResource resource = 
-				context.
-					applicationContext().
-						findResource(endpoint());
-			// 3.2. prepare the associated entity
-			DataSet entity=resource.entity();
-			LOGGER.trace("Data set to serialize: \n {}",entity);
-			// 3.3. serialize the entity
-			body=context.serializeResource(entity,variant.getMediaType());
-			status=Status.OK;
-			builder.variant(variant);
-		} catch (ApplicationExecutionException e) {
-			status=Status.INTERNAL_SERVER_ERROR;
-			body=Throwables.getStackTraceAsString(e);
-			builder.
-				type(MediaType.TEXT_PLAIN).
-				language(Locale.ENGLISH);
-		}
-		
-		// 4. Add the required headers
-		addOptionsMandatoryHeaders(context, builder);
-		
-		// 5. Complete the response
-		builder.
-			status(status.getStatusCode()).
-			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
-		if(includeEntity) {
-			builder.entity(body);
-		}
-		return builder.build();
-	}
-
-	public Response options(OperationContext context) {
-		ResponseBuilder builder=
-			Response.
-				ok();
-		addOptionsMandatoryHeaders(context, builder);
-		return builder.build();
-	}
-
 	private void addAcceptPostHeaders(OperationContext context, ResponseBuilder builder) {
 		List<Variant> acceptPostVariants=
 			context.
@@ -177,8 +124,80 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		 * 5.2.3.14
 		 */
 		for(Variant variant:acceptPostVariants) {
-			builder.header("Accept-Post",variant.getMediaType());
+			builder.header(ACCEPT_POST_HEADER,variant.getMediaType());
 		}
+	}
+
+	private Response doGet(OperationContext context, boolean includeEntity) {
+		// 1. Validate output expectations
+		Variant variant=context.expectedVariant();
+	
+		// 2. Verify that we can carry out the operation
+		context.
+			checkOperationSupport().
+			checkPreconditions();
+	
+		ResponseBuilder builder=Response.serverError();
+		String body=null;
+		Status status=null;
+	
+		// 3. Determine the body and status of the response
+		try {
+			// 3.1. retrieve the resource
+			PublicResource resource = 
+				context.
+					applicationContext().
+						findResource(endpoint());
+			ContentPreferences preferences=
+					context.contentPreferences();
+			boolean hasPreferences=preferences!=null;
+			if(!hasPreferences) {
+				preferences=ContentPreferences.defaultPreferences();
+			}
+			if(LOGGER.isDebugEnabled()) {
+				if(hasPreferences) {
+					LOGGER.debug("Using preferences: {}",preferences);
+				} else {
+					LOGGER.debug("No preferences specified");
+				}
+			}
+			// 3.2. prepare the associated entity
+			DataSet entity=resource.entity(preferences);
+			LOGGER.trace("Data set to serialize: \n {}",entity);
+			// 3.3. serialize the entity
+			body=context.serializeResource(entity,variant.getMediaType());
+			status=Status.OK;
+			builder.variant(variant);
+			if(hasPreferences) {
+				builder.header(ContentPreferencesUtils.PREFERENCE_APPLIED_HEADER,ContentPreferencesUtils.asPreferenceAppliedHeader(preferences));
+			}
+		} catch (ApplicationExecutionException e) {
+			status=Status.INTERNAL_SERVER_ERROR;
+			body=Throwables.getStackTraceAsString(e);
+			builder.
+				type(MediaType.TEXT_PLAIN).
+				language(Locale.ENGLISH);
+		}
+		
+		// 4. Add the required headers
+		addOptionsMandatoryHeaders(context, builder);
+		
+		// 5. Complete the response
+		builder.
+			status(status.getStatusCode()).
+			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
+		if(includeEntity) {
+			builder.entity(body);
+		}
+		return builder.build();
+	}
+
+	public Response options(OperationContext context) {
+		ResponseBuilder builder=
+			Response.
+				ok();
+		addOptionsMandatoryHeaders(context, builder);
+		return builder.build();
 	}
 
 	public Response head(OperationContext context) {
@@ -217,7 +236,6 @@ final class ExistingEndpointController extends AbstractEndpointController {
 				entity(body);
 			// 2.a. Add response headers
 			addRequiredHeaders(context, builder);
-
 		}
 		
 		// 3. Complete response

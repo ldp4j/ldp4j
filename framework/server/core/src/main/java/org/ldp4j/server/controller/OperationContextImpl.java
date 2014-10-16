@@ -29,6 +29,7 @@ package org.ldp4j.server.controller;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.ws.rs.core.HttpHeaders;
@@ -379,11 +380,15 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public ContentPreferences contentPreferences() {
-		ContentPreferences result = ContentPreferences.defaultPreferences();
-		List<String> requestHeader = headers.getRequestHeader("Prefer");
-		// TODO: Change to make it the first valid.
-		if(requestHeader.size()>0) {
-			result=PreferenceHeaderUtil.fromHeader(requestHeader.get(0));
+		ContentPreferences result = null;
+		List<String> requestHeader = headers.getRequestHeader(ContentPreferencesUtils.PREFER_HEADER);
+		for(Iterator<String> it=requestHeader.iterator();it.hasNext() && result==null;) {
+			try {
+				String header = it.next();
+				result=ContentPreferencesUtils.fromPreferenceHeader(header);
+			} catch (InvalidPreferenceHeaderException e) {
+				// Ignore
+			}
 		}
 		return result;
 	}

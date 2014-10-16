@@ -97,7 +97,7 @@ public abstract class PublicContainer extends PublicRDFSource {
 	@Override
 	protected final DataSet resourceData(ContentPreferences contentPreferences) throws ApplicationExecutionException {
 		DataSet dataSet = super.resourceData(contentPreferences);
-		if(contentPreferences.isRequired(Preference.MINIMAL_CONTAINER)) {
+		if(contentPreferences.isRequired(Preference.MINIMAL_CONTAINER) || contentPreferences.isRequired(Preference.EMPTY_CONTAINER)) {
 			List<Individual<?,?>> toClean=new ArrayList<Individual<?,?>>();
 			for(Individual<?,?> individual:dataSet) {
 				individual.accept(new IndividualFilter(toClean));
@@ -130,7 +130,7 @@ public abstract class PublicContainer extends PublicRDFSource {
 			addValue(
 				ctx.property(RDF.TYPE), 
 				ctx.reference(LDP.CONTAINER));
-		if(contentPreferences.isRequired(Preference.MEMBERSHIP_TRIPLES)) {
+		if(contentPreferences.isRequired(Preference.CONTAINMENT_TRIPLES)) {
 			for(PublicResource member:members()) {
 				individual.addValue(
 					ctx.property(LDP.CONTAINS), 
