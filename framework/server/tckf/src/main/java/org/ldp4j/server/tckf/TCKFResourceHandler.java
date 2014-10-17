@@ -27,9 +27,10 @@
 package org.ldp4j.server.tckf;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.ContentProcessingException;
+import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.Modifiable;
+import org.ldp4j.application.ext.annotations.Attachment;
 import org.ldp4j.application.ext.annotations.Resource;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
@@ -37,7 +38,17 @@ import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.example.InMemoryResourceHandler;
 
 @Resource(
-	id=TCKFResourceHandler.ID
+	id=TCKFResourceHandler.ID,
+	attachments={
+		@Attachment(
+			id="directContainer",
+			path="direct_container/",
+			handler=TCKFDirectContainerHandler.class),
+		@Attachment(
+			id="indirectContainer",
+			path="indirect_container/",
+			handler=TCKFIndirectContainerHandler.class),
+	}
 )
 public class TCKFResourceHandler extends InMemoryResourceHandler implements Modifiable, Deletable {
 

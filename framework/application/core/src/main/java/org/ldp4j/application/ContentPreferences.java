@@ -103,28 +103,19 @@ public final class ContentPreferences {
 		}
 	}
 	
-	public boolean isRequired(Preference preference) {
-		boolean result=this.include.contains(preference) || !this.omit.contains(preference);
-		boolean forceMinimal = this.include.contains(Preference.MINIMAL_CONTAINER) || this.include.contains(Preference.EMPTY_CONTAINER);
-		switch(preference) {
-		case CONTAINMENT_TRIPLES:
-			result=result && !forceMinimal;
-			break;
-		case MEMBERSHIP_TRIPLES:
-			result=result && !forceMinimal;
-			break;
-		case EMPTY_CONTAINER:
-			break;
-		case MINIMAL_CONTAINER:
-			break;
-		}
-		return result;
-	}
-
-	private boolean isPositive(Preference preference) {
-		return this.include.contains(preference) || !this.omit.contains(preference);
+	public boolean isMinimalInclusionRequired() {
+		return this.include.contains(Preference.MINIMAL_CONTAINER);
 	}
 	
+	public boolean mayInclude(Preference preference) {
+		Preference tmp = normalize(preference);
+		return this.include.contains(tmp) || (!isOmissiontRequired(tmp) && !isMinimalInclusionRequired());
+	}
+
+	private boolean isOmissiontRequired(Preference preference) {
+		return this.omit.contains(preference);
+	}
+
 	@Override
 	public int hashCode() {
 		return Objects.hashCode(this.include,this.omit);
@@ -163,6 +154,14 @@ public final class ContentPreferences {
 		return new ContentPreferencesBuilder();
 	}
 	
+	private static Preference normalize(Preference preference) {
+		Preference result=preference;
+		if(Preference.EMPTY_CONTAINER.equals(result)) {
+			result=Preference.MINIMAL_CONTAINER;
+		}
+		return result;
+	}
+
 	public static final class ContentPreferencesBuilder {
 		
 		private ContentPreferences contentPreferences;
@@ -172,12 +171,12 @@ public final class ContentPreferences {
 		}
 		
 		public ContentPreferencesBuilder withInclude(Preference preference) {
-			this.contentPreferences.include(preference);
+			this.contentPreferences.include(normalize(preference));
 			return this;
 		}
 		
 		public ContentPreferencesBuilder withOmit(Preference preference) {
-			this.contentPreferences.omit(preference);
+			this.contentPreferences.omit(normalize(preference));
 			return this;
 		}
 		

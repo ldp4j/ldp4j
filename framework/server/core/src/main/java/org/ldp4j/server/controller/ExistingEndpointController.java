@@ -40,6 +40,7 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationExecutionException;
 import org.ldp4j.application.ContentPreferences;
+import org.ldp4j.application.InteractionModel;
 import org.ldp4j.application.PublicBasicContainer;
 import org.ldp4j.application.PublicContainer;
 import org.ldp4j.application.PublicDirectContainer;
@@ -323,8 +324,9 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		// 2. Execute operation and determine response body and status
 		try {
 			PublicContainer container=context.container();
+			InteractionModel interactionModel = context.interactionModel();
 			PublicResource newResource = 
-				container.createResource(context.dataSet());
+				container.createResource(context.dataSet(), interactionModel);
 			URI location = context.resolve(newResource);
 			status=Status.CREATED;
 			body=location.toString();

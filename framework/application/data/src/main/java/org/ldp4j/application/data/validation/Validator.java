@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.FormatUtils;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Property;
 import org.slf4j.Logger;
@@ -170,16 +171,28 @@ public final class Validator {
 			}
 			if(LOGGER.isTraceEnabled()) {
 				if(!log.checked()) {
-					LOGGER.trace("Validation constraint '"+constraint+"' was not checked for element '"+item+"'");
+					LOGGER.trace("Validation constraint '"+constraint+"' was not checked for element '"+format(item)+"'");
 				} else {
 					if(log.success()) {
-						LOGGER.trace("Validation constraint '"+constraint+"' for element '"+item+"' succeded");
+						LOGGER.trace("Validation constraint '"+constraint+"' for element '"+format(item)+"' succeded");
 					} else {
-						LOGGER.trace("Validation constraint '"+constraint+"' failed for element '"+item+"': "+log.validationFailure());
+						LOGGER.trace("Validation constraint '"+constraint+"' failed for element '"+format(item)+"': "+log.validationFailure());
 					}
 				}
 			}
 		}
+	}
+	
+	private <T> String format(T item) {
+		String result=item.toString();
+		if(item instanceof DataSet) {
+			result="DataSet {"+FormatUtils.formatName(((DataSet)item).name())+"}";
+		} else  if(item instanceof Individual<?,?>) {
+			result="Individual {"+FormatUtils.formatIndividualId((Individual<?,?>)item)+"}";
+		} else  if(item instanceof Property) {
+			result="Property {"+((Property)item).predicate()+"}";
+		}
+		return result;
 	}
 	
 	private void setDataSetValidationConstraints(Collection<ValidationConstraint<DataSet>> constraints) {

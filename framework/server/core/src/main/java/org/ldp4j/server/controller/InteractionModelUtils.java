@@ -26,9 +26,37 @@
  */
 package org.ldp4j.server.controller;
 
-enum InteractionModel {
-	RESOURCE,
-	BASIC_CONTAINER,
-	DIRECT_CONTAINER,
-	INDIRECT_CONTAINER
+import java.net.URI;
+
+import javax.ws.rs.core.Link;
+
+import org.ldp4j.application.InteractionModel;
+
+final class InteractionModelUtils {
+		
+	private static final String INTERACTION_MODEL_LINK_REL = "type";
+
+	static String asLink(InteractionModel interactionModel) {
+		return Link.fromUri(interactionModel.asURI()).rel(INTERACTION_MODEL_LINK_REL).build().toString();
+	}
+	
+	static InteractionModel fromLink(String strLink) {
+		InteractionModel result=null;
+		try {
+			Link link = Link.valueOf(strLink);
+			if(link.getRel().equals(INTERACTION_MODEL_LINK_REL)) {
+				URI uri = link.getUri();
+				for(InteractionModel interactionModel:InteractionModel.values()) {
+					if(uri.equals(interactionModel.asURI())) {
+						result=interactionModel;
+						break;
+					}
+				}
+			}
+		} catch (IllegalArgumentException e) {
+			// Nothing to do
+		}
+		return result;
+	}
+
 }

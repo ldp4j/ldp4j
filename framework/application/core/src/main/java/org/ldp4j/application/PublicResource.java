@@ -30,6 +30,7 @@ import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
@@ -57,6 +58,8 @@ import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.template.AttachedTemplate;
 import org.ldp4j.application.vocabulary.Term;
 
+import com.google.common.collect.Sets;
+
 public abstract class PublicResource extends Public {
 	
 	private static final URI HAS_ATTACHMENT = URI.create("http://www.ldp4j.org/ns/application#hasAttachment");
@@ -73,11 +76,11 @@ public abstract class PublicResource extends Public {
 			return term.as(URI.class);
 		}
 		
-		public Value reference(URI externalIndividual) {
+		public Individual<?,?> reference(URI externalIndividual) {
 			return dataSet.individual(externalIndividual, ExternalIndividual.class);
 		}
 
-		public Value reference(Term term) {
+		public Individual<?,?> reference(Term term) {
 			return reference(term.as(URI.class));
 		}
 		
@@ -220,14 +223,18 @@ public abstract class PublicResource extends Public {
 
 	protected void configureValidationConstraints(ValidatorBuilder builder, Individual<?,?> individual, DataSet metadata) {
 		builder.withPropertyConstraint(ValidationConstraintFactory.mandatoryPropertyValues(individual.property(RDF.TYPE.as(URI.class))));
+		Set<URI> properties=Sets.newHashSet();
 		for(AttachedTemplate attachedTemplate:template().attachedTemplates()) {
 			URI propertyId = attachedTemplate.predicate().or(HAS_ATTACHMENT);
-			Property property = individual.property(propertyId);
-			if(property!=null) {
-				builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.property(propertyId)));
-				configureAdditionalValidationConstraints(builder,individual,metadata,attachments().get(attachedTemplate.id()));
-			} else {
-				builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.id(),propertyId));
+			if(!properties.contains(propertyId)) {
+				Property property = individual.property(propertyId);
+				if(property!=null) {
+					builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(property));
+					configureAdditionalValidationConstraints(builder,individual,metadata,attachments().get(attachedTemplate.id()));
+				} else {
+					builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.id(),propertyId));
+				}
+				properties.add(propertyId);
 			}
 		}
 	}

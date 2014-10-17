@@ -133,7 +133,7 @@ public final class ValidationConstraintFactory {
 	
 		@Override
 		public boolean mustBeChecked() {
-			return this.predicate!=null;
+			return this.individualId!=null && !this.values.isEmpty();
 		}
 
 		@Override

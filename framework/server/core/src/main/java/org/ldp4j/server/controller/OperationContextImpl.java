@@ -42,6 +42,7 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.ContentPreferences;
+import org.ldp4j.application.InteractionModel;
 import org.ldp4j.application.PublicContainer;
 import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.data.DataSet;
@@ -324,7 +325,14 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public InteractionModel interactionModel() {
-		throw new UnsupportedOperationException("Method not implemented yet");
+		InteractionModel result=null;
+		for(String linkHeader:this.headers.getRequestHeader(HttpHeaders.LINK)) {
+			result= InteractionModelUtils.fromLink(linkHeader);
+			if(result!=null) {
+				break;
+			}
+		}
+		return result;
 	}
 	
 	@Override

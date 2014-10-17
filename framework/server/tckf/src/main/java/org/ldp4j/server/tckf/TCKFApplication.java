@@ -36,7 +36,10 @@ import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
+import org.ldp4j.application.session.ContainerSnapshot;
+import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
+import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.application.setup.Bootstrap;
 import org.ldp4j.application.setup.Environment;
 import org.slf4j.Logger;
@@ -94,7 +97,7 @@ public class TCKFApplication extends Application<Configuration> {
 
 		basicContainer.add(this.basicContainerName, getInitialData(TCKFBasicContainerHandler.ID,BASIC_CONTAINER_NAME));
 		directContainer.add(this.directContainerName, getInitialData(TCKFDirectContainerHandler.ID,DIRECT_CONTAINER_NAME));
-		indirectContainer.add(this.indirectContainerName, getInitialData(TCKFDirectContainerHandler.ID,INDIRECT_CONTAINER_NAME));
+		indirectContainer.add(this.indirectContainerName, getInitialData(TCKFIndirectContainerHandler.ID,INDIRECT_CONTAINER_NAME));
 
 		bootstrap.addHandler(resourceHandler);
 		bootstrap.addHandler(basicContainer);
@@ -103,8 +106,8 @@ public class TCKFApplication extends Application<Configuration> {
 
 		environment.publishResource(this.resourceName, TCKFResourceHandler.class, ROOT_RESOURCE_PATH);
 		environment.publishResource(this.basicContainerName, TCKFBasicContainerHandler.class, ROOT_BASIC_CONTAINER_PATH);
-		environment.publishResource(this.directContainerName, TCKFDirectContainerHandler.class, ROOT_DIRECT_CONTAINER_PATH);
-		environment.publishResource(this.indirectContainerName, TCKFIndirectContainerHandler.class, ROOT_INDIRECT_CONTAINER_PATH);
+//		environment.publishResource(this.directContainerName, TCKFDirectContainerHandler.class, ROOT_DIRECT_CONTAINER_PATH);
+//		environment.publishResource(this.indirectContainerName, TCKFIndirectContainerHandler.class, ROOT_INDIRECT_CONTAINER_PATH);
 
 		LOGGER.info("Configuration completed.");
 	}
@@ -112,7 +115,16 @@ public class TCKFApplication extends Application<Configuration> {
 	@Override
 	public void initialize(WriteSession session) {
 		LOGGER.info("Initializing application: {}",session);
-		LOGGER.info("Initialization completed.");
+		try {
+			ResourceSnapshot rootResource = session.find(ResourceSnapshot.class, this.resourceName, TCKFResourceHandler.class);
+			rootResource.createAttachedResource(ContainerSnapshot.class, "directContainer", this.directContainerName, TCKFDirectContainerHandler.class);
+			rootResource.createAttachedResource(ContainerSnapshot.class, "indirectContainer", this.indirectContainerName, TCKFIndirectContainerHandler.class);
+			session.saveChanges();
+			LOGGER.info("Initialization completed.");
+		} catch (WriteSessionException e) {
+			LOGGER.warn("Initialization failed.",e);
+			throw new IllegalStateException(e);
+		}
 	}
 
 	@Override

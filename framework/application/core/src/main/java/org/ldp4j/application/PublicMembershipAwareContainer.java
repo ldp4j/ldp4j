@@ -33,6 +33,7 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Property;
+import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.validation.ValidationConstraint;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
@@ -63,7 +64,7 @@ public abstract class PublicMembershipAwareContainer<T extends MembershipAwareCo
 	protected abstract Term containerType();
 
 	final void fillInMemberMetadata(ContentPreferences contentPreferences, Individual<?,?> individual, Context ctx) {
-		if(!contentPreferences.isRequired(Preference.MEMBERSHIP_TRIPLES)) {
+		if(!contentPreferences.mayInclude(Preference.MEMBERSHIP_TRIPLES)) {
 			return;
 		}
 		
@@ -106,12 +107,19 @@ public abstract class PublicMembershipAwareContainer<T extends MembershipAwareCo
 				ctx.reference(containerType())).
 			addValue(
 				ctx.property(template.membershipRelation().term()), 
-				ctx.value(template.membershipPredicate()));
+				ctx.reference(template.membershipPredicate()));
+		Individual<?, ?> membershipResource=null;
 		if(!isRoot()) {
-			individual.
-				addValue(
-					ctx.property(LDP.MEMBERSHIP_RESOURCE),
-					ctx.newIndividual(parent()));	
+			membershipResource = ctx.newIndividual(parent());
+		} else {
+			membershipResource = ctx.reference(LDP.MEMBER_SUBJECT);
+		}
+		individual.
+			addValue(
+				ctx.property(LDP.MEMBERSHIP_RESOURCE),
+				membershipResource);	
+		if(contentPreferences.mayInclude(Preference.MEMBERSHIP_TRIPLES)) {
+			fillInMemberMetadata(contentPreferences,membershipResource,ctx);
 		}
 	}
 
