@@ -66,24 +66,26 @@ public final class WriteSessionService implements Service {
 	private final class ResourceProcessor implements UnitOfWork.Visitor {
 	
 		private final Date lastModified;
+		private final DelegatedWriteSession session;
 	
-		private ResourceProcessor(Date lastModified) {
+		private ResourceProcessor(Date lastModified, DelegatedWriteSession session) {
 			this.lastModified = lastModified;
+			this.session = session;
 		}
 	
 		@Override
 		public void visitNew(DelegatedResourceSnapshot obj) {
-			createResource(obj.delegate(),lastModified);
+			createResource(obj.delegate(),this.lastModified,this.session.getDesiredPath(obj));
 		}
 	
 		@Override
 		public void visitDirty(DelegatedResourceSnapshot obj) {
-			modifyResource(obj.delegate(),lastModified);
+			modifyResource(obj.delegate(),this.lastModified);
 		}
 	
 		@Override
 		public void visitDeleted(DelegatedResourceSnapshot obj) {
-			deleteResource(obj.delegate(),lastModified);
+			deleteResource(obj.delegate(),this.lastModified);
 		}
 	}
 
@@ -99,12 +101,12 @@ public final class WriteSessionService implements Service {
 		this.endpointManagementService = endointManagementService;
 	}
 
-	public WriteSession createSession() {
+	public WriteSession createSession(WriteSessionConfiguration configuration) {
 		UnitOfWork.newCurrent();
-		logLifecycleMessage("Created write session...");
-		return new DelegatedWriteSession(this.resourceRepository,this.templateManagementService,this);
+		logLifecycleMessage("Created write session: %s",configuration);
+		return new DelegatedWriteSession(configuration,this.resourceRepository,this.templateManagementService,this);
 	}
-
+	
 	public void terminateSession(WriteSession writeSession) {
 		checkArgument(writeSession instanceof DelegatedWriteSession);
 		DelegatedWriteSession session=(DelegatedWriteSession)writeSession;
@@ -135,19 +137,20 @@ public final class WriteSessionService implements Service {
 	}
 
 	public Resource detach(WriteSession writeSession, ResourceSnapshot snapshot) {
-		checkArgument(writeSession instanceof DelegatedWriteSession);
-		DelegatedWriteSession session=(DelegatedWriteSession)writeSession;
-		return session.extractWrappedResource(snapshot);
+		checkArgument(writeSession instanceof DelegatedWriteSession,"Invalid session");
+		checkArgument(snapshot instanceof DelegatedResourceSnapshot,"Unknown resource '%s'",snapshot.name());
+		DelegatedResourceSnapshot delegatedSnapshot=(DelegatedResourceSnapshot)snapshot;
+		return delegatedSnapshot.delegate();
 	}
 	
-	void commitSession() {
+	void commitSession(DelegatedWriteSession session) {
 		logLifecycleMessage("Commiting session...");
-		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date()));
+		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date(),session));
 	}
 
-	private void logLifecycleMessage(String msg) {
+	private void logLifecycleMessage(String msg, Object... args) {
 		if(LOGGER.isDebugEnabled()) {
-			LOGGER.debug(msg);
+			LOGGER.debug(String.format(msg,args));
 		}
 	}
 
@@ -155,13 +158,15 @@ public final class WriteSessionService implements Service {
 		return new EntityTag(UUID.randomUUID().toString());
 	}
 
-	private void createResource(Resource resource, Date lastModified) {
+	private void createResource(Resource resource, Date lastModified, String relativePath) {
 		try {
+			
 			resourceRepository.add(resource);
 			Endpoint newEndpoint=
 				endpointManagementService.
 					createEndpointForResource(
 						resource, 
+						relativePath,
 						generateEntityTag(resource), 
 						lastModified);
 			if(LOGGER.isTraceEnabled()) {

@@ -49,6 +49,7 @@ import org.ldp4j.application.endpoint.EndpointFactoryService;
 import org.ldp4j.application.endpoint.EntityTag;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.impl.InMemoryRuntimeInstance;
+import org.ldp4j.application.session.WriteSessionConfiguration;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.template.TemplateManagementService;
 import org.ldp4j.application.template.TemplateManager;
@@ -189,7 +190,7 @@ public class ResourceControllerServiceTest {
 		DataSet data = sut.getResource(resource);
 		assertThat(data,sameInstance(initial));
 		try {
-			sut.updateResource(resource,updatedDate);
+			sut.updateResource(resource,updatedDate, WriteSessionConfiguration.builder().build());
 			data = sut.getResource(resource);
 			assertThat(data,sameInstance(updatedDate));
 		} catch (FeatureException e) {
@@ -212,7 +213,7 @@ public class ResourceControllerServiceTest {
 
 		DataSet data = sut.getResource(resource);
 		assertThat(data,sameInstance(initial));
-		sut.deleteResource(resource);
+		sut.deleteResource(resource, WriteSessionConfiguration.builder().build());
 		assertThat(handler.hasResource(resourceName),equalTo(false));
 	}
 
@@ -236,7 +237,7 @@ public class ResourceControllerServiceTest {
 		containerHandler.addNameProvider(resourceName, nameProvider);
 		// END Initialization
 
-		Resource newResource = sut.createResource(resource,initialData);
+		Resource newResource = sut.createResource(resource,initialData,null);
 		assertThat(newResource,notNullValue());
 		assertThat((Object)newResource.id().name(),equalTo((Object)id));
 		assertThat(newResource.id().templateId(),equalTo(BookHandler.ID));

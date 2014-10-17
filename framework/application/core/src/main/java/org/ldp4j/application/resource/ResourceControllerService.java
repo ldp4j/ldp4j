@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.resource;
 
+import org.ldp4j.application.session.WriteSessionConfiguration;
 import org.ldp4j.application.session.WriteSessionService;
 import org.ldp4j.application.spi.Service;
 import org.ldp4j.application.spi.ServiceBuilder;
@@ -59,27 +60,32 @@ public class ResourceControllerService implements Service {
 		this.templateManagementService = templateManagementService;
 	}
 
-	private <T extends Resource> Adapter adapter(T resource) {
+	private <T extends Resource> Adapter adapter(T resource, WriteSessionConfiguration configuration) {
 		ResourceTemplate template=this.templateManagementService.findTemplateById(resource.id().templateId());
 		Class<? extends ResourceHandler> handlerClass = template.handlerClass();
 		ResourceHandler delegate=this.templateManagementService.getHandler(handlerClass);
-		return AdapterFactory.newAdapter(resource,delegate,writeSessionService);
+		return AdapterFactory.newAdapter(resource,delegate,this.writeSessionService,configuration);
 	}
 	
 	public DataSet getResource(Resource resource) {
-		return adapter(resource).get();
+		return adapter(resource, WriteSessionConfiguration.builder().build()).get();
 	}
 	
-	public void updateResource(Resource resource, DataSet dataSet) throws FeatureException {
-		adapter(resource).update(dataSet);
+	public void updateResource(Resource resource, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
+		adapter(resource, configuration).update(dataSet);
 	}
 
-	public void deleteResource(Resource resource) throws FeatureException {
-		adapter(resource).delete();
+	public void deleteResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
+		adapter(resource, configuration).delete();
 	}
 
-	public Resource createResource(Container container, DataSet dataSet) throws FeatureException {
-		return adapter(container).create(dataSet);
+	public Resource createResource(Container container, DataSet dataSet, String desiredPath) throws FeatureException {
+		WriteSessionConfiguration configuration = 
+			WriteSessionConfiguration.
+				builder().
+					withPath(desiredPath).
+					build();
+		return adapter(container,configuration).create(dataSet);
 	}
 	
 	public static ServiceBuilder<ResourceControllerService> serviceBuilder() {

@@ -31,6 +31,7 @@ import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.resource.ResourceFactoryService;
 import org.ldp4j.application.session.WriteSession;
+import org.ldp4j.application.session.WriteSessionConfiguration;
 import org.ldp4j.application.session.WriteSessionService;
 import org.ldp4j.application.spi.EndpointRepository;
 import org.ldp4j.application.spi.RepositoryRegistry;
@@ -139,7 +140,7 @@ final class ApplicationLoader<T extends Configuration> {
 	}
 
 	private void initialize(Application<T> application) throws ApplicationConfigurationException {
-		WriteSession session = writeSessionService().createSession();
+		WriteSession session = writeSessionService().createSession(WriteSessionConfiguration.builder().build());
 		application.initialize(session);
 		writeSessionService().terminateSession(session);
 	}

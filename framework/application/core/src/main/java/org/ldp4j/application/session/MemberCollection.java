@@ -32,6 +32,8 @@ import static com.google.common.base.Preconditions.checkState;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -45,11 +47,18 @@ import com.google.common.base.Objects;
 final class MemberCollection {
 	
 	private final Map<ResourceId,DelegatedResourceSnapshot> members;
+	private final List<DelegatedResourceSnapshot> newMembers;
 
 	private MemberCollection() {
 		this.members=new LinkedHashMap<ResourceId, DelegatedResourceSnapshot>();
+		this.newMembers=new LinkedList<DelegatedResourceSnapshot>();
 	}
 	
+	private void registerMember(DelegatedResourceSnapshot snapshot) {
+		checkState(!members.containsKey(snapshot.resourceId()),"A resource with id '%s' is already a member of the container",snapshot.resourceId());
+		this.members.put(snapshot.resourceId(),snapshot);
+	}
+
 	Set<DelegatedResourceSnapshot> members() {
 		return Collections.unmodifiableSet(new LinkedHashSet<DelegatedResourceSnapshot>(this.members.values()));
 	}
@@ -60,17 +69,23 @@ final class MemberCollection {
 
 	void addMember(DelegatedResourceSnapshot snapshot) {
 		checkNotNull(snapshot,"Member cannot be null");
-		checkState(!members.containsKey(snapshot.resourceId()),"A resource with id '%s' is already a member of the container",snapshot.resourceId());
-		this.members.put(snapshot.resourceId(),snapshot);
+		registerMember(snapshot);
+		this.newMembers.add(snapshot);
 	}
 
 	boolean removeMember(ResourceSnapshot member) {
 		if(member==null) return false;
 		boolean result = this.members.containsValue(member);
 		if(result) {
+			this.newMembers.remove(member);
+			// TODO: Check that this works :-S
 			this.members.remove(member.name());
 		}
 		return result;
+	}
+	
+	List<DelegatedResourceSnapshot> newMembers() {
+		return Collections.unmodifiableList(this.newMembers);
 	}
 	
 	@Override
@@ -97,7 +112,7 @@ final class MemberCollection {
 				@Override
 				public void visitContainer(Container resource) {
 					for(ResourceId memberId:resource.memberIds()) {
-						memberRepository.addMember(session.resolveResource(memberId));
+						memberRepository.registerMember(session.resolveResource(memberId));
 					}
 				}
 			}

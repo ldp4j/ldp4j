@@ -30,7 +30,7 @@ import java.net.URI;
 
 import javax.ws.rs.core.Link;
 
-import org.ldp4j.application.InteractionModel;
+import org.ldp4j.application.CreationPreferences.InteractionModel;
 
 final class InteractionModelUtils {
 		

@@ -34,6 +34,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.ldp4j.application.ContentPreferences.Preference;
+import org.ldp4j.application.CreationPreferences.InteractionModel;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
@@ -173,9 +174,9 @@ public abstract class PublicContainer<T extends ContainerTemplate> extends Publi
 		builder.withPropertyConstraint(constraint);
 	}
 
-	public PublicResource createResource(DataSet dataSet, InteractionModel interactionModel) throws ApplicationExecutionException, UnsupportedInteractionModelException {
-		verifyInteractionModel(interactionModel);
-		Resource resource=applicationContext().createResource(endpoint(), dataSet);
+	public PublicResource createResource(DataSet dataSet, CreationPreferences preferences) throws ApplicationExecutionException, UnsupportedInteractionModelException {
+		verifyInteractionModel(preferences.getInteractionModel());
+		Resource resource=applicationContext().createResource(endpoint(),dataSet,preferences.getPath());
 		return createResource(resource.id());
 	}
 

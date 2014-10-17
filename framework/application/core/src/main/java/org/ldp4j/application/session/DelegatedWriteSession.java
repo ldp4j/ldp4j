@@ -31,10 +31,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.ldp4j.application.data.ExternalIndividual;
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.IndividualVisitor;
+import org.ldp4j.application.data.LocalIndividual;
+import org.ldp4j.application.data.ManagedIndividual;
+import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.resource.ResourceIdHelper;
@@ -49,15 +59,8 @@ import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateIntrospector;
 import org.ldp4j.application.template.TemplateManagementService;
 import org.ldp4j.application.template.TemplateVisitor;
-import org.ldp4j.application.data.ExternalIndividual;
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.IndividualVisitor;
-import org.ldp4j.application.data.LocalIndividual;
-import org.ldp4j.application.data.ManagedIndividual;
-import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.ext.ContainerHandler;
-import org.ldp4j.application.ext.ResourceHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class DelegatedWriteSession implements WriteSession {
 
@@ -120,6 +123,8 @@ final class DelegatedWriteSession implements WriteSession {
 
 	private final Map<ResourceId,DelegatedResourceSnapshot> resourceCache;
 
+	private final WriteSessionConfiguration configuration;
+	
 	private final ResourceRepository resourceRepository;
 	private final WriteSessionService writeSessionService;
 	private final TemplateManagementService templateManagementService;
@@ -127,8 +132,9 @@ final class DelegatedWriteSession implements WriteSession {
 	private final SnapshotFactory snapshotFactory;
 
 	private volatile Status status;
-	
-	protected DelegatedWriteSession(ResourceRepository resourceRepository, TemplateManagementService templateManagementService, WriteSessionService writeSessionService) {
+
+	protected DelegatedWriteSession(WriteSessionConfiguration configuration, ResourceRepository resourceRepository, TemplateManagementService templateManagementService, WriteSessionService writeSessionService) {
+		this.configuration = configuration;
 		this.resourceRepository = resourceRepository;
 		this.templateManagementService = templateManagementService;
 		this.writeSessionService = writeSessionService;
@@ -196,6 +202,49 @@ final class DelegatedWriteSession implements WriteSession {
 		return result.get();
 	}
 
+	/**
+	 * @param individual
+	 * @return
+	 */
+	private ResourceId getIdentifier(final Individual<?, ?> individual) {
+		final AtomicReference<ResourceId> resourceId=new AtomicReference<ResourceId>();
+		individual.accept(
+			new IndividualVisitor() {
+				@Override
+				public void visitManagedIndividual(ManagedIndividual individual) {
+					resourceId.set(translateIdentifier(individual.id()));
+				}
+				@Override
+				public void visitLocalIndividual(LocalIndividual individual) {
+					resourceId.set(null);
+				}
+				@Override
+				public void visitExternalIndividual(ExternalIndividual individual) {
+					resourceId.set(null);
+				}
+				private ResourceId translateIdentifier(ManagedIndividualId id) {
+					return ResourceId.createId(id.name(), id.managerId());
+				}
+			}
+		);
+		ResourceId id = resourceId.get();
+		return id;
+	}
+
+	private boolean isMainResource(DelegatedResourceSnapshot snapshot) {
+		ResourceSnapshot targetSnapshot = this.configuration.getTargetSnapshot();
+		if(!(targetSnapshot instanceof DelegatedContainerSnapshot)) {
+			return false;
+		}
+		DelegatedContainerSnapshot targetContainerSnapshot=(DelegatedContainerSnapshot)targetSnapshot;
+		List<DelegatedResourceSnapshot> newMembers=targetContainerSnapshot.newMembers();
+		LOGGER.debug("New members: {}",newMembers);
+		if(newMembers.isEmpty()) {
+			return false;
+		}	
+		return snapshot==newMembers.get(0);
+	}
+
 	ResourceTemplate loadTemplate(String templateId) {
 		return this.templateManagementService.findTemplateById(templateId);
 	}
@@ -207,15 +256,28 @@ final class DelegatedWriteSession implements WriteSession {
 	DelegatedResourceSnapshot resolveResource(ResourceId resourceId) {
 		return resolveResource(resourceId,loadTemplate(resourceId.templateId()));
 	}
+	
+	private static final Logger LOGGER=LoggerFactory.getLogger(DelegatedWriteSession.class);
+
+	String getDesiredPath(DelegatedResourceSnapshot snapshot) {
+		String desiredPath=null;
+		if(isMainResource(snapshot)) {
+			desiredPath=this.configuration.getPath();
+		}
+		if(LOGGER.isDebugEnabled()) {
+			if(desiredPath==null && this.configuration.getPath()!=null) {
+				LOGGER.debug("Resource {} is not main resource",snapshot.resourceId());
+			} else if(desiredPath!=null) {
+				LOGGER.debug("Resource {} is the main resource and may be deployed at '{}'",snapshot.resourceId(),desiredPath);
+			} else {
+				LOGGER.debug("Resource {} is the main resource but does not have a deployment preference",snapshot.resourceId());
+			}
+		}
+		return desiredPath;
+	}
 
 	Status status() {
 		return this.status;
-	}
-
-	Resource extractWrappedResource(ResourceSnapshot snapshot) {
-		checkArgument(snapshot instanceof DelegatedResourceSnapshot,"Unknown resource '%s'",snapshot.name());
-		DelegatedResourceSnapshot delegatedResource=(DelegatedResourceSnapshot)snapshot;
-		return delegatedResource.delegate();
 	}
 
 	<T extends DelegatedResourceSnapshot> T newTransient(ResourceId resourceId, DelegatedResourceSnapshot parent, Class<? extends T> clazz) {
@@ -259,35 +321,6 @@ final class DelegatedWriteSession implements WriteSession {
 		return result;
 	}
 
-	/**
-	 * @param individual
-	 * @return
-	 */
-	private ResourceId getIdentifier(final Individual<?, ?> individual) {
-		final AtomicReference<ResourceId> resourceId=new AtomicReference<ResourceId>();
-		individual.accept(
-			new IndividualVisitor() {
-				@Override
-				public void visitManagedIndividual(ManagedIndividual individual) {
-					resourceId.set(translateIdentifier(individual.id()));
-				}
-				@Override
-				public void visitLocalIndividual(LocalIndividual individual) {
-					resourceId.set(null);
-				}
-				@Override
-				public void visitExternalIndividual(ExternalIndividual individual) {
-					resourceId.set(null);
-				}
-				private ResourceId translateIdentifier(ManagedIndividualId id) {
-					return ResourceId.createId(id.name(), id.managerId());
-				}
-			}
-		);
-		ResourceId id = resourceId.get();
-		return id;
-	}
-
 	@Override
 	public void modify(ResourceSnapshot resource) {
 		checkNotNull(resource,RESOURCE_CANNOT_BE_NULL);
@@ -314,7 +347,7 @@ final class DelegatedWriteSession implements WriteSession {
 			DelegatedResourceSnapshot resource = entry.getValue();
 			resource.saveChanges();
 		}
-		this.writeSessionService.commitSession();
+		this.writeSessionService.commitSession(this);
 	}
 
 	@Override

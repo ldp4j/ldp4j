@@ -33,7 +33,7 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.ContentPreferences;
-import org.ldp4j.application.InteractionModel;
+import org.ldp4j.application.CreationPreferences;
 import org.ldp4j.application.PublicContainer;
 import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.data.DataSet;
@@ -46,13 +46,13 @@ public interface OperationContext {
 
 	String path();
 
-	InteractionModel interactionModel();
-
 	DataSet dataSet();
-
+	
 	Variant expectedVariant();
 
 	ContentPreferences contentPreferences();
+
+	CreationPreferences creationPreferences(); 
 
 	OperationContext checkContents();
 

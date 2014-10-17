@@ -44,6 +44,7 @@ import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceControllerService;
 import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.session.WriteSessionConfiguration;
 import org.ldp4j.application.session.WriteSessionService;
 import org.ldp4j.application.spi.EndpointRepository;
 import org.ldp4j.application.spi.RepositoryRegistry;
@@ -176,7 +177,7 @@ public final class ApplicationContext {
 		return this.resourceRepository.find(endpoint.resourceId(), Resource.class);
 	}
 
-	Resource createResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
+	Resource createResource(Endpoint endpoint, DataSet dataSet, String desiredPath) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Container resource = this.resourceRepository.find(resourceId,Container.class);
 		if(resource==null) {
@@ -185,7 +186,7 @@ public final class ApplicationContext {
 			throw new ApplicationExecutionException(errorMessage);
 		}
 		try {
-			return this.resourceControllerService.createResource(resource, dataSet);
+			return this.resourceControllerService.createResource(resource, dataSet,desiredPath);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource create failed at '%s'",endpoint);
 			LOGGER.error(errorMessage,e);
@@ -202,7 +203,7 @@ public final class ApplicationContext {
 			throw new ApplicationExecutionException(errorMessage);
 		}
 		try {
-			this.resourceControllerService.deleteResource(resource);
+			this.resourceControllerService.deleteResource(resource, WriteSessionConfiguration.builder().build());
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource deletion failed at '%s'",endpoint);
 			LOGGER.error(errorMessage,e);
@@ -219,7 +220,7 @@ public final class ApplicationContext {
 			throw new ApplicationExecutionException(errorMessage);
 		}
 		try {
-			this.resourceControllerService.updateResource(resource,dataSet);
+			this.resourceControllerService.updateResource(resource,dataSet, WriteSessionConfiguration.builder().build());
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource modification failed at '%s'",endpoint);
 			LOGGER.error(errorMessage,e);

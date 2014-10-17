@@ -32,6 +32,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collections;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -136,6 +137,11 @@ abstract class PersistencyState {
 			return resolve(ctx).removeMember(resource, ctx);
 		}
 
+		@Override
+		List<DelegatedResourceSnapshot> newMembers(DelegatedResourceSnapshot ctx) {
+			return resolve(ctx).newMembers(ctx);
+		}
+		
 		@Override
 		void saveChanges(DelegatedResourceSnapshot ctx) {
 			// Nothing to do
@@ -277,6 +283,11 @@ abstract class PersistencyState {
 			helper.
 				add("attachments",this.attachments).
 				add("members",this.members);
+		}
+
+		@Override
+		List<DelegatedResourceSnapshot> newMembers(DelegatedResourceSnapshot ctx) {
+			return this.members.newMembers();
 		}
 
 	}
@@ -421,6 +432,7 @@ abstract class PersistencyState {
 				add("newMembers",this.newMembers).
 				add("deletedMembers",this.deletedMembers);
 		}
+
 	}
 
 	private static final class TransientResourceState extends BasePersistencyState {
@@ -530,6 +542,11 @@ abstract class PersistencyState {
 		void saveChanges(DelegatedResourceSnapshot ctx) {
 		}
 
+		@Override
+		List<DelegatedResourceSnapshot> newMembers(DelegatedResourceSnapshot ctx) {
+			throw new IllegalStateException(this.failureMessage);
+		}
+		
 	}
 
 	private final ResourceId resourceId;
@@ -624,5 +641,7 @@ abstract class PersistencyState {
 	static PersistencyState deleted(DelegatedResourceSnapshot snapshot) {
 		return new DeletedResourceState(snapshot.resourceId(),snapshot.template(),snapshot.delegate());
 	}
+
+	abstract List<DelegatedResourceSnapshot> newMembers(DelegatedResourceSnapshot ctx);
 
 }

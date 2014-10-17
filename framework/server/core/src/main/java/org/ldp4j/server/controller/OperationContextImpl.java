@@ -42,7 +42,8 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.ContentPreferences;
-import org.ldp4j.application.InteractionModel;
+import org.ldp4j.application.CreationPreferences;
+import org.ldp4j.application.CreationPreferences.InteractionModel;
 import org.ldp4j.application.PublicContainer;
 import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.data.DataSet;
@@ -61,7 +62,6 @@ import org.ldp4j.server.utils.VariantHelper;
 import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 final class OperationContextImpl implements OperationContext {
 
@@ -324,7 +324,25 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	@Override
-	public InteractionModel interactionModel() {
+	public CreationPreferences creationPreferences() {
+		return 
+			CreationPreferences.
+				builder().
+					withInteractionModel(interactionModel()).
+					withPath(slug()).
+					build();
+	}
+
+	private String slug() {
+		List<String> slugs = this.headers.getRequestHeader("Slug");
+		String slug=null;
+		if(!slugs.isEmpty()) {
+			slug=slugs.get(0);
+		}
+		return slug;
+	}
+
+	private InteractionModel interactionModel() {
 		InteractionModel result=null;
 		for(String linkHeader:this.headers.getRequestHeader(HttpHeaders.LINK)) {
 			result= InteractionModelUtils.fromLink(linkHeader);
@@ -378,12 +396,12 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	@Override
-	public PublicContainer container() {
+	public PublicContainer<?> container() {
 		PublicResource tmp = resource();
 		if(!(tmp instanceof PublicContainer)) {
 			throw new IllegalStateException("Expected an instance of class "+PublicContainer.class.getCanonicalName()+" but got an instance of class "+tmp.getClass().getCanonicalName());
 		}
-		return (PublicContainer)tmp;
+		return (PublicContainer<?>)tmp;
 	}
 
 	@Override

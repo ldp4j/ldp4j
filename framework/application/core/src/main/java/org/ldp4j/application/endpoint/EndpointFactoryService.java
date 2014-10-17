@@ -62,7 +62,7 @@ public final class EndpointFactoryService implements Service {
 		checkNotNull(resource,"Endpoint's resource cannot be null");
 		checkNotNull(entityTag,"Endpoint's entity tag cannot be null");
 		checkNotNull(lastModified,"Endpoint's Last modified data cannot be null");
-		return new EndpointImpl(endpointRepository.nextIdentifier(),path,resource.id(),entityTag,lastModified);
+		return new EndpointImpl(this.endpointRepository.nextIdentifier(),path,resource.id(),entityTag,lastModified);
 	}
 
 	public static ServiceBuilder<EndpointFactoryService> serviceBuilder() {

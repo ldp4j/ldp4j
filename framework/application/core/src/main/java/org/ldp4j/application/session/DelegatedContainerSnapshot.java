@@ -28,6 +28,7 @@ package org.ldp4j.application.session;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.List;
 import java.util.Set;
 
 import org.ldp4j.application.resource.Container;
@@ -92,6 +93,10 @@ final class DelegatedContainerSnapshot extends DelegatedResourceSnapshot impleme
 			stringHelper().
 				add("members", members()).
 				toString();
+	}
+
+	List<DelegatedResourceSnapshot> newMembers() {
+		return super.persistencyState().newMembers(this);
 	}
 
 }

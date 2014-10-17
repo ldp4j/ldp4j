@@ -30,6 +30,7 @@ import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.SnapshotVisitor;
 import org.ldp4j.application.session.WriteSession;
+import org.ldp4j.application.session.WriteSessionConfiguration;
 import org.ldp4j.application.session.WriteSessionService;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.ext.ContainerHandler;
@@ -178,9 +179,10 @@ final class AdapterFactory {
 	
 	}
 	
-	public static Adapter newAdapter(Resource resource, ResourceHandler resourceHandler, WriteSessionService writeSessionService) {
-		WriteSession session = writeSessionService.createSession();
+	static Adapter newAdapter(Resource resource, ResourceHandler resourceHandler, WriteSessionService writeSessionService, WriteSessionConfiguration configuration) {
+		WriteSession session = writeSessionService.createSession(configuration);
 		ResourceSnapshot snapshot = writeSessionService.attach(session,resource,resourceHandler.getClass());
+		configuration.setTargetSnapshot(snapshot);
 		FactoryVistor factory = new FactoryVistor(resource.id(),session,writeSessionService,resourceHandler);
 		snapshot.accept(factory);
 		return factory.getAdapter();

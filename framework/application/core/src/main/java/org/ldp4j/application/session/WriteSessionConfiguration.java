@@ -24,28 +24,65 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application;
+package org.ldp4j.application.session;
 
-import java.net.URI;
+import com.google.common.base.Objects;
 
+public final class WriteSessionConfiguration {
+	
+	private String path;
+	private ResourceSnapshot targetSnapshot;
 
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.vocabulary.Term;
+	private WriteSessionConfiguration() {
+	}
 
-public enum InteractionModel {
-	RESOURCE(LDP.RESOURCE),
-	BASIC_CONTAINER(LDP.BASIC_CONTAINER),
-	DIRECT_CONTAINER(LDP.DIRECT_CONTAINER),
-	INDIRECT_CONTAINER(LDP.INDIRECT_CONTAINER);
-
-	private final Term term;
-
-	private InteractionModel(Term term) {
-		this.term = term;
+	private void setPath(String path) {
+		this.path=path;
 	}
 	
-	public URI asURI() {
-		return this.term.as(URI.class);
+	public void setTargetSnapshot(ResourceSnapshot targetSnapshot) {
+		this.targetSnapshot = targetSnapshot;
+	}
+
+	public String getPath() {
+		return this.path;
 	}
 	
+	public ResourceSnapshot getTargetSnapshot() {
+		return this.targetSnapshot;
+	}
+
+	@Override
+	public String toString() {
+		return 
+			Objects.
+				toStringHelper("WriteSessionConfiguration").
+					add("path",this.path).
+					add("targetSnapshot",this.targetSnapshot).
+					toString();
+	}
+
+	public static WriteSessionConfiguration.WriteSessionConfigurationBuilder builder() {
+		return new WriteSessionConfigurationBuilder();
+	}
+	
+	public static final class WriteSessionConfigurationBuilder {
+		
+		private final WriteSessionConfiguration configuration;
+
+		private WriteSessionConfigurationBuilder() {
+			this.configuration = new WriteSessionConfiguration();
+		}
+		
+		public WriteSessionConfigurationBuilder withPath(String path) {
+			this.configuration.setPath(path);
+			return this;
+		}
+		
+		public WriteSessionConfiguration build() {
+			return this.configuration;
+		}
+
+	}
+
 }

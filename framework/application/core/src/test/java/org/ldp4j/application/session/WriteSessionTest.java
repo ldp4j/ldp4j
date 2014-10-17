@@ -297,14 +297,14 @@ public class WriteSessionTest {
 
 	private void prepareSession(Action action, ResourceSnapshot resource) {
 		logAction(Stage.PREPARATION,action,resource);
-		sut = writeSessionService.createSession();
+		sut = writeSessionService.createSession(WriteSessionConfiguration.builder().build());
 		uow = UnitOfWork.getCurrent();
 	}
 
 	private void prepareSession(Action action, org.ldp4j.application.resource.Resource resource) {
 		logAction(Stage.PREPARATION, action, resource);
 		uow = UnitOfWork.newCurrent();
-		sut = writeSessionService.createSession();
+		sut = writeSessionService.createSession(WriteSessionConfiguration.builder().build());
 	}
 
 	private void handleAction(Action action, org.ldp4j.application.resource.Resource resource) {

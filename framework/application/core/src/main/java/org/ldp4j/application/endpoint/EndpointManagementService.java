@@ -107,7 +107,9 @@ public final class EndpointManagementService implements Service {
 		}
 		
 	}
-
+	
+		private static final int MAX_ENDPOINT_CREATION_FAILURE = 3;
+	
 	private final EndpointRepository endpointRepository;
 	private final EndpointFactoryService factoryService;
 	private final TemplateManagementService templateManagementService;
@@ -122,7 +124,7 @@ public final class EndpointManagementService implements Service {
 		this.listenerManager=ListenerManager.<EndpointLifecycleListener>newInstance();
 	}
 
-	private String calculateResourcePath(Resource resource) throws EndpointNotFoundException {
+	private String calculateResourcePath(Resource resource, String desiredPath) throws EndpointNotFoundException {
 		if(resource.isRoot()) {
 			throw new IllegalStateException("Cannot get path for root resource");
 		}
@@ -133,7 +135,7 @@ public final class EndpointManagementService implements Service {
 		
 		String result=
 			parent instanceof Container?
-				generatePathForMember(resource,(Container)parent):
+				generatePathForMember(resource,(Container)parent,desiredPath):
 				null;
 		if(result==null) {
 			result = generatePathForAttachment(resource,parent);
@@ -159,7 +161,7 @@ public final class EndpointManagementService implements Service {
 		return builder.toString();
 	}
 
-	private String generatePathForMember(Resource child, Container parent) throws EndpointNotFoundException {
+	private String generatePathForMember(Resource child, Container parent, String desiredPath) throws EndpointNotFoundException {
 		if(parent.hasMember(child.id())) {
 			Endpoint endpoint=getResourceEndpoint(parent.id());
 			ContainerTemplate parentTemplate = templateManagementService.findTemplateById(parent.id().templateId(),ContainerTemplate.class);
@@ -170,6 +172,12 @@ public final class EndpointManagementService implements Service {
 			addSegment(builder,endpoint.path());
 			addSegment(builder,parentTemplate.memberPath().or(""));
 			addSegment(builder,IdGenerator.nextMemberId(parent));
+			addSegment(builder,desiredPath);
+//			Object lastSegment = desiredPath;
+//			if(lastSegment==null) {
+//				lastSegment=IdGenerator.nextMemberId(parent);
+//			}
+//			addSegment(builder,lastSegment);
 			return builder.toString();
 		}
 		return null;
@@ -209,19 +217,35 @@ public final class EndpointManagementService implements Service {
 		return this.endpointRepository.endpointOfPath(path);
 	}
 	
-	public Endpoint createEndpointForResource(Resource resource, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
+	public Endpoint createEndpointForResource(Resource resource, String relativePath, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
 		checkNotNull(resource,"Resource cannot be null");
 		checkNotNull(entityTag,"Entity tag cannot be null");
 		checkNotNull(lastModified,"Last modified cannot be null");
-		try {
-			String basePath = calculateResourcePath(resource);
-			final Endpoint newEndpoint = this.factoryService.createEndpoint(resource,basePath,entityTag,lastModified);
-			this.endpointRepository.add(newEndpoint);
-			this.listenerManager.notify(new EndpointCreationNotification(newEndpoint));
-			return newEndpoint;
-		} catch (EndpointNotFoundException e) {
-			throw new EndpointCreationException("Could not calculate path for resource '"+resource.id()+"'",e);
+		Endpoint newEndpoint = createEndpoint(resource, relativePath, entityTag, lastModified);
+		this.listenerManager.notify(new EndpointCreationNotification(newEndpoint));
+		return newEndpoint;
+	}
+
+	private Endpoint createEndpoint(Resource resource, String relativePath, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
+		String candidatePath=relativePath;
+		int repetitions=0;
+		while(repetitions<MAX_ENDPOINT_CREATION_FAILURE) {
+			try {
+				String resourcePath = calculateResourcePath(resource,candidatePath);
+				Endpoint newEndpoint = this.factoryService.createEndpoint(resource,resourcePath,entityTag,lastModified);
+				this.endpointRepository.add(newEndpoint);
+				return newEndpoint;
+			} catch (EndpointNotFoundException e) {
+				throw new EndpointCreationException("Could not calculate path for resource '"+resource.id()+"'",e);
+			} catch (IllegalArgumentException e) {
+				// TODO: Define a proper exception
+				if(candidatePath!=null) {
+					repetitions++;
+				}
+				candidatePath=null;
+			}
 		}
+		throw new EndpointCreationException("Could not create endpoint for resource '"+resource.id()+"'");
 	}
 	
 	public Endpoint modifyResourceEndpoint(Resource resource, EntityTag entityTag, Date lastModified) throws EndpointNotFoundException {

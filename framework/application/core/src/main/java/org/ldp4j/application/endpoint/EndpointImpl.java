@@ -34,13 +34,15 @@ import com.google.common.base.Objects;
 
 final class EndpointImpl implements Endpoint {
 
+	private final long id;
 	private final ResourceId resourceId;
+	private final String path;
+
+	
 	private EntityTag entityTag;
 	private Date lastModified;
-	private String path;
-	private final long id;
 
-	protected EndpointImpl(long id, String path, ResourceId resourceId, EntityTag entityTag, Date lastModified) {
+	EndpointImpl(long id, String path, ResourceId resourceId, EntityTag entityTag, Date lastModified) {
 		this.id = id;
 		this.path = path;
 		this.resourceId = resourceId;
