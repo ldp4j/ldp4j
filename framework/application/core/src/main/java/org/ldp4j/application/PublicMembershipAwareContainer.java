@@ -33,7 +33,6 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Property;
-import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.validation.ValidationConstraint;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
@@ -41,26 +40,14 @@ import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.template.MembershipAwareContainerTemplate;
-import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.vocabulary.Term;
 
-public abstract class PublicMembershipAwareContainer<T extends MembershipAwareContainerTemplate> extends PublicContainer {
-
-	private final Class<? extends T> templateClass;
+public abstract class PublicMembershipAwareContainer<T extends MembershipAwareContainerTemplate> extends PublicContainer<T> {
 
 	protected PublicMembershipAwareContainer(ApplicationContext applicationContext, Endpoint endpoint, Class<? extends T> templateClass) {
-		super(applicationContext, endpoint);
-		this.templateClass = templateClass;
+		super(applicationContext, endpoint,templateClass);
 	}
 
-	protected final T containerTemplate() {
-		ResourceTemplate template = template();
-		if(!this.templateClass.isInstance(template)) {
-			throw new IllegalStateException("Invalid container template exception: expected an instance of class "+this.templateClass.getCanonicalName()+" but got an instance of "+template.getClass().getCanonicalName());
-		}
-		return this.templateClass.cast(template);
-	}
-	
 	protected abstract Term containerType();
 
 	final void fillInMemberMetadata(ContentPreferences contentPreferences, Individual<?,?> individual, Context ctx) {

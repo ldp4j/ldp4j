@@ -28,11 +28,12 @@ package org.ldp4j.application;
 
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.template.BasicContainerTemplate;
 
-public class PublicBasicContainer extends PublicContainer {
+public class PublicBasicContainer extends PublicContainer<BasicContainerTemplate> {
 
 	protected PublicBasicContainer(ApplicationContext applicationContext, Endpoint endpoint) {
-		super(applicationContext, endpoint);
+		super(applicationContext,endpoint,BasicContainerTemplate.class);
 	}
 
 	@Override

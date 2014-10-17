@@ -104,18 +104,18 @@ public final class IndividualReferenceBuilder {
 
 	public static final class ExternalIndividualReferenceBuilder {
 		
-		IndividualReference<?,?> atLocation(URI location) {
+		public IndividualReference<?,?> atLocation(URI location) {
 			return IndividualReference.external(location);
 		}
 		
-		IndividualReference<?,?> atLocation(String location) {
+		public IndividualReference<?,?> atLocation(String location) {
 			try {
 				return atLocation(new URI(location));
 			} catch (URISyntaxException e) {
 				throw new IllegalStateException("Could not encode URI from String '"+location+"'",e);
 			}
 		}
-		IndividualReference<?,?> atLocation(QName location) {
+		public IndividualReference<?,?> atLocation(QName location) {
 			try {
 				return atLocation(new URI(location.getNamespaceURI()+""+location.getLocalPart()));
 			} catch (URISyntaxException e) {
@@ -123,7 +123,7 @@ public final class IndividualReferenceBuilder {
 			}
 		}
 	
-		IndividualReference<?,?> atLocation(URL location) {
+		public IndividualReference<?,?> atLocation(URL location) {
 			try {
 				return atLocation(location.toURI());
 			} catch (URISyntaxException e) {

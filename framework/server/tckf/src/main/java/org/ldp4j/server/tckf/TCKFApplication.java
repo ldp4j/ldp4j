@@ -28,12 +28,15 @@ package org.ldp4j.server.tckf;
 
 import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference;
 
+import java.net.URI;
 import java.util.Date;
 
 import org.ldp4j.application.data.DataDSL;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.session.ContainerSnapshot;
@@ -71,14 +74,27 @@ public class TCKFApplication extends Application<Configuration> {
 		this.indirectContainerName = NamingScheme.getDefault().name(INDIRECT_CONTAINER_NAME);
 	}
 
-	private DataSet getInitialData(String templateId, String name) {
-		DataSet initial=
-			DataDSL.
-				dataSet().
-					individual(newReference().toManagedIndividual(templateId).named(name)).
-						hasProperty(TCKFHelper.READ_ONLY_PROPERTY.toString()).
-							withValue(new Date().toString()).
-						build();
+	private DataSet getInitialData(String templateId, String name, boolean markContainer) {
+		DataSet initial=null;
+		if(!markContainer) {
+			initial=
+				DataDSL.
+					dataSet().
+						individual(newReference().toManagedIndividual(templateId).named(name)).
+							hasProperty(TCKFHelper.READ_ONLY_PROPERTY.toString()).
+								withValue(new Date().toString()).
+							build();
+		} else {
+			initial=
+				DataDSL.
+					dataSet().
+						individual(newReference().toManagedIndividual(templateId).named(name)).
+							hasProperty(TCKFHelper.READ_ONLY_PROPERTY.toString()).
+								withValue(new Date().toString()).
+							hasLink(RDF.TYPE.qualifiedEntityName()).
+								referringTo(newReference().toExternalIndividual().atLocation(LDP.BASIC_CONTAINER.as(URI.class))).
+							build();
+		}
 		return initial;
 	}
 
@@ -95,9 +111,10 @@ public class TCKFApplication extends Application<Configuration> {
 		directContainer.setHandler(resourceHandler);
 		indirectContainer.setHandler(resourceHandler);
 
-		basicContainer.add(this.basicContainerName, getInitialData(TCKFBasicContainerHandler.ID,BASIC_CONTAINER_NAME));
-		directContainer.add(this.directContainerName, getInitialData(TCKFDirectContainerHandler.ID,DIRECT_CONTAINER_NAME));
-		indirectContainer.add(this.indirectContainerName, getInitialData(TCKFIndirectContainerHandler.ID,INDIRECT_CONTAINER_NAME));
+		resourceHandler.add(this.resourceName, getInitialData(TCKFResourceHandler.ID, RESOURCE_NAME, true));
+		basicContainer.add(this.basicContainerName, getInitialData(TCKFBasicContainerHandler.ID,BASIC_CONTAINER_NAME, false));
+		directContainer.add(this.directContainerName, getInitialData(TCKFDirectContainerHandler.ID,DIRECT_CONTAINER_NAME, false));
+		indirectContainer.add(this.indirectContainerName, getInitialData(TCKFIndirectContainerHandler.ID,INDIRECT_CONTAINER_NAME, false));
 
 		bootstrap.addHandler(resourceHandler);
 		bootstrap.addHandler(basicContainer);

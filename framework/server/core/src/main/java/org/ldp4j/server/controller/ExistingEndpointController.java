@@ -48,6 +48,7 @@ import org.ldp4j.application.PublicIndirectContainer;
 import org.ldp4j.application.PublicRDFSource;
 import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.PublicVisitor;
+import org.ldp4j.application.UnsupportedInteractionModelException;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.endpoint.Endpoint;
@@ -332,6 +333,10 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			body=location.toString();
 			// 2.1 Add Location header with the URI of the just created resource
 			builder.header(HttpHeaders.LOCATION, location.toString());
+		} catch (UnsupportedInteractionModelException e) {
+			status=Status.FORBIDDEN;
+			body=e.getMessage();
+			builder.language(Locale.ENGLISH);
 		} catch (ApplicationExecutionException e) {
 			status=Status.INTERNAL_SERVER_ERROR;
 			body=Throwables.getStackTraceAsString(e);
