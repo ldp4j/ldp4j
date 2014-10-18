@@ -107,14 +107,6 @@ public abstract class PublicContainer<T extends ContainerTemplate> extends Publi
 		return this.templateClass.cast(template);
 	}
 	
-	public final Collection<PublicResource> members() {
-		List<PublicResource> members=Lists.newArrayList();
-		for(ResourceId memberId:resolveAs(Container.class).memberIds()) {
-			members.add(createResource(memberId));
-		}
-		return Collections.unmodifiableList(members);
-	}
-
 	@Override
 	protected final DataSet resourceData(ContentPreferences contentPreferences) throws ApplicationExecutionException {
 		DataSet dataSet = super.resourceData(contentPreferences);
@@ -128,20 +120,6 @@ public abstract class PublicContainer<T extends ContainerTemplate> extends Publi
 			}
 		}
 		return dataSet;
-	}
-
-	private void cleanIndividual(Individual<?,?> individual) {
-		for(Property property:individual) {
-			URI propertyId = property.predicate();
-			for(Value value:property) {
-				individual.removeValue(propertyId,value);
-			}
-		}
-	}
-
-	private boolean isSelf(ManagedIndividualId id) {
-		ResourceId resourceId = super.endpoint().resourceId();
-		return id.managerId().equals(resourceId.templateId()) && id.name().equals(resourceId.name());
 	}
 
 	@Override
@@ -159,7 +137,7 @@ public abstract class PublicContainer<T extends ContainerTemplate> extends Publi
 			}
 		}
 	}
-	
+
 	@Override
 	protected void configureValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata) {
 		super.configureValidationConstraints(builder, individual, metadata);
@@ -174,10 +152,32 @@ public abstract class PublicContainer<T extends ContainerTemplate> extends Publi
 		builder.withPropertyConstraint(constraint);
 	}
 
+	public final Collection<PublicResource> members() {
+		List<PublicResource> members=Lists.newArrayList();
+		for(ResourceId memberId:resolveAs(Container.class).memberIds()) {
+			members.add(createResource(memberId));
+		}
+		return Collections.unmodifiableList(members);
+	}
+
 	public PublicResource createResource(DataSet dataSet, CreationPreferences preferences) throws ApplicationExecutionException, UnsupportedInteractionModelException {
 		verifyInteractionModel(preferences.getInteractionModel());
 		Resource resource=applicationContext().createResource(endpoint(),dataSet,preferences.getPath());
 		return createResource(resource.id());
+	}
+
+	private void cleanIndividual(Individual<?,?> individual) {
+		for(Property property:individual) {
+			URI propertyId = property.predicate();
+			for(Value value:property) {
+				individual.removeValue(propertyId,value);
+			}
+		}
+	}
+
+	private boolean isSelf(ManagedIndividualId id) {
+		ResourceId resourceId = super.endpoint().resourceId();
+		return id.managerId().equals(resourceId.templateId()) && id.name().equals(resourceId.name());
 	}
 
 	private void verifyInteractionModel(InteractionModel interactionModel) throws UnsupportedInteractionModelException {

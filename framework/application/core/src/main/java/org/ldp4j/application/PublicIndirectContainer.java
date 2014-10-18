@@ -59,7 +59,7 @@ public final class PublicIndirectContainer extends PublicMembershipAwareContaine
 		individual.
 			addValue(
 				ctx.property(LDP.INSERTED_CONTENT_RELATION), 
-				ctx.value(containerTemplate().insertedContentRelation()));
+				ctx.reference(containerTemplate().insertedContentRelation()));
 	}
 	
 	@Override

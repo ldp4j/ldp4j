@@ -310,7 +310,11 @@ final class TemplateLibraryLoader {
 		@Override
 		protected MutableIndirectContainerTemplate createTemplate(IndirectContainer annotation, Class<? extends ContainerHandler> handler) {
 			try {
-				return new MutableIndirectContainerTemplate(annotation.id(), handler,new URI(annotation.insertedContentRelation()));
+				URI insertedContentRelation = new URI(annotation.insertedContentRelation());
+				if(insertedContentRelation.normalize().equals(URI.create(""))) {
+					throw new TemplateLoadingRuntimeException(annotation.id(),"The inserted content relation cannot be the null URI");
+				}
+				return new MutableIndirectContainerTemplate(annotation.id(), handler,insertedContentRelation);
 			} catch (URISyntaxException e) {
 				throw new TemplateLoadingRuntimeException(annotation.id(),"Inserted content relation value '"+annotation.insertedContentRelation()+"' is not valid",e);
 			}

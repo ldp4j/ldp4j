@@ -46,5 +46,5 @@ public @interface IndirectContainer {
 	String memberPath() default "";
 	String membershipPredicate() default "http://www.w3.org/ns/ldp#member";
 	MembershipRelation membershipRelation() default MembershipRelation.HAS_MEMBER;
-	String insertedContentRelation();
+	String insertedContentRelation() default "http://www.w3.org/ns/ldp#MemberSubject";
 }

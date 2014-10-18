@@ -217,6 +217,13 @@ public final class EndpointManagementService implements Service {
 		return this.endpointRepository.endpointOfPath(path);
 	}
 	
+	/**
+	 * TODO: Verify that http://tools.ietf.org/html/rfc7232#section-2.2
+	 * holds: if the clock in the request is ahead of the clock of the origin
+	 * server (i.e., I request from Spain the update of a resource held in USA)
+	 * the last-modified data should be changed to that of the request and not
+	 * a generated date from the origin server
+	 */
 	public Endpoint createEndpointForResource(Resource resource, String relativePath, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
 		checkNotNull(resource,"Resource cannot be null");
 		checkNotNull(entityTag,"Entity tag cannot be null");

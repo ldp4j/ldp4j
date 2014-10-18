@@ -27,14 +27,10 @@
 package org.ldp4j.server.tckf;
 
 import org.ldp4j.application.ext.annotations.IndirectContainer;
-import org.ldp4j.application.ext.annotations.MembershipRelation;
 
 @IndirectContainer(
 	id=TCKFIndirectContainerHandler.ID, 
-	memberHandler=TCKFResourceHandler.class,
-	membershipRelation=MembershipRelation.HAS_MEMBER,
-	membershipPredicate="http://www.ldp4j.org/vocabularies/example#hasMember",
-	insertedContentRelation="http://www.ldp4j.org/vocabularies/example#id"
+	memberHandler=TCKFResourceHandler.class
 )
 public class TCKFIndirectContainerHandler extends TCKFContainerHandler {
 
