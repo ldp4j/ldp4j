@@ -1,0 +1,5 @@
+org.ldp4j.application.entity.impl.StringValueFactory
+org.ldp4j.application.entity.impl.LongValueFactory
+org.ldp4j.application.entity.impl.IntegerValueFactory
+org.ldp4j.application.entity.impl.URIValueFactory
+org.ldp4j.application.entity.impl.URLValueFactory

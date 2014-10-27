@@ -20,73 +20,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.data;
+package org.ldp4j.application.entity;
 
+public interface Value {
 
-import com.google.common.base.Objects;
-
-final class ImmutableName<T> implements Name<T> {
+	void accept(ValueVisitor visitor);
 	
-	private final T id;
-
-	private ImmutableName(T id) {
-		this.id = id;
-	}
-	
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public T id() {
-		return id;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void accept(NameVisitor visitor) {
-		visitor.visit(id);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return id().toString();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int hashCode() {
-		return Objects.hashCode(id());
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		boolean result=false;
-		if(obj instanceof ImmutableName) {
-			result=Objects.equal(id, ((ImmutableName<?>) obj).id);
-		}
-		return result;
-	}
-	
-	public static <T> Name<T> newGlobalName(T id) {
-		return new ImmutableName<T>(id);
-	}
-
-	public static <T> Name<T> newLocalName(T id) {
-		return new ImmutableName<T>(id);
-	}
-
 }
