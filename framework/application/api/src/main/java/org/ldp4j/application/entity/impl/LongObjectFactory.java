@@ -26,30 +26,28 @@
  */
 package org.ldp4j.application.entity.impl;
 
-import java.net.URI;
-import java.net.URISyntaxException;
+import org.ldp4j.application.entity.spi.ObjectFactory;
+import org.ldp4j.application.entity.spi.ObjectParseException;
 
-import org.ldp4j.application.entity.spi.ValueFactory;
-import org.ldp4j.application.entity.spi.ValueParseException;
 
-public class URIValueFactory implements ValueFactory<URI> {
+public class LongObjectFactory implements ObjectFactory<Long> {
 
 	@Override
-	public Class<? extends URI> targetClass() {
-		return URI.class;
+	public Class<? extends Long> targetClass() {
+		return Long.class;
 	}
 
 	@Override
-	public URI fromString(String rawValue) {
+	public Long fromString(String rawValue) {
 		try {
-			return new URI(rawValue);
-		} catch (URISyntaxException e) {
-			throw new ValueParseException(e,URI.class,rawValue);
+			return Long.parseLong(rawValue);
+		} catch (NumberFormatException e) {
+			throw new ObjectParseException(e,Long.class,rawValue);
 		}
 	}
 
 	@Override
-	public String toString(URI value) {
+	public String toString(Long value) {
 		return value.toString();
 	}
 

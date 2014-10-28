@@ -24,33 +24,14 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity.impl;
+package org.ldp4j.application.entity.spi;
 
-import java.net.MalformedURLException;
-import java.net.URL;
+public interface ObjectFactory<T> {
 
-import org.ldp4j.application.entity.spi.ValueFactory;
-import org.ldp4j.application.entity.spi.ValueParseException;
+	Class<? extends T> targetClass();
 
-public class URLValueFactory implements ValueFactory<URL> {
+	T fromString(String rawValue);
 
-	@Override
-	public Class<? extends URL> targetClass() {
-		return URL.class;
-	}
-
-	@Override
-	public URL fromString(String rawValue) {
-		try {
-			return new URL(rawValue);
-		} catch (MalformedURLException e) {
-			throw new ValueParseException(e,URL.class,rawValue);
-		}
-	}
-
-	@Override
-	public String toString(URL value) {
-		return value.toString();
-	}
+	String toString(T value);
 
 }

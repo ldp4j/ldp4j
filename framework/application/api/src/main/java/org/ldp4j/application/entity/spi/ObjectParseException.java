@@ -24,31 +24,28 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity.impl;
+package org.ldp4j.application.entity.spi;
 
-import org.ldp4j.application.entity.spi.ValueFactory;
-import org.ldp4j.application.entity.spi.ValueParseException;
+public class ObjectParseException extends ObjectTransformationException {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 4092528705379062890L;
 
-public class IntegerValueFactory implements ValueFactory<Integer> {
+	private final String rawValue;
 
-	@Override
-	public Class<? extends Integer> targetClass() {
-		return Integer.class;
+	public ObjectParseException(Throwable cause, Class<?> valueClass, String rawValue) {
+		super("Could not parse raw value '"+rawValue, cause, valueClass);
+		this.rawValue = rawValue;
 	}
 
-	@Override
-	public Integer fromString(String rawValue) {
-		try {
-			return Integer.parseInt(rawValue);
-		} catch (NumberFormatException e) {
-			throw new ValueParseException(e,Integer.class,rawValue);
-		}
+	public ObjectParseException(Class<?> valueClass, String rawValue) {
+		this(null,valueClass,rawValue);
 	}
 
-	@Override
-	public String toString(Integer value) {
-		return value.toString();
+	public String getRawValue() {
+		return rawValue;
 	}
 
 }

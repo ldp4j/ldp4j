@@ -24,25 +24,72 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity.impl;
+package org.ldp4j.application.entity;
 
-import org.ldp4j.application.entity.spi.ValueFactory;
+import java.net.URI;
 
-public class StringValueFactory implements ValueFactory<String> {
+import com.google.common.base.Objects;
+import com.google.common.base.Objects.ToStringHelper;
 
-	@Override
-	public Class<? extends String> targetClass() {
-		return String.class;
+public final class ManagedIdentity<T> extends Identity {
+
+	private Key<T> key;
+
+	private ManagedIdentity(URI identifier, Key<T> key) {
+		super(identifier);
+		this.key = key;
 	}
 
-	@Override
-	public String fromString(String rawValue) {
-		return rawValue;
+	public Key<T> key() {
+		return this.key;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public String toString(String value) {
-		return value;
+	public void accept(IdentityVisitor visitor) {
+		visitor.visitManaged(this);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return super.hashCode()+Objects.hashCode(this.key);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=super.equals(obj);
+		if(result && obj instanceof ManagedIdentity) {
+			ManagedIdentity<?> that=(ManagedIdentity<?>) obj;
+			result=Objects.equal(this.key, that.key);
+		}
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void toString(ToStringHelper helper) {
+		helper.add("key",this.key);
+	}
+
+	static <T,V> ManagedIdentity<T> create(Class<T> owner, V nativeId) {
+		return create(Key.create(owner, nativeId));
+	}
+
+	static <T> ManagedIdentity<T> create(Key<T> key) {
+		URI identifier=
+			IdentifierUtil.
+				createManagedIdentifier(key);
+		return new ManagedIdentity<T>(identifier,key);
 	}
 
 }

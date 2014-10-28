@@ -29,21 +29,30 @@ package org.ldp4j.application.entity;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.net.URI;
+import java.util.UUID;
+
+import org.ldp4j.application.data.Name;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
-public final class External extends Identity {
+public final class LocalIdentity<T> extends Identity {
 
-	private final URI location;
+	private final UUID dataSourceId;
+	private final Name<T> name;
 
-	private External(URI identifier, URI location) {
+	private LocalIdentity(URI identifier, UUID dataSourceId, Name<T> name) {
 		super(identifier);
-		this.location = location;
+		this.dataSourceId = dataSourceId;
+		this.name = name;
 	}
 
-	public URI location() {
-		return this.location;
+	UUID dataSourceId() {
+		return dataSourceId;
+	}
+
+	public Name<T> name() {
+		return this.name;
 	}
 
 	/**
@@ -51,7 +60,7 @@ public final class External extends Identity {
 	 */
 	@Override
 	public void accept(IdentityVisitor visitor) {
-		visitor.visitExternal(this);
+		visitor.visitLocal(this);
 	}
 
 	/**
@@ -59,7 +68,7 @@ public final class External extends Identity {
 	 */
 	@Override
 	public int hashCode() {
-		return super.hashCode()+Objects.hashCode(this.location);
+		return super.hashCode()+Objects.hashCode(this.dataSourceId,this.name);
 	}
 
 	/**
@@ -69,8 +78,10 @@ public final class External extends Identity {
 	public boolean equals(Object obj) {
 		boolean result=super.equals(obj);
 		if(result && obj.getClass()==getClass()) {
-			External that=(External)obj;
-			result=Objects.equal(this.location, that.location);
+			LocalIdentity<?> that=(LocalIdentity<?>)obj;
+			result=
+				Objects.equal(this.dataSourceId, that.dataSourceId) &&
+				Objects.equal(this.name, that.name);
 		}
 		return result;
 	}
@@ -80,13 +91,15 @@ public final class External extends Identity {
 	 */
 	@Override
 	protected void toString(ToStringHelper helper) {
-		helper.add("location",this.location);
-
+		helper.
+			add("dataSourceId",this.dataSourceId).
+			add("name",this.name);
 	}
 
-	static External create(URI location) {
-		checkNotNull(location,"External location cannot be null");
-		return new External(IdentifierUtil.createExternalIdentifier(location),location);
+	static <T> LocalIdentity<T> create(UUID dataSourceId, Name<T> name) {
+		checkNotNull(dataSourceId,"Data source identifier cannot be null");
+		checkNotNull(name,"Local identity name cannot be null");
+		return new LocalIdentity<T>(IdentifierUtil.createLocalIdentifier(dataSourceId,name),dataSourceId,name);
 	}
 
 }

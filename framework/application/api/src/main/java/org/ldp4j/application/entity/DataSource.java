@@ -96,6 +96,18 @@ public class DataSource implements Iterable<Entity> {
 		this.identifiers.remove(entity.identifier());
 	}
 
+	// TODO: Make thread-safe before making it public
+	private boolean contains(Entity entity) {
+		boolean result=false;
+		if(entity!=null) {
+			result=
+				entity.identifier()!=null &&
+				entity.dataSource()==this &&
+				isStored(entity);
+		}
+		return result;
+	}
+
 	UUID identifier() {
 		return this.identifier;
 	}
@@ -120,17 +132,6 @@ public class DataSource implements Iterable<Entity> {
 		} finally {
 			this.lock.readLock().unlock();
 		}
-	}
-
-	public boolean contains(Entity entity) {
-		boolean result=false;
-		if(entity!=null) {
-			result=
-				entity.identifier()!=null &&
-				entity.dataSource()==this &&
-				isStored(entity);
-		}
-		return result;
 	}
 
 	/**

@@ -81,8 +81,8 @@ public class IdentityFactoryTest {
 	}
 
 	@SuppressWarnings("rawtypes")
-	private void assertInvariant(IdentifierIntrospector introspector, Class<?> owner, Class<?> valueClass) {
-		assertThat((Class)introspector.owner(),sameInstance((Class)owner));
+	private void assertInvariant(IdentifierIntrospector introspector, Object owner, Class<?> valueClass) {
+		assertThat(introspector.owner(),equalTo(owner));
 		assertThat((Class)introspector.valueClass(),sameInstance((Class)valueClass));
 	}
 
@@ -90,7 +90,7 @@ public class IdentityFactoryTest {
 	public void testLocalCreation() {
 		String nativeId = "$example%+%value^";
 		nameGenerator.addNextNativeId(nativeId);
-		Local<?> local = IdentityFactory.createLocalIdentity(dataSource);
+		LocalIdentity<?> local = IdentityFactory.createLocalIdentity(dataSource);
 		URI identifier = local.identifier();
 		System.out.println(String.format("%s --> %s",nativeId,identifier));
 		assertThat(identifier,notNullValue());
@@ -98,14 +98,14 @@ public class IdentityFactoryTest {
 		assertThat(introspector.subject(),is(identifier));
 		assertThat(introspector.isValid(),is(true));
 		assertThat(introspector.classifier(),is(Classifier.LOCAL));
-		assertInvariant(introspector, Name.class, String.class);
+		assertInvariant(introspector, dataSource.identifier(), String.class);
 		assertThat(introspector.value(String.class),equalTo(nativeId));
 	}
 
 	@Test
 	public void testManagedCreation() {
 		int nativeId = 23;
-		Managed<DataSet> managed = IdentityFactory.createManagedIdentity(DataSet.class,nativeId);
+		ManagedIdentity<DataSet> managed = IdentityFactory.createManagedIdentity(DataSet.class,nativeId);
 		URI identifier = managed.identifier();
 		assertThat(identifier,notNullValue());
 		IdentifierIntrospector introspector = IdentifierUtil.introspect(identifier);
@@ -118,18 +118,34 @@ public class IdentityFactoryTest {
 	}
 
 	@Test
-	public void testExteralCreation() {
-		URI nativeId = URI.create("http://localhost:8080/ldp4j/resource/1/");
-		External external = IdentityFactory.createExternalIdentity(nativeId);
+	public void testExternalCreation() {
+		URI location = URI.create("http://localhost:8080/ldp4j/resource/1/");
+		ExternalIdentity external = IdentityFactory.createExternalIdentity(location);
 		URI identifier = external.identifier();
-		System.out.println(String.format("%s --> %s",nativeId,identifier));
+		System.out.println(String.format("%s --> %s",location,identifier));
 		assertThat(identifier,notNullValue());
 		IdentifierIntrospector introspector = IdentifierUtil.introspect(identifier);
 		assertThat(introspector.subject(),is(identifier));
 		assertThat(introspector.isValid(),is(true));
 		assertThat(introspector.classifier(),is(Classifier.EXTERNAL));
-		assertInvariant(introspector, URI.class, URI.class);
-		assertThat(introspector.value(URI.class),equalTo(nativeId));
+		assertInvariant(introspector, location, URI.class);
+		assertThat(introspector.value(URI.class),equalTo(location));
+	}
+
+	@Test
+	public void testRelativeCreation() {
+		Key<DataSource> key=Key.create(DataSource.class, 23);
+		URI path = URI.create("http://localhost:8080/ldp4j/resource/1/");
+		RelativeIdentity<DataSource> relative = IdentityFactory.createRelativeIdentity(key,path);
+		URI identifier = relative.identifier();
+		System.out.println(String.format("{%s,%s} --> %s",key,path,identifier));
+		assertThat(identifier,notNullValue());
+		IdentifierIntrospector introspector = IdentifierUtil.introspect(identifier);
+		assertThat(introspector.subject(),is(identifier));
+		assertThat(introspector.isValid(),is(true));
+		assertThat(introspector.classifier(),is(Classifier.RELATIVE));
+		assertInvariant(introspector, key, URI.class);
+		assertThat(introspector.value(URI.class),equalTo(path));
 	}
 
 }

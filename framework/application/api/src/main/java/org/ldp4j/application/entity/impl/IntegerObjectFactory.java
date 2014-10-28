@@ -26,28 +26,28 @@
  */
 package org.ldp4j.application.entity.impl;
 
-import org.ldp4j.application.entity.spi.ValueFactory;
-import org.ldp4j.application.entity.spi.ValueParseException;
+import org.ldp4j.application.entity.spi.ObjectFactory;
+import org.ldp4j.application.entity.spi.ObjectParseException;
 
 
-public class LongValueFactory implements ValueFactory<Long> {
+public class IntegerObjectFactory implements ObjectFactory<Integer> {
 
 	@Override
-	public Class<? extends Long> targetClass() {
-		return Long.class;
+	public Class<? extends Integer> targetClass() {
+		return Integer.class;
 	}
 
 	@Override
-	public Long fromString(String rawValue) {
+	public Integer fromString(String rawValue) {
 		try {
-			return Long.parseLong(rawValue);
+			return Integer.parseInt(rawValue);
 		} catch (NumberFormatException e) {
-			throw new ValueParseException(e,Long.class,rawValue);
+			throw new ObjectParseException(e,Integer.class,rawValue);
 		}
 	}
 
 	@Override
-	public String toString(Long value) {
+	public String toString(Integer value) {
 		return value.toString();
 	}
 

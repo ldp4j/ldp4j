@@ -24,12 +24,33 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity.spi;
+package org.ldp4j.application.entity.impl;
 
-import org.ldp4j.application.data.Name;
+import java.net.URI;
+import java.net.URISyntaxException;
 
-public interface NameGenerator<T> {
+import org.ldp4j.application.entity.spi.ObjectFactory;
+import org.ldp4j.application.entity.spi.ObjectParseException;
 
-	Name<T> nextName();
+public class URIObjectFactory implements ObjectFactory<URI> {
+
+	@Override
+	public Class<? extends URI> targetClass() {
+		return URI.class;
+	}
+
+	@Override
+	public URI fromString(String rawValue) {
+		try {
+			return new URI(rawValue);
+		} catch (URISyntaxException e) {
+			throw new ObjectParseException(e,URI.class,rawValue);
+		}
+	}
+
+	@Override
+	public String toString(URI value) {
+		return value.toString();
+	}
 
 }

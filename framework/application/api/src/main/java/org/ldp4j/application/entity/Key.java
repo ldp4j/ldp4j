@@ -49,16 +49,8 @@ public final class Key<T> {
 		return this.nativeId;
 	}
 
-	public <V> V nativeId(Class<? extends V> clazz) {
-		return nativeId(clazz,null);
-	}
-
-	public <V> V nativeId(Class<? extends V> clazz, V defaultId) {
-		V result=defaultId;
-		if(clazz.isInstance(this.nativeId)) {
-			result=clazz.cast(this.nativeId);
-		}
-		return result;
+	public <V> ObjectAdapter<V> nativeIdAs(Class<? extends V> clazz) {
+		return new ObjectAdapter<V>(clazz, this.nativeId);
 	}
 
 	/**
@@ -98,8 +90,8 @@ public final class Key<T> {
 	}
 
 	public static <T> Key<T> create(Class<T> owner, Object nativeId) {
-		checkNotNull(owner,"Managed identity owner cannot be null");
-		checkNotNull(nativeId,"Managed identity native identifier cannot be null");
+		checkNotNull(owner,"Key owner cannot be null");
+		checkNotNull(nativeId,"Key native identifier cannot be null");
 		return new Key<T>(owner,nativeId);
 	}
 

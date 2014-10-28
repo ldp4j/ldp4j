@@ -26,10 +26,22 @@
  */
 package org.ldp4j.application.entity.spi;
 
-import org.ldp4j.application.data.Name;
+public class ObjectTransformationException extends RuntimeException {
 
-public interface NameGenerator<T> {
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1526607378071322728L;
 
-	Name<T> nextName();
+	private final Class<?> valueClass;
+
+	public ObjectTransformationException(String message, Throwable cause, Class<?> valueClass) {
+		super(message, cause);
+		this.valueClass = valueClass;
+	}
+
+	public Class<?> getValueClass() {
+		return valueClass;
+	}
 
 }

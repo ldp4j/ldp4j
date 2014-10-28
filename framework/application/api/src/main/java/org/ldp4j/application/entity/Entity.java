@@ -39,6 +39,7 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 
@@ -49,7 +50,7 @@ public class Entity implements Value, Iterable<Property> {
 		private Entity state;
 
 		private SurrogateEntity(Entity state) {
-			super();
+			super(state.identity);
 			this.state=state;
 		}
 
@@ -84,11 +85,6 @@ public class Entity implements Value, Iterable<Property> {
 		@Override
 		public UUID identifier() {
 			return getState().identifier();
-		}
-
-		@Override
-		public Identity identity() {
-			return getState().identity();
 		}
 
 		@Override
@@ -158,7 +154,7 @@ public class Entity implements Value, Iterable<Property> {
 
 	private Identity identity;
 
-	private Entity() {
+	public Entity(Identity identity) {
 		this.properties=Maps.newConcurrentMap();
 		this.surrogates=Maps.newIdentityHashMap();
 		this.lock=new ReentrantLock();
@@ -167,31 +163,31 @@ public class Entity implements Value, Iterable<Property> {
 		this.inUse=new AtomicBoolean(false);
 		this.notUpdatingState=lock.newCondition();
 		this.notInUse=lock.newCondition();
-	}
-
-	public Entity(Identity identity) {
-		this();
 		setIdentity(identity);
 	}
 
 	public Entity(Key<?> key) {
-		this();
-		setIdentity(IdentityFactory.createManagedIdentity(key));
+		this(IdentityFactory.createManagedIdentity(key));
 	}
 
 	public Entity(Class<?> owner, Object nativeId) {
-		this();
-		setIdentity(IdentityFactory.createManagedIdentity(owner,nativeId));
+		this(IdentityFactory.createManagedIdentity(owner,nativeId));
+	}
+
+	public Entity(Key<?> key, URI path) {
+		this(IdentityFactory.createRelativeIdentity(key,path));
+	}
+
+	public Entity(Class<?> owner, Object nativeId, URI path) {
+		this(IdentityFactory.createRelativeIdentity(owner,nativeId,path));
 	}
 
 	public Entity(URI location) {
-		this();
-		setIdentity(IdentityFactory.createExternalIdentity(location));
+		this(IdentityFactory.createExternalIdentity(location));
 	}
 
 	public Entity(DataSource dataSource) {
-		this();
-		setIdentity(IdentityFactory.createLocalIdentity(dataSource));
+		this(IdentityFactory.createLocalIdentity(dataSource));
 	}
 
 	private void setIdentity(Identity identity) {
@@ -373,7 +369,13 @@ public class Entity implements Value, Iterable<Property> {
 	}
 
 	public Property getProperty(URI propertyId) {
-		return optionalProperty(propertyId);
+		Property result=this.properties.get(propertyId);
+		if(result==null) {
+			result=new Property(propertyId, this);
+		} else {
+			result=new Property(result);
+		}
+		return result;
 	}
 
 	public void addProperty(URI propertyId, Literal<?> value) {
@@ -417,6 +419,45 @@ public class Entity implements Value, Iterable<Property> {
 	@Override
 	public Iterator<Property> iterator() {
 		return ImmutableList.copyOf(this.properties.values()).iterator();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(this.identifier(),this.dataSource(),this.identity());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj instanceof Entity) {
+			Entity that= (Entity) obj;
+			result=
+				Objects.equal(this.dataSource(), that.dataSource()) &&
+				Objects.equal(this.identifier(), that.identifier()) &&
+				Objects.equal(this.identity(), that.identity());
+		}
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return
+			Objects.
+				toStringHelper(getClass()).
+					omitNullValues().
+					add("dataSource",this.dataSource()).
+					add("identifier",this.identifier()).
+					add("identity",this.identity()).
+					toString();
 	}
 
 }

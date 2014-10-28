@@ -30,46 +30,152 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashMap;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Iterator;
 import java.util.Map;
-import java.util.ServiceLoader;
-import java.util.Set;
+import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.entity.spi.ValueFactory;
-import org.ldp4j.application.entity.spi.ValueTransformationException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
 import com.google.common.escape.Escaper;
 import com.google.common.net.PercentEscaper;
+import com.google.common.net.UrlEscapers;
 
 final class IdentifierUtil {
 
-	private static final class NullValueFactory<T> implements ValueFactory<T> {
+	private static final class IdentifierParser {
 
-		private final Class<? extends T> valueClass;
+		private static final Pattern PARAMETER_PATTERN=Pattern.compile("^(\\w+)='([^']+)'$");
 
-		private NullValueFactory(Class<? extends T> valueClass) {
-			this.valueClass = valueClass;
+		private final Map<String,String> parameters;
+
+		private Classifier classifier;
+		private String path;
+		private boolean valid;
+
+		private IdentifierParser() {
+			this.parameters=Maps.newLinkedHashMap();
+			this.valid=true;
 		}
 
-		@Override
-		public Class<? extends T> targetClass() {
-			return this.valueClass;
+		private void setValid(boolean valid) {
+			this.valid &= valid;
 		}
 
-		@Override
-		public T fromString(String rawValue) {
-			throw new ValueTransformationException("Unsupported value type '"+targetClass().getName()+"'",null,this.valueClass);
+		private void setPath(String path) {
+			this.path = path;
 		}
 
-		@Override
-		public String toString(T value) {
-			throw new ValueTransformationException("Unsupported value type '"+targetClass().getName()+"'",null,this.valueClass);
+		private void setClassifier(Classifier classifier) {
+			this.classifier = classifier;
+			this.setValid(classifier!=null);
+		}
+
+		private void addParameter(String parameterName, String parameterValue) {
+			this.parameters.put(parameterName,parameterValue);
+		}
+
+		boolean isValid() {
+			return this.valid;
+		}
+
+		Classifier classifier() {
+			return this.classifier;
+		}
+
+		String path() {
+			return this.path;
+		}
+
+		String parameter(String parameterName) {
+			return this.parameters.get(parameterName);
+		}
+
+		static IdentifierParser create(URI identifier) {
+			IdentifierParser result = new IdentifierParser();
+			result.setClassifier(Classifier.fromString(identifier.getAuthority()));
+			result.setPath(identifier.getPath().substring(1));
+			String query = identifier.getQuery();
+			for(String parameter:query.split("&")) {
+				Matcher matcher = PARAMETER_PATTERN.matcher(parameter);
+				if(matcher.matches()) {
+					String parameterName=matcher.group(1);
+					String parameterValue=matcher.group(2);
+					result.addParameter(parameterName,parameterValue);
+				} else {
+					result.setValid(false);
+				}
+			}
+			result.setValid(IDENTIFIER_SCHEME.equals(identifier.getScheme()));
+			return result;
+		}
+
+	}
+
+	private static final class IdentifierBuilder {
+
+		private final Map<String,Object> parameters;
+
+		private Object owner;
+		private Classifier classifier;
+
+		private Object value;
+
+		private IdentifierBuilder() {
+			this.parameters=Maps.newLinkedHashMap();
+		}
+
+		IdentifierBuilder withClassifier(Classifier classifier) {
+			this.classifier = classifier;
+			return this;
+		}
+
+		IdentifierBuilder withOwner(Object owner) {
+			this.owner = owner;
+			return this;
+		}
+
+		IdentifierBuilder withParameter(String parameterName, Object parameterValue) {
+			this.parameters.put(parameterName,parameterValue);
+			return this;
+		}
+
+		URI build() {
+			StringBuilder builder=new StringBuilder();
+			builder.
+				append(IDENTIFIER_SCHEME).
+				append("://").
+				append(classifier.tag()).
+				append("/").
+				append(IdentifierUtil.toPath(this.owner));
+			if(!this.parameters.isEmpty()) {
+				builder.append("?");
+				for(Iterator<Entry<String,Object>> it=this.parameters.entrySet().iterator();it.hasNext();) {
+					Entry<String, Object> entry = it.next();
+					builder.
+						append(IdentifierUtil.toQueryParameter(entry.getKey())).
+						append("=\'").
+						append(IdentifierUtil.toQueryParameter(entry.getValue())).
+						append("\'");
+					if(it.hasNext()) {
+						builder.append("&");
+					}
+				}
+			}
+			String rawURI = builder.toString();
+			try {
+				return new URI(rawURI);
+			} catch (URISyntaxException e) {
+				throw new IllegalStateException("Creation of "+classifier+" identifying uri '"+rawURI+"' for value '"+value+"' should not fail",e);
+			}
+		}
+
+		static IdentifierBuilder create() {
+			return new IdentifierBuilder();
 		}
 
 	}
@@ -78,6 +184,7 @@ final class IdentifierUtil {
 		LOCAL("local"),
 		EXTERNAL("external"),
 		MANAGED("managed"),
+		RELATIVE("relative"),
 		;
 		private String tag;
 
@@ -96,6 +203,7 @@ final class IdentifierUtil {
 			}
 			return null;
 		}
+
 	}
 
 	static final class IdentifierIntrospector {
@@ -103,12 +211,13 @@ final class IdentifierUtil {
 		private final URI identifier;
 		private boolean valid;
 		private Classifier classifier;
-		private Class<?> owner;
+		private Object owner;
 		private Class<?> valueClass;
 		private String rawValue;
 		private Object value;
 
 		private IdentifierIntrospector(URI identifier) {
+			this.valid=true;
 			this.identifier = identifier;
 		}
 
@@ -122,7 +231,7 @@ final class IdentifierUtil {
 			setValid(rawValue!=null);
 		}
 
-		private void setOwner(Class<?> owner) {
+		private void setOwner(Object owner) {
 			this.owner=owner;
 			setValid(owner!=null);
 		}
@@ -138,7 +247,7 @@ final class IdentifierUtil {
 		}
 
 		private void setValid(boolean valid) {
-			this.valid=valid;
+			this.valid&=valid;
 		}
 
 		URI subject() {
@@ -153,7 +262,7 @@ final class IdentifierUtil {
 			return this.classifier;
 		}
 
-		Class<?> owner() {
+		Object owner() {
 			return this.owner;
 		}
 
@@ -174,19 +283,136 @@ final class IdentifierUtil {
 
 		private static IdentifierIntrospector create(URI identifier) {
 			IdentifierIntrospector introspector = new IdentifierIntrospector(identifier);
-			introspector.setClassifier(Classifier.fromString(identifier.getAuthority()));
-			introspector.setOwner(getOwnerClass(identifier));
-			Matcher matcher = QUERY_PATTERN.matcher(identifier.getQuery());
-			if(matcher.matches()) {
-				Class<?> valueClass = getValueClass(matcher.group(1));
-				introspector.setValueClass(valueClass);
-				String rawValue=matcher.group(2);
-				introspector.setRawValue(rawValue);
-				ValueFactory<?> factory=findFactory(valueClass);
-				introspector.setValue(factory.fromString(rawValue));
+			IdentifierParser breakdown=IdentifierParser.create(identifier);
+			introspector.setValid(breakdown.isValid());
+			if(breakdown.isValid()) {
+				introspector.setClassifier(breakdown.classifier());
+				switch(breakdown.classifier()) {
+				case EXTERNAL:
+					initializeExternal(introspector, breakdown);
+					break;
+				case LOCAL:
+					initializeLocal(introspector, breakdown);
+					break;
+				case MANAGED:
+					initializeManaged(introspector, breakdown);
+					break;
+				case RELATIVE:
+					initializeRelative(introspector, breakdown);
+					break;
+				default:
+					break;
+				}
 			}
-			introspector.setValid(IDENTIFIER_SCHEME.equals(identifier.getScheme()));
 			return introspector;
+		}
+
+		private static void initializeLocal(
+				IdentifierIntrospector introspector,
+				IdentifierParser breakdown) {
+			String rawValueClass=breakdown.parameter("class");
+			Class<?> valueClass=getValueClass(rawValueClass);
+			String rawValue=breakdown.parameter("value");
+
+			populateIntrospector(
+				introspector,
+				getDataSourceId(breakdown),
+				rawValue,
+				valueClass,
+				ObjectUtil.fromString(valueClass,rawValue));
+		}
+
+		private static void populateIntrospector(
+				IdentifierIntrospector introspector, Object owner,
+				String rawValue, Class<?> valueClass, Object value) {
+			introspector.setOwner(owner);
+			introspector.setRawValue(rawValue);
+			introspector.setValueClass(valueClass);
+			introspector.setValue(value);
+		}
+
+		private static void initializeManaged(
+				IdentifierIntrospector introspector,
+				IdentifierParser breakdown) {
+			Class<?> valueClass=getValueClass(breakdown.parameter("class"));
+			String rawValue=breakdown.parameter("value");
+
+			populateIntrospector(
+				introspector,
+				getOwner(breakdown),
+				rawValue,
+				valueClass,
+				ObjectUtil.fromString(valueClass,rawValue));
+		}
+
+		private static void initializeRelative(
+				IdentifierIntrospector introspector,
+				IdentifierParser breakdown) {
+			String path=breakdown.parameter("path");
+			Class<URI> clazz = URI.class;
+			URI fromString = ObjectUtil.fromString(clazz, path);
+			populateIntrospector(
+				introspector,
+				getKey(breakdown),
+				path,
+				clazz,
+				fromString);
+		}
+		private static void initializeExternal(
+				IdentifierIntrospector introspector,
+				IdentifierParser breakdown) {
+			String location= breakdown.parameter("location");
+			URI value = getLocation(location);
+			populateIntrospector(
+				introspector,
+				value,
+				location,
+				URI.class,
+				value);
+		}
+
+		private static URI getLocation(String rawValue) {
+			URI value=null;
+			try {
+				if(rawValue!=null) {
+					value=new URI(rawValue);
+				}
+			} catch (URISyntaxException e) {
+				// Nothing to do
+			}
+			return value;
+		}
+
+		private static UUID getDataSourceId(IdentifierParser breakdown) {
+			UUID owner=null;
+			String path=breakdown.path();
+			if(path!=null) {
+				owner=UUID.fromString(path);
+			}
+			return owner;
+		}
+
+		private static Class<?> getOwner(IdentifierParser breakdown) {
+			Class<?> owner=null;
+			String path=breakdown.path();
+			if(path!=null) {
+				owner=getValueClass(path.replace('/','.'));
+			}
+			return owner;
+		}
+
+		private static Key<?> getKey(IdentifierParser breakdown) {
+			Key<?> key=null;
+			Object nativeId=
+				ObjectUtil.
+					fromString(
+						getValueClass(breakdown.parameter("class")),
+						breakdown.parameter("value"));
+			Class<?> owner = getOwner(breakdown);
+			if(owner!=null && nativeId!=null) {
+				key=Key.create(owner, nativeId);
+			}
+			return key;
 		}
 
 		private static Class<?> getValueClass(String valueClassName) {
@@ -199,110 +425,63 @@ final class IdentifierUtil {
 			return valueClass;
 		}
 
-		private static Class<?> getOwnerClass(URI identifier) {
-			Class<?> owner=null;
-			try {
-				String ownerClassName=identifier.getPath().substring(1).replace('/', '.');
-				owner=Class.forName(ownerClassName);
-			} catch(ClassNotFoundException e) {
-				// Nothing to do
-			}
-			return owner;
-		}
-
 	}
-
-	private static final Logger LOGGER=LoggerFactory.getLogger(IdentifierUtil.class);
 
 	private static final String IDENTIFIER_SCHEME = "ldp4j";
 
-	private static final Pattern QUERY_PATTERN=Pattern.compile("^class='([^']+)'&value='([^']+)'$");
-
-	private static Map<Class<?>,ValueFactory<?>> factoryCache=new HashMap<Class<?>, ValueFactory<?>>();
-	private static Set<Class<?>> preloadedFactories=new HashSet<Class<?>>();
-
-	static <T> URI createLocalIdentifier(Name<T> name) {
+	static <T> URI createLocalIdentifier(UUID dataSourceId,Name<T> name) {
+		checkNotNull(dataSourceId,"Data source identifier cannot be null");
+		checkNotNull(name,"Local name cannot be null");
 		T value=name.id();
-		return createIdentifier(Classifier.LOCAL,Name.class,value);
+		return
+			new IdentifierBuilder().
+				withClassifier(Classifier.LOCAL).
+				withOwner(dataSourceId).
+				withParameter("class", value.getClass().getName()).
+				withParameter("value", value).
+				build();
 	}
 
 	static <T> URI createManagedIdentifier(Key<T> key) {
-		return createIdentifier(Classifier.MANAGED,key.owner(),key.nativeId());
+		checkNotNull(key,"Managed key cannot be null");
+		Object nativeId = key.nativeId();
+		return
+			IdentifierBuilder.
+				create().
+					withClassifier(Classifier.MANAGED).
+					withOwner(key.owner()).
+					withParameter("class", nativeId.getClass().getName()).
+					withParameter("value", nativeId).
+					build();
 	}
 
-	static <T> URI createExternalIdentifier(URI uri) {
-		return createIdentifier(Classifier.EXTERNAL,URI.class,uri);
+	static <T> URI createRelativeIdentifier(Key<T> key, URI path) {
+		checkNotNull(key,"Relative key cannot be null");
+		Object nativeId = key.nativeId();
+		return
+			IdentifierBuilder.
+				create().
+					withClassifier(Classifier.RELATIVE).
+					withOwner(key.owner()).
+					withParameter("class", nativeId.getClass().getName()).
+					withParameter("value", nativeId).
+					withParameter("path", path).
+					build();
+	}
+
+	static <T> URI createExternalIdentifier(URI location) {
+		checkNotNull(location,"External location cannot be null");
+		return
+			IdentifierBuilder.
+				create().
+					withClassifier(Classifier.EXTERNAL).
+					withParameter("location", location).
+					build();
 	}
 
 	static IdentifierIntrospector introspect(URI uri) {
 		checkNotNull(uri,"Identifier uri cannot be null");
 		return IdentifierIntrospector.create(uri);
-	}
-
-	@SuppressWarnings({ "unchecked", "rawtypes" })
-	private static synchronized <T> ValueFactory<T> findFactory(final Class<? extends T> valueClass) {
-		ValueFactory<?> rawResult=factoryCache.get(valueClass);
-		if(rawResult==null) {
-			for(ValueFactory candidate:ServiceLoader.load(ValueFactory.class)) {
-				if(preloadedFactories.contains(candidate.getClass())) {
-					if(LOGGER.isTraceEnabled()) {
-						LOGGER.trace("Discarding cached factory '{}' for value class '{}'",candidate.getClass().getName(),candidate.targetClass().getName());
-					}
-					continue;
-				}
-				if(factoryCache.containsKey(candidate.targetClass())) {
-					if(LOGGER.isWarnEnabled()) {
-						LOGGER.warn("Discarding clashing factory '{}' for value class '{}'",candidate.getClass().getName(),candidate.targetClass().getName());
-					}
-					continue;
-				}
-				if(LOGGER.isTraceEnabled()) {
-					LOGGER.trace("Caching factory '{}' for value class '{}'",candidate.getClass().getName(),candidate.targetClass().getName());
-				}
-				factoryCache.put(candidate.targetClass(),candidate);
-				preloadedFactories.add(candidate.getClass());
-				if(candidate.targetClass()==valueClass) {
-					rawResult=candidate;
-					if(LOGGER.isDebugEnabled()) {
-						LOGGER.debug("Found factory '{}' for value class '{}'",candidate.getClass().getName(),valueClass.getName());
-					}
-					break;
-				}
-				if(LOGGER.isTraceEnabled()) {
-					LOGGER.trace("Discarding factory '{}': target class '{}' does not match value class '{}'",candidate.getClass().getName(),candidate.targetClass().getName(),valueClass.getName());
-				}
-			}
-		}
-		if(rawResult==null) {
-			rawResult=new NullValueFactory<T>(valueClass);
-			if(LOGGER.isWarnEnabled()) {
-				LOGGER.warn("No factory found for value class '{}'",valueClass.getName());
-			}
-		}
-		return (ValueFactory<T>)rawResult;
-	}
-
-	private static <T,V> URI createIdentifier(Classifier classifier, Class<?> owner, V value) {
-		StringBuilder builder=new StringBuilder();
-		builder.
-			append("ldp4j://").
-			append(classifier.tag()).
-			append("/").
-			append(owner.getCanonicalName().replace('.','/')).
-			append("?").
-			append("class=\'").
-			append(toString(value.getClass().getName())).
-			append("\'").
-			append("&").
-			append("value=\'").
-			append(toString(value)).
-			append("\'");
-		String rawURI = builder.toString();
-		try {
-			return new URI(rawURI);
-		} catch (URISyntaxException e) {
-			throw new IllegalStateException("Creation of "+classifier+" identifying uri '"+rawURI+"' for value '"+value+"' should not fail",e);
-		}
 	}
 
 	/**
@@ -345,9 +524,39 @@ final class IdentifierUtil {
 		return new PercentEscaper("-_.*",false);
 	}
 
-	private static String toString(Object value) {
-		ValueFactory<Object> factory = findFactory(value.getClass());
-		return uriScaper().escape(factory.toString(value));
+	private static String toQueryParameter(Object value) {
+		return uriScaper().escape(ObjectUtil.toString(value));
+	}
+
+	private static String toPath(Object owner) {
+		String result="";
+		if(Class.class.isInstance(owner)) {
+			result=classToPath(Class.class.cast(owner));
+		} else if(UUID.class.isInstance(owner)){
+			result=uuidToPath(UUID.class.cast(owner));
+		} else if(owner!=null) {
+			result=stringToPath(ObjectUtil.toString(owner));
+		}
+		return result;
+	}
+
+	private static String uuidToPath(UUID owner) {
+		return stringToPath(owner.toString());
+	}
+
+	private static String classToPath(Class<?> owner) {
+		StringBuilder builder=new StringBuilder();
+		for(Iterator<String> it=Arrays.asList(owner.getName().split("\\.")).iterator();it.hasNext();) {
+			builder.append(stringToPath(it.next()));
+			if(it.hasNext()) {
+				builder.append("/");
+			}
+		}
+		return builder.toString();
+	}
+
+	private static String stringToPath(String str) {
+		return UrlEscapers.urlPathSegmentEscaper().escape(str);
 	}
 
 }

@@ -24,24 +24,33 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity.spi;
+package org.ldp4j.application.entity.impl;
 
-public class ValueTransformationException extends RuntimeException {
+import java.net.MalformedURLException;
+import java.net.URL;
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1526607378071322728L;
+import org.ldp4j.application.entity.spi.ObjectFactory;
+import org.ldp4j.application.entity.spi.ObjectParseException;
 
-	private final Class<?> valueClass;
+public class URLObjectFactory implements ObjectFactory<URL> {
 
-	public ValueTransformationException(String message, Throwable cause, Class<?> valueClass) {
-		super(message, cause);
-		this.valueClass = valueClass;
+	@Override
+	public Class<? extends URL> targetClass() {
+		return URL.class;
 	}
 
-	public Class<?> getValueClass() {
-		return valueClass;
+	@Override
+	public URL fromString(String rawValue) {
+		try {
+			return new URL(rawValue);
+		} catch (MalformedURLException e) {
+			throw new ObjectParseException(e,URL.class,rawValue);
+		}
+	}
+
+	@Override
+	public String toString(URL value) {
+		return value.toString();
 	}
 
 }

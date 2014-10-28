@@ -26,33 +26,28 @@
  */
 package org.ldp4j.application.entity;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.net.URI;
-import java.util.UUID;
-
-import org.ldp4j.application.data.Name;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
-public final class Local<T> extends Identity {
+public final class RelativeIdentity<T> extends Identity {
 
-	private final UUID dataSourceId;
-	private final Name<T> name;
+	private ManagedIdentity<T> parent;
+	private URI path;
 
-	private Local(URI identifier, UUID dataSourceId, Name<T> name) {
+	private RelativeIdentity(URI identifier, ManagedIdentity<T> parent, URI path) {
 		super(identifier);
-		this.dataSourceId = dataSourceId;
-		this.name = name;
+		this.parent = parent;
+		this.path = path;
 	}
 
-	UUID dataSourceId() {
-		return dataSourceId;
+	public ManagedIdentity<T> parent() {
+		return this.parent;
 	}
 
-	public Name<T> name() {
-		return this.name;
+	public URI path() {
+		return this.path;
 	}
 
 	/**
@@ -60,7 +55,7 @@ public final class Local<T> extends Identity {
 	 */
 	@Override
 	public void accept(IdentityVisitor visitor) {
-		visitor.visitLocal(this);
+		visitor.visitRelative(this);
 	}
 
 	/**
@@ -68,7 +63,7 @@ public final class Local<T> extends Identity {
 	 */
 	@Override
 	public int hashCode() {
-		return super.hashCode()+Objects.hashCode(this.dataSourceId,this.name);
+		return super.hashCode()+Objects.hashCode(this.parent,this.path);
 	}
 
 	/**
@@ -77,11 +72,11 @@ public final class Local<T> extends Identity {
 	@Override
 	public boolean equals(Object obj) {
 		boolean result=super.equals(obj);
-		if(result && obj.getClass()==getClass()) {
-			Local<?> that=(Local<?>)obj;
+		if(result && obj instanceof RelativeIdentity) {
+			RelativeIdentity<?> that=(RelativeIdentity<?>) obj;
 			result=
-				Objects.equal(this.dataSourceId, that.dataSourceId) &&
-				Objects.equal(this.name, that.name);
+				Objects.equal(this.parent,that.parent) &&
+				Objects.equal(this.path,that.path);
 		}
 		return result;
 	}
@@ -92,14 +87,19 @@ public final class Local<T> extends Identity {
 	@Override
 	protected void toString(ToStringHelper helper) {
 		helper.
-			add("dataSourceId",this.dataSourceId).
-			add("name",this.name);
+			add("parent",this.parent).
+			add("path",this.path);
 	}
 
-	static <T> Local<T> create(UUID dataSourceId, Name<T> name) {
-		checkNotNull(dataSourceId,"Data source identifier cannot be null");
-		checkNotNull(name,"Local identity name cannot be null");
-		return new Local<T>(IdentifierUtil.createLocalIdentifier(name),dataSourceId,name);
+	static <T,V> RelativeIdentity<T> create(Class<T> owner, V nativeId, URI path) {
+		return create(Key.create(owner, nativeId),path);
+	}
+
+	static <T> RelativeIdentity<T> create(Key<T> key, URI path) {
+		URI identifier=
+			IdentifierUtil.
+				createRelativeIdentifier(key,path);
+		return new RelativeIdentity<T>(identifier,ManagedIdentity.create(key),path);
 	}
 
 }

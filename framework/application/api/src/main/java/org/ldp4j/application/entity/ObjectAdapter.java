@@ -24,28 +24,52 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity.spi;
+package org.ldp4j.application.entity;
 
-public class ValueParseException extends ValueTransformationException {
+public final class ObjectAdapter<S> {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 4092528705379062890L;
+	private final Class<? extends S> targetClazz;
+	private final Object object;
+	private final boolean compatible;
 
-	private final String rawValue;
-
-	public ValueParseException(Throwable cause, Class<?> valueClass, String rawValue) {
-		super("Could not parse raw value '"+rawValue, cause, valueClass);
-		this.rawValue = rawValue;
+	ObjectAdapter(Class<? extends S> targetClazz, Object object) {
+		this.targetClazz=targetClazz;
+		this.object=object;
+		this.compatible=isCompatible(targetClazz, object);
 	}
 
-	public ValueParseException(Class<?> valueClass, String rawValue) {
-		this(null,valueClass,rawValue);
+	private boolean isCompatible(Class<? extends S> targetClazz, Object object) {
+		return
+			targetClazz!=null?
+				targetClazz.isInstance(object):
+				false;
 	}
 
-	public String getRawValue() {
-		return rawValue;
+	private S safeCast() {
+		return this.targetClazz.cast(this.object);
+	}
+
+	public S orNull() {
+		return or(null);
+	}
+
+	public S or(S defaultValue) {
+		S result=defaultValue;
+		if(this.compatible) {
+			result=safeCast();
+		}
+		return result;
+	}
+
+	public <E extends Exception> S orFail(E exception) throws E {
+		if(!this.compatible) {
+			throw exception;
+		}
+		return safeCast();
+	}
+
+	public S now() throws ClassCastException {
+		return orFail(new ClassCastException("Object is not of type '"+this.targetClazz.getName()+"'"));
 	}
 
 }

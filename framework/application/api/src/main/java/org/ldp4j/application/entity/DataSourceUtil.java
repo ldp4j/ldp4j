@@ -1,7 +1,30 @@
+/**
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   This file is part of the LDP4j Project:
+ *     http://www.ldp4j.org/
+ *
+ *   Center for Open Middleware
+ *     http://www.centeropenmiddleware.com/
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Copyright (C) 2014 Center for Open Middleware.
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *             http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ */
 package org.ldp4j.application.entity;
-
-import org.ldp4j.application.data.Name;
-
 
 public final class DataSourceUtil {
 
@@ -12,30 +35,70 @@ public final class DataSourceUtil {
 	private static final String NL=System.getProperty("line.separator");
 
 	private DataSourceUtil() {
+	}
 
+	private static String toString(Entity entity) {
+		return String.format("%s : %s",entity.identifier(),formatIdentity(entity.identity()));
 	}
 
 	public static String formatLiteral(Literal<?> literal) {
 		Object value = literal.value();
-		return String.format("%s [%s]",literal.value(),value.getClass().getName());
+		return String.format("'%s' [%s]",literal.value(),value.getClass().getName());
 	}
 
-	public static String formatName(Name<?> tmp) {
-		if(tmp==null) {
-			return "<null>";
+	public static String formatIdentity(Entity entity) {
+		Identity identity=null;
+		if(entity!=null) {
+			identity=entity.identity();
 		}
-		return String.format("%s [%s]",tmp.id(),tmp.id().getClass().getName());
+		return formatIdentity(identity);
 	}
 
-	public static String toString(DataSource dataSource) {
+	public static String formatIdentity(Identity identity) {
+		final StringBuilder builder=new StringBuilder();
+		if(identity==null) {
+			builder.append("null");
+		} else {
+			identity.accept(
+				new IdentityVisitor() {
+					private void log(String format, Object... args) {
+						builder.append(String.format(format,args));
+					}
+					@Override
+					public void visitLocal(LocalIdentity<?> identity) {
+						Object nameValue = identity.name().id();
+						log("<'%s' [%s]> {Local to %s}",nameValue,nameValue.getClass().getName(),identity.dataSourceId());
+					}
+					@Override
+					public void visitManaged(ManagedIdentity<?> identity) {
+						Key<?> key = identity.key();
+						Object nativeId = key.nativeId();
+						log("<'%s' [%s]> {Managed by %s}",nativeId,nativeId.getClass().getName(),key.owner().getName());
+					}
+					@Override
+					public void visitRelative(RelativeIdentity<?> identity) {
+						log("<%s> {Child of <",identity.path());
+						visitManaged(identity.parent());
+						log(">}");
+					}
+					@Override
+					public void visitExternal(ExternalIdentity identity) {
+						log("<%s> {External}",identity.location());
+					}
+				}
+			);
+		}
+		return builder.toString();
+	}
+
+	public static String formatDataSource(DataSource dataSource) {
 		if(dataSource==null) {
 			return null;
 		}
 		final StringBuilder builder=new StringBuilder();
 		builder.append("DataSource(").append(dataSource.identifier()).append(ENTITY_OPENING).append(NL);
 		for(Entity entity:dataSource) {
-			builder.append(TAB).append("- Entity(").append(entity.identifier()).append(ENTITY_OPENING).append(NL);
-			builder.append(TAB).append(ENTITY_FIELD_PREFIX).append(TAB).append("+ Identity: ").append(entity.identity()).append(NL);
+			builder.append(TAB).append("- Entity(").append(DataSourceUtil.toString(entity)).append(ENTITY_OPENING).append(NL);
 			for(Property property:entity) {
 				builder.append(TAB).append(ENTITY_FIELD_PREFIX).append(TAB).append("+ Property(").append(property.predicate()).append(ENTITY_OPENING).append(NL);
 				for(Value value:property) {
@@ -44,26 +107,11 @@ public final class DataSourceUtil {
 						new ValueVisitor() {
 							@Override
 							void visitLiteral(Literal<?> value) {
-								builder.append(formatLiteral(value));
+								builder.append("Literal: ").append(formatLiteral(value));
 							}
 							@Override
-							void visitEntity(final Entity entity) {
-								entity.identity().accept(
-									new IdentityVisitor() {
-										@Override
-										public void visitLocal(Local<?> identity) {
-											builder.append(identity.toString());
-										}
-										@Override
-										public void visitManaged(Managed<?> identity) {
-											builder.append(identity.toString());
-										}
-										@Override
-										public void visitExternal(External identity) {
-											builder.append(identity.toString());
-										}
-									}
-								);
+							void visitEntity(Entity entity) {
+								builder.append("Entity: ").append(DataSourceUtil.toString(entity));
 							}
 						}
 					);

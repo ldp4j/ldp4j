@@ -26,47 +26,67 @@
  */
 package org.ldp4j.application.entity;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.net.URI;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Objects.ToStringHelper;
 
-public final class IdentityFactory {
+public final class ExternalIdentity extends Identity {
 
-	private IdentityFactory() {
+	private final URI location;
+
+	private ExternalIdentity(URI identifier, URI location) {
+		super(identifier);
+		this.location = location;
 	}
 
-	public static LocalIdentity<?> createLocalIdentity(DataSource dataSource) {
-		checkNotNull(dataSource,"Data source cannot be null");
-		return LocalIdentity.create(dataSource.identifier(),dataSource.nextName());
+	public URI location() {
+		return this.location;
 	}
 
-	public static <T> ManagedIdentity<T> createManagedIdentity(Key<T> key) {
-		checkNotNull(key,"Key cannot be null");
-		return ManagedIdentity.create(key);
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void accept(IdentityVisitor visitor) {
+		visitor.visitExternal(this);
 	}
 
-	public static <T,V> ManagedIdentity<T> createManagedIdentity(Class<T> owner, V nativeId) {
-		checkNotNull(owner,"Key owner cannot be null");
-		checkNotNull(nativeId,"Key native identifier cannot be null");
-		return createManagedIdentity(Key.create(owner, nativeId));
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return super.hashCode()+Objects.hashCode(this.location);
 	}
 
-	public static ExternalIdentity createExternalIdentity(URI location) {
-		checkNotNull(location,"Location cannot be null");
-		return ExternalIdentity.create(location);
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=super.equals(obj);
+		if(result && obj.getClass()==getClass()) {
+			ExternalIdentity that=(ExternalIdentity)obj;
+			result=Objects.equal(this.location, that.location);
+		}
+		return result;
 	}
 
-	public static <T> RelativeIdentity<T> createRelativeIdentity(Key<T> parent, URI path) {
-		checkNotNull(parent,"Parent key cannot be null");
-		checkNotNull(path,"Path cannot be null");
-		return RelativeIdentity.create(parent, path);
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected void toString(ToStringHelper helper) {
+		helper.add("location",this.location);
+
 	}
 
-	public static <T,V> RelativeIdentity<T> createRelativeIdentity(Class<T> owner, V nativeId, URI path) {
-		checkNotNull(owner,"Key owner cannot be null");
-		checkNotNull(nativeId,"Key native identifier cannot be null");
-		return createRelativeIdentity(Key.create(owner, nativeId),path);
+	static ExternalIdentity create(URI location) {
+		checkNotNull(location,"External location cannot be null");
+		return new ExternalIdentity(IdentifierUtil.createExternalIdentifier(location),location);
 	}
 
 }

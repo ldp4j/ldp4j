@@ -24,12 +24,38 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity.spi;
+package org.ldp4j.application.entity;
 
-import org.ldp4j.application.data.Name;
+import java.net.URI;
+import java.util.Iterator;
 
-public interface NameGenerator<T> {
+import org.junit.Test;
 
-	Name<T> nextName();
+import com.google.common.collect.Iterators;
+
+
+public class PropertyTest {
+
+	@Test
+	public void testIterator() {
+		Entity entity=new Entity(Entity.class,123);
+		URI predicate=URI.create("http://www.localhost.org");
+		Property sut=new Property(predicate,entity);
+
+		Iterator<Value> emptyIterator = sut.iterator();
+
+		sut.addValue(Literal.create(1));
+		sut.addValue(Literal.create(2));
+
+		Iterator<Value> secondIterator = sut.iterator();
+
+		sut.removeValue(Literal.create(2));
+
+		Iterator<Value> thirdIterator = sut.iterator();
+
+		System.out.println("Before starting: "+Iterators.toString(emptyIterator));
+		System.out.println("After adding...: "+Iterators.toString(secondIterator));
+		System.out.println("After removal..: "+Iterators.toString(thirdIterator));
+	}
 
 }

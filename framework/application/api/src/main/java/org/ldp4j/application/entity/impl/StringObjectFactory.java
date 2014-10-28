@@ -24,14 +24,25 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity.spi;
+package org.ldp4j.application.entity.impl;
 
-public interface ValueFactory<T> {
+import org.ldp4j.application.entity.spi.ObjectFactory;
 
-	Class<? extends T> targetClass();
+public class StringObjectFactory implements ObjectFactory<String> {
 
-	T fromString(String rawValue);
+	@Override
+	public Class<? extends String> targetClass() {
+		return String.class;
+	}
 
-	String toString(T value);
+	@Override
+	public String fromString(String rawValue) {
+		return rawValue;
+	}
+
+	@Override
+	public String toString(String value) {
+		return value;
+	}
 
 }
