@@ -28,6 +28,7 @@ package org.ldp4j.application.entity;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
@@ -38,21 +39,19 @@ import java.util.Deque;
 import org.junit.Before;
 import org.junit.Test;
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.entity.IdentifierUtil.Classifier;
 import org.ldp4j.application.entity.IdentifierUtil.IdentifierIntrospector;
-import org.ldp4j.application.entity.spi.NameGenerator;
+import org.ldp4j.application.entity.spi.IdentifierGenerator;
 
 import com.google.common.collect.Queues;
 
 public class IdentityFactoryTest {
 
-	private static final class ControlledNameGenerator implements NameGenerator<String> {
+	private static final class ControlledIdentifierGenerator implements IdentifierGenerator<String> {
 
 		private Deque<String> nativeIds;
 
-		private ControlledNameGenerator() {
+		private ControlledIdentifierGenerator() {
 			this.nativeIds=Queues.newArrayDeque();
 		}
 
@@ -60,24 +59,20 @@ public class IdentityFactoryTest {
 			this.nativeIds.push(nativeId);
 		}
 
-		private String getNextNativeId() {
-			return this.nativeIds.getFirst();
-		}
-
 		@Override
-		public Name<String> nextName() {
-			return  NamingScheme.getDefault().name(getNextNativeId());
+		public String nextIdentifier() {
+			return this.nativeIds.getFirst();
 		}
 
 	}
 
 	private DataSource dataSource;
-	private ControlledNameGenerator nameGenerator;
+	private ControlledIdentifierGenerator identifierGenerator;
 
 	@Before
 	public void setUp() {
-		nameGenerator = new ControlledNameGenerator();
-		dataSource = DataSource.create(nameGenerator);
+		identifierGenerator = new ControlledIdentifierGenerator();
+		dataSource = DataSource.create(identifierGenerator);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -89,8 +84,9 @@ public class IdentityFactoryTest {
 	@Test
 	public void testLocalCreation() {
 		String nativeId = "$example%+%value^";
-		nameGenerator.addNextNativeId(nativeId);
-		LocalIdentity<?> local = IdentityFactory.createLocalIdentity(dataSource);
+		identifierGenerator.addNextNativeId(nativeId);
+		Identity local = dataSource.newEntity().identity();
+		assertThat(local,instanceOf(LocalIdentity.class));
 		URI identifier = local.identifier();
 		System.out.println(String.format("%s --> %s",nativeId,identifier));
 		assertThat(identifier,notNullValue());
@@ -98,7 +94,7 @@ public class IdentityFactoryTest {
 		assertThat(introspector.subject(),is(identifier));
 		assertThat(introspector.isValid(),is(true));
 		assertThat(introspector.classifier(),is(Classifier.LOCAL));
-		assertInvariant(introspector, dataSource.identifier(), String.class);
+		assertInvariant(introspector, dataSource.id(), String.class);
 		assertThat(introspector.value(String.class),equalTo(nativeId));
 	}
 

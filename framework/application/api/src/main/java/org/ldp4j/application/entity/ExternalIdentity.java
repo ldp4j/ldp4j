@@ -31,7 +31,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.net.URI;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
 
 public final class ExternalIdentity extends Identity {
 
@@ -79,7 +78,7 @@ public final class ExternalIdentity extends Identity {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void toString(ToStringHelper helper) {
+	protected void toString(StringHelper helper) {
 		helper.add("location",this.location);
 
 	}

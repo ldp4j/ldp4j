@@ -29,7 +29,7 @@ package org.ldp4j.application.entity;
 import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.*;
 
-public final class Literal<T> implements Value {
+public final class Literal<T> extends Value {
 
 	private final T value;
 

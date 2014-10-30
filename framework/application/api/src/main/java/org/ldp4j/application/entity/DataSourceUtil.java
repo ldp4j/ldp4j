@@ -38,7 +38,7 @@ public final class DataSourceUtil {
 	}
 
 	private static String toString(Entity entity) {
-		return String.format("%s : %s",entity.identifier(),formatIdentity(entity.identity()));
+		return String.format("%s : %s",entity.id(),formatIdentity(entity.identity()));
 	}
 
 	public static String formatLiteral(Literal<?> literal) {
@@ -66,8 +66,8 @@ public final class DataSourceUtil {
 					}
 					@Override
 					public void visitLocal(LocalIdentity<?> identity) {
-						Object nameValue = identity.name().id();
-						log("<'%s' [%s]> {Local to %s}",nameValue,nameValue.getClass().getName(),identity.dataSourceId());
+						Object localId = identity.localId();
+						log("<'%s' [%s]> {Local to %s}",localId,localId.getClass().getName(),identity.ownerId());
 					}
 					@Override
 					public void visitManaged(ManagedIdentity<?> identity) {
@@ -96,7 +96,7 @@ public final class DataSourceUtil {
 			return null;
 		}
 		final StringBuilder builder=new StringBuilder();
-		builder.append("DataSource(").append(dataSource.identifier()).append(ENTITY_OPENING).append(NL);
+		builder.append("DataSource(").append(dataSource.id()).append(ENTITY_OPENING).append(NL);
 		for(Entity entity:dataSource) {
 			builder.append(TAB).append("- Entity(").append(DataSourceUtil.toString(entity)).append(ENTITY_OPENING).append(NL);
 			for(Property property:entity) {

@@ -26,34 +26,24 @@
  */
 package org.ldp4j.application.entity;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.net.URI;
 import java.util.UUID;
 
-import org.ldp4j.application.data.Name;
-
 import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
 
-public final class LocalIdentity<T> extends Identity {
+/**
+ * Should not be extended outside the API
+ *
+ */
+public abstract class LocalIdentity<T> extends Identity {
 
-	private final UUID dataSourceId;
-	private final Name<T> name;
-
-	private LocalIdentity(URI identifier, UUID dataSourceId, Name<T> name) {
+	LocalIdentity(URI identifier) {
 		super(identifier);
-		this.dataSourceId = dataSourceId;
-		this.name = name;
 	}
 
-	UUID dataSourceId() {
-		return dataSourceId;
-	}
+	public abstract UUID ownerId();
 
-	public Name<T> name() {
-		return this.name;
-	}
+	public abstract T localId();
 
 	/**
 	 * {@inheritDoc}
@@ -68,7 +58,7 @@ public final class LocalIdentity<T> extends Identity {
 	 */
 	@Override
 	public int hashCode() {
-		return super.hashCode()+Objects.hashCode(this.dataSourceId,this.name);
+		return Objects.hashCode(super.hashCode(),this.ownerId(),this.localId());
 	}
 
 	/**
@@ -80,8 +70,8 @@ public final class LocalIdentity<T> extends Identity {
 		if(result && obj.getClass()==getClass()) {
 			LocalIdentity<?> that=(LocalIdentity<?>)obj;
 			result=
-				Objects.equal(this.dataSourceId, that.dataSourceId) &&
-				Objects.equal(this.name, that.name);
+				Objects.equal(this.ownerId(), that.ownerId()) &&
+				Objects.equal(this.localId(), that.localId());
 		}
 		return result;
 	}
@@ -90,16 +80,10 @@ public final class LocalIdentity<T> extends Identity {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void toString(ToStringHelper helper) {
+	protected void toString(StringHelper helper) {
 		helper.
-			add("dataSourceId",this.dataSourceId).
-			add("name",this.name);
-	}
-
-	static <T> LocalIdentity<T> create(UUID dataSourceId, Name<T> name) {
-		checkNotNull(dataSourceId,"Data source identifier cannot be null");
-		checkNotNull(name,"Local identity name cannot be null");
-		return new LocalIdentity<T>(IdentifierUtil.createLocalIdentifier(dataSourceId,name),dataSourceId,name);
+			add("ownerId",this.ownerId()).
+			add("localId",this.localId());
 	}
 
 }

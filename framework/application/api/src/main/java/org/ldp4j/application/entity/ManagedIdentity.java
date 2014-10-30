@@ -29,7 +29,6 @@ package org.ldp4j.application.entity;
 import java.net.URI;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
 
 public final class ManagedIdentity<T> extends Identity {
 
@@ -77,7 +76,7 @@ public final class ManagedIdentity<T> extends Identity {
 	 * {@inheritDoc}
 	 */
 	@Override
-	protected void toString(ToStringHelper helper) {
+	protected void toString(StringHelper helper) {
 		helper.add("key",this.key);
 	}
 

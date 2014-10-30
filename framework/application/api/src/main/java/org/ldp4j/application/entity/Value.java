@@ -26,8 +26,18 @@
  */
 package org.ldp4j.application.entity;
 
-public interface Value {
+/**
+ * The base class for representing the data items managed by the LDP4j Application
+ * Engine and LDP4j Applications.
+ */
+public abstract class Value {
 
-	void accept(ValueVisitor visitor);
-	
+	/**
+	 * Restrict subclassing to org.ldp4j.application.entity package
+	 */
+	Value() {
+	}
+
+	public abstract void accept(ValueVisitor visitor);
+
 }

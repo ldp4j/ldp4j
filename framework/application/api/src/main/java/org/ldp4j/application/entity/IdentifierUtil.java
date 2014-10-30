@@ -38,8 +38,6 @@ import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.ldp4j.application.data.Name;
-
 import com.google.common.collect.Maps;
 import com.google.common.escape.Escaper;
 import com.google.common.net.PercentEscaper;
@@ -429,16 +427,15 @@ final class IdentifierUtil {
 
 	private static final String IDENTIFIER_SCHEME = "ldp4j";
 
-	static <T> URI createLocalIdentifier(UUID dataSourceId,Name<T> name) {
-		checkNotNull(dataSourceId,"Data source identifier cannot be null");
-		checkNotNull(name,"Local name cannot be null");
-		T value=name.id();
+	static <T> URI createLocalIdentifier(UUID ownerId,T localId) {
+		checkNotNull(ownerId,"Data source identifier cannot be null");
+		checkNotNull(localId,"Local identifier cannot be null");
 		return
 			new IdentifierBuilder().
 				withClassifier(Classifier.LOCAL).
-				withOwner(dataSourceId).
-				withParameter("class", value.getClass().getName()).
-				withParameter("value", value).
+				withOwner(ownerId).
+				withParameter("class", localId.getClass().getName()).
+				withParameter("value", localId).
 				build();
 	}
 

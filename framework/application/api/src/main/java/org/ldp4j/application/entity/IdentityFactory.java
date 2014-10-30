@@ -31,14 +31,9 @@ import static com.google.common.base.Preconditions.*;
 import java.net.URI;
 
 
-public final class IdentityFactory {
+final class IdentityFactory {
 
 	private IdentityFactory() {
-	}
-
-	public static LocalIdentity<?> createLocalIdentity(DataSource dataSource) {
-		checkNotNull(dataSource,"Data source cannot be null");
-		return LocalIdentity.create(dataSource.identifier(),dataSource.nextName());
 	}
 
 	public static <T> ManagedIdentity<T> createManagedIdentity(Key<T> key) {

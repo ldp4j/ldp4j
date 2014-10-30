@@ -26,399 +26,248 @@
  */
 package org.ldp4j.application.entity;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import static com.google.common.base.Preconditions.*;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.locks.Condition;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
-public class Entity implements Value, Iterable<Property> {
+public final class Entity extends Value implements Iterable<Property> {
 
-	private static final class SurrogateEntity extends Entity {
+	private static final String LITERAL_VALUE_CANNOT_BE_NULL = "Literal value cannot be null";
 
-		private Entity state;
+	private static final String ENTITY_VALUE_CANNOT_BE_NULL = "Entity value cannot be null";
 
-		private SurrogateEntity(Entity state) {
-			super(state.identity);
-			this.state=state;
-		}
+	private static final String PROPERTY_PREDICATE_CANNOT_BE_NULL = "Property predicate cannot be null";
 
-		private synchronized Entity getState() {
-			return this.state;
-		}
+	private static final TimeUnit WAIT_TIME_UNIT = TimeUnit.MICROSECONDS;
 
-		private synchronized void attach(DataSource dataSource) {
-			this.state=this.state.attachTo(dataSource);
-		}
+	private static final int WAIT_TIME_INCREASE_FACTOR = 2;
 
-		@Override
-		boolean isInitialized() {
-			return getState().isInitialized();
-		}
+	private static final int INITIAL_WAIT_TIME = 1;
 
-		@Override
-		void initialize(DataSource dataSource, UUID identifier) {
-			getState().initialize(dataSource, identifier);
-		}
+	private static final int MAX_WAIT_TIME = 1000000;
 
-		@Override
-		void detach() {
-			getState().detach();
-		}
+	interface EntityController {
 
-		@Override
-		public DataSource dataSource() {
-			return getState().dataSource();
-		}
+		UUID ownerId();
 
-		@Override
-		public UUID identifier() {
-			return getState().identifier();
-		}
+		UUID id();
 
-		@Override
-		public void addProperty(URI propertyId, Literal<?> value) {
-			getState().addProperty(propertyId, value);
-		}
-
-		@Override
-		public void addProperty(URI propertyId, Entity entity) {
-			getState().addProperty(propertyId, entity);
-		}
-
-		@Override
-		public void removeProperty(URI propertyId, Literal<?> value) {
-			getState().removeProperty(propertyId, value);
-		}
-
-		@Override
-		public void removeProperty(URI propertyId, Entity entity) {
-			getState().removeProperty(propertyId, entity);
-		}
-
-		@Override
-		public void removeProperty(URI propertyId) {
-			getState().removeProperty(propertyId);
-		}
-
-		@Override
-		public void accept(ValueVisitor visitor) {
-			getState().accept(visitor);
-		}
-
-		@Override
-		public Iterator<Property> iterator() {
-			return getState().iterator();
-		}
+		Entity attach(Entity entity);
 
 	}
 
-	private final ConcurrentMap<URI,Property> properties;
+	private EntityController controller;
 
-	private final Lock lock;
-	private final Condition notUpdatingState;
-	private final Condition notInUse;
-	private final AtomicBoolean updatingState;
-	private final AtomicBoolean inUse;
+	private final Identity identity;
 
-	/**
-	 * Guarded by {@code lock}, associated conditions, and flags.
-	 */
-	private final Map<Entity,SurrogateEntity> surrogates;
+	private final Map<URI,ImmutableProperty> properties;
+	private final Lock write;
+	private final Lock read;
 
-	/**
-	 * Guarded by {@code lock}, associated conditions, and flags.
-	 */
-	private DataSource dataSource;
-
-	/**
-	 * Guarded by {@code lock}, associated conditions, and flags.
-	 */
-	private UUID identifier;
-
-	/**
-	 * Guarded by {@code lock}, associated conditions, and flags.
-	 */
-	private final AtomicBoolean initialized;
-
-	private Identity identity;
-
-	public Entity(Identity identity) {
-		this.properties=Maps.newConcurrentMap();
-		this.surrogates=Maps.newIdentityHashMap();
-		this.lock=new ReentrantLock();
-		this.initialized=new AtomicBoolean(false);
-		this.updatingState=new AtomicBoolean(false);
-		this.inUse=new AtomicBoolean(false);
-		this.notUpdatingState=lock.newCondition();
-		this.notInUse=lock.newCondition();
-		setIdentity(identity);
-	}
-
-	public Entity(Key<?> key) {
-		this(IdentityFactory.createManagedIdentity(key));
-	}
-
-	public Entity(Class<?> owner, Object nativeId) {
-		this(IdentityFactory.createManagedIdentity(owner,nativeId));
-	}
-
-	public Entity(Key<?> key, URI path) {
-		this(IdentityFactory.createRelativeIdentity(key,path));
-	}
-
-	public Entity(Class<?> owner, Object nativeId, URI path) {
-		this(IdentityFactory.createRelativeIdentity(owner,nativeId,path));
-	}
-
-	public Entity(URI location) {
-		this(IdentityFactory.createExternalIdentity(location));
-	}
-
-	public Entity(DataSource dataSource) {
-		this(IdentityFactory.createLocalIdentity(dataSource));
-	}
-
-	private void setIdentity(Identity identity) {
-		checkNotNull(identity,"Identity cannot be null");
+	Entity(EntityController controller, Identity identity) {
+		this.controller = controller;
 		this.identity=identity;
+		this.properties=Maps.newConcurrentMap();
+		ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+		this.write = lock.writeLock();
+		this.read = lock.readLock();
 	}
 
-	private Entity createSurrogate(Entity entity) {
-		SurrogateEntity surrogate=this.surrogates.get(entity);
-		if(surrogate==null) {
-			surrogate=new SurrogateEntity(entity);
-			this.surrogates.put(entity, surrogate);
-		}
-		return surrogate;
-	}
-
-	private void attachSurrogates(DataSource dataSource) {
-		for(SurrogateEntity surrogate:this.surrogates.values()) {
-			surrogate.attach(dataSource);
-		}
-		this.surrogates.clear();
-	}
-
-	private Property modifiableProperty(URI propertyId) {
-		Property property=new Property(propertyId, this);
-		Property result=this.properties.putIfAbsent(propertyId, property);
-		if(result==null) {
-			result=property;
-		}
-		return result;
-	}
-
-	private Property optionalProperty(URI propertyId) {
-		Property result=this.properties.get(propertyId);
-		if(result==null) {
-			result=new Property(propertyId, this);
-		}
-		return result;
-	}
-
-	private Entity resolve(Entity entity) {
-		this.lock.lock();
+	void removeProperties(Entity entity) {
+		this.write.lock();
 		try {
-			while(!this.initialized.get() && this.updatingState.get()) {
-				try {
-					this.notUpdatingState.await();
-				} catch (InterruptedException e) {
-					// Nothing to do but retry
-				}
+			Set<URI> predicates=Sets.newLinkedHashSet(this.properties.keySet());
+			for(URI predicate:predicates) {
+				safeRemove(predicate,entity);
 			}
-			this.inUse.set(true);
+		} finally {
+			this.write.unlock();
+		}
+
+	}
+
+	private ImmutableProperty unsafeFindPropertyByPredicate(URI propertyId) {
+		ImmutableProperty property=this.properties.get(propertyId);
+		if(property==null) {
+			property=new ImmutableProperty(propertyId,this);
+		}
+		return property;
+	}
+
+	/**
+	 * Truncated exponential back-off safe copy
+	 * @param entity
+	 * @return
+	 */
+	private Set<ImmutableProperty> safeProperties() {
+		long timeout=INITIAL_WAIT_TIME;
+		while(true) {
 			try {
-				Entity surrogateEntity=null;
-				if(this.initialized.get()) {
-					surrogateEntity=this.dataSource.merge(entity);
-				} else {
-					surrogateEntity=createSurrogate(entity);
+				if(this.read.tryLock() || this.read.tryLock(timeout,WAIT_TIME_UNIT)) {
+					try {
+						return Sets.newLinkedHashSet(this.properties.values());
+					} finally {
+						this.read.unlock();
+					}
 				}
-				return surrogateEntity;
-			} finally {
-				this.inUse.set(false);
-				this.notInUse.signalAll();
+			} catch (InterruptedException e) {
+			 // Nothing to do
 			}
-		} finally {
-			this.lock.unlock();
+			timeout=Math.min(timeout*WAIT_TIME_INCREASE_FACTOR, MAX_WAIT_TIME);
 		}
 	}
 
-	private Entity attachTo(DataSource dataSource) {
-		this.lock.lock();
+	private boolean safeRemove(URI propertyId, Value value) {
+		this.write.lock();
 		try {
-			while(this.updatingState.get()) {
-				try {
-					this.notUpdatingState.await();
-				} catch (InterruptedException e) {
-					// Nothing to do but retry
-				}
-			}
-			this.inUse.set(true);
-			Entity surrogateEntity=this;
-			if(this.initialized.get()) {
-				surrogateEntity=dataSource.merge(surrogateEntity);
-			} else {
-				dataSource.add(surrogateEntity);
-			}
-			this.inUse.set(false);
-			this.notInUse.signalAll();
-			return surrogateEntity;
+			return unsafeRemove(propertyId, value);
 		} finally {
-			this.lock.unlock();
+			this.write.unlock();
 		}
 	}
 
-	boolean isInitialized() {
-		this.lock.lock();
-		try {
-			while(this.updatingState.get()) {
-				try {
-					this.notUpdatingState.await();
-				} catch (InterruptedException e) {
-					// Nothing to do but retry
-				}
-			}
-			this.inUse.set(true);
-			try {
-				return this.initialized.get();
-			} finally {
-				this.inUse.set(false);
-				this.notInUse.signalAll();
-			}
-		} finally {
-			this.lock.unlock();
+	private boolean unsafeRemove(URI propertyId, Value value) {
+		ImmutableProperty original=this.properties.get(propertyId);
+		if(original==null) {
+			return false;
+		}
+		ImmutableProperty modified=original.removeValue(value);
+		if(modified==original) {
+			return false;
+		}
+		if(modified.hasValues()) {
+			this.properties.put(propertyId, modified);
+		} else {
+			this.properties.remove(propertyId);
+		}
+		return true;
+	}
+
+	private void unsafeAdd(URI predicate, Value value) {
+		ImmutableProperty original=unsafeFindPropertyByPredicate(predicate);
+		ImmutableProperty updated=original.addValue(value);
+		if(original!= updated) {
+			this.properties.put(updated.predicate(),updated);
 		}
 	}
 
-	void initialize(DataSource dataSource, UUID identifier) {
-		checkNotNull(dataSource,"Datasource cannot be null");
-		checkNotNull(identifier,"Identifier cannot be null");
-		this.lock.lock();
-		try {
-			while(this.inUse.get()) {
-				try {
-					this.notInUse.await();
-				} catch (InterruptedException e) {
-					// Nothing to do but retry
-				}
-			}
-			this.updatingState.set(true);
-			try {
-				checkState(!this.initialized.get(), "Entity has already been initialized");
-				this.dataSource=dataSource;
-				this.identifier=identifier;
-				attachSurrogates(dataSource);
-				this.initialized.set(true);
-			} finally {
-				this.updatingState.set(false);
-				this.notUpdatingState.signalAll();
-			}
-		} finally {
-			this.lock.unlock();
-		}
+	public UUID ownerId() {
+		return this.controller.ownerId();
 	}
 
-	void detach() {
-		this.lock.lock();
-		try {
-			while(this.inUse.get()) {
-				try {
-					this.notInUse.await();
-				} catch (InterruptedException e) {
-					// Nothing to do but retry
-				}
-			}
-			this.updatingState.set(true);
-			try {
-				checkState(this.initialized.get(),"Entity has already been detached");
-				this.dataSource=null;
-				this.identifier=null;
-				this.initialized.set(false);
-			} finally {
-				this.updatingState.set(false);
-				this.notUpdatingState.signalAll();
-			}
-		} finally {
-			this.lock.unlock();
-		}
-	}
-
-	public DataSource dataSource() {
-		return this.dataSource;
-	}
-
-	public UUID identifier() {
-		return this.identifier;
+	public UUID id() {
+		return this.controller.id();
 	}
 
 	public Identity identity() {
 		return this.identity;
 	}
 
-	public Property getProperty(URI propertyId) {
-		Property result=this.properties.get(propertyId);
-		if(result==null) {
-			result=new Property(propertyId, this);
-		} else {
-			result=new Property(result);
+	public Property getProperty(URI predicate) {
+		checkNotNull(predicate,PROPERTY_PREDICATE_CANNOT_BE_NULL);
+		this.read.lock();
+		try {
+			return unsafeFindPropertyByPredicate(predicate);
+		} finally {
+			this.read.unlock();
 		}
-		return result;
 	}
 
-	public void addProperty(URI propertyId, Literal<?> value) {
-		checkNotNull(propertyId,"Property identifier cannot be null");
-		checkNotNull(value,"Literal value cannot be null");
-		modifiableProperty(propertyId).addValue(value);
+	public void addProperty(URI predicate, Literal<?> literal) {
+		checkNotNull(predicate,PROPERTY_PREDICATE_CANNOT_BE_NULL);
+		checkNotNull(literal,LITERAL_VALUE_CANNOT_BE_NULL);
+		this.write.lock();
+		try {
+			unsafeAdd(predicate, literal);
+		} finally {
+			this.write.unlock();
+		}
 	}
 
-	public void addProperty(URI propertyId, Entity entity) {
-		checkNotNull(propertyId,"Property identifier cannot be null");
-		checkNotNull(entity,"Entity cannot be null");
-		Entity managedEntity = resolve(entity);
-		modifiableProperty(propertyId).
-			addValue(managedEntity);
+	public void addProperty(URI predicate, Entity entity) {
+		checkNotNull(predicate,PROPERTY_PREDICATE_CANNOT_BE_NULL);
+		checkNotNull(entity,ENTITY_VALUE_CANNOT_BE_NULL);
+		this.write.lock();
+		try {
+			entity.read.lock();
+			try {
+				unsafeAdd(predicate, this.controller.attach(entity));
+			} finally {
+				entity.read.unlock();
+			}
+		} finally {
+			this.write.unlock();
+		}
 	}
 
-	public void removeProperty(URI propertyId, Literal<?> value) {
-		checkNotNull(propertyId,"Property identifier cannot be null");
-		checkNotNull(value,"Literal value cannot be null");
-		optionalProperty(propertyId).removeValue(value);
+	public void removeProperty(URI predicate, Literal<?> literal) {
+		checkNotNull(predicate,PROPERTY_PREDICATE_CANNOT_BE_NULL);
+		checkNotNull(literal,LITERAL_VALUE_CANNOT_BE_NULL);
+		safeRemove(predicate, literal);
 	}
 
-	public void removeProperty(URI propertyId, Entity entity) {
-		checkNotNull(propertyId,"Property identifier cannot be null");
-		checkNotNull(entity,"Entity cannot be null");
-		Entity managedEntity=dataSource().find(entity.identity());
-		optionalProperty(propertyId).
-			removeValue(managedEntity);
+	public void removeProperty(URI predicate, Entity entity) {
+		checkNotNull(predicate,PROPERTY_PREDICATE_CANNOT_BE_NULL);
+		checkNotNull(entity,ENTITY_VALUE_CANNOT_BE_NULL);
+		safeRemove(predicate, entity);
 	}
 
-	public void removeProperty(URI propertyId) {
-		checkNotNull(propertyId,"Property identifier cannot be null");
-		this.properties.remove(propertyId);
+	public void removeProperty(URI predicate) {
+		checkNotNull(predicate,PROPERTY_PREDICATE_CANNOT_BE_NULL);
+		this.write.lock();
+		try {
+			this.properties.remove(predicate);
+		} finally {
+			this.write.unlock();
+		}
 	}
 
+	public void merge(Entity entity) {
+		checkNotNull(entity,ENTITY_VALUE_CANNOT_BE_NULL);
+		checkArgument(entity.identity.equals(this.identity),"Cannot merge individuals with different identities");
+		if(entity==this) {
+			return;
+		}
+		Collection<ImmutableProperty> sourceProperties = entity.safeProperties();
+		this.write.lock();
+		try {
+			for(ImmutableProperty source:sourceProperties) {
+				ImmutableProperty target = unsafeFindPropertyByPredicate(source.predicate());
+				ImmutableProperty merged = target.merge(source);
+				this.properties.put(merged.predicate(), merged);
+			}
+		} finally {
+			this.write.unlock();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void accept(ValueVisitor visitor) {
 		visitor.visitEntity(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Iterator<Property> iterator() {
-		return ImmutableList.copyOf(this.properties.values()).iterator();
+		return ImmutableList.<Property>copyOf(safeProperties()).iterator();
 	}
 
 	/**
@@ -426,7 +275,7 @@ public class Entity implements Value, Iterable<Property> {
 	 */
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(this.identifier(),this.dataSource(),this.identity());
+		return Objects.hashCode(this.controller,this.identity);
 	}
 
 	/**
@@ -438,9 +287,8 @@ public class Entity implements Value, Iterable<Property> {
 		if(obj instanceof Entity) {
 			Entity that= (Entity) obj;
 			result=
-				Objects.equal(this.dataSource(), that.dataSource()) &&
-				Objects.equal(this.identifier(), that.identifier()) &&
-				Objects.equal(this.identity(), that.identity());
+				Objects.equal(this.controller,that.controller) &&
+				Objects.equal(this.identity,that.identity);
 		}
 		return result;
 	}
@@ -454,9 +302,8 @@ public class Entity implements Value, Iterable<Property> {
 			Objects.
 				toStringHelper(getClass()).
 					omitNullValues().
-					add("dataSource",this.dataSource()).
-					add("identifier",this.identifier()).
-					add("identity",this.identity()).
+					add("controller",this.controller).
+					add("identity",this.identity).
 					toString();
 	}
 

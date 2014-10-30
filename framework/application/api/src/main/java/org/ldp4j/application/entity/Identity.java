@@ -89,11 +89,26 @@ public abstract class Identity implements Comparable<Identity> {
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("identifier",this.identifier);
-		toString(helper);
+		toString(new StringHelper(helper));
 		return helper.toString();
 	}
 
-	protected void toString(ToStringHelper helper) {
+	protected static final class StringHelper {
+
+		private ToStringHelper helper;
+
+		private StringHelper(ToStringHelper helper) {
+			this.helper = helper;
+		}
+
+		public StringHelper add(String name, Object value) {
+			this.helper.add(name, value);
+			return this;
+		}
+
+	}
+
+	protected void toString(StringHelper helper) {
 		// To be overriden by implementations
 	}
 
