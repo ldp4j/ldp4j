@@ -24,15 +24,15 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.data;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.net.URI;
 
-import org.ldp4j.server.controller.URIDescriptor.Scope;
-import org.ldp4j.server.controller.URIDescriptor.Type;
+import org.ldp4j.server.data.URIDescriptor.Scope;
+import org.ldp4j.server.data.URIDescriptor.Type;
 
 final class URIDescriber {
 	

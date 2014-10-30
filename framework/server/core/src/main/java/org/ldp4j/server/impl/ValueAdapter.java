@@ -47,7 +47,7 @@ import org.ldp4j.rdf.NodeVisitor;
 import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.TypedLiteral;
 import org.ldp4j.rdf.URIRef;
-import org.ldp4j.server.ResourceResolver;
+import org.ldp4j.server.data.ResourceResolver;
 
 final class ValueAdapter {
 	

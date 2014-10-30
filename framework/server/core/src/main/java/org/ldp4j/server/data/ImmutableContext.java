@@ -24,15 +24,33 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server;
+package org.ldp4j.server.data;
 
 import java.net.URI;
 
 
-public interface Context {
+public final class ImmutableContext implements Context {
 
-	URI getBase();
+	private final URI base;
+	private final ResourceResolver resourceResolver;
 
-	ResourceResolver getResourceResolver();
+	private ImmutableContext(URI base, ResourceResolver resourceResolver) {
+		this.base = base;
+		this.resourceResolver = resourceResolver;
+	}
 
+	@Override
+	public URI getBase() {
+		return this.base;
+	}
+	
+	@Override
+	public ResourceResolver getResourceResolver() {
+		return this.resourceResolver;
+	}
+	
+	public static ImmutableContext newInstance(URI base, ResourceResolver index) {
+		return new ImmutableContext(base,index);
+	}
+	
 }

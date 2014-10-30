@@ -28,16 +28,17 @@ package org.ldp4j.server.controller;
 
 import javax.ws.rs.core.Response;
 
-import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.ApplicationContext;
 
 abstract class FixedResponseEndpointController extends AbstractEndpointController {
 
-	FixedResponseEndpointController(Endpoint endpoint) {
-		super(endpoint);
+
+	FixedResponseEndpointController(ApplicationContext applicationContext) {
+		super(applicationContext,null);
 	}
 
 	protected abstract Response defaultResponse(OperationContext context);
-	
+
 	@Override
 	public final Response getResource(OperationContext context) {
 		return defaultResponse(context);
@@ -72,5 +73,5 @@ abstract class FixedResponseEndpointController extends AbstractEndpointControlle
 	public Response deleteResource(OperationContext context) {
 		return defaultResponse(context);
 	}
-	
+
 }

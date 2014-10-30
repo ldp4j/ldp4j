@@ -32,7 +32,7 @@ import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.rdf.Triple;
-import org.ldp4j.server.Context;
+import org.ldp4j.server.data.Context;
 
 public interface IMediaTypeProvider {
 

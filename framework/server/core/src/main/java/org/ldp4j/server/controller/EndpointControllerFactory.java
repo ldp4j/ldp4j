@@ -40,7 +40,7 @@ import org.ldp4j.application.util.ConcurrentHashSet;
 
 
 public class EndpointControllerFactory {
-	
+
 	private final class LocalEndpointLifecycleListener implements EndpointLifecycleListener {
 		@Override
 		public void endpointCreated(Endpoint endpoint) {
@@ -90,7 +90,7 @@ public class EndpointControllerFactory {
 	private final LocalEndpointLifecycleListener endpointLifecyleListener;
 
 	private final ApplicationContext applicationContext;
-	
+
 	private EndpointControllerFactory(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 		this.applicationLifecyleListener = new LocalApplicationLifecycleListener();
@@ -98,7 +98,7 @@ public class EndpointControllerFactory {
 		this.goneEndpoints=new ConcurrentHashSet<String>();
 		this.applicationContext.registerApplicationLifecycleListener(this.applicationLifecyleListener);
 	}
-	
+
 	private String normalizePath(String path) {
 		String tPath=path;
 		if(tPath==null) {
@@ -121,15 +121,15 @@ public class EndpointControllerFactory {
 		Endpoint endpoint=findEndpoint(path);
 		EndpointController result=null;
 		if(endpoint!=null) {
-			result=new ExistingEndpointController(endpoint);
+			result=new ExistingEndpointController(this.applicationContext,endpoint);
 		} else if(isGone(path)) {
-			result=new GoneEndpointController(endpoint);
+			result=new GoneEndpointController(this.applicationContext);
 		} else {
-			result=new NotFoundEndpointController(endpoint);
+			result=new NotFoundEndpointController(this.applicationContext);
 		}
 		return result;
 	}
-	
+
 	public static EndpointControllerFactory newInstance(ApplicationContext context) {
 		checkNotNull(context,"Application context cannot be null");
 		return new EndpointControllerFactory(context);

@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.data;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -35,8 +35,6 @@ import java.util.List;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.server.ImmutableContext;
-import org.ldp4j.server.ResourceResolver;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;
 import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;

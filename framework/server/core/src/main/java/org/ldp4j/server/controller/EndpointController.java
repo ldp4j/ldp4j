@@ -26,26 +26,82 @@
  */
 package org.ldp4j.server.controller;
 
-import javax.ws.rs.core.Response;
+import static com.google.common.base.Preconditions.checkNotNull;
 
+import javax.ws.rs.core.HttpHeaders;
+import javax.ws.rs.core.Request;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.UriInfo;
+
+import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.endpoint.Endpoint;
 
-public interface EndpointController {
-	
-	Endpoint endpoint();
-	
-	Response options(OperationContext context);
-	
-	Response head(OperationContext context);
-	
-	Response createResource(OperationContext context);
+public abstract class EndpointController {
 
-	Response getResource(OperationContext context);
+	public static final class OperationContextBuilder {
 
-	Response modifyResource(OperationContext context);
+		// Mandatory
+		private final Operation operation;
+		private ApplicationContext applicationContext;
+		private UriInfo uriInfo;
+		private Request request;
+		private HttpHeaders headers;
+		private Endpoint endpoint;
 
-	Response deleteResource(OperationContext context);
+		// Optional
+		private String entity;
 
-	Response patchResource(OperationContext context);
-	
+		protected OperationContextBuilder(Operation operation, ApplicationContext applicationContext, Endpoint endpoint) {
+			this.operation = operation;
+			this.applicationContext = applicationContext;
+			this.endpoint = endpoint;
+		}
+
+		public OperationContextBuilder withUriInfo(UriInfo uriInfo) {
+			this.uriInfo = uriInfo;
+			return this;
+		}
+
+		public OperationContextBuilder withHeaders(HttpHeaders headers) {
+			this.headers = headers;
+			return this;
+		}
+
+		public OperationContextBuilder withRequest(Request request) {
+			this.request = request;
+			return this;
+		}
+
+		public OperationContextBuilder withEntity(String entity) {
+			this.entity = entity;
+			return this;
+		}
+
+		public OperationContext build() {
+			checkNotNull(this.operation,"Operation cannot be null");
+			checkNotNull(this.applicationContext,"Application context cannot be null");
+			checkNotNull(this.uriInfo,"Uri info cannot be null");
+			checkNotNull(this.request,"Request cannot be null");
+			checkNotNull(this.headers,"Http headers cannot be null");
+			return new OperationContextImpl(this.applicationContext,this.endpoint,this.uriInfo,this.headers,this.request,this.entity,this.operation);
+		}
+
+	}
+
+	public abstract OperationContextBuilder operationContextBuilder(Operation operation);
+
+	public abstract Response options(OperationContext context);
+
+	public abstract Response head(OperationContext context);
+
+	public abstract Response createResource(OperationContext context);
+
+	public abstract Response getResource(OperationContext context);
+
+	public abstract Response modifyResource(OperationContext context);
+
+	public abstract Response deleteResource(OperationContext context);
+
+	public abstract Response patchResource(OperationContext context);
+
 }

@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.data;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,8 +36,8 @@ import java.util.Map.Entry;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ldp4j.server.controller.URIDescriptor.Scope;
-import org.ldp4j.server.controller.URIDescriptor.Type;
+import org.ldp4j.server.data.URIDescriptor.Scope;
+import org.ldp4j.server.data.URIDescriptor.Type;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -55,7 +55,7 @@ public class URIDescriberTest {
 		target = URI.create("http://www.ldp4j.org/target/resource/");
 		candidateMap = ImmutableMap.
 			<String,URIDescriptor>builder().
-				put("",URIDescriptor.newDescriptor(Scope.RESOURCE,Type.SELF)). 
+				put("",URIDescriptor.newDescriptor(Scope.RESOURCE,Type.SELF)).
 				put(endpoint.toString(),URIDescriptor.newDescriptor(Scope.ENDPOINT,Type.ABSOLUTE)).
 				put("relative",URIDescriptor.newDescriptor(Scope.RESOURCE,Type.CHILD)).
 				put(endpoint.resolve("relative").toString(),URIDescriptor.newDescriptor(Scope.ENDPOINT,Type.ABSOLUTE)).
@@ -69,7 +69,7 @@ public class URIDescriberTest {
 		application = endpoint.resolve("..");
 		sut = URIDescriber.newInstance(application, endpoint);
 	}
-	
+
 	@Test
 	public void testDescribe() {
 		for(Entry<String, URIDescriptor> entry:candidateMap.entrySet()) {
@@ -112,5 +112,5 @@ public class URIDescriberTest {
 	public void testNewInstance$endpointNotRelativeFromApplication() throws Exception {
 		URIDescriber.newInstance(application, target);
 	}
-	
+
 }

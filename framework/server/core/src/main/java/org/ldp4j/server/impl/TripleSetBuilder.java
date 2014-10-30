@@ -53,7 +53,7 @@ import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.rdf.BlankNode;
 import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.util.TripleSet;
-import org.ldp4j.server.ResourceResolver;
+import org.ldp4j.server.data.ResourceResolver;
 
 final class TripleSetBuilder {
 

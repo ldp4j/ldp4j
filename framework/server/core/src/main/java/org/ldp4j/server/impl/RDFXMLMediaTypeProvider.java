@@ -36,7 +36,7 @@ import org.ldp4j.rdf.Format;
 import org.ldp4j.rdf.RDFContext;
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.impl.UnmarshallOptions;
-import org.ldp4j.server.Context;
+import org.ldp4j.server.data.Context;
 import org.ldp4j.server.spi.ContentTransformationException;
 
 import com.google.common.collect.ImmutableSet;

@@ -24,16 +24,23 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server;
+package org.ldp4j.server.data;
 
-import java.net.URI;
+import javax.ws.rs.core.MediaType;
 
-import org.ldp4j.application.resource.ResourceId;
+public class UnsupportedMediaTypeException extends RuntimeException {
 
-public interface ResourceResolver {
+	private static final long serialVersionUID = -856966985917886692L;
 
-	URI resolveResource(ResourceId id);
+	private final transient MediaType type;
+	
+	public UnsupportedMediaTypeException(String message, MediaType type) {
+		super(message);
+		this.type = type;
+	}
 
-	ResourceId resolveLocation(URI path);
+	public MediaType getType() {
+		return type;
+	}
 
 }

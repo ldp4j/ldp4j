@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.data;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -35,9 +35,9 @@ import java.util.Map.Entry;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ldp4j.server.controller.URIDescriptor;
-import org.ldp4j.server.controller.URIDescriptor.Scope;
-import org.ldp4j.server.controller.URIDescriptor.Type;
+import org.ldp4j.server.data.URIDescriptor;
+import org.ldp4j.server.data.URIDescriptor.Scope;
+import org.ldp4j.server.data.URIDescriptor.Type;
 
 import com.google.common.collect.ImmutableMap;
 

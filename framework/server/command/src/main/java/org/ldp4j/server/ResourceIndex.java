@@ -29,8 +29,8 @@ package org.ldp4j.server;
 import java.net.URI;
 
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.server.ResourceResolver;
 import org.ldp4j.server.blueprint.Component;
+import org.ldp4j.server.data.ResourceResolver;
 
 public interface ResourceIndex extends Component, ResourceResolver {
 

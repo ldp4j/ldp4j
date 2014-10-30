@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.data;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
@@ -47,8 +47,7 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.server.ImmutableContext;
-import org.ldp4j.server.ResourceResolver;
+import org.ldp4j.server.data.SafeResourceResolver;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;
 import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;

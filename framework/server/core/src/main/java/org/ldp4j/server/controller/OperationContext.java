@@ -31,7 +31,6 @@ import java.net.URI;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.ContentPreferences;
 import org.ldp4j.application.CreationPreferences;
 import org.ldp4j.application.PublicContainer;
@@ -40,19 +39,17 @@ import org.ldp4j.application.data.DataSet;
 
 public interface OperationContext {
 
-	ApplicationContext applicationContext();
-
 	URI base();
 
 	String path();
 
 	DataSet dataSet();
-	
+
 	Variant expectedVariant();
 
 	ContentPreferences contentPreferences();
 
-	CreationPreferences creationPreferences(); 
+	CreationPreferences creationPreferences();
 
 	OperationContext checkContents();
 
@@ -62,10 +59,10 @@ public interface OperationContext {
 
 	PublicResource resource();
 
-	PublicContainer container();
-	
+	PublicContainer<?> container();
+
 	URI resolve(PublicResource newResource);
 
-	String serializeResource(DataSet entity, MediaType mediaType);
+	String serialize(DataSet entity, MediaType mediaType);
 
 }

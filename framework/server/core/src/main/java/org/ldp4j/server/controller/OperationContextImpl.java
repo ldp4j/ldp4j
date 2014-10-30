@@ -26,8 +26,8 @@
  */
 package org.ldp4j.server.controller;
 
+import java.io.IOException;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -50,14 +50,9 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EntityTag;
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.server.Context;
-import org.ldp4j.server.ImmutableContext;
-import org.ldp4j.server.ResourceResolver;
-import org.ldp4j.server.spi.ContentTransformationException;
-import org.ldp4j.server.spi.IMediaTypeProvider;
-import org.ldp4j.server.spi.IMediaTypeProvider.Marshaller;
-import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;
-import org.ldp4j.server.spi.RuntimeInstance;
+import org.ldp4j.server.data.DataTransformator;
+import org.ldp4j.server.data.ResourceResolver;
+import org.ldp4j.server.data.UnsupportedMediaTypeException;
 import org.ldp4j.server.utils.VariantHelper;
 import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
@@ -83,7 +78,7 @@ final class OperationContextImpl implements OperationContext {
 
 		@Override
 		public ResourceId resolveLocation(URI path) {
-			Endpoint resolveEndpoint = 
+			Endpoint resolveEndpoint =
 				applicationContext.
 					resolveEndpoint(
 						base().relativize(path).toString());
@@ -110,12 +105,12 @@ final class OperationContextImpl implements OperationContext {
 	private PublicResource resource;
 
 	OperationContextImpl(
-		ApplicationContext applicationContext, 
-		Endpoint endpoint, 
-		UriInfo uriInfo, 
-		HttpHeaders headers, 
-		Request request, 
-		String entity, 
+		ApplicationContext applicationContext,
+		Endpoint endpoint,
+		UriInfo uriInfo,
+		HttpHeaders headers,
+		Request request,
+		String entity,
 		Operation operation) {
 		this.applicationContext = applicationContext;
 		this.endpoint = endpoint;
@@ -125,7 +120,52 @@ final class OperationContextImpl implements OperationContext {
 		this.request=request;
 		this.entity = entity;
 	}
-	
+
+	private Variant contentVariant() {
+		List<String> requestHeader=
+			headers().
+				getRequestHeader(HttpHeaders.CONTENT_ENCODING);
+
+		List<Variant> variants=
+			Variant.VariantListBuilder.
+				newInstance().
+				mediaTypes(headers().getMediaType()).
+				encodings(requestHeader.toArray(new String[requestHeader.size()])).
+				languages(headers().getLanguage()).
+				add().
+				build();
+
+		return variants.get(0);
+	}
+
+	private String slug() {
+		List<String> slugs = this.headers.getRequestHeader("Slug");
+		String slug=null;
+		if(!slugs.isEmpty()) {
+			slug=slugs.get(0);
+		}
+		return slug;
+	}
+
+	private InteractionModel interactionModel() {
+		InteractionModel result=null;
+		for(String linkHeader:this.headers.getRequestHeader(HttpHeaders.LINK)) {
+			result= InteractionModelUtils.fromLink(linkHeader);
+			if(result!=null) {
+				break;
+			}
+		}
+		return result;
+	}
+
+	private ResourceResolver resourceResolver() {
+		return new OperationContextResourceResolver();
+	}
+
+	private URI endpoint() {
+		return URI.create(this.endpoint.path());
+	}
+
 	UriInfo uriInfo() {
 		return this.uriInfo;
 	}
@@ -142,62 +182,6 @@ final class OperationContextImpl implements OperationContext {
 		return this.entity;
 	}
 
-	private Variant contentVariant() {
-		List<String> requestHeader= 
-			headers().
-				getRequestHeader(HttpHeaders.CONTENT_ENCODING);
-		
-		List<Variant> variants=
-			Variant.VariantListBuilder.
-				newInstance().
-				mediaTypes(headers().getMediaType()).
-				encodings(requestHeader.toArray(new String[requestHeader.size()])).
-				languages(headers().getLanguage()).
-				add().
-				build();
-		
-		return variants.get(0);
-	}
-
-	private Context createContext() {
-		ResourceResolver resolver = resourceResolver();
-		URI endpoint = base().resolve(this.endpoint.path());
-		if(Operation.POST.equals(this.operation)) {
-			try {
-				URI alternative=
-					new URI(
-						endpoint.getScheme(),
-						endpoint.getUserInfo(),
-						"ldp4j".concat(endpoint.getHost()),
-						endpoint.getPort(),
-						endpoint.getPath(),
-						endpoint.getFragment(),
-						endpoint.getQuery()
-					);
-				resolver=
-					SafeResourceResolver.
-						builder().
-							withApplication(base()).
-							withEndpoint(endpoint).
-							withAlternative(alternative).
-							withEntity(entity(), contentVariant().getMediaType()).
-							build();
-			} catch (URISyntaxException e) {
-				AssertionError assertionError = new AssertionError("Alternative URI creation failed");
-				assertionError.initCause(e);
-				throw assertionError;
-			} catch (ContentTransformationException e) {
-				throw new ContentProcessingException("Could not create safe resolver", this.endpoint, this);
-			}
-		}
-		return ImmutableContext.newInstance(endpoint,resolver);
-	}
-
-	@Override
-	public ApplicationContext applicationContext() {
-		return this.applicationContext;
-	}
-	
 	@Override
 	public URI base() {
 		String path = uriInfo.getPath();
@@ -230,7 +214,7 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public OperationContext checkPreconditions() {
-		EntityTag entityTag=this.endpoint.entityTag(); 
+		EntityTag entityTag=this.endpoint.entityTag();
 		Date lastModified=this.endpoint.lastModified();
 		if(Operation.PUT.equals(this.operation)) {
 			List<String> requestHeader = this.headers.getRequestHeader(HttpHeaders.IF_MATCH);
@@ -238,7 +222,7 @@ final class OperationContextImpl implements OperationContext {
 				throw new PreconditionRequiredException(this,this.endpoint);
 			}
 		}
-		ResponseBuilder builder = 
+		ResponseBuilder builder =
 			request().
 				evaluatePreconditions(
 					lastModified,
@@ -285,30 +269,24 @@ final class OperationContextImpl implements OperationContext {
 	@Override
 	public DataSet dataSet() {
 		if(this.dataSet==null) {
-			LOGGER.trace("Raw entity to unmarshall: \n{}",this.entity);
-			
-			MediaType mediaType = contentVariant().getMediaType();
-			IMediaTypeProvider provider = 
-				RuntimeInstance.
-					getInstance().
-						getMediaTypeProvider(mediaType);
-	
-			if(provider==null) {
-				throw new UnsupportedContentException(endpoint,this,contentVariant());
-			}
-			
-			Context context = createContext();
-			Unmarshaller unmarshaller = 
-				provider.
-					newUnmarshaller(context);
+			MediaType mediaType=contentVariant().getMediaType();
 			try {
-				LOGGER.trace("Unmarshalling using base '{}'",context.getBase());
-				this.dataSet=unmarshaller.unmarshall(this.entity, mediaType);
-			} catch (ContentTransformationException e) {
-				throw new ContentProcessingException("Entity cannot be parsed as '"+mediaType+"' ",endpoint,this);
+				DataTransformator transformator =
+					DataTransformator.
+						create(base()).
+						enableResolution(resourceResolver()).
+						mediaType(mediaType);
+				if(this.operation.equals(Operation.POST)) {
+					transformator=transformator.surrogateEndpoint(endpoint());
+				} else {
+					transformator=transformator.permanentEndpoint(endpoint());
+				}
+				this.dataSet=transformator.unmarshall(this.entity);
+			} catch(UnsupportedMediaTypeException e) {
+				throw new UnsupportedContentException(this.endpoint,this,contentVariant());
+			} catch(IOException e) {
+				throw new ContentProcessingException("Entity cannot be parsed as '"+mediaType+"' ",this.endpoint,this);
 			}
-			
-			LOGGER.trace("Unmarshalled data set: \n{}",this.dataSet);
 		}
 		return this.dataSet;
 	}
@@ -325,7 +303,7 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public CreationPreferences creationPreferences() {
-		return 
+		return
 			CreationPreferences.
 				builder().
 					withInteractionModel(interactionModel()).
@@ -333,58 +311,26 @@ final class OperationContextImpl implements OperationContext {
 					build();
 	}
 
-	private String slug() {
-		List<String> slugs = this.headers.getRequestHeader("Slug");
-		String slug=null;
-		if(!slugs.isEmpty()) {
-			slug=slugs.get(0);
-		}
-		return slug;
-	}
-
-	private InteractionModel interactionModel() {
-		InteractionModel result=null;
-		for(String linkHeader:this.headers.getRequestHeader(HttpHeaders.LINK)) {
-			result= InteractionModelUtils.fromLink(linkHeader);
-			if(result!=null) {
-				break;
-			}
-		}
-		return result;
-	}
-	
 	@Override
-	public URI resolve(PublicResource newResource) {
-		return base().resolve(newResource.path());
+	public URI resolve(PublicResource resource) {
+		return base().resolve(resource.path());
 	}
 
 	@Override
-	public String serializeResource(DataSet representation, MediaType mediaType) {
-		IMediaTypeProvider provider = 
-			RuntimeInstance.
-				getInstance().
-					getMediaTypeProvider(mediaType);
-	
-		if(provider==null) {
-			throw new UnsupportedContentException(endpoint,this,contentVariant());
-		}
-		
-		Context context = createContext();
-		Marshaller marshaller = 
-			provider.
-				newMarshaller(context);
+	public String serialize(DataSet representation, MediaType mediaType) {
 		try {
-			LOGGER.trace("Marshalling using base '{}'",context.getBase());
-			String rawEntity = marshaller.marshall(representation, mediaType);
-			LOGGER.trace("Marshalled entity: \n{}",rawEntity);
-			return rawEntity;
-		} catch (ContentTransformationException e) {
+			DataTransformator transformator =
+				DataTransformator.
+					create(base()).
+					enableResolution(resourceResolver()).
+					mediaType(mediaType).
+					permanentEndpoint(endpoint());
+			return transformator.marshall(representation);
+		} catch(UnsupportedMediaTypeException e) {
+			throw new UnsupportedContentException(endpoint,this,contentVariant());
+		} catch(IOException e) {
 			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",endpoint,this);
 		}
-	}
-
-	private ResourceResolver resourceResolver() {
-		return new OperationContextResourceResolver();
 	}
 
 	@Override

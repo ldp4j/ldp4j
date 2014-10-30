@@ -49,7 +49,6 @@ import org.ldp4j.server.controller.EndpointController;
 import org.ldp4j.server.controller.EndpointControllerFactory;
 import org.ldp4j.server.controller.Operation;
 import org.ldp4j.server.controller.OperationContext;
-import org.ldp4j.server.controller.OperationContextFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -82,7 +81,7 @@ public class ServerFrontend {
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ServerFrontend.class);
-	
+
 	private static final String ENDPOINT_PATH_PARAM = "path";
 	private static final String ENDPOINT_PATH = "/{"+ENDPOINT_PATH_PARAM+":.*}";
 
@@ -92,8 +91,6 @@ public class ServerFrontend {
 
 	private final EndpointControllerFactory endpointControllerfactory;
 
-	private final OperationContextFactory operationContextFactory;
-
 	public ServerFrontend() {
 		this.appLifecyleListener=new LocalApplicationLifecycleListener();
 		this.applicationContext=ApplicationContext.currentContext();
@@ -101,17 +98,14 @@ public class ServerFrontend {
 		this.endpointControllerfactory=
 			EndpointControllerFactory.
 				newInstance(this.applicationContext);
-		this.operationContextFactory=
-			OperationContextFactory.
-				newInstance(this.applicationContext);
 	}
-	
+
 	/**
 	 * LDP 1.0 - 4.2.8.1 : "LDP servers must support the HTTP OPTIONS method."
 	 * HTTP/1.1 - 9.2 : The current support for the OPTIONS method
 	 * <b>discards</b> request entity-bodies and does not return a response
 	 * body.
-	 * 
+	 *
 	 * @param uriInfo
 	 * @param path
 	 * @param headers
@@ -121,24 +115,23 @@ public class ServerFrontend {
 	@OPTIONS
 	@Path(ENDPOINT_PATH)
 	public Response options(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request) {
 		EndpointController controller=
 			this.endpointControllerfactory.
 				createController(path);
-		OperationContext context = 
-			this.operationContextFactory.
-				forOperation(Operation.OPTIONS).
-					withEndpoint(controller.endpoint()).
+		OperationContext context =
+			controller.
+				operationContextBuilder(Operation.OPTIONS).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
 					build();
 		return controller.options(context);
 	}
-	
+
 	/**
 	 * LDP 1.0 - 4.2.6.1 LDP servers must support the HTTP HEAD method.
 	 * @param uriInfo
@@ -150,17 +143,16 @@ public class ServerFrontend {
 	@HEAD
 	@Path(ENDPOINT_PATH)
 	public Response head(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request) {
 		EndpointController controller=
 			this.endpointControllerfactory.
 				createController(path);
-		OperationContext context = 
-			this.operationContextFactory.
-				forOperation(Operation.HEAD).
-					withEndpoint(controller.endpoint()).
+		OperationContext context =
+			controller.
+				operationContextBuilder(Operation.HEAD).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -172,10 +164,10 @@ public class ServerFrontend {
 	@GET
 	@Path("/")
 	public Response get(
-		@Context UriInfo uriInfo, 
+		@Context UriInfo uriInfo,
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		return 
+		return
 			Response.
 				ok().
 				entity("Constraint validation failure").
@@ -187,8 +179,8 @@ public class ServerFrontend {
 	@GET
 	@Path(ENDPOINT_PATH)
 	public Response get(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request) {
 		if(path.equals("") || path.equals("/")) {
@@ -197,10 +189,9 @@ public class ServerFrontend {
 		EndpointController controller=
 			this.endpointControllerfactory.
 				createController(path);
-		OperationContext context = 
-			this.operationContextFactory.
-				forOperation(Operation.GET).
-					withEndpoint(controller.endpoint()).
+		OperationContext context =
+			controller.
+				operationContextBuilder(Operation.GET).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -211,18 +202,17 @@ public class ServerFrontend {
 	@PUT
 	@Path(ENDPOINT_PATH)
 	public Response put(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
 		EndpointController controller=
 			this.endpointControllerfactory.
 				createController(path);
-		OperationContext context = 
-			this.operationContextFactory.
-				forOperation(Operation.PUT).
-					withEndpoint(controller.endpoint()).
+		OperationContext context =
+			controller.
+				operationContextBuilder(Operation.PUT).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -230,22 +220,21 @@ public class ServerFrontend {
 					build();
 		return controller.modifyResource(context);
 	}
-	
+
 	@POST
 	@Path(ENDPOINT_PATH)
 	public Response post(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
 		EndpointController controller=
 			this.endpointControllerfactory.
 				createController(path);
-		OperationContext context = 
-			this.operationContextFactory.
-				forOperation(Operation.POST).
-					withEndpoint(controller.endpoint()).
+		OperationContext context =
+			controller.
+				operationContextBuilder(Operation.POST).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -257,17 +246,16 @@ public class ServerFrontend {
 	@DELETE
 	@Path(ENDPOINT_PATH)
 	public Response delete(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request) {
 		EndpointController controller=
 			this.endpointControllerfactory.
 				createController(path);
-		OperationContext context = 
-			this.operationContextFactory.
-				forOperation(Operation.DELETE).
-					withEndpoint(controller.endpoint()).
+		OperationContext context =
+			controller.
+				operationContextBuilder(Operation.DELETE).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -278,18 +266,17 @@ public class ServerFrontend {
 	@PATCH
 	@Path(ENDPOINT_PATH)
 	public Response patch(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
 		EndpointController controller=
 			this.endpointControllerfactory.
 				createController(path);
-		OperationContext context = 
-			this.operationContextFactory.
-				forOperation(Operation.PATCH).
-					withEndpoint(controller.endpoint()).
+		OperationContext context =
+			controller.
+				operationContextBuilder(Operation.OPTIONS).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).

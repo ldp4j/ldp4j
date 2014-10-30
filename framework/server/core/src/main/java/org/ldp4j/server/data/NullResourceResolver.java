@@ -24,12 +24,11 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.data;
 
 import java.net.URI;
 
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.server.ResourceResolver;
 
 final class NullResourceResolver implements ResourceResolver {
 	@Override

@@ -32,16 +32,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.ApplicationContext;
 
 final class GoneEndpointController extends FixedResponseEndpointController {
 
-	GoneEndpointController(Endpoint endpoint) {
-		super(endpoint);
+	GoneEndpointController(ApplicationContext applicationContext) {
+		super(applicationContext);
 	}
 
 	protected Response defaultResponse(OperationContext context) {
-		return 
+		return
 			Response.
 				status(Status.GONE).
 				type(MediaType.TEXT_PLAIN).
@@ -49,5 +49,5 @@ final class GoneEndpointController extends FixedResponseEndpointController {
 				entity("Endpoint at "+context.base().resolve(context.path())+" is gone.").
 				build();
 	}
-	
+
 }

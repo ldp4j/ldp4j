@@ -28,7 +28,7 @@ package org.ldp4j.server;
 
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.server.Context;
+import org.ldp4j.server.data.Context;
 import org.ldp4j.server.spi.ContentTransformationException;
 
 public interface Entity {

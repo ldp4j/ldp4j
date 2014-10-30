@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.data;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -36,8 +36,8 @@ import java.util.Map.Entry;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ldp4j.server.controller.URIDescriptor.Scope;
-import org.ldp4j.server.controller.URIDescriptor.Type;
+import org.ldp4j.server.data.URIDescriptor.Scope;
+import org.ldp4j.server.data.URIDescriptor.Type;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -54,7 +54,7 @@ public class URIResolverTest {
 		endpoint = URI.create("http://www.example.org/target/resource/");
 		alternative = URI.create("http://www.ldp4j.org/target/resource/");
 		candidates = new String[]{
-			"", 
+			"",
 			endpoint.toString(),
 			"relative",
 			endpoint.resolve("relative").toString(),
@@ -64,10 +64,10 @@ public class URIResolverTest {
 			"urn:example",
 			"urn:/test/test2"
 		};
-		
+
 		candidateMap = ImmutableMap.
 			<String,URIDescriptor>builder().
-				put("",URIDescriptor.newDescriptor(Scope.RESOURCE,Type.SELF)). 
+				put("",URIDescriptor.newDescriptor(Scope.RESOURCE,Type.SELF)).
 				put(endpoint.toString(),URIDescriptor.newDescriptor(Scope.ENDPOINT,Type.ABSOLUTE)).
 				put("relative",URIDescriptor.newDescriptor(Scope.RESOURCE,Type.CHILD)).
 				put(endpoint.resolve("relative").toString(),URIDescriptor.newDescriptor(Scope.ENDPOINT,Type.ABSOLUTE)).
@@ -79,7 +79,7 @@ public class URIResolverTest {
 				build();
 		sut = URIResolver.newInstance(endpoint, alternative);
 	}
-	
+
 	@Test
 	public void testResolve() {
 		for(int i=0;i<candidates.length;i++) {

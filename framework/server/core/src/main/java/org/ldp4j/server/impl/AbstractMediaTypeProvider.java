@@ -40,7 +40,7 @@ import org.ldp4j.application.util.ListenerManager;
 import org.ldp4j.application.util.Notification;
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.util.TripleSet;
-import org.ldp4j.server.Context;
+import org.ldp4j.server.data.Context;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;
 

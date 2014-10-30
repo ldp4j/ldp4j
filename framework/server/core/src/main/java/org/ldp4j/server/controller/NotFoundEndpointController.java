@@ -32,16 +32,16 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.ApplicationContext;
 
 final class NotFoundEndpointController extends FixedResponseEndpointController {
 
-	NotFoundEndpointController(Endpoint endpoint) {
-		super(endpoint);
+	NotFoundEndpointController(ApplicationContext applicationContext) {
+		super(applicationContext);
 	}
 
 	protected Response defaultResponse(OperationContext context) {
-		return 
+		return
 			Response.
 				status(Status.NOT_FOUND).
 				type(MediaType.TEXT_PLAIN).
@@ -49,5 +49,5 @@ final class NotFoundEndpointController extends FixedResponseEndpointController {
 				entity("No endpoint found at "+context.base().resolve(context.path())+".").
 				build();
 	}
-	
+
 }
