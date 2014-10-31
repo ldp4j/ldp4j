@@ -1,5 +1,0 @@
-org.ldp4j.application.entity.impl.StringObjectFactory
-org.ldp4j.application.entity.impl.LongObjectFactory
-org.ldp4j.application.entity.impl.IntegerObjectFactory
-org.ldp4j.application.entity.impl.URIObjectFactory
-org.ldp4j.application.entity.impl.URLObjectFactory
