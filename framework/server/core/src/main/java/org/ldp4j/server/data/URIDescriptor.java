@@ -26,11 +26,7 @@
  */
 package org.ldp4j.server.data;
 
-
 final class URIDescriptor {
-
-	private final URIDescriptor.Scope scope;
-	private final URIDescriptor.Type type;
 
 	public enum Scope {
 		EXTERNAL,
@@ -38,10 +34,10 @@ final class URIDescriptor {
 		ENDPOINT,
 		RESOURCE,
 	}
-	
+
 	public enum Type {
 		OPAQUE(null),
-		ABSOLUTE(null), 
+		ABSOLUTE(null),
 		RELATIVE(null) {
 			@Override
 			boolean isRelative() {
@@ -52,13 +48,13 @@ final class URIDescriptor {
 		CHILD(RELATIVE),
 		ANCESTOR(RELATIVE),
 		;
-		
+
 		private final URIDescriptor.Type parent;
 
 		private Type(URIDescriptor.Type parent) {
 			this.parent = parent;
 		}
-		
+
 		boolean isRelative() {
 			boolean result=false;
 			if(this.parent==null) {
@@ -66,22 +62,25 @@ final class URIDescriptor {
 			}
 			return result;
 		}
-		
+
 		boolean isAbsolute() {
 			return !isRelative();
 		}
-		
+
 	}
-	
+
+	private final Scope scope;
+	private final Type type;
+
 	boolean isResolvable() {
 		return scope.equals(Scope.APPLICATION) || scope.equals(Scope.ENDPOINT) || (scope.equals(Scope.RESOURCE) && type.equals(Type.ABSOLUTE));
 	}
-	
+
 	private URIDescriptor(URIDescriptor.Scope scope, URIDescriptor.Type type) {
 		this.scope = scope;
 		this.type = type;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -111,7 +110,7 @@ final class URIDescriptor {
 		}
 		return true;
 	}
-	
+
 	@Override
 	public String toString() {
 		StringBuilder builder = new StringBuilder();
@@ -125,5 +124,5 @@ final class URIDescriptor {
 	static URIDescriptor newDescriptor(Scope scope, Type type) {
 		return new URIDescriptor(scope, type);
 	}
-	
+
 }

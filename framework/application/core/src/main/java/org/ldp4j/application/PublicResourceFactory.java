@@ -40,8 +40,8 @@ final class PublicResourceFactory {
 		this.applicationContext = applicationContext;
 	}
 	
-	PublicResource createResource(ResourceId memberId) {
-		return createResource(this.applicationContext.resolveResource(memberId));
+	PublicResource createResource(ResourceId resourceId) {
+		return createResource(this.applicationContext.resolveResource(resourceId));
 	}
 	
 	PublicResource createResource(Endpoint endpoint) {

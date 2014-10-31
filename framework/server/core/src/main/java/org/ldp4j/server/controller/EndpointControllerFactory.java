@@ -30,8 +30,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Set;
 
-
 import org.ldp4j.application.ApplicationContext;
+import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EndpointLifecycleListener;
 import org.ldp4j.application.lifecycle.ApplicationLifecycleListener;
@@ -109,8 +109,8 @@ public class EndpointControllerFactory {
 		return tPath;
 	}
 
-	private Endpoint findEndpoint(String path) {
-		return this.applicationContext.resolveEndpoint(normalizePath(path));
+	private PublicResource resolveEndpoint(String path) {
+		return this.applicationContext.resolveResource(normalizePath(path));
 	}
 
 	private boolean isGone(String path) {
@@ -118,10 +118,10 @@ public class EndpointControllerFactory {
 	}
 
 	public EndpointController createController(String path) {
-		Endpoint endpoint=findEndpoint(path);
+		PublicResource resource=resolveEndpoint(path);
 		EndpointController result=null;
-		if(endpoint!=null) {
-			result=new ExistingEndpointController(this.applicationContext,endpoint);
+		if(resource!=null) {
+			result=new ExistingEndpointController(this.applicationContext,resource);
 		} else if(isGone(path)) {
 			result=new GoneEndpointController(this.applicationContext);
 		} else {

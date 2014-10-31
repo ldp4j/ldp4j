@@ -27,6 +27,7 @@
 package org.ldp4j.application;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EndpointLifecycleListener;
 import org.ldp4j.application.endpoint.EndpointManagementService;
@@ -60,7 +61,7 @@ import org.slf4j.LoggerFactory;
 public final class ApplicationContext {
 
 	private static Logger LOGGER=LoggerFactory.getLogger(ApplicationContext.class);
-	
+
 	private static ApplicationContext context;
 
 	private ResourceRepository resourceRepository;
@@ -177,6 +178,10 @@ public final class ApplicationContext {
 		return this.resourceRepository.find(endpoint.resourceId(), Resource.class);
 	}
 
+	Endpoint resolveResource(ResourceId id) {
+		return this.endpointRepository.endpointOfResource(id);
+	}
+
 	Resource createResource(Endpoint endpoint, DataSet dataSet, String desiredPath) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Container resource = this.resourceRepository.find(resourceId,Container.class);
@@ -271,17 +276,31 @@ public final class ApplicationContext {
 		return this.application.getClass().getName();
 	}
 
-	public PublicResource findResource(Endpoint endpoint) {
-		return this.factory.createResource(endpoint);
-	}
-
-	public Endpoint resolveEndpoint(String path) {
+	public PublicResource resolveResource(String path) {
 		checkNotNull(path,"Endpoint path cannot be null");
-		return this.endpointManagementService.resolveEndpoint(path);
+		PublicResource resource=null;
+		Endpoint endpoint = this.endpointManagementService.resolveEndpoint(path);
+		if(endpoint!=null) {
+			resource = this.factory.createResource(endpoint);
+		}
+		return resource;
 	}
 
-	public Endpoint resolveResource(ResourceId id) {
-		return this.endpointRepository.endpointOfResource(id);
+	@Deprecated
+	public ManagedIndividualId resolveEndpoint(String path) {
+		checkNotNull(path,"Endpoint path cannot be null");
+		ManagedIndividualId result=null;
+		Endpoint resolveEndpoint=this.endpointManagementService.resolveEndpoint(path);
+		if(resolveEndpoint!=null) {
+			ResourceId resourceId=resolveEndpoint.resourceId();
+			result=ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
+			LOGGER.trace("Resolved path '{}' to individual {}",path,result);
+		}
+		return result;
+	}
+
+	public PublicResource resolveResource(ManagedIndividualId id) {
+		return this.factory.createResource(ResourceId.createId(id.name(), id.managerId()));
 	}
 
 	public void registerApplicationLifecycleListener(ApplicationLifecycleListener listener) {
@@ -307,7 +326,7 @@ public final class ApplicationContext {
 	private static void setCurrentContext(ApplicationContext context) {
 		ApplicationContext.context = context;
 	}
-	
+
 	private static ApplicationContext newApplicationContext() {
 		RuntimeInstance instance = RuntimeInstance.getInstance();
 		RepositoryRegistry repositoryRegistry = instance.getRepositoryRegistry();
@@ -330,7 +349,7 @@ public final class ApplicationContext {
 		}
 		return ApplicationContext.context;
 	}
-	
+
 	public static synchronized ApplicationContext createContext(String applicationClassName) {
 		// Candidate application context configuration
 		ApplicationContext context = newApplicationContext();
@@ -343,7 +362,7 @@ public final class ApplicationContext {
 			LOGGER.error(errorMessage,e);
 			throw new ApplicationContextException(errorMessage,e);
 		}
-		
+
 		// Candidate application context target application initialization
 		try {
 			context.initialize(applicationClassName);
@@ -358,5 +377,8 @@ public final class ApplicationContext {
 		setCurrentContext(context);
 		return currentContext();
 	}
+
+
+
 
 }

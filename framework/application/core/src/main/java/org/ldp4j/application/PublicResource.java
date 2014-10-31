@@ -61,21 +61,19 @@ import org.ldp4j.application.vocabulary.Term;
 import com.google.common.collect.Sets;
 
 public abstract class PublicResource extends Public {
-	
-	private static final URI HAS_ATTACHMENT = URI.create("http://www.ldp4j.org/ns/application#hasAttachment");
 
 	protected static final class Context {
-		
+
 		private final DataSet dataSet;
-	
+
 		private Context(DataSet dataSet) {
 			this.dataSet = dataSet;
 		}
-		
+
 		public URI property(Term term) {
 			return term.as(URI.class);
 		}
-		
+
 		public Individual<?,?> reference(URI externalIndividual) {
 			return dataSet.individual(externalIndividual, ExternalIndividual.class);
 		}
@@ -83,16 +81,16 @@ public abstract class PublicResource extends Public {
 		public Individual<?,?> reference(Term term) {
 			return reference(term.as(URI.class));
 		}
-		
+
 		public Individual<?,?> newIndividual(URI id) {
 			return dataSet.individual(id, ExternalIndividual.class);
 		}
-	
+
 		@SuppressWarnings("rawtypes")
 		public Individual<?,?> newIndividual(Name<?> id) {
 			return dataSet.individual((Name)id, LocalIndividual.class);
 		}
-		
+
 		public Individual<?,?> newIndividual(ManagedIndividualId id) {
 			return dataSet.individual(id, ManagedIndividual.class);
 		}
@@ -114,8 +112,20 @@ public abstract class PublicResource extends Public {
 		}
 	}
 
+	private static final URI HAS_ATTACHMENT = URI.create("http://www.ldp4j.org/ns/application#hasAttachment");
+	private final ManagedIndividualId individualId;
+
 	protected PublicResource(ApplicationContext applicationContext, Endpoint endpoint) {
-		super(applicationContext, endpoint);
+		super(applicationContext,endpoint);
+		this.individualId=
+			ManagedIndividualId.
+				createId(
+					id().name(),
+					id().templateId());
+	}
+
+	public final ManagedIndividualId individualId() {
+		return this.individualId;
 	}
 
 	public final Map<String,PublicResource> attachments() {
@@ -125,26 +135,22 @@ public abstract class PublicResource extends Public {
 		}
 		return result;
 	}
-	
+
 	public final DataSet entity() throws ApplicationExecutionException {
 		return entity(ContentPreferences.defaultPreferences());
 	}
-	
+
 	/**
 	 * @return
 	 */
 	protected DataSet metadata() {
-		DataSet metadata = 
+		DataSet metadata =
 			DataSetFactory.
-				createDataSet(id().name()); 
-	
+				createDataSet(id().name());
+
 		Context ctx = new Context(metadata);
-		ManagedIndividualId id=
-			ManagedIndividualId.
-				createId(
-					id().name(), 
-					id().templateId());
-	
+		ManagedIndividualId id = individualId();
+
 		fillInMetadata(
 			ContentPreferences.defaultPreferences(),
 			ctx.newIndividual(id),
@@ -155,23 +161,18 @@ public abstract class PublicResource extends Public {
 	protected DataSet resourceData(ContentPreferences contentPreferences) throws ApplicationExecutionException {
 		return applicationContext().getResource(endpoint());
 	}
-	
+
 	public final DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException {
 		DataSet dataSet=resourceData(contentPreferences);
-		DataSet representation = DataSetFactory.createDataSet(id().name()); 
+		DataSet representation = DataSetFactory.createDataSet(id().name());
 		DataSetUtils.
 			merge(
-				dataSet, 
+				dataSet,
 				representation);
 		Context ctx = new Context(representation);
-		ManagedIndividualId id=
-			ManagedIndividualId.
-				createId(
-					id().name(), 
-					id().templateId());
 		fillInMetadata(
 			contentPreferences,
-			ctx.newIndividual(id),
+			ctx.newIndividual(individualId()),
 			ctx);
 		return representation;
 	}
@@ -183,12 +184,12 @@ public abstract class PublicResource extends Public {
 	protected void fillInMetadata(ContentPreferences contentPreferences, final Individual<?, ?> individual, final Context ctx) {
 		individual.
 			addValue(
-				ctx.property(RDF.TYPE), 
+				ctx.property(RDF.TYPE),
 				ctx.reference(LDP.RESOURCE));
 		for(Entry<String, PublicResource> entry:attachments().entrySet()) {
 			AttachedTemplate attachedTemplate = template().attachedTemplate(entry.getKey());
 			individual.addValue(
-				attachedTemplate.predicate().or(HAS_ATTACHMENT), 
+				attachedTemplate.predicate().or(HAS_ATTACHMENT),
 				ctx.newIndividual(entry.getValue()));
 			populateAdditionalMetadata(contentPreferences,individual, ctx, entry.getValue());
 		}
@@ -286,13 +287,13 @@ public abstract class PublicResource extends Public {
 	}
 
 	private void validate(DataSet dataSet, DataSet metadata) throws ApplicationExecutionException {
-		ManagedIndividualId id = ManagedIndividualId.createId(id().name(),id().templateId());
+		ManagedIndividualId id = individualId();
 		Individual<?,?> individual=metadata.individualOfId(id);
 
 		ValidatorBuilder builder=Validator.builder();
 
 		configureValidationConstraints(builder,individual,metadata);
-		
+
 		Validator validator=builder.build();
 
 		ValidationReport report = validator.validate(dataSet);

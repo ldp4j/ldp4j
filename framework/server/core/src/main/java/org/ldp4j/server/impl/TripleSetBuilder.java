@@ -26,7 +26,10 @@
  */
 package org.ldp4j.server.impl;
 
-import static org.ldp4j.rdf.util.RDFModelDSL.*;
+import static org.ldp4j.rdf.util.RDFModelDSL.blankNode;
+import static org.ldp4j.rdf.util.RDFModelDSL.literal;
+import static org.ldp4j.rdf.util.RDFModelDSL.triple;
+import static org.ldp4j.rdf.util.RDFModelDSL.uriRef;
 
 import java.net.URI;
 import java.util.ArrayList;
@@ -48,7 +51,6 @@ import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NameVisitor;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.ValueVisitor;
-import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.rdf.BlankNode;
 import org.ldp4j.rdf.Resource;
@@ -58,9 +60,9 @@ import org.ldp4j.server.data.ResourceResolver;
 final class TripleSetBuilder {
 
 	private interface NameMapper<T extends Resource<?>> {
-		
+
 		T getResource(Name<?> name);
-		
+
 	}
 
 	private static final class LocalNameVisitor extends NameVisitor implements NameMapper<BlankNode> {
@@ -105,10 +107,10 @@ final class TripleSetBuilder {
 	}
 
 	private final class TripleGenerator implements ValueVisitor {
-	
+
 		private final Resource<?> subject;
 		private final URI predicate;
-	
+
 		private TripleGenerator(Individual<?,?> individual, Property property) {
 			this.subject = toResource(individual);
 			this.predicate = property.predicate();
@@ -119,19 +121,19 @@ final class TripleSetBuilder {
 			triples.add(
 				triple(
 					subject,
-					predicate, 
+					predicate,
 					toResource(individual)
 				)
 			);
 			TripleSetBuilder.this.generateTriples(individual);
 		}
-	
+
 		@Override
 		public void visitLiteral(Literal<?> literal) {
 			triples.add(
 				triple(
 					subject,
-					predicate, 
+					predicate,
 					literal(literal.get())
 				)
 			);
@@ -160,7 +162,7 @@ final class TripleSetBuilder {
 				@Override
 				public void visitManagedIndividual(ManagedIndividual individual) {
 					ManagedIndividualId id = individual.id();
-					URI path = resourceResolver.resolveResource(ResourceId.createId(id.name(),id.managerId()));
+					URI path = resourceResolver.resolveResource(id);
 					if(path==null) {
 						throw new IllegalStateException("Could not resolve individual '"+id+"'");
 					}

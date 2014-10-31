@@ -26,14 +26,14 @@
  */
 package org.ldp4j.server.controller;
 
-import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.PublicResource;
 
 public class NotAcceptableException extends OperationContextException {
 
 	private static final long serialVersionUID = 6897847237787548607L;
 
-	public NotAcceptableException(Endpoint endpoint, OperationContext context) {
-		super(endpoint,context);
+	public NotAcceptableException(PublicResource resource, OperationContext context) {
+		super(resource,context);
 	}
 
 }

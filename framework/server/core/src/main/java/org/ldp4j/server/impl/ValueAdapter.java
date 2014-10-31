@@ -38,7 +38,6 @@ import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.data.Value;
-import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.rdf.BlankNode;
 import org.ldp4j.rdf.LanguageLiteral;
 import org.ldp4j.rdf.Literal;
@@ -50,17 +49,16 @@ import org.ldp4j.rdf.URIRef;
 import org.ldp4j.server.data.ResourceResolver;
 
 final class ValueAdapter {
-	
+
 	private final class NameGenerator extends NodeVisitor<Individual<?,?>> {
 
 		@Override
 		public Individual<?,?> visitURIRef(URIRef node, Individual<?,?> defaultResult) {
-			ResourceId resourceId = resourceResolver.resolveLocation(node.getIdentity());
+			ManagedIndividualId resourceId = resourceResolver.resolveLocation(node.getIdentity());
 			if(resourceId==null) {
 				return dataSet.individual(base.relativize(node.getIdentity()),ExternalIndividual.class);
 			}
-			ManagedIndividualId surrogateId=ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
-			return dataSet.individual(surrogateId, ManagedIndividual.class);
+			return dataSet.individual(resourceId, ManagedIndividual.class);
 		}
 
 		@SuppressWarnings("rawtypes")
@@ -90,12 +88,11 @@ final class ValueAdapter {
 
 		@Override
 		public Value visitURIRef(URIRef node, Value defaultResult) {
-			ResourceId resourceId = resourceResolver.resolveLocation(node.getIdentity());
+			ManagedIndividualId resourceId = resourceResolver.resolveLocation(node.getIdentity());
 			if(resourceId==null) {
 				return dataSet.individual(base.relativize(node.getIdentity()),ExternalIndividual.class);
 			}
-			ManagedIndividualId surrogateId=ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
-			return dataSet.individual(surrogateId, ManagedIndividual.class);
+			return dataSet.individual(resourceId, ManagedIndividual.class);
 		}
 
 		@SuppressWarnings("rawtypes")

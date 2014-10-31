@@ -46,16 +46,16 @@ public class PreconditionRequiredExceptionMapper implements ExceptionMapper<Prec
 
 	private static final int PRECONDITION_REQUIRED = 428;
 	private UriInfo uriInfo;
-	
+
 	@Context
 	public void setUriInfo(UriInfo info) {
 		uriInfo = info;
 	}
-	
+
 	public UriInfo getUriInfo() {
 		return uriInfo;
 	}
-	
+
 	@Override
 	public Response toResponse(PreconditionRequiredException throwable) {
 		String message = String.format("No %s header specified.",HttpHeaders.IF_MATCH);
@@ -65,8 +65,8 @@ public class PreconditionRequiredExceptionMapper implements ExceptionMapper<Prec
 				language(Locale.ENGLISH).
 				type(MediaType.TEXT_PLAIN).
 				entity(message);
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder, throwable.getOperationContext().resource());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder, throwable.getOperationContext().resource());
+		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder, throwable.getResource());
+		EndpointControllerUtils.populateProtocolSpecificHeaders(builder, throwable.getResource());
 		return builder.build();
 	}
 

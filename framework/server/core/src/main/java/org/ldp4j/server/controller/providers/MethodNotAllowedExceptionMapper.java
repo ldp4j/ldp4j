@@ -26,39 +26,56 @@
  */
 package org.ldp4j.server.controller.providers;
 
-import javax.ws.rs.core.Context;
+import java.util.List;
+import java.util.Locale;
+
+import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.ldp4j.application.Capabilities;
 import org.ldp4j.server.controller.EndpointControllerUtils;
 import org.ldp4j.server.controller.MethodNotAllowedException;
+
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
 
 @Provider
 public class MethodNotAllowedExceptionMapper implements ExceptionMapper<MethodNotAllowedException> {
 
-	private UriInfo uriInfo;
-	
-	@Context
-	public void setUriInfo(UriInfo info) {
-		uriInfo = info;
-	}
-	
-	public UriInfo getUriInfo() {
-		return uriInfo;
-	}
-	
 	@Override
 	public Response toResponse(MethodNotAllowedException throwable) {
-		ResponseBuilder builder = 
+		String message = String.format("Endpoint '%s' does not support %s. It only supports: %s",throwable.resourceLocation(),throwable.getOperation(),toHttpMethods(throwable.getResource().capabilities()));
+		ResponseBuilder builder=
 			Response.
-				status(Status.METHOD_NOT_ALLOWED);
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder, throwable.getOperationContext().resource());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder, throwable.getOperationContext().resource());
+				status(Status.METHOD_NOT_ALLOWED).
+				language(Locale.ENGLISH).
+				type(MediaType.TEXT_PLAIN).
+				entity(message);
+		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.getResource());
+		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.getResource());
+		EndpointControllerUtils.populateAllowedHeaders(builder,throwable.getResource().capabilities());
 		return builder.build();
+	}
+
+	private String toHttpMethods(Capabilities capabilities) {
+		List<String> list = Lists.newArrayList("HEAD","GET","OPTIONS");
+		if(capabilities.isModifiable()) {
+			list.add("PUT");
+		}
+		if(capabilities.isDeletable()) {
+			list.add("DELETE");
+		}
+		if(capabilities.isFactory()) {
+			list.add("POST");
+		}
+		if(capabilities.isPatchable()) {
+			list.add("PATCH");
+		}
+		return Joiner.on(", ").join(list);
 	}
 
 }

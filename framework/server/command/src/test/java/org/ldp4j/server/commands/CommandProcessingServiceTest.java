@@ -34,7 +34,7 @@ import javax.xml.bind.JAXBException;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.server.ComponentRegistryFactory;
 import org.ldp4j.server.Endpoint;
 import org.ldp4j.server.EndpointRegistry;
@@ -76,7 +76,7 @@ public class CommandProcessingServiceTest {
 		URI path = URI.create("resource/path");
 		Endpoint endpoint=endpointIndex.findEndpoint(path);
 		System.out.println(endpoint);
-		ResourceId resolveLocation = resourceIndex.resolveLocation(path);
+		ManagedIndividualId resolveLocation = resourceIndex.resolveLocation(path);
 		System.out.println(resolveLocation);
 	}
 

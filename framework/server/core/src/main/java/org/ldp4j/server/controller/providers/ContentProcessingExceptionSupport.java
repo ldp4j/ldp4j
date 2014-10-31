@@ -43,19 +43,19 @@ final class ContentProcessingExceptionSupport {
 
 	private ContentProcessingExceptionSupport() {
 	}
-	
+
 	static String getFailureMessage(String message, List<Variant> variants) {
-		return 
+		return
 			new StringBuilder().
 				append(message).
 				append(variants.size()==1?"":"one of: ").
 				append(VariantUtils.toString(variants)).
-				toString(); 
+				toString();
 	}
 
 	static <T extends ContentProcessingException> Response getFailureResponse(
 			Status status,
-			String message, 
+			String message,
 			T throwable) {
 		ResponseBuilder builder=
 			Response.
@@ -66,8 +66,8 @@ final class ContentProcessingExceptionSupport {
 					getFailureMessage(
 						message,
 						throwable.getSupportedVariants()));
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.getOperationContext().resource());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.getOperationContext().resource());
+		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.getResource());
+		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.getResource());
 		return builder.build();
 	}
 

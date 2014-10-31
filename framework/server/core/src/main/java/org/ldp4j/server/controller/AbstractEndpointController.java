@@ -27,21 +27,21 @@
 package org.ldp4j.server.controller;
 
 import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.PublicResource;
 
 abstract class AbstractEndpointController extends EndpointController {
 
-	private final Endpoint endpoint;
 	private final ApplicationContext applicationContext;
+	private final PublicResource resource;
 
-	AbstractEndpointController(ApplicationContext applicationContext, Endpoint endpoint) {
+	AbstractEndpointController(ApplicationContext applicationContext, PublicResource resource) {
 		this.applicationContext=applicationContext;
-		this.endpoint=endpoint;
+		this.resource = resource;
 	}
 
 	@Override
 	public final OperationContextBuilder operationContextBuilder(Operation operation) {
-		return new OperationContextBuilder(operation, this.applicationContext, this.endpoint);
+		return new OperationContextBuilder(operation, this.applicationContext, this.resource);
 	}
 
 }

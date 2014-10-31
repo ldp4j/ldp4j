@@ -26,16 +26,13 @@
  */
 package org.ldp4j.server.controller.providers;
 
-import java.net.URI;
 import java.util.List;
 import java.util.Locale;
 
-import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -47,22 +44,10 @@ import org.ldp4j.server.utils.VariantUtils;
 @Provider
 public class NotAcceptableExceptionMapper implements ExceptionMapper<NotAcceptableException> {
 
-	private UriInfo uriInfo;
-	
-	@Context
-	public void setUriInfo(UriInfo info) {
-		uriInfo = info;
-	}
-	
-	public UriInfo getUriInfo() {
-		return uriInfo;
-	}
-	
 	@Override
 	public Response toResponse(NotAcceptableException throwable) {
 		List<Variant> variants = VariantUtils.defaultVariants();
-		URI resourceLocation = throwable.getOperationContext().base().resolve(throwable.getEndpoint().path());
-		String message = EndpointControllerUtils.getAcceptableContent(variants, resourceLocation);
+		String message = EndpointControllerUtils.getAcceptableContent(variants, throwable.resourceLocation());
 		ResponseBuilder builder=
 			Response.
 				status(Status.NOT_ACCEPTABLE).
@@ -70,8 +55,8 @@ public class NotAcceptableExceptionMapper implements ExceptionMapper<NotAcceptab
 				language(Locale.ENGLISH).
 				type(MediaType.TEXT_PLAIN).
 				entity(message);
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.getOperationContext().resource());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.getOperationContext().resource());
+		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.getResource());
+		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.getResource());
 		return builder.build();
 	}
 

@@ -34,16 +34,16 @@ import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 
-import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;
 import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;
 import org.ldp4j.server.spi.RuntimeInstance;
 
 final class SafeResourceResolver implements ResourceResolver {
-	
+
 	static final class Resolution {
-		
+
 		private final URI path;
 		private final URIDescriptor descriptor;
 		private final URI realPath;
@@ -53,12 +53,12 @@ final class SafeResourceResolver implements ResourceResolver {
 			this.descriptor = descriptor;
 			this.realPath = realPath;
 		}
-		
+
 		@Override
 		public String toString() {
 			return String.format("<%s> [<%s>] : %s",path,realPath,descriptor);
 		}
-		
+
 	}
 
 	private Iterator<Resolution> resolutions;
@@ -67,22 +67,22 @@ final class SafeResourceResolver implements ResourceResolver {
 	private SafeResourceResolver() {
 		this.resolver=new NullResourceResolver();
 	}
-	
+
 	@Override
-	public URI resolveResource(ResourceId id) {
+	public URI resolveResource(ManagedIndividualId id) {
 		return this.resolver.resolveResource(id);
 	}
 
 	@Override
-	public ResourceId resolveLocation(URI path) {
+	public ManagedIndividualId resolveLocation(URI path) {
 		if(!resolutions.hasNext()) {
 			throw new IllegalStateException("Unexpected resolution <"+path+">");
 		}
 		Resolution resolution=resolutions.next();
 		if(!resolution.path.equals(path)) {
 			throw new IllegalStateException("Invalid resolution: expected <"+resolution.path+"> but requested <"+path+">");
-		}	
-		ResourceId result=null;
+		}
+		ManagedIndividualId result=null;
 		if(resolution.descriptor.isResolvable()) {
 			result=this.resolver.resolveLocation(path);
 		}
@@ -94,7 +94,7 @@ final class SafeResourceResolver implements ResourceResolver {
 			this.resolver = resolver;
 		}
 	}
-	
+
 	void setResolutions(Iterable<Resolution> resolutions) {
 		this.resolutions=resolutions.iterator();
 	}
@@ -102,20 +102,20 @@ final class SafeResourceResolver implements ResourceResolver {
 	static SafeResourceResolver.SafeResourceResolverBuilder builder() {
 		return new SafeResourceResolverBuilder();
 	}
-	
+
 	static final class SafeResourceResolverBuilder {
-		
+
 		private static final class URITrackingResourceResolver implements ResourceResolver {
 
 			private final List<URI> uris=new ArrayList<URI>();
 
 			@Override
-			public URI resolveResource(ResourceId id) {
+			public URI resolveResource(ManagedIndividualId id) {
 				return null;
 			}
 
 			@Override
-			public ResourceId resolveLocation(URI path) {
+			public ManagedIndividualId resolveLocation(URI path) {
 				uris.add(path);
 				return null;
 			}
@@ -123,7 +123,7 @@ final class SafeResourceResolver implements ResourceResolver {
 			public List<URI> getURIs() {
 				return Collections.unmodifiableList(uris);
 			}
-			
+
 		}
 
 		private URI application;
@@ -135,17 +135,17 @@ final class SafeResourceResolver implements ResourceResolver {
 
 		private SafeResourceResolverBuilder() {
 		}
-		
+
 		SafeResourceResolver.SafeResourceResolverBuilder withApplication(URI application) {
 			this.application = application;
 			return this;
 		}
-		
+
 		SafeResourceResolver.SafeResourceResolverBuilder withEndpoint(URI endpoint) {
 			this.endpoint = endpoint;
 			return this;
 		}
-		
+
 		SafeResourceResolverBuilder withAlternative(URI alternative) {
 			this.alternative=alternative;
 			return this;
@@ -156,14 +156,14 @@ final class SafeResourceResolver implements ResourceResolver {
 			this.type=type;
 			return this;
 		}
-		
+
 		SafeResourceResolver build() throws ContentTransformationException {
 			List<Resolution> resolutions = this.init();
 			SafeResourceResolver result = new SafeResourceResolver();
 			result.setResolutions(resolutions);
 			return result;
 		}
-		
+
 		private List<Resolution> init() throws ContentTransformationException {
 			URIResolver resolver=URIResolver.newInstance(this.endpoint,this.alternative);
 			URIDescriber describer=URIDescriber.newInstance(this.application,this.endpoint);
@@ -194,10 +194,10 @@ final class SafeResourceResolver implements ResourceResolver {
 			unmarshaller.unmarshall(this.entity, this.type);
 			return index.getURIs();
 		}
-		
+
 		private IMediaTypeProvider provider() {
 			if(this.provider==null) {
-				this.provider = 
+				this.provider =
 					RuntimeInstance.
 						getInstance().
 						getMediaTypeProvider(this.type);
@@ -206,5 +206,5 @@ final class SafeResourceResolver implements ResourceResolver {
 		}
 
 	}
-	
+
 }

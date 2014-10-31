@@ -48,7 +48,6 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.ldp4j.application.impl.InMemoryRuntimeInstance;
 import org.ldp4j.server.commands.Command;
 import org.ldp4j.server.commands.CommandDescription;
 import org.ldp4j.server.commands.CommandDescriptionUtil;
@@ -83,7 +82,7 @@ public final class IntegrationTestHelper {
 	public void base(URL url) {
 		this.url = url;
 	}
-	
+
 	public void setLegacy(boolean legacy) {
 		this.legacy = legacy;
 	}
@@ -130,7 +129,7 @@ public final class IntegrationTestHelper {
 
 	public <T extends HttpUriRequest> T newRequest(String path, Class<? extends T> clazz) {
 		try {
-			return 
+			return
 				clazz.
 					getConstructor(URI.class).
 						newInstance(resourceLocation(path));
@@ -138,7 +137,7 @@ public final class IntegrationTestHelper {
 			throw new IllegalStateException("Could not create request",e);
 		}
 	}
-	
+
 	public String httpRequest(final HttpUriRequest request) throws Exception {
 		final AtomicReference<String> body=new AtomicReference<String>();
 		ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
@@ -148,9 +147,9 @@ public final class IntegrationTestHelper {
 				body.set(responseBody);
 				return responseBody;
 			}
-			
+
 			private final String NL=System.getProperty("line.separator");
-			
+
 			private String logResponse(final HttpResponse response) throws IOException {
 				HttpEntity entity = response.getEntity();
 				String responseBody = entity != null ? EntityUtils.toString(entity) : null;
@@ -186,7 +185,7 @@ public final class IntegrationTestHelper {
 	}
 
 	public static JavaArchive getServerArchive() {
-		JavaArchive coreArchive= 
+		JavaArchive coreArchive=
 			ShrinkWrap.
 				create(JavaArchive.class,"ldp4j-server-frontend.jar").
 				addPackages(true, "org.ldp4j.server").
@@ -198,7 +197,7 @@ public final class IntegrationTestHelper {
 	}
 
 	public static JavaArchive getExampleArchive() {
-		JavaArchive coreArchive= 
+		JavaArchive coreArchive=
 			ShrinkWrap.
 				create(JavaArchive.class,"ldp4j-application-example.jar").
 				addPackages(true, "org.ldp4j.example");

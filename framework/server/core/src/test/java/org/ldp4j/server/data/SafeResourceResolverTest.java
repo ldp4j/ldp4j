@@ -46,8 +46,6 @@ import org.junit.Test;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.server.data.SafeResourceResolver;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;
 import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;
@@ -56,7 +54,7 @@ import org.ldp4j.server.spi.RuntimeInstance;
 import com.google.common.collect.ImmutableMap;
 
 public class SafeResourceResolverTest {
-	
+
 	private MediaType mediaType;
 
 	private IMediaTypeProvider provider;
@@ -66,7 +64,7 @@ public class SafeResourceResolverTest {
 		this.mediaType = new MediaType("text", "turtle");
 		this.provider = RuntimeInstance.getInstance().getMediaTypeProvider(mediaType);
 	}
-	
+
 	@Test
 	public void testRoundtrip() throws ContentTransformationException {
 		URI application = URI.create("http://www.example.org/target/");
@@ -77,14 +75,14 @@ public class SafeResourceResolverTest {
 		URI r2 = endpoint.resolve("other/");
 		URI r3 = endpoint.resolve("other/another/");
 
-		ResourceId id1 = resourceId(1, "example");
-		ResourceId id2 = resourceId(2, "example");
-		ResourceId id3 = resourceId(3, "example");
-		ResourceId id4 = resourceId(4, "example");
-		ResourceId id5 = resourceId(5, "example");
-		final Map<URI,ResourceId> resolutions=
+		ManagedIndividualId id1 = resourceId(1, "example");
+		ManagedIndividualId id2 = resourceId(2, "example");
+		ManagedIndividualId id3 = resourceId(3, "example");
+		ManagedIndividualId id4 = resourceId(4, "example");
+		ManagedIndividualId id5 = resourceId(5, "example");
+		final Map<URI,ManagedIndividualId> resolutions=
 			ImmutableMap.
-				<URI,ResourceId>builder().
+				<URI,ManagedIndividualId>builder().
 					put(application,id1).
 					put(endpoint,id2).
 					put(r1,id3).
@@ -94,12 +92,12 @@ public class SafeResourceResolverTest {
 		final Set<URI> checked=new HashSet<URI>();
 		ResourceResolver resolver=new ResourceResolver() {
 			@Override
-			public URI resolveResource(ResourceId id) {
+			public URI resolveResource(ManagedIndividualId id) {
 				return null;
 			}
-			
+
 			@Override
-			public ResourceId resolveLocation(URI path) {
+			public ManagedIndividualId resolveLocation(URI path) {
 				checked.add(path);
 				return resolutions.get(path);
 			}
@@ -118,25 +116,21 @@ public class SafeResourceResolverTest {
 		DataSet dataSet=unmarshall(rawEntity,endpoint,safeResolver);
 		assertThat(checked,hasSize(resolutions.size()));
 		assertThat(checked,hasItems(application,endpoint,r1,r2,r3));
-		assertThat(dataSet.individualOfId(managedIndividualId(id1)),notNullValue());
-		assertThat(dataSet.individualOfId(managedIndividualId(id2)),notNullValue());
-		assertThat(dataSet.individualOfId(managedIndividualId(id3)),notNullValue());
-		assertThat(dataSet.individualOfId(managedIndividualId(id4)),notNullValue());
-		assertThat(dataSet.individualOfId(managedIndividualId(id5)),notNullValue());
+		assertThat(dataSet.individualOfId(id1),notNullValue());
+		assertThat(dataSet.individualOfId(id2),notNullValue());
+		assertThat(dataSet.individualOfId(id3),notNullValue());
+		assertThat(dataSet.individualOfId(id4),notNullValue());
+		assertThat(dataSet.individualOfId(id5),notNullValue());
 	}
 
-	private ManagedIndividualId managedIndividualId(ResourceId id) {
-		return ManagedIndividualId.createId(id.name(), id.templateId());
-	}
-
-	private ResourceId resourceId(int id, String templateId) {
-		return ResourceId.createId(NamingScheme.getDefault().name(id), templateId);
+	private ManagedIndividualId resourceId(int id, String templateId) {
+		return ManagedIndividualId.createId(NamingScheme.getDefault().name(id), templateId);
 	}
 
 	private DataSet unmarshall(String entity, URI base, ResourceResolver resolver) throws ContentTransformationException {
 		return newUnmarshaller(base,resolver).unmarshall(entity, this.mediaType);
 	}
-	
+
 	private Unmarshaller newUnmarshaller(URI base, ResourceResolver resolver) {
 		return this.provider.newUnmarshaller(ImmutableContext.newInstance(base,resolver));
 	}
@@ -148,5 +142,5 @@ public class SafeResourceResolverTest {
 			throw new AssertionError("Could not load resource '"+resourceName+"'");
 		}
 	}
-	
+
 }

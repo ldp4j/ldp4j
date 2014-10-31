@@ -42,6 +42,7 @@ import mockit.integration.junit4.JMockit;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.server.ResourceIndexImpl;
@@ -66,10 +67,10 @@ public class ResourceIndexImplTest {
 	private ResourceIndexImpl sut;
 
 	private String templateId="templateId";
-	
+
 	private final ResourceId id1 = ResourceId.createId(NamingScheme.getDefault().name(1),templateId);
 	private final URI path1 = URI.create("urn:1");
-	
+
 	private final ResourceId id2 = ResourceId.createId(NamingScheme.getDefault().name(2),templateId);
 	private final URI path2 = URI.create("urn:2");
 
@@ -105,7 +106,7 @@ public class ResourceIndexImplTest {
 		sut.publish(id1,path1);
 		assertPublication(id1, path1);
 	}
-	
+
 	@Test
 	public void testPublish$resourceAlreadyPublished() {
 		testPublish$valid();
@@ -117,7 +118,7 @@ public class ResourceIndexImplTest {
 			assertPublication(id1,path1);
 		}
 	}
-		
+
 	@Test
 	public void testPublish$pathAlreadyInUse() {
 		testPublish$valid();
@@ -125,12 +126,17 @@ public class ResourceIndexImplTest {
 			sut.publish(id3, path1);
 		} catch(IllegalStateException e) {
 			assertThat(sut.isPublished(id3),equalTo(false));
-			assertThat(sut.resolveResource(id3),nullValue());
+			assertThat(sut.resolveResource(managedIndividualId(id3)),nullValue());
 			assertPublication(id1,path1);
 		}
 	}
-	
+
+	private ManagedIndividualId managedIndividualId(ResourceId id) {
+		return ManagedIndividualId.createId(id.name(),id.templateId());
+	}
+
 	@Test
+
 	public void testPublish$resourceAndPathAlreadyUsed() {
 		testPublish$valid();
 		try {
@@ -152,7 +158,7 @@ public class ResourceIndexImplTest {
 	public void testUnpublish$unknown() {
 		assertThat(sut.unpublish(id1),is(equalTo(false)));
 	}
-	
+
 	@Test
 	@SuppressWarnings("unchecked")
 	public void testUnlocksMockito() {
@@ -203,7 +209,7 @@ public class ResourceIndexImplTest {
 			assertThat(e.getMessage(),is(equalTo(message)));
 		}
 		try {
-			impl.resolveResource(id1);
+			impl.resolveResource(managedIndividualId(id1));
 		} catch (RuntimeException e) {
 			assertThat(e.getMessage(),is(equalTo(message)));
 		}
@@ -222,14 +228,14 @@ public class ResourceIndexImplTest {
 	private void assertUnpublish(ResourceId id, URI path) {
 		assertThat(sut.isPublished(id),equalTo(false));
 		assertThat(sut.isActive(path),equalTo(false));
-		assertThat(sut.resolveResource(id),is(nullValue()));
+		assertThat(sut.resolveResource(managedIndividualId(id)),is(nullValue()));
 		assertThat(sut.resolveLocation(path),is(nullValue()));
 	}
 
 	private void assertPublication(ResourceId id, URI path) {
 		assertThat(sut.isPublished(id),equalTo(true));
 		assertThat(sut.isActive(path),equalTo(true));
-		assertThat(sut.resolveResource(id),is(sameInstance(path)));
+		assertThat(sut.resolveResource(managedIndividualId(id)),is(sameInstance(path)));
 		assertThat((Object)sut.resolveLocation(path),is(sameInstance((Object)id)));
 	}
 

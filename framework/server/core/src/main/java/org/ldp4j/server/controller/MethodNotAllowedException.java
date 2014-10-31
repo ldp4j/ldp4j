@@ -26,29 +26,21 @@
  */
 package org.ldp4j.server.controller;
 
-import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.PublicResource;
 
-public class MethodNotAllowedException extends RuntimeException {
+public class MethodNotAllowedException extends OperationContextException {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -3661009844197939466L;
 
-	private final OperationContext operationContext;
-	private final Endpoint endpoint;
+	private final Operation operation;
 
-	public MethodNotAllowedException(OperationContext operationContext, Endpoint endpoint) {
-		this.operationContext = operationContext;
-		this.endpoint = endpoint;
+	public MethodNotAllowedException(OperationContext operationContext, PublicResource resource, Operation operation) {
+		super(resource,operationContext);
+		this.operation = operation;
 	}
 
-	public OperationContext getOperationContext() {
-		return this.operationContext;
-	}
-
-	public Endpoint getEndpoint() {
-		return this.endpoint;
+	public Operation getOperation() {
+		return operation;
 	}
 
 }

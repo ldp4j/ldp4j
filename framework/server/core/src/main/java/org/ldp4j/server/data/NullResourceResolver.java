@@ -28,16 +28,16 @@ package org.ldp4j.server.data;
 
 import java.net.URI;
 
-import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.data.ManagedIndividualId;
 
 final class NullResourceResolver implements ResourceResolver {
 	@Override
-	public URI resolveResource(ResourceId id) {
+	public URI resolveResource(ManagedIndividualId id) {
 		return null;
 	}
 
 	@Override
-	public ResourceId resolveLocation(URI path) {
+	public ManagedIndividualId resolveLocation(URI path) {
 		return null;
 	}
 }

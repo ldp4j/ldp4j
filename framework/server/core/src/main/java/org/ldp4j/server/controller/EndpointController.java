@@ -34,7 +34,7 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
 import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.PublicResource;
 
 public abstract class EndpointController {
 
@@ -42,19 +42,20 @@ public abstract class EndpointController {
 
 		// Mandatory
 		private final Operation operation;
+		private final PublicResource resource;
+
 		private ApplicationContext applicationContext;
 		private UriInfo uriInfo;
 		private Request request;
 		private HttpHeaders headers;
-		private Endpoint endpoint;
 
 		// Optional
 		private String entity;
 
-		protected OperationContextBuilder(Operation operation, ApplicationContext applicationContext, Endpoint endpoint) {
+		protected OperationContextBuilder(Operation operation, ApplicationContext applicationContext, PublicResource resource) {
 			this.operation = operation;
 			this.applicationContext = applicationContext;
-			this.endpoint = endpoint;
+			this.resource = resource;
 		}
 
 		public OperationContextBuilder withUriInfo(UriInfo uriInfo) {
@@ -83,7 +84,7 @@ public abstract class EndpointController {
 			checkNotNull(this.uriInfo,"Uri info cannot be null");
 			checkNotNull(this.request,"Request cannot be null");
 			checkNotNull(this.headers,"Http headers cannot be null");
-			return new OperationContextImpl(this.applicationContext,this.endpoint,this.uriInfo,this.headers,this.request,this.entity,this.operation);
+			return new OperationContextImpl(this.applicationContext,this.resource,this.uriInfo,this.headers,this.request,this.entity,this.operation);
 		}
 
 	}

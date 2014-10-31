@@ -28,18 +28,18 @@ package org.ldp4j.server.controller;
 
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.PublicResource;
 
 
 public class UnsupportedContentException extends ContentProcessingException {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -7271633668400276805L;
 
-	public UnsupportedContentException(Endpoint endpoint, OperationContext context, Variant variant) {
-		super("Unsupported content exception ("+variant+")",endpoint,context);
+	public UnsupportedContentException(PublicResource resource, OperationContext context, Variant variant) {
+		super("Unsupported content exception ("+variant+")",resource,context);
 	}
 
 }

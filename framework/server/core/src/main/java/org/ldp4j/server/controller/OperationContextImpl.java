@@ -47,9 +47,8 @@ import org.ldp4j.application.CreationPreferences.InteractionModel;
 import org.ldp4j.application.PublicContainer;
 import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.endpoint.EntityTag;
-import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.server.data.DataTransformator;
 import org.ldp4j.server.data.ResourceResolver;
 import org.ldp4j.server.data.UnsupportedMediaTypeException;
@@ -65,27 +64,26 @@ final class OperationContextImpl implements OperationContext {
 	private final class OperationContextResourceResolver implements ResourceResolver {
 
 		@Override
-		public URI resolveResource(ResourceId id) {
-			Endpoint resourceEndpoint = applicationContext.resolveResource(id);
-			URI result = null;
-			if(resourceEndpoint==null) {
+		public URI resolveResource(ManagedIndividualId id) {
+			PublicResource resource=applicationContext.resolveResource(id);
+			if(resource==null) {
 				throw new IllegalStateException("Could not resolve resource "+id);
 			}
-			result=base().resolve(resourceEndpoint.path());
+			URI result=base().resolve(resource.path());
 			LOGGER.trace("Resolved resource {} URI to '{}'",id,result);
 			return result;
 		}
 
 		@Override
-		public ResourceId resolveLocation(URI path) {
-			Endpoint resolveEndpoint =
+		public ManagedIndividualId resolveLocation(URI path) {
+			PublicResource resource =
 				applicationContext.
-					resolveEndpoint(
-						base().relativize(path).toString());
-			ResourceId result=null;
-			if(resolveEndpoint!=null) {
-				result=resolveEndpoint.resourceId();
-				LOGGER.trace("Resolved path '{}' to resource {}",path,result);
+					resolveResource(base().relativize(path).toString());
+
+			ManagedIndividualId result = null;
+			if(resource!=null) {
+				result=resource.individualId();
+				LOGGER.trace("Resolved location '{}' to resource {}",path,result);
 			}
 			return result;
 		}
@@ -96,24 +94,22 @@ final class OperationContextImpl implements OperationContext {
 	private final UriInfo            uriInfo;
 	private final HttpHeaders        headers;
 	private final Request            request;
-	private final Endpoint           endpoint;
 	private final ApplicationContext applicationContext;
+	private final PublicResource resource;
 
 	private String  entity;
 	private DataSet dataSet;
 
-	private PublicResource resource;
-
 	OperationContextImpl(
 		ApplicationContext applicationContext,
-		Endpoint endpoint,
+		PublicResource resource,
 		UriInfo uriInfo,
 		HttpHeaders headers,
 		Request request,
 		String entity,
 		Operation operation) {
 		this.applicationContext = applicationContext;
-		this.endpoint = endpoint;
+		this.resource = resource;
 		this.operation = operation;
 		this.uriInfo=uriInfo;
 		this.headers=headers;
@@ -163,7 +159,7 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	private URI endpoint() {
-		return URI.create(this.endpoint.path());
+		return URI.create(path());
 	}
 
 	UriInfo uriInfo() {
@@ -199,27 +195,27 @@ final class OperationContextImpl implements OperationContext {
 	public OperationContext checkContents() {
 		List<Variant> supportedVariants=VariantUtils.defaultVariants();
 		if(entity()==null || entity().isEmpty()) {
-			throw new MissingContentException(endpoint,this);
+			throw new MissingContentException(this.resource,this);
 		}
 		if(headers().getMediaType()==null) {
-			throw new MissingContentTypeException(endpoint,this);
+			throw new MissingContentTypeException(this.resource,this);
 		}
 		if(!VariantHelper.
 				forVariants(supportedVariants).
 					isSupported(contentVariant())) {
-			throw new UnsupportedContentException(endpoint,this,contentVariant());
+			throw new UnsupportedContentException(this.resource,this,contentVariant());
 		}
 		return this;
 	}
 
 	@Override
 	public OperationContext checkPreconditions() {
-		EntityTag entityTag=this.endpoint.entityTag();
-		Date lastModified=this.endpoint.lastModified();
+		EntityTag entityTag=this.resource.entityTag();
+		Date lastModified=this.resource.lastModified();
 		if(Operation.PUT.equals(this.operation)) {
 			List<String> requestHeader = this.headers.getRequestHeader(HttpHeaders.IF_MATCH);
 			if((requestHeader==null || requestHeader.isEmpty())) {
-				throw new PreconditionRequiredException(this,this.endpoint);
+				throw new PreconditionRequiredException(this.resource);
 			}
 		}
 		ResponseBuilder builder =
@@ -229,7 +225,7 @@ final class OperationContextImpl implements OperationContext {
 					new javax.ws.rs.core.EntityTag(entityTag.getValue()));
 		if(builder!=null) {
 			Response response = builder.build();
-			throw new PreconditionFailedException(endpoint,this,response.getStatus());
+			throw new PreconditionFailedException(this.resource,this,response.getStatus());
 		}
 		return this;
 	}
@@ -261,7 +257,7 @@ final class OperationContextImpl implements OperationContext {
 			break;
 		}
 		if(!allowed) {
-			throw new MethodNotAllowedException(this,endpoint);
+			throw new MethodNotAllowedException(this,this.resource,this.operation);
 		}
 		return this;
 	}
@@ -283,9 +279,9 @@ final class OperationContextImpl implements OperationContext {
 				}
 				this.dataSet=transformator.unmarshall(this.entity);
 			} catch(UnsupportedMediaTypeException e) {
-				throw new UnsupportedContentException(this.endpoint,this,contentVariant());
+				throw new UnsupportedContentException(this.resource,this,contentVariant());
 			} catch(IOException e) {
-				throw new ContentProcessingException("Entity cannot be parsed as '"+mediaType+"' ",this.endpoint,this);
+				throw new ContentProcessingException("Entity cannot be parsed as '"+mediaType+"' ",this.resource,this);
 			}
 		}
 		return this.dataSet;
@@ -296,7 +292,7 @@ final class OperationContextImpl implements OperationContext {
 		List<Variant> variants=VariantUtils.defaultVariants();
 		Variant variant = request.selectVariant(variants);
 		if(variant==null) {
-			throw new NotAcceptableException(endpoint,this);
+			throw new NotAcceptableException(this.resource,this);
 		}
 		return variant;
 	}
@@ -327,17 +323,14 @@ final class OperationContextImpl implements OperationContext {
 					permanentEndpoint(endpoint());
 			return transformator.marshall(representation);
 		} catch(UnsupportedMediaTypeException e) {
-			throw new UnsupportedContentException(endpoint,this,contentVariant());
+			throw new UnsupportedContentException(this.resource,this,contentVariant());
 		} catch(IOException e) {
-			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",endpoint,this);
+			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",this.resource,this);
 		}
 	}
 
 	@Override
 	public PublicResource resource() {
-		if(this.resource==null) {
-			this.resource=this.applicationContext.findResource(this.endpoint);
-		}
 		return this.resource;
 	}
 

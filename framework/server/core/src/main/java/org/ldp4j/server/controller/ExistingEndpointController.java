@@ -51,7 +51,6 @@ import org.ldp4j.application.PublicVisitor;
 import org.ldp4j.application.UnsupportedInteractionModelException;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.ext.ContentProcessingException;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.InvalidContentException;
@@ -80,8 +79,8 @@ final class ExistingEndpointController extends AbstractEndpointController {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
 
-	public ExistingEndpointController(ApplicationContext applicationContext, Endpoint endpoint) {
-		super(applicationContext,endpoint);
+	public ExistingEndpointController(ApplicationContext applicationContext, PublicResource resource) {
+		super(applicationContext,resource);
 	}
 
 	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {

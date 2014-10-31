@@ -26,30 +26,23 @@
  */
 package org.ldp4j.server.controller;
 
-import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.PublicResource;
 
 public class PreconditionRequiredException extends RuntimeException {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8286288208444290507L;
 
-	private final OperationContext operationContext;
-	private final Endpoint endpoint;
+	private final PublicResource resource;
 
-	public PreconditionRequiredException(OperationContext operationContext, Endpoint endpoint) {
-		this.operationContext = operationContext;
-		// TODO Auto-generated constructor stub
-		this.endpoint = endpoint;
+	public PreconditionRequiredException(PublicResource resource) {
+		this.resource = resource;
 	}
 
-	public OperationContext getOperationContext() {
-		return operationContext;
-	}
-
-	public Endpoint getEndpoint() {
-		return endpoint;
+	public PublicResource getResource() {
+		return resource;
 	}
 
 }

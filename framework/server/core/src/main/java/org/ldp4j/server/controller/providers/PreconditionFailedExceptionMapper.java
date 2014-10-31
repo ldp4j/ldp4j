@@ -49,8 +49,8 @@ public class PreconditionFailedExceptionMapper implements ExceptionMapper<Precon
 				language(Locale.ENGLISH).
 				type(MediaType.TEXT_PLAIN).
 				entity(message);
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.getOperationContext().resource());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.getOperationContext().resource());
+		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.getResource());
+		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.getResource());
 		return builder.build();
 	}
 

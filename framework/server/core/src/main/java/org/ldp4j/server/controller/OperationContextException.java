@@ -26,49 +26,53 @@
  */
 package org.ldp4j.server.controller;
 
-import org.ldp4j.application.endpoint.Endpoint;
+import java.net.URI;
+
+import org.ldp4j.application.PublicResource;
 
 public class OperationContextException extends RuntimeException {
 
+	private static final String DEFAULT_ERROR_MESSAGE = "Unexpected operation context failure";
+
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 5924666884556832771L;
 
 	private final OperationContext operationContext;
 
-	private final Endpoint endpoint;
+	private final PublicResource resource;
 
-	public OperationContextException(Endpoint endpoint, OperationContext operationContext) {
-		super();
-		this.endpoint = endpoint;
-		this.operationContext = operationContext;
-	}
-
-	public OperationContextException(String message, Throwable cause, Endpoint endpoint, OperationContext operationContext) {
+	public OperationContextException(String message, Throwable cause, PublicResource resource, OperationContext operationContext) {
 		super(message, cause);
-		this.endpoint = endpoint;
+		this.resource = resource;
 		this.operationContext = operationContext;
 	}
 
-	public OperationContextException(String message, Endpoint endpoint, OperationContext operationContext) {
-		super(message);
-		this.endpoint = endpoint;
-		this.operationContext = operationContext;
+	public OperationContextException(PublicResource resource, OperationContext operationContext) {
+		this(DEFAULT_ERROR_MESSAGE,resource,operationContext);
 	}
 
-	public OperationContextException(Throwable cause, Endpoint endpoint, OperationContext operationContext) {
-		super(cause);
-		this.endpoint = endpoint;
-		this.operationContext = operationContext;
+
+	public OperationContextException(String message, PublicResource resource, OperationContext operationContext) {
+		this(message,null,resource,operationContext);
 	}
 
+	public OperationContextException(Throwable cause, PublicResource resource, OperationContext operationContext) {
+		this(DEFAULT_ERROR_MESSAGE,cause,resource,operationContext);
+	}
+
+	@Deprecated
 	public OperationContext getOperationContext() {
 		return operationContext;
 	}
 
-	public Endpoint getEndpoint() {
-		return endpoint;
+	public final URI resourceLocation() {
+		return operationContext.base().resolve(resource.path());
+	}
+
+	public final PublicResource getResource() {
+		return resource;
 	}
 
 }

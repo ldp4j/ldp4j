@@ -33,6 +33,7 @@ import javax.ws.rs.core.EntityTag;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.server.Endpoint;
@@ -69,11 +70,11 @@ abstract class CommandProcessor<T> {
 	static final Class<UpdateResourceState> UPDATE_RESOURCE_STATE_CLAZZ = UpdateResourceState.class;
 
 	private static class DeleteEndpointCommandProcessor extends CommandProcessor<DeleteEndpoint> {
-	
+
 		private DeleteEndpointCommandProcessor(DeleteEndpoint command) {
 			super(command);
 		}
-	
+
 		@Override
 		void execute(ComponentRegistry registry) {
 			URI path = URI.create(getCommand().getPath());
@@ -82,8 +83,8 @@ abstract class CommandProcessor<T> {
 		}
 
 		private void unpublishResource(URI path, ResourceIndex resourceIndex) {
-			ResourceId location = 
-				resourceIndex.resolveLocation(path);
+			ResourceId location =
+				toResourceId(resourceIndex.resolveLocation(path));
 			if(location!=null) {
 				resourceIndex.unpublish(location);
 			}
@@ -91,7 +92,7 @@ abstract class CommandProcessor<T> {
 
 		private void deregisterEndpoint(URI path,
 				EndpointRegistry endpointRegistry) {
-			Endpoint endpoint = 
+			Endpoint endpoint =
 				endpointRegistry.findEndpoint(path);
 			if(endpoint!=null) {
 				endpointRegistry.deregisterEndpoint(path);
@@ -101,35 +102,35 @@ abstract class CommandProcessor<T> {
 	}
 
 	private static class UpdateResourceStateCommandProcessor extends CommandProcessor<UpdateResourceState> {
-	
+
 		private UpdateResourceStateCommandProcessor(UpdateResourceState command) {
 			super(command);
 		}
-	
+
 	}
 
 	private static class ModifyEndpointConfigurationCommandProcessor extends CommandProcessor<ModifyEndpointConfiguration> {
-	
+
 		private ModifyEndpointConfigurationCommandProcessor(ModifyEndpointConfiguration command) {
 			super(command);
 		}
-	
+
 	}
 
 	private static class UnsupportedCommandProcessor extends CommandProcessor<CommandDescription> {
-	
+
 		private UnsupportedCommandProcessor(CommandDescription command) {
 			super(command);
 		}
-	
+
 	}
 
 	private static class CreateEndpointCommandProcessor extends CommandProcessor<CreateEndpoint> {
-	
+
 		private CreateEndpointCommandProcessor(CreateEndpoint command) {
 			super(command);
 		}
-	
+
 		@Override
 		public void execute(ComponentRegistry registry) throws CommandExecutionException {
 			Endpoint endpoint = createEndpoint(registry);
@@ -145,8 +146,8 @@ abstract class CommandProcessor<T> {
 
 		private void unpublishResource(ComponentRegistry registry, URI resourcePath) {
 			ResourceIndex resourceIndex=registry.getComponent(ResourceIndex.class);
-			ResourceId location = 
-				resourceIndex.resolveLocation(resourcePath);
+			ResourceId location =
+				toResourceId(resourceIndex.resolveLocation(resourcePath));
 			if(location!=null) {
 				resourceIndex.unpublish(location);
 			}
@@ -158,18 +159,18 @@ abstract class CommandProcessor<T> {
 			if(capabilities==null) {
 				capabilities=new Capabilities();
 			}
-			return 
+			return
 				EndpointFactory.
 					newEndpoint(
 						URI.create(getCommand().getPath()),
-						createEndpointConfiguration(resource, capabilities), 
+						createEndpointConfiguration(resource, capabilities),
 						registry);
 		}
 
 		private Resource createResource(
 				ComponentRegistry registry,
 				CreateEndpoint cmd) throws CommandExecutionException {
-			Resource resource = 
+			Resource resource =
 				createResource(
 					registry.getComponent(ResourceIndex.class),
 					cmd.getPath(),
@@ -188,11 +189,11 @@ abstract class CommandProcessor<T> {
 			config.setPatchable(capabilities.isPatchable());
 			return config;
 		}
-	
+
 		private Resource createResource(
-				ResourceIndex resourceIndex, 
-				String path, 
-				String templateId, 
+				ResourceIndex resourceIndex,
+				String path,
+				String templateId,
 				MembershipConfigurationType membershipConfiguration,
 				ResourceStateType resourceState) throws CommandExecutionException {
 			try {
@@ -241,7 +242,7 @@ abstract class CommandProcessor<T> {
 
 		/**
 		 * @param rawEntity
-		 * @param index 
+		 * @param index
 		 * @return
 		 * @throws AssertionError
 		 * @throws ContentTransformationException
@@ -268,7 +269,11 @@ abstract class CommandProcessor<T> {
 	void execute(ComponentRegistry registry) throws CommandExecutionException {
 		throw new CommandExecutionException("Method not implemented yet");
 	}
-	
+
+	protected final ResourceId toResourceId(ManagedIndividualId id) {
+		return ResourceId.createId(id.name(),id.managerId());
+	}
+
 	protected final T getCommand() {
 		return command;
 	}

@@ -30,6 +30,7 @@ import java.net.URI;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.server.blueprint.ComponentRegistry;
 
@@ -42,34 +43,38 @@ public final class ResourceIndexImpl implements ResourceIndex {
 	private final ComponentRegistry registry;
 
 	private final ReadWriteLock lock=new ReentrantReadWriteLock();
-	private final BiMap<ResourceId, URI> index;
+	private final BiMap<ManagedIndividualId, URI> index;
 
-	
+
 	public ResourceIndexImpl(ComponentRegistry registry) {
-		this(registry,HashBiMap.<ResourceId, URI>create());
+		this(registry,HashBiMap.<ManagedIndividualId, URI>create());
 	}
 
 	@VisibleForTesting
-	private ResourceIndexImpl(ComponentRegistry registry, BiMap<ResourceId, URI> create) {
+	private ResourceIndexImpl(ComponentRegistry registry, BiMap<ManagedIndividualId, URI> create) {
 		this.registry = registry;
 		this.index = create;
+	}
+
+	private ManagedIndividualId from(ResourceId id) {
+		return ManagedIndividualId.createId(id.name(), id.templateId());
 	}
 
 	@Override
 	public ComponentRegistry getRegistry() {
 		return registry;
 	}
-	
+
 	@Override
 	public boolean isPublished(ResourceId id) {
 		lock.readLock().lock();
 		try {
-			return index.containsKey(id);
+			return index.containsKey(from(id));
 		} finally {
 			lock.readLock().unlock();
 		}
 	}
-	
+
 	@Override
 	public boolean isActive(URI endpoint) {
 		lock.readLock().lock();
@@ -84,32 +89,33 @@ public final class ResourceIndexImpl implements ResourceIndex {
 	public void publish(ResourceId id, URI path) {
 		lock.writeLock().lock();
 		try {
-			URI previousPath= index.get(id);
-			ResourceId previousId = index.inverse().get(path);
+			ManagedIndividualId adaptedId = from(id);
+			URI previousPath= index.get(adaptedId);
+			ManagedIndividualId previousId = index.inverse().get(path);
 			if(previousPath==null && previousId==null) {
-				index.put(id,path);
+				index.put(adaptedId,path);
 			} else if(path.equals(previousPath)) {
 				return;
 			} else {
-				throw new IllegalStateException(String.format("Could not publish '%1$s' at '2$%s': '%1$s' --> '%4$s' and '%3$s' --> '%2$s'",id,path,previousId,previousPath));
+				throw new IllegalStateException(String.format("Could not publish '%1$s' at '2$%s': '%1$s' --> '%4$s' and '%3$s' --> '%2$s'",adaptedId,path,previousId,previousPath));
 			}
 		} finally {
 			lock.writeLock().unlock();
 		}
 	}
-	
+
 	@Override
 	public boolean unpublish(ResourceId id) {
 		lock.writeLock().lock();
 		try {
-			return index.remove(id)!=null;
+			return index.remove(from(id))!=null;
 		} finally {
 			lock.writeLock().unlock();
 		}
 	}
-	
+
 	@Override
-	public URI resolveResource(ResourceId id) {
+	public URI resolveResource(ManagedIndividualId id) {
 		lock.readLock().lock();
 		try {
 			return index.get(id);
@@ -117,9 +123,9 @@ public final class ResourceIndexImpl implements ResourceIndex {
 			lock.readLock().unlock();
 		}
 	}
-	
+
 	@Override
-	public ResourceId resolveLocation(URI path) {
+	public ManagedIndividualId resolveLocation(URI path) {
 		lock.readLock().lock();
 		try {
 			return index.inverse().get(path);

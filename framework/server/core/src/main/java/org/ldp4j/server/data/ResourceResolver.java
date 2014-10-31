@@ -28,12 +28,12 @@ package org.ldp4j.server.data;
 
 import java.net.URI;
 
-import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.data.ManagedIndividualId;
 
 public interface ResourceResolver {
 
-	URI resolveResource(ResourceId id);
+	URI resolveResource(ManagedIndividualId id);
 
-	ResourceId resolveLocation(URI path);
+	ManagedIndividualId resolveLocation(URI path);
 
 }

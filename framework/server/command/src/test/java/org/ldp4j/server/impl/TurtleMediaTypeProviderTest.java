@@ -46,6 +46,7 @@ import org.junit.runner.RunWith;
 import org.ldp4j.application.data.DataDSL;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.IndividualReferenceBuilder;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NameVisitor;
 import org.ldp4j.application.data.NamingScheme;
@@ -62,12 +63,12 @@ import org.ldp4j.server.impl.TurtleMediaTypeProvider;
 public class TurtleMediaTypeProviderTest {
 
 	private static final String NL = System.getProperty("line.separator");
-	private static final String EXAMPLE_BODY = 
+	private static final String EXAMPLE_BODY =
 			"@prefix sav : <http://test/vocab#> ."+NL+
 			"@base <http://www.example.org/entities/> ." +NL+
 			"_:inference a sav:Inference ;"+NL+
 			"	sav:uses <dataSet1>, <vocabulary1> .";
-	
+
 	private static final URI DATA_SET_PATH=URI.create("http://www.example.org/entities/dataSet1");
 	private static final ResourceId DATA_SET_NAME = ResourceId.createId(NamingScheme.getDefault().name(DATA_SET_PATH),"templateId");
 	private static final URI VOCABULARY_PATH=URI.create("http://www.example.org/entities/vocabulary1");
@@ -80,28 +81,31 @@ public class TurtleMediaTypeProviderTest {
 		sut=new TurtleMediaTypeProvider();
 		BASE=URI.create("http://www.example.org/");
 	}
-	
+
 	@Test
 	public void testUnmarshall(@Mocked final ResourceIndex mock) throws Exception {
 		new NonStrictExpectations() {{
 			mock.resolveLocation(DATA_SET_PATH);result=DATA_SET_NAME;minTimes=1;
 			mock.resolveLocation(VOCABULARY_PATH);result=VOCABULARY_NAME;minTimes=1;
 		}};
-		DataSet result = 
+		DataSet result =
 			sut.newUnmarshaller(ImmutableContext.newInstance(BASE, mock)).
 				unmarshall(EXAMPLE_BODY, sut.getSupportedMediaTypes().iterator().next());
 		System.out.println(result.toString());
+	}
+	private ManagedIndividualId managedIndividualId(ResourceId id) {
+		return ManagedIndividualId.createId(id.name(),id.templateId());
 	}
 
 	@Ignore("Not ready for production")
 	@Test
 	public void testMarshall(@Mocked final ResourceIndex mock) throws Exception {
 		new NonStrictExpectations() {{
-			mock.resolveResource(DATA_SET_NAME);result=DATA_SET_PATH;minTimes=1;
-			mock.resolveResource(VOCABULARY_NAME);result=VOCABULARY_PATH;minTimes=1;
+			mock.resolveResource(managedIndividualId(DATA_SET_NAME));result=DATA_SET_PATH;minTimes=1;
+			mock.resolveResource(managedIndividualId(VOCABULARY_NAME));result=VOCABULARY_PATH;minTimes=1;
 		}};
-		
-		DataSet dataSet = 
+
+		DataSet dataSet =
 			DataDSL.
 				dataSet().
 					individual(IndividualReferenceBuilder.newReference().toLocalIndividual().named("inference")).
@@ -111,7 +115,7 @@ public class TurtleMediaTypeProviderTest {
 							referringTo(IndividualReferenceBuilder.newReference().toLocalIndividual().named(VOCABULARY_PATH)).
 							referringTo(IndividualReferenceBuilder.newReference().toLocalIndividual().named(DATA_SET_PATH)).
 						build();
-		
+
 		String result=
 			sut.newMarshaller(ImmutableContext.newInstance(BASE, mock)).
 				marshall(dataSet, sut.getSupportedMediaTypes().iterator().next());
@@ -121,7 +125,7 @@ public class TurtleMediaTypeProviderTest {
 
 	@Test
 	public void testNameVisitor() {
-		
+
 		URI create = URI.create("http://www.example.org/");
 
 		GlobalNameVisitor sut=new GlobalNameVisitor(create);
@@ -138,7 +142,7 @@ public class TurtleMediaTypeProviderTest {
 		URIRef result=sut.getResource(name);
 		System.out.println(name + " --> " + result);
 	}
-	
+
 	private static final class GlobalNameVisitor extends NameVisitor {
 
 		private final URI base;
@@ -148,7 +152,7 @@ public class TurtleMediaTypeProviderTest {
 		private GlobalNameVisitor(URI base) {
 			this.base = base;
 		}
-		
+
 		public URIRef getResource(Name<?> name) {
 			name.accept(this);
 			return resource;
