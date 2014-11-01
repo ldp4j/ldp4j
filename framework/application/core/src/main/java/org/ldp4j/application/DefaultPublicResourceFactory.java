@@ -32,30 +32,30 @@ import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateIntrospector;
 
-final class PublicResourceFactory {
+final class DefaultPublicResourceFactory {
 
 	private final ApplicationContext applicationContext;
 
-	private PublicResourceFactory(ApplicationContext applicationContext) {
+	private DefaultPublicResourceFactory(ApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
-	
-	PublicResource createResource(ResourceId resourceId) {
+
+	DefaultPublicResource createResource(ResourceId resourceId) {
 		return createResource(this.applicationContext.resolveResource(resourceId));
 	}
-	
-	PublicResource createResource(Endpoint endpoint) {
+
+	DefaultPublicResource createResource(Endpoint endpoint) {
 		ResourceTemplate resourceTemplate = resolveTemplate(endpoint);
 		TemplateIntrospector introspector = TemplateIntrospector.newInstance(resourceTemplate);
-		PublicResource resource=null;
+		DefaultPublicResource resource=null;
 		if(introspector.isBasicContainer()) {
-			resource=new PublicBasicContainer(this.applicationContext, endpoint);
+			resource=new DefaultPublicBasicContainer(this.applicationContext,endpoint);
 		} else if(introspector.isDirectContainer()) {
-			resource=new PublicDirectContainer(this.applicationContext, endpoint);
+			resource=new DefaultPublicDirectContainer(this.applicationContext,endpoint);
 		} else if(introspector.isIndirectContainer()) {
-			resource=new PublicIndirectContainer(this.applicationContext, endpoint);
-		} else { // Assume plain resource
-			resource=new PublicRDFSource(this.applicationContext, endpoint);
+			resource=new DefaultPublicIndirectContainer(this.applicationContext,endpoint);
+		} else { // Assume RDF source
+			resource=new DefaultPublicRDFSource(this.applicationContext,endpoint);
 		}
 		return resource;
 	}
@@ -71,9 +71,9 @@ final class PublicResourceFactory {
 		}
 		return template;
 	}
-	
-	static PublicResourceFactory newInstance(ApplicationContext applicationContext) {
-		return new PublicResourceFactory(applicationContext);
+
+	static DefaultPublicResourceFactory newInstance(ApplicationContext applicationContext) {
+		return new DefaultPublicResourceFactory(applicationContext);
 	}
 
 }

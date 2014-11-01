@@ -26,29 +26,6 @@
  */
 package org.ldp4j.application;
 
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
-import org.ldp4j.application.endpoint.Endpoint;
-
-public class PublicRDFSource extends PublicResource {
-
-	protected PublicRDFSource(ApplicationContext applicationContext, Endpoint endpoint) {
-		super(applicationContext, endpoint);
-	}
-
-	@Override
-	public <T> T accept(PublicVisitor<T> visitor) {
-		return visitor.visitRDFSource(this);
-	}
-
-	@Override
-	protected void fillInMetadata(ContentPreferences contentPreferences, Individual<?, ?> individual, Context ctx) {
-		super.fillInMetadata(contentPreferences,individual, ctx);
-		individual.
-			addValue(
-				ctx.property(RDF.TYPE), 
-				ctx.reference(LDP.RDF_SOURCE));
-	}
+public interface PublicRDFSource extends PublicResource {
 
 }

@@ -26,6 +26,24 @@
  */
 package org.ldp4j.application;
 
-public interface PublicBasicContainer extends PublicContainer {
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.template.BasicContainerTemplate;
+
+final class DefaultPublicBasicContainer extends DefaultPublicContainer<BasicContainerTemplate> implements PublicBasicContainer {
+
+	protected DefaultPublicBasicContainer(ApplicationContext applicationContext, Endpoint endpoint) {
+		super(applicationContext,endpoint,BasicContainerTemplate.class);
+	}
+
+	@Override
+	public <T> T accept(PublicVisitor<T> visitor) {
+		return visitor.visitBasicContainer(this);
+	}
+
+	@Override
+	protected void fillInMetadata(ContentPreferences contentPreferences, Individual<?, ?> individual, Context ctx) {
+		super.fillInMetadata(contentPreferences,individual,ctx);
+	}
 
 }

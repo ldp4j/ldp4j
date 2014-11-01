@@ -79,7 +79,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
 
-	public ExistingEndpointController(ApplicationContext applicationContext, PublicResource resource) {
+	ExistingEndpointController(ApplicationContext applicationContext, PublicResource resource) {
 		super(applicationContext,resource);
 	}
 
@@ -320,7 +320,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 
 		// 2. Execute operation and determine response body and status
 		try {
-			PublicContainer<?> container=context.container();
+			PublicContainer container=context.container();
 			PublicResource newResource =
 				container.createResource(context.dataSet(), context.creationPreferences());
 			URI location = context.resolve(newResource);

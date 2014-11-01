@@ -26,11 +26,16 @@
  */
 package org.ldp4j.application;
 
+import java.util.Collections;
+import java.util.Date;
+import java.util.Map;
+
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EndpointLifecycleListener;
 import org.ldp4j.application.endpoint.EndpointManagementService;
+import org.ldp4j.application.endpoint.EntityTag;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.ext.Deletable;
@@ -58,7 +63,83 @@ import org.ldp4j.application.template.TemplateManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Maps;
+
 public final class ApplicationContext {
+
+	private static final class GonePublicResource implements PublicResource {
+
+		private final Endpoint endpoint;
+
+		private GonePublicResource(Endpoint endpoint) {
+			this.endpoint = endpoint;
+		}
+
+		@Override
+		public Status status() {
+			return Status.GONE;
+		}
+
+		@Override
+		public String path() {
+			return endpoint.path();
+		}
+
+		@Override
+		public EntityTag entityTag() {
+			return endpoint.entityTag();
+		}
+
+		@Override
+		public Date lastModified() {
+			return endpoint.lastModified();
+		}
+
+		@Override
+		public Capabilities capabilities() {
+			return new MutableCapabilities();
+		}
+
+		@Override
+		public Map<String, PublicResource> attachments() {
+			return Collections.emptyMap();
+		}
+
+		@Override
+		public ManagedIndividualId individualId() {
+			return ManagedIndividualId.createId(endpoint.resourceId().name(), endpoint.resourceId().templateId());
+		}
+
+		@Override
+		public <T> T accept(PublicVisitor<T> visitor) {
+			throw new UnsupportedOperationException("The endpoint is gone");
+		}
+
+		@Override
+		public DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException {
+			throw new UnsupportedOperationException("The endpoint is gone");
+		}
+
+		@Override
+		public void delete() throws ApplicationExecutionException {
+			throw new UnsupportedOperationException("The endpoint is gone");
+		}
+
+		@Override
+		public void modify(DataSet dataSet) throws ApplicationExecutionException {
+			throw new UnsupportedOperationException("The endpoint is gone");
+		}
+	}
+
+	private final class LocalEndpointLifecycleListener implements EndpointLifecycleListener {
+		@Override
+		public void endpointCreated(Endpoint endpoint) {
+		}
+		@Override
+		public void endpointDeleted(Endpoint endpoint) {
+			ApplicationContext.this.goneEndpoints.put(endpoint.path(),endpoint);
+		}
+	}
 
 	private static Logger LOGGER=LoggerFactory.getLogger(ApplicationContext.class);
 
@@ -75,10 +156,15 @@ public final class ApplicationContext {
 
 	private ResourceControllerService resourceControllerService;
 
-	private final PublicResourceFactory factory;
+	private final DefaultPublicResourceFactory factory;
+	private final EndpointLifecycleListener endpointLifecycleListener;
+	private final Map<String,Endpoint> goneEndpoints;
+
 
 	private ApplicationContext() {
-		this.factory = PublicResourceFactory.newInstance(this);
+		this.factory=DefaultPublicResourceFactory.newInstance(this);
+		this.goneEndpoints=Maps.newLinkedHashMap();
+		this.endpointLifecycleListener = new LocalEndpointLifecycleListener();
 	}
 
 	private static <T> T checkNotNull(T object, String message) {
@@ -253,6 +339,7 @@ public final class ApplicationContext {
 
 	public void initialize(String applicationClassName) throws ApplicationInitializationException {
 		try {
+			this.endpointManagementService.registerEndpointLifecycleListener(this.endpointLifecycleListener);
 			this.application = this.applicationLifecycleService.initialize(applicationClassName);
 		} catch (ApplicationInitializationException e) {
 			String errorMessage = "Application '"+applicationClassName+"' initilization failed";
@@ -261,9 +348,9 @@ public final class ApplicationContext {
 			throw e;
 		}
 	}
-
 	public boolean shutdown() {
 		this.applicationLifecycleService.shutdown();
+		this.endpointManagementService.deregisterEndpointLifecycleListener(this.endpointLifecycleListener);
 		shutdownComponents();
 		return this.applicationLifecycleService.isShutdown();
 	}
@@ -276,27 +363,25 @@ public final class ApplicationContext {
 		return this.application.getClass().getName();
 	}
 
-	public PublicResource resolveResource(String path) {
-		checkNotNull(path,"Endpoint path cannot be null");
-		PublicResource resource=null;
-		Endpoint endpoint = this.endpointManagementService.resolveEndpoint(path);
-		if(endpoint!=null) {
-			resource = this.factory.createResource(endpoint);
+	public PublicResource findResource(final String path) {
+		PublicResource resolved = resolveResource(path);
+		if(resolved==null) {
+			Endpoint endpoint=this.goneEndpoints.get(path);
+			if(endpoint!=null) {
+				resolved=new GonePublicResource(endpoint);
+			}
 		}
-		return resource;
+		return resolved;
 	}
 
-	@Deprecated
-	public ManagedIndividualId resolveEndpoint(String path) {
+	public PublicResource resolveResource(final String path) {
 		checkNotNull(path,"Endpoint path cannot be null");
-		ManagedIndividualId result=null;
-		Endpoint resolveEndpoint=this.endpointManagementService.resolveEndpoint(path);
-		if(resolveEndpoint!=null) {
-			ResourceId resourceId=resolveEndpoint.resourceId();
-			result=ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
-			LOGGER.trace("Resolved path '{}' to individual {}",path,result);
+		PublicResource resolved=null;
+		Endpoint endpoint = this.endpointManagementService.resolveEndpoint(path);
+		if(endpoint!=null) {
+			resolved = this.factory.createResource(endpoint);
 		}
-		return result;
+		return resolved;
 	}
 
 	public PublicResource resolveResource(ManagedIndividualId id) {
@@ -311,16 +396,6 @@ public final class ApplicationContext {
 	public void deregisterApplicationLifecycleListener(ApplicationLifecycleListener listener) {
 		checkNotNull(listener,"Application lifecycle listener cannot be null");
 		this.applicationLifecycleService.deregisterApplicationLifecycleListener(listener);
-	}
-
-	public void registerEndpointLifecyleListener(EndpointLifecycleListener listener) {
-		checkNotNull(listener,"Endpoint lifecycle listener cannot be null");
-		this.endpointManagementService.registerEndpointLifecycleListener(listener);
-	}
-
-	public void deregisterEndpointLifecycleListener(EndpointLifecycleListener listener) {
-		checkNotNull(listener,"Endpoint lifecycle listener cannot be null");
-		this.endpointManagementService.deregisterEndpointLifecycleListener(listener);
 	}
 
 	private static void setCurrentContext(ApplicationContext context) {

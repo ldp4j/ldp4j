@@ -59,7 +59,7 @@ public interface OperationContext {
 
 	PublicResource resource();
 
-	PublicContainer<?> container();
+	PublicContainer container();
 
 	URI resolve(PublicResource newResource);
 

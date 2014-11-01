@@ -28,75 +28,16 @@ package org.ldp4j.server.controller;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Set;
-
 import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.PublicResource;
-import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.application.endpoint.EndpointLifecycleListener;
-import org.ldp4j.application.lifecycle.ApplicationLifecycleListener;
-import org.ldp4j.application.lifecycle.ApplicationState;
-import org.ldp4j.application.util.ConcurrentHashSet;
-
 
 public class EndpointControllerFactory {
 
-	private final class LocalEndpointLifecycleListener implements EndpointLifecycleListener {
-		@Override
-		public void endpointCreated(Endpoint endpoint) {
-		}
-		@Override
-		public void endpointDeleted(Endpoint endpoint) {
-			EndpointControllerFactory.this.goneEndpoints.add(endpoint.path());
-		}
-	}
-
-	private final class LocalApplicationLifecycleListener implements ApplicationLifecycleListener {
-
-		@Override
-		public void applicationStateChanged(ApplicationState newState) {
-			switch(newState) {
-			case AVAILABLE:
-				applicationContext().
-					registerEndpointLifecyleListener(endpointLifecycleListener());
-				break;
-			case SHUTDOWN:
-				applicationContext().
-					deregisterEndpointLifecycleListener(endpointLifecycleListener());
-				applicationContext().
-					deregisterApplicationLifecycleListener(this);
-				break;
-			case UNAVAILABLE:
-				break;
-			case UNDEFINED:
-				break;
-			}
-		}
-
-		private EndpointLifecycleListener endpointLifecycleListener() {
-			return EndpointControllerFactory.this.endpointLifecyleListener;
-		}
-
-		private ApplicationContext applicationContext() {
-			return EndpointControllerFactory.this.applicationContext;
-		}
-
-	}
-
-	private final Set<String> goneEndpoints;
-
-	private final LocalApplicationLifecycleListener applicationLifecyleListener;
-
-	private final LocalEndpointLifecycleListener endpointLifecyleListener;
 
 	private final ApplicationContext applicationContext;
 
 	private EndpointControllerFactory(ApplicationContext applicationContext) {
-		this.applicationContext = applicationContext;
-		this.applicationLifecyleListener = new LocalApplicationLifecycleListener();
-		this.endpointLifecyleListener = new LocalEndpointLifecycleListener();
-		this.goneEndpoints=new ConcurrentHashSet<String>();
-		this.applicationContext.registerApplicationLifecycleListener(this.applicationLifecyleListener);
+		this.applicationContext=applicationContext;
 	}
 
 	private String normalizePath(String path) {
@@ -110,20 +51,23 @@ public class EndpointControllerFactory {
 	}
 
 	private PublicResource resolveEndpoint(String path) {
-		return this.applicationContext.resolveResource(normalizePath(path));
-	}
-
-	private boolean isGone(String path) {
-		return this.goneEndpoints.contains(path);
+		return this.applicationContext.findResource(normalizePath(path));
 	}
 
 	public EndpointController createController(String path) {
 		PublicResource resource=resolveEndpoint(path);
 		EndpointController result=null;
 		if(resource!=null) {
-			result=new ExistingEndpointController(this.applicationContext,resource);
-		} else if(isGone(path)) {
-			result=new GoneEndpointController(this.applicationContext);
+			switch(resource.status()) {
+				case GONE:
+					result=new GoneEndpointController(this.applicationContext,resource);
+					break;
+				case PUBLISHED:
+					result=new ExistingEndpointController(this.applicationContext,resource);
+					break;
+				default:
+					throw new IllegalStateException("Unsupported status "+resource.status());
+			}
 		} else {
 			result=new NotFoundEndpointController(this.applicationContext);
 		}

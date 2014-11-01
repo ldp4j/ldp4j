@@ -335,12 +335,12 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	@Override
-	public PublicContainer<?> container() {
+	public PublicContainer container() {
 		PublicResource tmp = resource();
 		if(!(tmp instanceof PublicContainer)) {
-			throw new IllegalStateException("Expected an instance of class "+PublicContainer.class.getCanonicalName()+" but got an instance of class "+tmp.getClass().getCanonicalName());
+			throw new IllegalStateException("Expected an instance of class "+PublicContainer.class.getName()+" but got an instance of class "+tmp.getClass().getCanonicalName());
 		}
-		return (PublicContainer<?>)tmp;
+		return (PublicContainer)tmp;
 	}
 
 	@Override

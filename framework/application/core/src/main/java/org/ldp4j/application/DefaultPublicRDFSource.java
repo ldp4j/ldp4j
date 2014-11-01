@@ -26,6 +26,29 @@
  */
 package org.ldp4j.application;
 
-public interface PublicBasicContainer extends PublicContainer {
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.endpoint.Endpoint;
+
+class DefaultPublicRDFSource extends DefaultPublicResource implements PublicRDFSource {
+
+	protected DefaultPublicRDFSource(ApplicationContext applicationContext, Endpoint endpoint) {
+		super(applicationContext, endpoint);
+	}
+
+	@Override
+	public <T> T accept(PublicVisitor<T> visitor) {
+		return visitor.visitRDFSource(this);
+	}
+
+	@Override
+	protected void fillInMetadata(ContentPreferences contentPreferences, Individual<?, ?> individual, Context ctx) {
+		super.fillInMetadata(contentPreferences,individual, ctx);
+		individual.
+			addValue(
+				ctx.property(RDF.TYPE),
+				ctx.reference(LDP.RDF_SOURCE));
+	}
 
 }

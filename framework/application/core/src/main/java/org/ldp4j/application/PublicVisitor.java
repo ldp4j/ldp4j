@@ -29,7 +29,7 @@ package org.ldp4j.application;
 public interface PublicVisitor<T> {
 
 	T visitRDFSource(PublicRDFSource resource);
-	
+
 	T visitBasicContainer(PublicBasicContainer resource);
 
 	T visitDirectContainer(PublicDirectContainer resource);

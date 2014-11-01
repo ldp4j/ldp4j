@@ -67,7 +67,7 @@ public final class EndpointControllerUtils {
 	 * for the specified resource. The current implementation <b>only</b> takes
 	 * care of the media type, nor language, nor encodings are taken into
 	 * consideration for generating the acceptable content.
-	 * 
+	 *
 	 * @param variants
 	 *            The acceptable variants
 	 * @param resourceLocation
@@ -83,7 +83,7 @@ public final class EndpointControllerUtils {
 		for (Variant variant : variants) {
 			builder.append(variant.getMediaType()).append(" : %1$s%n");
 		}
-		return 
+		return
 			String.format(
 				builder.toString(),
 				resourceLocation
@@ -153,7 +153,7 @@ public final class EndpointControllerUtils {
 				}
 			}
 		);
-		
+
 		for(Term type:types) {
 			builder.header(EndpointControllerUtils.LINK_HEADER,createLink(type, "type"));
 		}
