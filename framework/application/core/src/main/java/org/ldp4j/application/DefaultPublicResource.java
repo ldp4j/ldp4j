@@ -60,7 +60,7 @@ import org.ldp4j.application.vocabulary.Term;
 
 import com.google.common.collect.Sets;
 
-abstract class DefaultPublicResource extends DefaultPublic implements PublicResource {
+abstract class DefaultPublicResource extends DefaultPublicEndpoint implements PublicResource {
 
 	protected static final class Context {
 
@@ -214,7 +214,7 @@ abstract class DefaultPublicResource extends DefaultPublic implements PublicReso
 
 	private void populateAdditionalMetadata(final ContentPreferences contentPreferences, final Individual<?, ?> individual, final Context ctx, PublicResource resource) {
 		resource.accept(
-			new PublicVisitor<Void>() {
+			new PublicResourceVisitor<Void>() {
 				@Override
 				public Void visitRDFSource(PublicRDFSource resource) {
 					// Nothing to do
@@ -259,7 +259,7 @@ abstract class DefaultPublicResource extends DefaultPublic implements PublicReso
 
 	private void configureAdditionalValidationConstraints(final ValidatorBuilder builder, final Individual<?, ?> individual, final DataSet metadata, PublicResource resource) {
 		resource.accept(
-			new PublicVisitor<Void>() {
+			new PublicResourceVisitor<Void>() {
 				@Override
 				public Void visitRDFSource(PublicRDFSource resource) {
 					// Nothing to do

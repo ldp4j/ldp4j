@@ -43,53 +43,6 @@ import com.google.common.collect.MutableClassToInstanceMap;
 
 public final class TemplateManager {
 
-	private static final class HandlerMapBuilder implements TemplateVisitor {
-
-		private final Builder<HandlerId, ResourceHandler> builder;
-
-		private HandlerMapBuilder(Builder<HandlerId, ResourceHandler> builder) {
-			this.builder = builder;
-		}
-
-		@Override
-		public void visitResourceTemplate(ResourceTemplate template) {
-			Class<? extends ResourceHandler> handlerClass = template.handlerClass();
-			try {
-				ResourceHandler newInstance = handlerClass.newInstance();
-				this.builder.put(HandlerId.createId(handlerClass), newInstance);
-			} catch (InstantiationException e) {
-				throw new IllegalStateException("Could not instantiate resource handler from template '"+template.id()+"' ("+handlerClass.getCanonicalName()+")");
-			} catch (IllegalAccessException e) {
-				throw new IllegalStateException("Could not instantiate resource handler from template '"+template.id()+"' ("+handlerClass.getCanonicalName()+")");
-			}
-		}
-
-		@Override
-		public void visitContainerTemplate(ContainerTemplate template) {
-			visitResourceTemplate(template);
-		}
-
-		@Override
-		public void visitBasicContainerTemplate(BasicContainerTemplate template) {
-			visitResourceTemplate(template);
-		}
-
-		@Override
-		public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
-			visitResourceTemplate(template);
-		}
-
-		@Override
-		public void visitDirectContainerTemplate(DirectContainerTemplate template) {
-			visitResourceTemplate(template);
-		}
-
-		@Override
-		public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
-			visitResourceTemplate(template);
-		}
-	}
-
 	private final TemplateLibrary library;
 	private final ImmutableMap<HandlerId, ResourceHandler> handlers;
 
@@ -97,14 +50,14 @@ public final class TemplateManager {
 		this.library = library;
 		this.handlers = handlers;
 	}
-	
+
 	private <T extends ResourceTemplate> T castTemplate(Class<? extends T> templateClass, ResourceTemplate template) throws InvalidTemplateClassException {
 		if(template!=null && !templateClass.isInstance(template)) {
 			throw new InvalidTemplateClassException(templateClass,template);
 		}
 		return templateClass.cast(template);
 	}
-	
+
 	public ResourceTemplate getTemplate(String templateId) {
 		checkNotNull(templateId,"Template identifier cannot be null");
 		return this.library.findById(templateId);
@@ -134,33 +87,14 @@ public final class TemplateManager {
 		checkArgument(handlerClass.isAssignableFrom(template.handlerClass()));
 		return handlerClass.cast(this.handlers.get(HandlerId.createId(template.handlerClass())));
 	}
-	
-	private static ImmutableMap<HandlerId, ResourceHandler> createHandlerMap(TemplateLibrary library) {
-		Builder<HandlerId, ResourceHandler> builder = ImmutableMap.<HandlerId, ResourceHandler>builder();
-		library.accept(new HandlerMapBuilder(builder));
-		return builder.build();
-	}
 
-	@Deprecated
-	public static TemplateManager newInstance(Collection<Class<?>> handlerClasses) throws TemplateLibraryLoadingException {
-		checkNotNull(handlerClasses,"Handler class collection cannot be null");
-		checkArgument(!handlerClasses.isEmpty(),"No handler classes specified");
-		TemplateLibrary library = new TemplateLibraryLoader().createLibrary(handlerClasses);
-		ImmutableMap<HandlerId, ResourceHandler> handlers = createHandlerMap(library);
-		return new TemplateManager(library,handlers);
-	}
 
-	@Deprecated
-	public static TemplateManager newInstance(Class<?>... handlerClasses) throws TemplateLibraryLoadingException {
-		return newInstance(Arrays.asList(handlerClasses));
-	}
-	
 	public static TemplateManagerBuilder builder() {
 		return new TemplateManagerBuilder();
 	}
-	
+
 	public static final class TemplateManagerBuilder {
-		
+
 		private static final class HandlerMapBuilder implements TemplateVisitor {
 
 			private final Builder<HandlerId, ResourceHandler> builder;
@@ -215,13 +149,13 @@ public final class TemplateManager {
 
 		private final List<Class<?>> handlerClasses;
 		private final ClassToInstanceMap<ResourceHandler> handlers;
-		
-		
+
+
 		private TemplateManagerBuilder() {
 			this.handlerClasses=Lists.newArrayList();
 			this.handlers=MutableClassToInstanceMap.<ResourceHandler>create();
 		}
-		
+
 		public TemplateManagerBuilder withHandlerClasses(Class<?>... classes) {
 			checkNotNull(classes,"Handler class collection cannot be null");
 			return withHandlerClasses(Arrays.asList(classes));
@@ -253,7 +187,7 @@ public final class TemplateManager {
 			}
 			return this;
 		}
-		
+
 		public TemplateManager build() throws InvalidTemplateManagerConfigurationException {
 			try {
 				TemplateLibrary library = new TemplateLibraryLoader().createLibrary(this.handlerClasses);
@@ -266,7 +200,7 @@ public final class TemplateManager {
 				throw new InvalidTemplateManagerConfigurationException(e);
 			}
 		}
-		
+
 	}
 
 }

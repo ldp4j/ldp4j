@@ -47,7 +47,6 @@ import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.application.resource.ResourceIdHelper;
 import org.ldp4j.application.session.UnitOfWork.EventHandler;
 import org.ldp4j.application.spi.ResourceRepository;
 import org.ldp4j.application.template.BasicContainerTemplate;
@@ -301,7 +300,7 @@ final class DelegatedWriteSession implements WriteSession {
 		checkArgument(template!=null,"Handler class '%s' is not associated to any existing template",handlerClass.getCanonicalName());
 		checkArgument(areCompatible(snapshotClass,template),"Cannot wrap an object managed by '%s' with an snapshot of type '%s'",handlerClass.getCanonicalName(),snapshotClass.getCanonicalName());
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,this.status);
-		ResourceId id=ResourceIdHelper.createId(name,template);
+		ResourceId id=ResourceId.createId(name,template);
 		DelegatedResourceSnapshot resource = resolveResource(id, template);
 		return snapshotClass.cast(resource);
 	}

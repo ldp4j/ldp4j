@@ -29,6 +29,7 @@ package org.ldp4j.application.resource;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.template.ResourceTemplate;
 
 import com.google.common.base.Objects;
 
@@ -77,6 +78,12 @@ public final class ResourceId {
 					toString();
 	}
 	
+	public static ResourceId createId(Name<?> name, ResourceTemplate template) {
+		checkNotNull(name,"Resource name cannot be null");
+		checkNotNull(template,"Template cannot be null");
+		return createId(name,template.id());
+	}
+
 	public static ResourceId createId(Name<?> name, String templateId) {
 		checkNotNull(name,"Resource name cannot be null");
 		checkNotNull(templateId,"Template identifier cannot be null");

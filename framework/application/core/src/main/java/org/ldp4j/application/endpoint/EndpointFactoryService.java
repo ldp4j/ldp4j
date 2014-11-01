@@ -30,6 +30,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
 
+import org.ldp4j.application.EntityTag;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.spi.EndpointRepository;
 import org.ldp4j.application.spi.Service;

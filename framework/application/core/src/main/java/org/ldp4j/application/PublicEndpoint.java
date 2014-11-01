@@ -24,22 +24,25 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.resource;
+package org.ldp4j.application;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.Date;
 
-import org.ldp4j.application.template.ResourceTemplate;
-import org.ldp4j.application.data.Name;
+public interface PublicEndpoint {
 
-public final class ResourceIdHelper {
-
-	private ResourceIdHelper() {
+	public enum Status {
+		PUBLISHED,
+		GONE,
 	}
 
-	public static ResourceId createId(Name<?> name, ResourceTemplate template) {
-		checkNotNull(name,"Resource name cannot be null");
-		checkNotNull(template,"Template cannot be null");
-		return ResourceId.createId(name,template.id());
-	}
-	
+	Status status();
+
+	String path();
+
+	EntityTag entityTag();
+
+	Date lastModified();
+
+	Capabilities capabilities();
+
 }

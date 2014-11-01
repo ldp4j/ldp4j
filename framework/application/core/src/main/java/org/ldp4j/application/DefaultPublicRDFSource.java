@@ -38,7 +38,7 @@ class DefaultPublicRDFSource extends DefaultPublicResource implements PublicRDFS
 	}
 
 	@Override
-	public <T> T accept(PublicVisitor<T> visitor) {
+	public <T> T accept(PublicResourceVisitor<T> visitor) {
 		return visitor.visitRDFSource(this);
 	}
 

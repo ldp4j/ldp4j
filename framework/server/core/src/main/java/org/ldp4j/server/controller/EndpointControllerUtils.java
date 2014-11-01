@@ -40,7 +40,7 @@ import org.ldp4j.application.PublicDirectContainer;
 import org.ldp4j.application.PublicIndirectContainer;
 import org.ldp4j.application.PublicRDFSource;
 import org.ldp4j.application.PublicResource;
-import org.ldp4j.application.PublicVisitor;
+import org.ldp4j.application.PublicResourceVisitor;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.server.spi.RuntimeInstance;
@@ -126,7 +126,7 @@ public final class EndpointControllerUtils {
 		// LDP 1.0 - 5.2.1.4 : "LDP servers may provide additional HTTP
 		// Link: rel='type' headers"
 		List<Term> types = resource.accept(
-			new PublicVisitor<List<Term>>() {
+			new PublicResourceVisitor<List<Term>>() {
 				@Override
 				public List<Term> visitRDFSource(PublicRDFSource resource) {
 					List<Term> base=new ArrayList<Term>();

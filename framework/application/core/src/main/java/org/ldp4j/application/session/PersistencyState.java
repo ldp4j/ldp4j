@@ -40,7 +40,6 @@ import org.ldp4j.application.resource.Attachment;
 import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.application.resource.ResourceIdHelper;
 import org.ldp4j.application.resource.ResourceVisitor;
 import org.ldp4j.application.session.AttachmentSnapshotCollection.DelegatedAttachmentSnapshot;
 import org.ldp4j.application.template.AttachedTemplate;
@@ -194,7 +193,7 @@ abstract class PersistencyState {
 			checkState(attachedTemplate!=null,"No attachment '%s' is defined for template '%s'",attachmentId,template());
 			checkState(attachedTemplate.template().handlerClass().isAssignableFrom(handlerClass),"Attachment '%s' of template '%s' is not compatible with '%s' (%s)",attachmentId,template().id(),handlerClass.getCanonicalName(),attachedTemplate.template().handlerClass().getCanonicalName());
 			checkState(nameFilterForAttachment(attachmentId).isValid(name),"Resource name '%s' is already in use",name);
-			T newSnapshot= ctx.newChildResource(ResourceIdHelper.createId(name,attachedTemplate.template()),snapshotClass);
+			T newSnapshot= ctx.newChildResource(ResourceId.createId(name,attachedTemplate.template()),snapshotClass);
 			DelegatedAttachmentSnapshot newAttachment = AttachmentSnapshotCollection.newAttachment(attachmentId, newSnapshot);
 			this.attachments.add(newAttachment);
 			UnitOfWork.getCurrent().registerDirty(ctx);
@@ -244,7 +243,7 @@ abstract class PersistencyState {
 		DelegatedResourceSnapshot addMember(Name<?> resourceName, DelegatedResourceSnapshot ctx) {
 			checkNotNull(resourceName,"Member resource name cannot be null");
 			ContainerTemplate containerTemplate=(ContainerTemplate)template();
-			DelegatedResourceSnapshot newMember=ctx.newChildResource(ResourceIdHelper.createId(resourceName, containerTemplate.memberTemplate()),DelegatedResourceSnapshot.class);
+			DelegatedResourceSnapshot newMember=ctx.newChildResource(ResourceId.createId(resourceName, containerTemplate.memberTemplate()),DelegatedResourceSnapshot.class);
 			this.members.addMember(newMember);
 			newMember.markNew();
 			ctx.markDirty();

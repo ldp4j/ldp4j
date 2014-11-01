@@ -26,27 +26,14 @@
  */
 package org.ldp4j.application;
 
-import java.util.Date;
+public interface PublicResourceVisitor<T> {
 
-import org.ldp4j.application.endpoint.EntityTag;
+	T visitRDFSource(PublicRDFSource resource);
 
-public interface Public {
+	T visitBasicContainer(PublicBasicContainer resource);
 
-	public enum Status {
-		PUBLISHED,
-		GONE,
-	}
+	T visitDirectContainer(PublicDirectContainer resource);
 
-	Status status();
-
-	String path();
-
-	EntityTag entityTag();
-
-	Date lastModified();
-
-	Capabilities capabilities();
-
-	<T> T accept(PublicVisitor<T> visitor);
+	T visitIndirectContainer(PublicIndirectContainer resource);
 
 }

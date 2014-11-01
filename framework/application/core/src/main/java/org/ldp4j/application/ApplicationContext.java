@@ -35,7 +35,6 @@ import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EndpointLifecycleListener;
 import org.ldp4j.application.endpoint.EndpointManagementService;
-import org.ldp4j.application.endpoint.EntityTag;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.ext.Deletable;
@@ -111,7 +110,7 @@ public final class ApplicationContext {
 		}
 
 		@Override
-		public <T> T accept(PublicVisitor<T> visitor) {
+		public <T> T accept(PublicResourceVisitor<T> visitor) {
 			throw new UnsupportedOperationException("The endpoint is gone");
 		}
 

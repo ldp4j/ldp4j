@@ -33,6 +33,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.ldp4j.application.EntityTag;
 import org.ldp4j.application.resource.Attachment;
 import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;

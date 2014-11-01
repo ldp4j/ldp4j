@@ -28,6 +28,7 @@ package org.ldp4j.application.endpoint;
 
 import java.util.Date;
 
+import org.ldp4j.application.EntityTag;
 import org.ldp4j.application.resource.ResourceId;
 
 public interface Endpoint {

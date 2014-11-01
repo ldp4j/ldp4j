@@ -47,7 +47,7 @@ import org.ldp4j.application.PublicDirectContainer;
 import org.ldp4j.application.PublicIndirectContainer;
 import org.ldp4j.application.PublicRDFSource;
 import org.ldp4j.application.PublicResource;
-import org.ldp4j.application.PublicVisitor;
+import org.ldp4j.application.PublicResourceVisitor;
 import org.ldp4j.application.UnsupportedInteractionModelException;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.domain.LDP;
@@ -102,7 +102,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		List<Variant> acceptPostVariants=
 			context.
 			resource().
-				accept(new PublicVisitor<List<Variant>>() {
+				accept(new PublicResourceVisitor<List<Variant>>() {
 					@Override
 					public List<Variant> visitRDFSource(PublicRDFSource resource) {
 						return Collections.emptyList();

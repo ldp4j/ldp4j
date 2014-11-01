@@ -83,7 +83,7 @@ public final class ResourceFactoryService implements Service {
 	private ResourceImpl createResource(ResourceTemplate template, Name<?> resourceId, Resource parent) {
 		checkNotNull(resourceId,"ResourceSnapshot identifier cannot be null");
 		final ResourceId parentId=parent!=null?parent.id():null;
-		final ResourceId id=ResourceIdHelper.createId(resourceId, template);
+		final ResourceId id=ResourceId.createId(resourceId, template);
 		final AtomicReference<ResourceImpl> result=new AtomicReference<ResourceImpl>();
 		template.
 			accept(

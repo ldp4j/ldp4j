@@ -31,7 +31,7 @@ import java.util.Map;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
 
-public interface PublicResource extends Public {
+public interface PublicResource extends PublicEndpoint {
 
 	ManagedIndividualId individualId();
 
@@ -39,8 +39,10 @@ public interface PublicResource extends Public {
 
 	DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException;
 
+	void modify(DataSet dataSet) throws ApplicationExecutionException;
+
 	void delete() throws ApplicationExecutionException;
 
-	void modify(DataSet dataSet) throws ApplicationExecutionException;
+	<T> T accept(PublicResourceVisitor<T> visitor);
 
 }

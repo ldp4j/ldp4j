@@ -28,14 +28,12 @@ package org.ldp4j.application;
 
 import java.util.Date;
 
-import org.ldp4j.application.Public.Status;
 import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.application.endpoint.EntityTag;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.template.ResourceTemplate;
 
-abstract class DefaultPublic implements Public {
+abstract class DefaultPublicEndpoint implements PublicEndpoint {
 
 	private final Endpoint endpoint;
 	private final ApplicationContext applicationContext;
@@ -45,7 +43,7 @@ abstract class DefaultPublic implements Public {
 	private Resource resource;
 	private Capabilities capabilities;
 
-	protected DefaultPublic(ApplicationContext applicationContext, Endpoint endpoint) {
+	protected DefaultPublicEndpoint(ApplicationContext applicationContext, Endpoint endpoint) {
 		this.applicationContext = applicationContext;
 		this.endpoint = endpoint;
 		this.factory = DefaultPublicResourceFactory.newInstance(applicationContext());

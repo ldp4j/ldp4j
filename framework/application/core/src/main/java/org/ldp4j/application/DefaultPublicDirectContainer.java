@@ -44,7 +44,7 @@ final class DefaultPublicDirectContainer extends DefaultPublicMembershipAwareCon
 	}
 
 	@Override
-	public <T> T accept(PublicVisitor<T> visitor) {
+	public <T> T accept(PublicResourceVisitor<T> visitor) {
 		return visitor.visitDirectContainer(this);
 	}
 

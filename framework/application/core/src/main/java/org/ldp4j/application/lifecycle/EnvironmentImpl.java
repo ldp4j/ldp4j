@@ -30,10 +30,10 @@ import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 
+import org.ldp4j.application.EntityTag;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EndpointFactoryService;
-import org.ldp4j.application.endpoint.EntityTag;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceFactoryService;
