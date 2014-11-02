@@ -36,7 +36,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.ldp4j.application.Capabilities;
+import org.ldp4j.application.engine.context.Capabilities;
 import org.ldp4j.server.controller.EndpointControllerUtils;
 import org.ldp4j.server.controller.MethodNotAllowedException;
 

@@ -74,12 +74,17 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-engine</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-data</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-core</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 	</dependencies>
-	
+
 </project>

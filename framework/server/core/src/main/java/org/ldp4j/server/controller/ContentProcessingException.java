@@ -31,7 +31,7 @@ import java.util.List;
 
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.application.PublicResource;
+import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.server.utils.VariantUtils;
 
 public class ContentProcessingException extends OperationContextException {

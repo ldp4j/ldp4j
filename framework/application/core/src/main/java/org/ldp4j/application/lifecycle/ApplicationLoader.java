@@ -27,6 +27,8 @@
 package org.ldp4j.application.lifecycle;
 
 import org.ldp4j.application.endpoint.EndpointFactoryService;
+import org.ldp4j.application.engine.ApplicationBootstrapException;
+import org.ldp4j.application.engine.ApplicationConfigurationException;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.resource.ResourceFactoryService;

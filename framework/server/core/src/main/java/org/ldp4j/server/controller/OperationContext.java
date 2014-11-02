@@ -31,11 +31,11 @@ import java.net.URI;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.application.ContentPreferences;
-import org.ldp4j.application.CreationPreferences;
-import org.ldp4j.application.PublicContainer;
-import org.ldp4j.application.PublicResource;
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.engine.context.ContentPreferences;
+import org.ldp4j.application.engine.context.CreationPreferences;
+import org.ldp4j.application.engine.context.PublicContainer;
+import org.ldp4j.application.engine.context.PublicResource;
 
 public interface OperationContext {
 

@@ -43,24 +43,27 @@ import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.annotation.WebListener;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.lifecycle.ApplicationInitializationException;
+import org.ldp4j.application.engine.ApplicationEngine;
+import org.ldp4j.application.engine.ApplicationEngineRuntimeException;
+import org.ldp4j.application.engine.ApplicationInitializationException;
+import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.server.frontend.ServerFrontend;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * ServletContextListener to control the life cycle of the LDP4j Server 
+ * ServletContextListener to control the life cycle of the LDP4j Server
  * @since 1.0.0
  * @version 1.0
  */
 @WebListener
 public final class BootstrapContextListener implements ServletContextListener {
-	
+
 	private static final String SERVER_SHUTDOWN_LOGGING       = "org.ldp4j.server.bootstrap.logging.shutdown";
 	private static final String SERVER_UPDATE_LOGGING         = "org.ldp4j.server.bootstrap.logging.update";
 	private static final String SERVER_INITIALIZATION_LOGGING = "org.ldp4j.server.bootstrap.logging.initialization";
 
-	private static final String LDP4J_TARGET_APPLICATION = "ldp4jTargetApplication";
+	private static final String LDP4J_TARGET_APPLICATION  = "ldp4jTargetApplication";
 
 	private static final class BootstrapServletContextAttributeListener implements ServletContextAttributeListener {
 		@Override
@@ -80,7 +83,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 	}
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(BootstrapContextListener.class);
-	
+
 	private static final String NEW_LINE=System.getProperty("line.separator");
 
 	private void addMessage(Map<String, Object> messages, String attributeName, Object object) {
@@ -91,17 +94,17 @@ public final class BootstrapContextListener implements ServletContextListener {
 
 	private String dumpContext(String event, ServletContext context) {
 		Map<String,Object> messages=new TreeMap<String,Object>();
-	
+
 		addMessage(messages,"Context path", context.getContextPath());
 		addMessage(messages,"Servlet context name", context.getServletContextName());
-		
+
 		addMessage(messages,"Server info",context.getServerInfo());
 		addMessage(messages,"Major version",context.getMajorVersion());
 		addMessage(messages,"Minor version",context.getMinorVersion());
-		
+
 		addMessage(messages,"Effective major version",context.getEffectiveMajorVersion());
 		addMessage(messages,"Effective minor version",context.getEffectiveMinorVersion());
-	
+
 		Set<SessionTrackingMode> efectiveSessionTrackingModes=context.getEffectiveSessionTrackingModes();
 		if(efectiveSessionTrackingModes!=null && !efectiveSessionTrackingModes.isEmpty()) {
 			StringBuilder builder=new StringBuilder();
@@ -110,7 +113,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 			}
 			addMessage(messages,"Efective session tracking modes",builder.toString());
 		}
-	
+
 		Enumeration<String> attributeNames = context.getAttributeNames();
 		if(attributeNames!=null && attributeNames.hasMoreElements()) {
 			StringBuilder builder=new StringBuilder();
@@ -124,7 +127,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 			}
 			addMessage(messages,"Attributes",builder.toString());
 		}
-	
+
 		Enumeration<String> initParameterNames = context.getInitParameterNames();
 		if(initParameterNames!=null && initParameterNames.hasMoreElements()) {
 			StringBuilder builder=new StringBuilder();
@@ -135,7 +138,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 			}
 			addMessage(messages,"Init parameters",builder.toString());
 		}
-	
+
 		SessionCookieConfig sessionCookieConfig = context.getSessionCookieConfig();
 		if(sessionCookieConfig!=null) {
 			StringBuilder builder=new StringBuilder();
@@ -146,7 +149,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 			builder.append(NEW_LINE).append("\t\t+ ").append("Max age").append(": ").append(sessionCookieConfig.getMaxAge());
 			addMessage(messages,"Session cookie config",builder.toString());
 		}
-	
+
 		Map<String, ? extends ServletRegistration> servletRegistrations = context.getServletRegistrations();
 		if(servletRegistrations!=null && !servletRegistrations.isEmpty()) {
 			StringBuilder builder=new StringBuilder();
@@ -181,7 +184,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 		for(Entry<String, Object> entry:messages.entrySet()) {
 			builder.append(NEW_LINE).append("\t- ").append(entry.getKey()).append(": ").append(entry.getValue());
 		}
-		
+
 		return builder.toString();
 	}
 
@@ -203,13 +206,15 @@ public final class BootstrapContextListener implements ServletContextListener {
 			LOGGER.info(dumpContext("Context initialization started",sce.getServletContext()));
 		}
 
-		ApplicationContext applicationContext = ApplicationContext.currentContext();
 		try {
-			String targetApplicationClassName = getTargetApplicationClassName(sce);
-			applicationContext.initialize(targetApplicationClassName);
+			String targetApplicationClassName=getTargetApplicationClassName(sce);
+			ApplicationContext applicationContext=ApplicationEngine.engine().load(targetApplicationClassName);
+			sce.getServletContext().setAttribute(ServerFrontend.LDP4J_APPLICATION_CONTEXT, applicationContext);
 			LOGGER.info("LDP4j Application '{}' ({}) initialized.",applicationContext.applicationName(),applicationContext.applicationClassName());
 		} catch (ApplicationInitializationException e) {
-			LOGGER.error("Could not initialize LDP4j Application",e);
+			LOGGER.error("Could not configure LDP4j Application to be used within the LDP4j Server Frontend. Full stacktrace follows:",e);
+		} catch (ApplicationEngineRuntimeException e) {
+			LOGGER.error("Could not configure LDP4j Server Frontend due to an unexpected LDP4j Application Engine failure. Full stacktrace follows:",e);
 		}
 	}
 
@@ -218,10 +223,16 @@ public final class BootstrapContextListener implements ServletContextListener {
 		if(isEnabled(SERVER_SHUTDOWN_LOGGING)) {
 			LOGGER.info(dumpContext("Context shutdown started",sce.getServletContext()));
 		}
-
-		ApplicationContext applicationContext = ApplicationContext.currentContext();
-		if(applicationContext.shutdown()) {
-			LOGGER.info("LDP4j Application '{}' ({}) shutdown.",applicationContext.applicationName(),applicationContext.applicationClassName());
+		try {
+			ApplicationContext applicationContext = (ApplicationContext)sce.getServletContext().getAttribute(ServerFrontend.LDP4J_APPLICATION_CONTEXT);
+			if(applicationContext!=null) {
+				sce.getServletContext().removeAttribute(ServerFrontend.LDP4J_APPLICATION_CONTEXT);
+				ApplicationEngine.engine().dispose(applicationContext);
+				LOGGER.info("LDP4j Application '{}' ({}) shutdown.",applicationContext.applicationName(),applicationContext.applicationClassName());
+			}
+			ApplicationEngine.engine().shutdown();
+		} catch (ApplicationEngineRuntimeException e) {
+			LOGGER.error("Could not shutdown LDP4j Server Frontend due to an unexpected LDP4j Application Engine failure. Full stacktrace follows:",e);
 		}
 	}
 

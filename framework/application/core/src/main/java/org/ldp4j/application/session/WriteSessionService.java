@@ -31,11 +31,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Date;
 import java.util.UUID;
 
-import org.ldp4j.application.EntityTag;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EndpointCreationException;
 import org.ldp4j.application.endpoint.EndpointManagementService;
 import org.ldp4j.application.endpoint.EndpointNotFoundException;
+import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.spi.ResourceRepository;

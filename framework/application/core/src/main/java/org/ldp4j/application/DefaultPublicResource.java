@@ -50,6 +50,14 @@ import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.engine.context.ApplicationExecutionException;
+import org.ldp4j.application.engine.context.ContentPreferences;
+import org.ldp4j.application.engine.context.PublicBasicContainer;
+import org.ldp4j.application.engine.context.PublicDirectContainer;
+import org.ldp4j.application.engine.context.PublicIndirectContainer;
+import org.ldp4j.application.engine.context.PublicRDFSource;
+import org.ldp4j.application.engine.context.PublicResource;
+import org.ldp4j.application.engine.context.PublicResourceVisitor;
 import org.ldp4j.application.ext.ContentProcessingException;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.resource.Attachment;
@@ -115,7 +123,7 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 	private static final URI HAS_ATTACHMENT = URI.create("http://www.ldp4j.org/ns/application#hasAttachment");
 	private final ManagedIndividualId individualId;
 
-	protected DefaultPublicResource(ApplicationContext applicationContext, Endpoint endpoint) {
+	protected DefaultPublicResource(DefaultApplicationContext applicationContext, Endpoint endpoint) {
 		super(applicationContext,endpoint);
 		this.individualId=
 			ManagedIndividualId.

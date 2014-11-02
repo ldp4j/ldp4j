@@ -26,8 +26,8 @@
  */
 package org.ldp4j.server.controller;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.PublicResource;
+import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.application.engine.context.PublicResource;
 
 abstract class AbstractEndpointController extends EndpointController {
 

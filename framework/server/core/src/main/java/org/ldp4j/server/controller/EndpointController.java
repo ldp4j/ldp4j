@@ -33,8 +33,8 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.PublicResource;
+import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.application.engine.context.PublicResource;
 
 public abstract class EndpointController {
 

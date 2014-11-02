@@ -32,7 +32,7 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.ldp4j.application.ApplicationContext;
+import org.ldp4j.application.engine.context.ApplicationContext;
 
 final class NotFoundEndpointController extends FixedResponseEndpointController {
 

@@ -30,10 +30,13 @@ import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.engine.context.ContentPreferences;
+import org.ldp4j.application.engine.context.PublicRDFSource;
+import org.ldp4j.application.engine.context.PublicResourceVisitor;
 
 class DefaultPublicRDFSource extends DefaultPublicResource implements PublicRDFSource {
 
-	protected DefaultPublicRDFSource(ApplicationContext applicationContext, Endpoint endpoint) {
+	protected DefaultPublicRDFSource(DefaultApplicationContext applicationContext, Endpoint endpoint) {
 		super(applicationContext, endpoint);
 	}
 

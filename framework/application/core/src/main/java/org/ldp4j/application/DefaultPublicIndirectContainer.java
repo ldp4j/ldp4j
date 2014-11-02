@@ -34,12 +34,15 @@ import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.engine.context.ContentPreferences;
+import org.ldp4j.application.engine.context.PublicIndirectContainer;
+import org.ldp4j.application.engine.context.PublicResourceVisitor;
 import org.ldp4j.application.template.IndirectContainerTemplate;
 import org.ldp4j.application.vocabulary.Term;
 
 final class DefaultPublicIndirectContainer extends DefaultPublicMembershipAwareContainer<IndirectContainerTemplate> implements PublicIndirectContainer {
 
-	protected DefaultPublicIndirectContainer(ApplicationContext applicationContext, Endpoint endpoint) {
+	protected DefaultPublicIndirectContainer(DefaultApplicationContext applicationContext, Endpoint endpoint) {
 		super(applicationContext, endpoint, IndirectContainerTemplate.class);
 	}
 

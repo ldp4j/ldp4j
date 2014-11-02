@@ -28,7 +28,7 @@ package org.ldp4j.server.controller;
 
 import java.net.URI;
 
-import org.ldp4j.application.PublicResource;
+import org.ldp4j.application.engine.context.PublicResource;
 
 public class OperationContextException extends RuntimeException {
 

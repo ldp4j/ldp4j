@@ -40,7 +40,7 @@
 		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	
+
 	<artifactId>ldp4j-server-core</artifactId>
 
 	<!-- =================================================================== -->
@@ -238,7 +238,7 @@
 			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
-	
+
 		<!-- ShrinkWrap Resolver -->
 		<dependency>
 			<groupId>org.jboss.shrinkwrap.resolver</groupId>
@@ -246,7 +246,7 @@
 			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
-	
+
 		<!-- ShrinkWrap Descriptors -->
 		<dependency>
 			<groupId>org.jboss.shrinkwrap.descriptors</groupId>
@@ -297,7 +297,7 @@
 		</dependency>
 
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>

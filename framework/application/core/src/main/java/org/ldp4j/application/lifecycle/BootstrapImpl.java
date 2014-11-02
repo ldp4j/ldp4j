@@ -30,6 +30,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
+import org.ldp4j.application.engine.ApplicationConfigurationException;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.setup.Bootstrap;

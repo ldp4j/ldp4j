@@ -45,9 +45,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.lifecycle.ApplicationLifecycleListener;
-import org.ldp4j.application.lifecycle.ApplicationState;
+import org.ldp4j.application.DefaultApplicationContext;
+import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
+import org.ldp4j.application.engine.lifecycle.ApplicationState;
 import org.ldp4j.server.Endpoint;
 import org.ldp4j.server.EndpointFactory;
 import org.ldp4j.server.EndpointRegistry;
@@ -76,7 +76,7 @@ public class JAXRSFrontend {
 	public JAXRSFrontend(EndpointRegistry registry, CommandProcessingService service) {
 		this.registry=registry;
 		this.service=service;
-		ApplicationContext.
+		DefaultApplicationContext.
 			currentContext().
 				registerApplicationLifecycleListener( 
 					new ApplicationLifecycleListener() {
@@ -85,7 +85,7 @@ public class JAXRSFrontend {
 							JAXRSFrontend.this.state=newState;
 							LOGGER.debug("{} :: Application state changed to '{}'",this,newState);
 							if(ApplicationState.SHUTDOWN.equals(newState)) {
-								ApplicationContext.
+								DefaultApplicationContext.
 									currentContext().
 										deregisterApplicationLifecycleListener(this);
 							}

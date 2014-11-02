@@ -26,7 +26,7 @@
  */
 package org.ldp4j.server.controller;
 
-import org.ldp4j.application.PublicResource;
+import org.ldp4j.application.engine.context.PublicResource;
 
 public class PreconditionRequiredException extends RuntimeException {
 

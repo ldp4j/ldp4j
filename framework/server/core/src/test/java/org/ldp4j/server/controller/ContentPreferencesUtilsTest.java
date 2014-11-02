@@ -31,8 +31,8 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ldp4j.application.ContentPreferences;
-import org.ldp4j.application.ContentPreferences.Preference;
+import org.ldp4j.application.engine.context.ContentPreferences;
+import org.ldp4j.application.engine.context.ContentPreferences.Preference;
 
 import com.google.common.collect.ImmutableList;
 

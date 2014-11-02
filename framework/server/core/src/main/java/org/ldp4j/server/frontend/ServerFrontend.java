@@ -28,6 +28,7 @@ package org.ldp4j.server.frontend;
 
 import java.util.Locale;
 
+import javax.servlet.ServletContext;
 import javax.ws.rs.DELETE;
 import javax.ws.rs.GET;
 import javax.ws.rs.HEAD;
@@ -35,6 +36,7 @@ import javax.ws.rs.POST;
 import javax.ws.rs.PUT;
 import javax.ws.rs.Path;
 import javax.ws.rs.PathParam;
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
@@ -42,9 +44,10 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.lifecycle.ApplicationLifecycleListener;
-import org.ldp4j.application.lifecycle.ApplicationState;
+import org.ldp4j.application.engine.ApplicationEngine;
+import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.application.engine.lifecycle.ApplicationEngineLifecycleListener;
+import org.ldp4j.application.engine.lifecycle.ApplicationEngineState;
 import org.ldp4j.server.controller.EndpointController;
 import org.ldp4j.server.controller.EndpointControllerFactory;
 import org.ldp4j.server.controller.Operation;
@@ -55,17 +58,24 @@ import org.slf4j.LoggerFactory;
 @Path("/api")
 public class ServerFrontend {
 
-	private final class LocalApplicationLifecycleListener implements ApplicationLifecycleListener {
+	private final class LocalApplicationEngineLifecycleListener implements ApplicationEngineLifecycleListener {
+
+		private ApplicationEngineState currentState;
+
+		boolean available() {
+			return ApplicationEngineState.AVAILABLE.equals(currentState);
+		}
 
 		@Override
-		public void applicationStateChanged(ApplicationState newState) {
-			LOGGER.debug("{} :: Application state changed to '{}'",this,newState);
+		public void stateChanged(ApplicationEngineState newState) {
+			this.currentState = newState;
+			LOGGER.debug("LDP4j Application Engine state changed to '{}'",newState);
 			switch(newState) {
 			case AVAILABLE:
 				break;
 			case SHUTDOWN:
-				applicationContext().
-					deregisterApplicationLifecycleListener(ServerFrontend.this.appLifecyleListener);
+				ApplicationEngine.
+					deregisterLifecycleListener(ServerFrontend.this.lifecyleListener);
 				break;
 			case UNAVAILABLE:
 				break;
@@ -74,30 +84,51 @@ public class ServerFrontend {
 			}
 		}
 
-		private ApplicationContext applicationContext() {
-			return ServerFrontend.this.applicationContext;
-		}
-
 	}
+
+	public static final String LDP4J_APPLICATION_CONTEXT = "ldp4jApplicationContext";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ServerFrontend.class);
 
 	private static final String ENDPOINT_PATH_PARAM = "path";
 	private static final String ENDPOINT_PATH = "/{"+ENDPOINT_PATH_PARAM+":.*}";
 
-	private final LocalApplicationLifecycleListener appLifecyleListener;
-
-	private final ApplicationContext applicationContext;
+	private final LocalApplicationEngineLifecycleListener lifecyleListener;
 
 	private final EndpointControllerFactory endpointControllerfactory;
 
+	@Context
+	private ServletContext context;
+
+	private ApplicationContext currentContext() {
+		return (ApplicationContext)context.getAttribute(LDP4J_APPLICATION_CONTEXT);
+	}
+
+	private EndpointController createController(String path) {
+		checkApplicationEngineAvailable();
+		EndpointController controller=
+			this.endpointControllerfactory.
+				createController(currentContext(),path);
+		return controller;
+	}
+
+	private void checkApplicationEngineAvailable() {
+		if(!this.lifecyleListener.available()) {
+			Response failure =
+				Response.
+					serverError().
+					type(MediaType.TEXT_PLAIN).
+					language(Locale.ENGLISH).
+					entity("Application engine is not available").
+					build();
+			throw new WebApplicationException(failure);
+		}
+	}
+
 	public ServerFrontend() {
-		this.appLifecyleListener=new LocalApplicationLifecycleListener();
-		this.applicationContext=ApplicationContext.currentContext();
-		this.applicationContext.registerApplicationLifecycleListener(this.appLifecyleListener);
-		this.endpointControllerfactory=
-			EndpointControllerFactory.
-				newInstance(this.applicationContext);
+		this.lifecyleListener=new LocalApplicationEngineLifecycleListener();
+		ApplicationEngine.registerLifecycleListener(this.lifecyleListener);
+		this.endpointControllerfactory=EndpointControllerFactory.create();
 	}
 
 	/**
@@ -119,9 +150,7 @@ public class ServerFrontend {
 		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		EndpointController controller=
-			this.endpointControllerfactory.
-				createController(path);
+		EndpointController controller = createController(path);
 		OperationContext context =
 			controller.
 				operationContextBuilder(Operation.OPTIONS).
@@ -147,9 +176,7 @@ public class ServerFrontend {
 		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		EndpointController controller=
-			this.endpointControllerfactory.
-				createController(path);
+		EndpointController controller = createController(path);
 		OperationContext context =
 			controller.
 				operationContextBuilder(Operation.HEAD).
@@ -186,9 +213,7 @@ public class ServerFrontend {
 		if(path.equals("") || path.equals("/")) {
 			return get(uriInfo,headers,request);
 		}
-		EndpointController controller=
-			this.endpointControllerfactory.
-				createController(path);
+		EndpointController controller=createController(path);
 		OperationContext context =
 			controller.
 				operationContextBuilder(Operation.GET).
@@ -207,9 +232,7 @@ public class ServerFrontend {
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
-		EndpointController controller=
-			this.endpointControllerfactory.
-				createController(path);
+		EndpointController controller = createController(path);
 		OperationContext context =
 			controller.
 				operationContextBuilder(Operation.PUT).
@@ -229,9 +252,7 @@ public class ServerFrontend {
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
-		EndpointController controller=
-			this.endpointControllerfactory.
-				createController(path);
+		EndpointController controller = createController(path);
 		OperationContext context =
 			controller.
 				operationContextBuilder(Operation.POST).
@@ -250,9 +271,7 @@ public class ServerFrontend {
 		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		EndpointController controller=
-			this.endpointControllerfactory.
-				createController(path);
+		EndpointController controller = createController(path);
 		OperationContext context =
 			controller.
 				operationContextBuilder(Operation.DELETE).
@@ -271,9 +290,7 @@ public class ServerFrontend {
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
-		EndpointController controller=
-			this.endpointControllerfactory.
-				createController(path);
+		EndpointController controller = createController(path);
 		OperationContext context =
 			controller.
 				operationContextBuilder(Operation.OPTIONS).

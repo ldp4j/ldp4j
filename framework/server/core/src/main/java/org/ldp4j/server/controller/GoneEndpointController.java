@@ -32,8 +32,8 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.PublicResource;
+import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.application.engine.context.PublicResource;
 
 final class GoneEndpointController extends FixedResponseEndpointController {
 

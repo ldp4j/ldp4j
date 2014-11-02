@@ -28,12 +28,16 @@ package org.ldp4j.application.lifecycle;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import org.ldp4j.application.engine.ApplicationBootstrapException;
+import org.ldp4j.application.engine.ApplicationInitializationException;
+import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
+import org.ldp4j.application.engine.lifecycle.ApplicationState;
+import org.ldp4j.application.engine.util.ListenerManager;
+import org.ldp4j.application.engine.util.Notification;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.spi.Service;
 import org.ldp4j.application.spi.ServiceBuilder;
-import org.ldp4j.application.util.ListenerManager;
-import org.ldp4j.application.util.Notification;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

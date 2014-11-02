@@ -26,18 +26,12 @@
  */
 package org.ldp4j.server.controller;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import org.ldp4j.application.ApplicationContext;
-import org.ldp4j.application.PublicResource;
+import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.application.engine.context.PublicResource;
 
 public class EndpointControllerFactory {
 
-
-	private final ApplicationContext applicationContext;
-
-	private EndpointControllerFactory(ApplicationContext applicationContext) {
-		this.applicationContext=applicationContext;
+	private EndpointControllerFactory() {
 	}
 
 	private String normalizePath(String path) {
@@ -50,33 +44,32 @@ public class EndpointControllerFactory {
 		return tPath;
 	}
 
-	private PublicResource resolveEndpoint(String path) {
-		return this.applicationContext.findResource(normalizePath(path));
-	}
-
-	public EndpointController createController(String path) {
-		PublicResource resource=resolveEndpoint(path);
+	public EndpointController createController(ApplicationContext applicationContext, String path) {
 		EndpointController result=null;
-		if(resource!=null) {
-			switch(resource.status()) {
-				case GONE:
-					result=new GoneEndpointController(this.applicationContext,resource);
-					break;
-				case PUBLISHED:
-					result=new ExistingEndpointController(this.applicationContext,resource);
-					break;
-				default:
-					throw new IllegalStateException("Unsupported status "+resource.status());
-			}
+		if(applicationContext==null) {
+			result=new InternalFailureEndpointController();
 		} else {
-			result=new NotFoundEndpointController(this.applicationContext);
+			PublicResource resource=applicationContext.findResource(normalizePath(path));
+			if(resource!=null) {
+				switch(resource.status()) {
+					case GONE:
+						result=new GoneEndpointController(applicationContext,resource);
+						break;
+					case PUBLISHED:
+						result=new ExistingEndpointController(applicationContext,resource);
+						break;
+					default:
+						throw new IllegalStateException("Unsupported status "+resource.status());
+				}
+			} else {
+				result=new NotFoundEndpointController(applicationContext);
+			}
 		}
 		return result;
 	}
 
-	public static EndpointControllerFactory newInstance(ApplicationContext context) {
-		checkNotNull(context,"Application context cannot be null");
-		return new EndpointControllerFactory(context);
+	public static EndpointControllerFactory create() {
+		return new EndpointControllerFactory();
 	}
 
 }

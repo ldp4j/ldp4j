@@ -34,14 +34,14 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.application.Capabilities;
-import org.ldp4j.application.PublicBasicContainer;
-import org.ldp4j.application.PublicDirectContainer;
-import org.ldp4j.application.PublicIndirectContainer;
-import org.ldp4j.application.PublicRDFSource;
-import org.ldp4j.application.PublicResource;
-import org.ldp4j.application.PublicResourceVisitor;
 import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.engine.context.Capabilities;
+import org.ldp4j.application.engine.context.PublicBasicContainer;
+import org.ldp4j.application.engine.context.PublicDirectContainer;
+import org.ldp4j.application.engine.context.PublicIndirectContainer;
+import org.ldp4j.application.engine.context.PublicRDFSource;
+import org.ldp4j.application.engine.context.PublicResource;
+import org.ldp4j.application.engine.context.PublicResourceVisitor;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.server.spi.RuntimeInstance;
 

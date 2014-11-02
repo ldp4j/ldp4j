@@ -33,8 +33,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
-import org.ldp4j.application.ContentPreferences.Preference;
-import org.ldp4j.application.CreationPreferences.InteractionModel;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
@@ -50,6 +48,14 @@ import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.engine.context.ApplicationExecutionException;
+import org.ldp4j.application.engine.context.ContentPreferences;
+import org.ldp4j.application.engine.context.CreationPreferences;
+import org.ldp4j.application.engine.context.PublicContainer;
+import org.ldp4j.application.engine.context.PublicResource;
+import org.ldp4j.application.engine.context.UnsupportedInteractionModelException;
+import org.ldp4j.application.engine.context.ContentPreferences.Preference;
+import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
 import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
@@ -94,7 +100,7 @@ abstract class DefaultPublicContainer<T extends ContainerTemplate> extends Defau
 
 	private final Class<? extends T> templateClass;
 
-	protected DefaultPublicContainer(ApplicationContext applicationContext, Endpoint endpoint, Class<? extends T> templateClass) {
+	protected DefaultPublicContainer(DefaultApplicationContext applicationContext, Endpoint endpoint, Class<? extends T> templateClass) {
 		super(applicationContext, endpoint);
 		this.templateClass = templateClass;
 	}

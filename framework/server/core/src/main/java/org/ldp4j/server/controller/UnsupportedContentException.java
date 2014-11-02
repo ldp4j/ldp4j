@@ -28,7 +28,7 @@ package org.ldp4j.server.controller;
 
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.application.PublicResource;
+import org.ldp4j.application.engine.context.PublicResource;
 
 
 public class UnsupportedContentException extends ContentProcessingException {

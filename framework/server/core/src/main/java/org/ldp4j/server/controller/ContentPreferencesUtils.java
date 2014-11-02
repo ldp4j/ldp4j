@@ -33,9 +33,9 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.ldp4j.application.ContentPreferences;
-import org.ldp4j.application.ContentPreferences.ContentPreferencesBuilder;
-import org.ldp4j.application.ContentPreferences.Preference;
+import org.ldp4j.application.engine.context.ContentPreferences;
+import org.ldp4j.application.engine.context.ContentPreferences.ContentPreferencesBuilder;
+import org.ldp4j.application.engine.context.ContentPreferences.Preference;
 
 import static com.google.common.base.Preconditions.*;
 

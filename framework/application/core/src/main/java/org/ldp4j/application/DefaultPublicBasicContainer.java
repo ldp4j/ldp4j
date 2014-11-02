@@ -28,11 +28,14 @@ package org.ldp4j.application;
 
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.engine.context.ContentPreferences;
+import org.ldp4j.application.engine.context.PublicBasicContainer;
+import org.ldp4j.application.engine.context.PublicResourceVisitor;
 import org.ldp4j.application.template.BasicContainerTemplate;
 
 final class DefaultPublicBasicContainer extends DefaultPublicContainer<BasicContainerTemplate> implements PublicBasicContainer {
 
-	protected DefaultPublicBasicContainer(ApplicationContext applicationContext, Endpoint endpoint) {
+	protected DefaultPublicBasicContainer(DefaultApplicationContext applicationContext, Endpoint endpoint) {
 		super(applicationContext,endpoint,BasicContainerTemplate.class);
 	}
 

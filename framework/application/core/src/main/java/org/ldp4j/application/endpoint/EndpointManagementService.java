@@ -33,7 +33,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 
-import org.ldp4j.application.EntityTag;
+import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.engine.util.ListenerManager;
+import org.ldp4j.application.engine.util.Notification;
 import org.ldp4j.application.resource.Attachment;
 import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;
@@ -46,8 +48,6 @@ import org.ldp4j.application.template.AttachedTemplate;
 import org.ldp4j.application.template.ContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateManagementService;
-import org.ldp4j.application.util.ListenerManager;
-import org.ldp4j.application.util.Notification;
 
 public final class EndpointManagementService implements Service {
 	

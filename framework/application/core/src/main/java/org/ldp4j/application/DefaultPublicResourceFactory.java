@@ -34,9 +34,9 @@ import org.ldp4j.application.template.TemplateIntrospector;
 
 final class DefaultPublicResourceFactory {
 
-	private final ApplicationContext applicationContext;
+	private final DefaultApplicationContext applicationContext;
 
-	private DefaultPublicResourceFactory(ApplicationContext applicationContext) {
+	private DefaultPublicResourceFactory(DefaultApplicationContext applicationContext) {
 		this.applicationContext = applicationContext;
 	}
 
@@ -72,7 +72,7 @@ final class DefaultPublicResourceFactory {
 		return template;
 	}
 
-	static DefaultPublicResourceFactory newInstance(ApplicationContext applicationContext) {
+	static DefaultPublicResourceFactory newInstance(DefaultApplicationContext applicationContext) {
 		return new DefaultPublicResourceFactory(applicationContext);
 	}
 

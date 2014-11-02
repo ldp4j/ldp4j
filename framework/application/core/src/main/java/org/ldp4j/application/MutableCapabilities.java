@@ -26,6 +26,9 @@
  */
 package org.ldp4j.application;
 
+import org.ldp4j.application.engine.context.Capabilities;
+
+
 final class MutableCapabilities implements Capabilities {
 
 	private boolean modifiable;
