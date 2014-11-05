@@ -31,7 +31,7 @@ import org.ldp4j.application.data.DataSet;
 interface Adapter {
 
 	ResourceId resourceId();
-	
+
 	DataSet get();
 
 	void update(DataSet content) throws FeatureException;

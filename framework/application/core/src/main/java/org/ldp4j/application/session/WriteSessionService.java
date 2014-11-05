@@ -28,6 +28,7 @@ package org.ldp4j.application.session;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.net.URI;
 import java.util.Date;
 import java.util.UUID;
 
@@ -48,41 +49,41 @@ import org.slf4j.LoggerFactory;
 public final class WriteSessionService implements Service {
 
 	private static class WriteSessionServiceBuilder extends ServiceBuilder<WriteSessionService> {
-		
+
 		private WriteSessionServiceBuilder() {
 			super(WriteSessionService.class);
 		}
 
 		public WriteSessionService build() {
-			return 
+			return
 				new WriteSessionService(
 					resourceRepository(),
 					service(EndpointManagementService.class),
 					service(TemplateManagementService.class));
 		}
-		
+
 	}
 
 	private final class ResourceProcessor implements UnitOfWork.Visitor {
-	
+
 		private final Date lastModified;
 		private final DelegatedWriteSession session;
-	
+
 		private ResourceProcessor(Date lastModified, DelegatedWriteSession session) {
 			this.lastModified = lastModified;
 			this.session = session;
 		}
-	
+
 		@Override
 		public void visitNew(DelegatedResourceSnapshot obj) {
-			createResource(obj.delegate(),this.lastModified,this.session.getDesiredPath(obj));
+			createResource(obj.delegate(),this.lastModified,this.session.getDesiredPath(obj),this.session.getIndirectId(obj));
 		}
-	
+
 		@Override
 		public void visitDirty(DelegatedResourceSnapshot obj) {
 			modifyResource(obj.delegate(),this.lastModified);
 		}
-	
+
 		@Override
 		public void visitDeleted(DelegatedResourceSnapshot obj) {
 			deleteResource(obj.delegate(),this.lastModified);
@@ -106,7 +107,7 @@ public final class WriteSessionService implements Service {
 		logLifecycleMessage("Created write session: %s",configuration);
 		return new DelegatedWriteSession(configuration,this.resourceRepository,this.templateManagementService,this);
 	}
-	
+
 	public void terminateSession(WriteSession writeSession) {
 		checkArgument(writeSession instanceof DelegatedWriteSession);
 		DelegatedWriteSession session=(DelegatedWriteSession)writeSession;
@@ -123,7 +124,7 @@ public final class WriteSessionService implements Service {
 				case COMPLETED:
 					// Nothing to do
 					break;
-				
+
 			}
 		} catch (WriteSessionException e) {
 			// TODO: Log this failure
@@ -131,7 +132,7 @@ public final class WriteSessionService implements Service {
 			UnitOfWork.setCurrent(null);
 		}
 	}
-	
+
 	public ResourceSnapshot attach(WriteSession writeSession, Resource resource, Class<? extends ResourceHandler> handlerClass) {
 		return writeSession.find(ResourceSnapshot.class, resource.id().name(), handlerClass);
 	}
@@ -142,7 +143,7 @@ public final class WriteSessionService implements Service {
 		DelegatedResourceSnapshot delegatedSnapshot=(DelegatedResourceSnapshot)snapshot;
 		return delegatedSnapshot.delegate();
 	}
-	
+
 	void commitSession(DelegatedWriteSession session) {
 		logLifecycleMessage("Commiting session...");
 		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date(),session));
@@ -158,16 +159,16 @@ public final class WriteSessionService implements Service {
 		return new EntityTag(UUID.randomUUID().toString());
 	}
 
-	private void createResource(Resource resource, Date lastModified, String relativePath) {
+	private void createResource(Resource resource, Date lastModified, String relativePath, URI indirectId) {
 		try {
-			
+			resource.setIndirectId(indirectId);
 			resourceRepository.add(resource);
 			Endpoint newEndpoint=
 				endpointManagementService.
 					createEndpointForResource(
-						resource, 
+						resource,
 						relativePath,
-						generateEntityTag(resource), 
+						generateEntityTag(resource),
 						lastModified);
 			if(LOGGER.isTraceEnabled()) {
 				LOGGER.trace("Created "+resource);
@@ -181,7 +182,7 @@ public final class WriteSessionService implements Service {
 	private void modifyResource(Resource resource, Date lastModified) {
 		try {
 			resourceRepository.add(resource);
-			Endpoint endpoint = 
+			Endpoint endpoint =
 				endpointManagementService.modifyResourceEndpoint(
 					resource,
 					generateEntityTag(resource),
@@ -211,7 +212,7 @@ public final class WriteSessionService implements Service {
 	public static ServiceBuilder<WriteSessionService> serviceBuilder() {
 		return new WriteSessionServiceBuilder();
 	}
-	
+
 	public static WriteSessionService defaultService() {
 		return serviceBuilder().build();
 	}

@@ -26,16 +26,21 @@
  */
 package org.ldp4j.application.resource;
 
+import java.net.URI;
 import java.util.Set;
 
 public interface Resource {
 
 	ResourceId id();
-	
+
+	void setIndirectId(URI indirectId);
+
+	URI indirectId();
+
 	boolean isRoot();
 
 	ResourceId parentId();
-	
+
 	Attachment findAttachment(ResourceId resourceId);
 
 	Resource attach(String attachmentId, ResourceId resourceId);

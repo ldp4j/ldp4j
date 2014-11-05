@@ -26,12 +26,15 @@
  */
 package org.ldp4j.application.session;
 
+import java.net.URI;
+
 import com.google.common.base.Objects;
 
 public final class WriteSessionConfiguration {
-	
+
 	private String path;
 	private ResourceSnapshot targetSnapshot;
+	private URI indirectId;
 
 	private WriteSessionConfiguration() {
 	}
@@ -39,7 +42,11 @@ public final class WriteSessionConfiguration {
 	private void setPath(String path) {
 		this.path=path;
 	}
-	
+
+	private void setIndirectId(URI indirectId) {
+		this.indirectId = indirectId;
+	}
+
 	public void setTargetSnapshot(ResourceSnapshot targetSnapshot) {
 		this.targetSnapshot = targetSnapshot;
 	}
@@ -47,14 +54,18 @@ public final class WriteSessionConfiguration {
 	public String getPath() {
 		return this.path;
 	}
-	
+
+	public URI getIndirectId() {
+		return this.indirectId;
+	}
+
 	public ResourceSnapshot getTargetSnapshot() {
 		return this.targetSnapshot;
 	}
 
 	@Override
 	public String toString() {
-		return 
+		return
 			Objects.
 				toStringHelper("WriteSessionConfiguration").
 					add("path",this.path).
@@ -65,20 +76,25 @@ public final class WriteSessionConfiguration {
 	public static WriteSessionConfiguration.WriteSessionConfigurationBuilder builder() {
 		return new WriteSessionConfigurationBuilder();
 	}
-	
+
 	public static final class WriteSessionConfigurationBuilder {
-		
+
 		private final WriteSessionConfiguration configuration;
 
 		private WriteSessionConfigurationBuilder() {
 			this.configuration = new WriteSessionConfiguration();
 		}
-		
+
+		public WriteSessionConfigurationBuilder withIndirectId(URI indirectId) {
+			this.configuration.setIndirectId(indirectId);
+			return this;
+		}
+
 		public WriteSessionConfigurationBuilder withPath(String path) {
 			this.configuration.setPath(path);
 			return this;
 		}
-		
+
 		public WriteSessionConfiguration build() {
 			return this.configuration;
 		}

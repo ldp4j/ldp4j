@@ -26,17 +26,23 @@
  */
 package org.ldp4j.application.data;
 
+import java.net.URI;
+
+import com.google.common.base.Objects;
+import static com.google.common.base.Preconditions.*;
 
 public final class ManagedIndividualId {
-	
+
 	private final String managerId;
 	private final Name<?> name;
+	private final URI indirectId;
 
-	private ManagedIndividualId(Name<?> name, String managerId) {
+	private ManagedIndividualId(Name<?> name, String managerId, URI indirectId) {
 		this.name = name;
 		this.managerId = managerId;
+		this.indirectId = indirectId;
 	}
-	
+
 	public Name<?> name() {
 		return this.name;
 	}
@@ -45,9 +51,13 @@ public final class ManagedIndividualId {
 		return this.managerId;
 	}
 
+	public URI indirectId() {
+		return this.indirectId;
+	}
+
 	@Override
 	public int hashCode() {
-		return this.name().hashCode()+this.managerId().hashCode();
+		return Objects.hashCode(this.name,this.managerId,this.indirectId);
 	}
 
 	@Override
@@ -56,35 +66,35 @@ public final class ManagedIndividualId {
 		if(obj!=null && obj.getClass()==this.getClass()) {
 			ManagedIndividualId that=(ManagedIndividualId)obj;
 			result=
-				equal(this.name(),that.name()) &&
-				equal(this.managerId(),that.managerId());
+				Objects.equal(this.name, that.name) &&
+				Objects.equal(this.managerId, that.managerId) &&
+				Objects.equal(this.indirectId, that.indirectId);
 		}
 		return result;
 	}
-	
+
 	@Override
 	public String toString() {
-		return 
-			String.format("%s [name=%s, managerId=%s]",getClass().getName(),name(),managerId());
+		return
+			Objects.
+				toStringHelper(getClass()).
+					omitNullValues().
+					add("name", this.name).
+					add("managerId",this.managerId).
+					add("indirectId", this.indirectId).
+					toString();
 	}
-	
+
 	public static ManagedIndividualId createId(Name<?> name, String managerId) {
 		checkNotNull(name,"Resource name cannot be null");
 		checkNotNull(managerId,"Manager identifier cannot be null");
-		return new ManagedIndividualId(name,managerId);
+		return new ManagedIndividualId(name,managerId,null);
 	}
 
-	private static <T> boolean equal(T o1, T o2) {
-		if(o1!=null && o2!=null) {
-			return o1.equals(o2);
-		}
-		return o1==null && o2==null;
-	}
-
-	private static void checkNotNull(Object obj, String errorMessage) {
-		if(obj==null) {
-			throw new NullPointerException(errorMessage);
-		}
+	public static ManagedIndividualId createId(URI indirectId, ManagedIndividualId parent) {
+		checkNotNull(indirectId,"Indirect identifier cannot be null");
+		checkNotNull(parent,"Parent identifier cannot be null");
+		return new ManagedIndividualId(parent.name,parent.managerId,indirectId);
 	}
 
 }

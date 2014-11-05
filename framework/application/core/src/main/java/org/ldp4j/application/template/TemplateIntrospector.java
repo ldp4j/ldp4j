@@ -26,6 +26,10 @@
  */
 package org.ldp4j.application.template;
 
+import java.net.URI;
+
+import org.ldp4j.application.ext.annotations.MembershipRelation;
+
 public final class TemplateIntrospector {
 
 	private final ResourceTemplate template;
@@ -36,10 +40,14 @@ public final class TemplateIntrospector {
 	private boolean directContainer;
 	private boolean indirectContainer;
 
+	private URI membershipPredicate;
+	private MembershipRelation membershipRelation;
+	private URI insertedContentRelation;
+
 	private TemplateIntrospector(ResourceTemplate template) {
 		this.template = template;
 	}
-	
+
 	public ResourceTemplate template() {
 		return template;
 	}
@@ -51,15 +59,23 @@ public final class TemplateIntrospector {
 	public boolean isContainer() {
 		return container;
 	}
-	
+
 	public boolean isBasicContainer() {
 		return basicContainer;
 	}
-	
+
 	public boolean isMembershipAwareContainer() {
 		return membershipAware;
 	}
-	
+
+	public MembershipRelation getMembershipRelation() {
+		return membershipRelation;
+	}
+
+	public URI getMembershipPredicate() {
+		return membershipPredicate;
+	}
+
 	public boolean isDirectContainer() {
 		return directContainer;
 	}
@@ -67,7 +83,11 @@ public final class TemplateIntrospector {
 	public boolean isIndirectContainer() {
 		return indirectContainer;
 	}
-	
+
+	public URI getInsertedContentRelation() {
+		return insertedContentRelation;
+	}
+
 	public static TemplateIntrospector newInstance(ResourceTemplate template) {
 		final TemplateIntrospector introspector = new TemplateIntrospector(template);
 		template.accept(
@@ -89,6 +109,8 @@ public final class TemplateIntrospector {
 				public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
 					visitContainerTemplate(template);
 					introspector.membershipAware=true;
+					introspector.membershipPredicate=template.membershipPredicate();
+					introspector.membershipRelation=template.membershipRelation();
 				}
 				@Override
 				public void visitDirectContainerTemplate(DirectContainerTemplate template) {
@@ -99,9 +121,11 @@ public final class TemplateIntrospector {
 				public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
 					visitMembershipAwareContainerTemplate(template);
 					introspector.indirectContainer=true;
+					introspector.insertedContentRelation=template.insertedContentRelation();
 				}
 			}
 		);
 		return introspector;
 	}
+
 }

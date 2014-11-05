@@ -71,18 +71,20 @@ abstract class DefaultPublicMembershipAwareContainer<T extends MembershipAwareCo
 
 	private void populateIsMemberOf(Individual<?, ?> individual, Context ctx, URI predicate) {
 		for(PublicResource member:members()) {
-			Individual<?,?> tmp=ctx.newIndividual(member);
+			Individual<?,?> tmp=createMemberIndividual(ctx, member);
 			tmp.addValue(
 				predicate,
 				individual);
 		}
 	}
 
+	protected abstract Individual<?, ?> createMemberIndividual(Context ctx, PublicResource member);
+
 	private void populateHasMember(Individual<?, ?> individual, Context ctx, URI predicate) {
 		for(PublicResource member:members()) {
 			individual.addValue(
 				predicate,
-				ctx.newIndividual(member));
+				createMemberIndividual(ctx, member));
 		}
 	}
 

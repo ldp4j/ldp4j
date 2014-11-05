@@ -43,8 +43,12 @@ import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.example.InMemoryContainerHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TCKFContainerHandler extends InMemoryContainerHandler implements Modifiable {
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(TCKFContainerHandler.class);
 
 	private TCKFResourceHandler handler;
 
@@ -55,31 +59,34 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 	public final void setHandler(TCKFResourceHandler handler) {
 		this.handler = handler;
 	}
-	
+
 	protected final TCKFResourceHandler handler() {
 		return this.handler;
 	}
-	
+
 	@Override
 	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
 		Name<?> name = TCKFHelper.nextName(getHandlerName());
 
+
+		LOGGER.trace("Creating member of container {} using: \n{}",getHandlerName(),representation);
+
 		DataSetHelper helper=
 				DataSetHelper.newInstance(representation);
-		
-		ManagedIndividual individual = 
+
+		ManagedIndividual individual =
 			helper.
 				replace(
-					DataSetHelper.SELF, 
+					DataSetHelper.SELF,
 					ManagedIndividualId.
 						createId(
 							name,
-							TCKFResourceHandler.ID), 
+							TCKFResourceHandler.ID),
 					ManagedIndividual.class);
 
 		individual.
 			addValue(
-				TCKFHelper.READ_ONLY_PROPERTY, 
+				TCKFHelper.READ_ONLY_PROPERTY,
 				DataSetUtils.newLiteral(new Date().toString()));
 		try {
 			handler().add(name, representation);

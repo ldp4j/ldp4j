@@ -29,6 +29,7 @@ package org.ldp4j.application.resource;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -60,7 +61,7 @@ class ResourceImpl extends AbstractResource implements Resource {
 
 		@Override
 		public String toString() {
-			return 
+			return
 				Objects.
 					toStringHelper(getClass()).
 						omitNullValues().
@@ -85,13 +86,14 @@ class ResourceImpl extends AbstractResource implements Resource {
 		}
 
 	}
-	
+
 	private final Map<AttachmentId, AttachmentImpl> attachments;
 	private final Map<String, AttachmentId> attachmentsById;
 	private final Map<ResourceId, AttachmentId> attachmentsByResourceId;
 
 	private final ResourceId id;
 	private final ResourceId parentId;
+	private URI indirectId;
 
 	protected ResourceImpl(ResourceId id, ResourceId parentId) {
 		this.id=id;
@@ -100,11 +102,11 @@ class ResourceImpl extends AbstractResource implements Resource {
 		this.attachmentsById=new LinkedHashMap<String,AttachmentId>();
 		this.attachmentsByResourceId=new LinkedHashMap<ResourceId,AttachmentId>();
 	}
-	
+
 	protected ResourceImpl(ResourceId id) {
 		this(id,null);
 	}
-	
+
 	protected final ResourceImpl createChild(ResourceId resourceId, ResourceTemplate template) {
 		ResourceImpl newResource=null;
 		if(!TemplateIntrospector.newInstance(template).isContainer()) {
@@ -153,6 +155,16 @@ class ResourceImpl extends AbstractResource implements Resource {
 	@Override
 	public ResourceId id() {
 		return this.id;
+	}
+
+	@Override
+	public void setIndirectId(URI indirectId) {
+		this.indirectId=indirectId;
+	}
+
+	@Override
+	public URI indirectId() {
+		return this.indirectId;
 	}
 
 	@Override
@@ -221,7 +233,7 @@ class ResourceImpl extends AbstractResource implements Resource {
 	}
 
 	protected ToStringHelper stringHelper() {
-		return 
+		return
 			super.stringHelper().
 				add("id",this.id).
 				add("parentId",this.parentId).

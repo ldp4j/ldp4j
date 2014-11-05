@@ -70,6 +70,9 @@ final class OperationContextImpl implements OperationContext {
 				throw new IllegalStateException("Could not resolve resource "+id);
 			}
 			URI result=base().resolve(resource.path());
+			if(id.indirectId()!=null) {
+				result=result.resolve(id.indirectId());
+			}
 			LOGGER.trace("Resolved resource {} URI to '{}'",id,result);
 			return result;
 		}

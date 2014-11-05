@@ -309,4 +309,13 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 		}
 	}
 
+	protected final ManagedIndividualId indirectIndividualId() {
+		ManagedIndividualId result=this.individualId;
+		URI indirectId = resolveAs(Resource.class).indirectId();
+		if(indirectId!=null) {
+			result=ManagedIndividualId.createId(indirectId, result);
+		}
+		return result;
+	}
+
 }

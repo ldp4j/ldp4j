@@ -36,6 +36,7 @@ import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.PublicDirectContainer;
+import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
 import org.ldp4j.application.template.DirectContainerTemplate;
 import org.ldp4j.application.vocabulary.Term;
@@ -68,6 +69,11 @@ final class DefaultPublicDirectContainer extends DefaultPublicMembershipAwareCon
 	protected void configureValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata) {
 		super.configureValidationConstraints(builder, individual, metadata);
 		builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.property(LDP.INSERTED_CONTENT_RELATION.as(URI.class))));
+	}
+
+	@Override
+	protected Individual<?, ?> createMemberIndividual(Context ctx, PublicResource member) {
+		return ctx.newIndividual(member);
 	}
 
 }

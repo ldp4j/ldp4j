@@ -35,7 +35,7 @@ public final class FormatUtils implements IndividualVisitor {
 
 	private FormatUtils() {
 	}
-	
+
 	public String getId() {
 		return id;
 	}
@@ -47,7 +47,11 @@ public final class FormatUtils implements IndividualVisitor {
 	@Override
 	public void visitManagedIndividual(ManagedIndividual individual) {
 		ManagedIndividualId id = individual.id();
-		log("%s {Managed by: %s}",id.name(),id.managerId());
+		if(id.indirectId()==null) {
+			log("%s {Managed by: %s}",id.name(),id.managerId());
+		} else {
+			log("%s {Managed by: %s, indirect id: <%s>}",id.name(),id.managerId(),id.indirectId());
+		}
 	}
 
 	@Override
@@ -65,7 +69,7 @@ public final class FormatUtils implements IndividualVisitor {
 	public static String formatLiteral(Literal<?> literal) {
 		return String.format("%s [%s]",literal.get(),literal.get().getClass().getCanonicalName());
 	}
-	
+
 	public static String formatName(Name<?> tmp) {
 		if(tmp==null) {
 			return "<null>";
@@ -87,7 +91,7 @@ public final class FormatUtils implements IndividualVisitor {
 		if(id==null) {
 			return result;
 		}
-		
+
 		if(id instanceof URI) {
 			result=String.format("<%s> {External}",id);
 		} else if(id instanceof Name<?>) {

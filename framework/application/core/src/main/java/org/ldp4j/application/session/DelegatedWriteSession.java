@@ -30,6 +30,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +88,7 @@ final class DelegatedWriteSession implements WriteSession {
 								}
 								@Override
 								public void visitDelegatedContainerSnapshot(DelegatedContainerSnapshot container) {
-									if(!container.hasMember(child) || !TemplateIntrospector.newInstance(container.template()).isMembershipAwareContainer()) { 
+									if(!container.hasMember(child) || !TemplateIntrospector.newInstance(container.template()).isMembershipAwareContainer()) {
 										return;
 									}
 									if(!container.isRoot()) {
@@ -123,7 +124,7 @@ final class DelegatedWriteSession implements WriteSession {
 	private final Map<ResourceId,DelegatedResourceSnapshot> resourceCache;
 
 	private final WriteSessionConfiguration configuration;
-	
+
 	private final ResourceRepository resourceRepository;
 	private final WriteSessionService writeSessionService;
 	private final TemplateManagementService templateManagementService;
@@ -144,7 +145,7 @@ final class DelegatedWriteSession implements WriteSession {
 		this.resourceCache=new LinkedHashMap<ResourceId,DelegatedResourceSnapshot>();
 		this.snapshotFactory=SnapshotFactory.newInstance(this.templateManagementService, this);
 	}
-		
+
 	private DelegatedResourceSnapshot resolveResource(ResourceId resourceId, ResourceTemplate template) {
 		DelegatedResourceSnapshot resource=this.resourceCache.get(resourceId);
 		if(resource==null) {
@@ -159,7 +160,7 @@ final class DelegatedWriteSession implements WriteSession {
 	}
 
 	private <S extends ResourceSnapshot> S find(
-			Class<? extends S> snapshotClass, 
+			Class<? extends S> snapshotClass,
 			ResourceId resourceId) {
 		ResourceTemplate template=DelegatedWriteSession.this.templateManagementService.findTemplateById(resourceId.templateId());
 		checkArgument(template!=null,"Unknown template '%s' ",resourceId.templateId());
@@ -240,7 +241,7 @@ final class DelegatedWriteSession implements WriteSession {
 		LOGGER.debug("New members: {}",newMembers);
 		if(newMembers.isEmpty()) {
 			return false;
-		}	
+		}
 		return snapshot==newMembers.get(0);
 	}
 
@@ -255,7 +256,7 @@ final class DelegatedWriteSession implements WriteSession {
 	DelegatedResourceSnapshot resolveResource(ResourceId resourceId) {
 		return resolveResource(resourceId,loadTemplate(resourceId.templateId()));
 	}
-	
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(DelegatedWriteSession.class);
 
 	String getDesiredPath(DelegatedResourceSnapshot snapshot) {
@@ -275,6 +276,23 @@ final class DelegatedWriteSession implements WriteSession {
 		return desiredPath;
 	}
 
+	URI getIndirectId(DelegatedResourceSnapshot snapshot) {
+		URI indirectId=null;
+		if(isMainResource(snapshot)) {
+			indirectId=this.configuration.getIndirectId();
+		}
+		if(LOGGER.isDebugEnabled()) {
+			if(indirectId==null && this.configuration.getIndirectId()!=null) {
+				LOGGER.debug("Resource {} is not main resource",snapshot.resourceId());
+			} else if(indirectId!=null) {
+				LOGGER.debug("Resource {} is the main resource and may be alternative identified by '{}'",snapshot.resourceId(),indirectId);
+			} else {
+				LOGGER.debug("Resource {} is the main resource but does not have an alternative identifier",snapshot.resourceId());
+			}
+		}
+		return indirectId;
+	}
+
 	Status status() {
 		return this.status;
 	}
@@ -289,7 +307,7 @@ final class DelegatedWriteSession implements WriteSession {
 
 	@Override
 	public <S extends ResourceSnapshot> S find(
-			Class<? extends S> snapshotClass, 
+			Class<? extends S> snapshotClass,
 			Name<?> name,
 			Class<? extends ResourceHandler> handlerClass) {
 		checkNotNull(snapshotClass,"Resource snapshot class cannot be null");
@@ -307,7 +325,7 @@ final class DelegatedWriteSession implements WriteSession {
 
 	@Override
 	public <S extends ResourceSnapshot> S resolve(
-			final Class<? extends S> snapshotClass, 
+			final Class<? extends S> snapshotClass,
 			final Individual<?,?> individual) {
 		checkNotNull(snapshotClass,"Resource snapshot class cannot be null");
 		checkNotNull(individual,"Individual cannot be null");
@@ -315,7 +333,7 @@ final class DelegatedWriteSession implements WriteSession {
 		S result=null;
 		ResourceId id = getIdentifier(individual);
 		if(id!=null) {
-			result=find(snapshotClass,id); 
+			result=find(snapshotClass,id);
 		}
 		return result;
 	}
