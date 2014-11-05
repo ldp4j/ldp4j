@@ -27,6 +27,7 @@
 package org.ldp4j.server.frontend;
 
 import java.util.Locale;
+import java.util.concurrent.atomic.AtomicReference;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.DELETE;
@@ -55,33 +56,30 @@ import org.ldp4j.server.controller.OperationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-@Path("/api")
+@Path(ServerFrontend.PATH)
 public class ServerFrontend {
 
-	private final class LocalApplicationEngineLifecycleListener implements ApplicationEngineLifecycleListener {
+	private final class LocalApplicationEngineLifecycleListener extends ApplicationEngineLifecycleListener {
 
-		private ApplicationEngineState currentState;
+		private final AtomicReference<ApplicationEngineState> currentState;
+
+		private LocalApplicationEngineLifecycleListener() {
+			this.currentState=new AtomicReference<ApplicationEngineState>();
+		}
 
 		boolean available() {
-			return ApplicationEngineState.AVAILABLE.equals(currentState);
+			return ApplicationEngineState.STARTED.equals(this.currentState.get());
 		}
 
 		@Override
-		public void stateChanged(ApplicationEngineState newState) {
-			this.currentState = newState;
+		protected void onApplicationEngineShutdown() {
+			ApplicationEngine.deregisterLifecycleListener(this);
+		}
+
+		@Override
+		protected void onStateChange(ApplicationEngineState newState) {
+			this.currentState.set(newState);
 			LOGGER.debug("LDP4j Application Engine state changed to '{}'",newState);
-			switch(newState) {
-			case AVAILABLE:
-				break;
-			case SHUTDOWN:
-				ApplicationEngine.
-					deregisterLifecycleListener(ServerFrontend.this.lifecyleListener);
-				break;
-			case UNAVAILABLE:
-				break;
-			case UNDEFINED:
-				break;
-			}
 		}
 
 	}
@@ -89,6 +87,8 @@ public class ServerFrontend {
 	public static final String LDP4J_APPLICATION_CONTEXT = "ldp4jApplicationContext";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ServerFrontend.class);
+
+	public static final String PATH="/api";
 
 	private static final String ENDPOINT_PATH_PARAM = "path";
 	private static final String ENDPOINT_PATH = "/{"+ENDPOINT_PATH_PARAM+":.*}";

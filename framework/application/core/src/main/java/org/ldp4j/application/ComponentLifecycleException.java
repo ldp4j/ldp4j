@@ -20,54 +20,30 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-engine:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-engine-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-core:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.lifecycle;
+package org.ldp4j.application;
 
-public enum ApplicationEngineState {
-	UNAVAILABLE,
-	UNDEFINED,
-	AVAILABLE {
-		@Override
-		public boolean canStart() {
-			return true;
-		}
-	},
-	STARTED {
-		@Override
-		public boolean isStarted() {
-			return true;
-		}
-		@Override
-		public boolean canShutdown() {
-			return true;
-		}
+import org.ldp4j.application.lifecycle.LifecycleException;
 
-	},
-	SHUTDOWN {
-		@Override
-		public boolean isShutdown() {
-			return true;
-		}
-	}
-	;
+final class ComponentLifecycleException extends LifecycleException {
 
-	public boolean canStart() {
-		return false;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 598862209574453730L;
+
+	private final Object component;
+
+	public ComponentLifecycleException(Object component, Throwable cause) {
+		super(cause);
+		this.component = component;
 	}
 
-	public boolean isStarted() {
-		return false;
-	}
-
-	public boolean canShutdown() {
-		return false;
-	}
-
-	public boolean isShutdown() {
-		return false;
+	public Object getComponent() {
+		return component;
 	}
 
 }

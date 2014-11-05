@@ -34,7 +34,6 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EndpointLifecycleListener;
-import org.ldp4j.application.endpoint.EndpointManagementService;
 import org.ldp4j.application.engine.ApplicationInitializationException;
 import org.ldp4j.application.engine.context.ApplicationContext;
 import org.ldp4j.application.engine.context.ApplicationContextException;
@@ -50,23 +49,12 @@ import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.ResourceHandler;
-import org.ldp4j.application.lifecycle.ApplicationLifecycleService;
-import org.ldp4j.application.lifecycle.LifecycleException;
-import org.ldp4j.application.lifecycle.LifecycleManager;
 import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.resource.ResourceControllerService;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.session.WriteSessionConfiguration;
-import org.ldp4j.application.session.WriteSessionService;
-import org.ldp4j.application.spi.EndpointRepository;
-import org.ldp4j.application.spi.RepositoryRegistry;
-import org.ldp4j.application.spi.ResourceRepository;
-import org.ldp4j.application.spi.RuntimeInstance;
-import org.ldp4j.application.spi.ServiceRegistry;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateIntrospector;
-import org.ldp4j.application.template.TemplateManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -150,25 +138,16 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	private static Logger LOGGER=LoggerFactory.getLogger(DefaultApplicationContext.class);
 
-	private static DefaultApplicationContext context;
-
-	private ResourceRepository resourceRepository;
-	private EndpointRepository endpointRepository;
-	private ApplicationLifecycleService applicationLifecycleService;
-	private TemplateManagementService templateManagementService;
-	private EndpointManagementService endpointManagementService;
-	private WriteSessionService writeSessionService;
-
 	private Application<Configuration> application;
-
-	private ResourceControllerService resourceControllerService;
 
 	private final DefaultPublicResourceFactory factory;
 	private final EndpointLifecycleListener endpointLifecycleListener;
 	private final Map<String,Endpoint> goneEndpoints;
 
+	private final DefaultApplicationEngine engine;
 
-	private DefaultApplicationContext() {
+	DefaultApplicationContext(DefaultApplicationEngine engine) {
+		this.engine = engine;
 		this.factory=DefaultPublicResourceFactory.newInstance(this);
 		this.goneEndpoints=Maps.newLinkedHashMap();
 		this.endpointLifecycleListener = new LocalEndpointLifecycleListener();
@@ -181,41 +160,6 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return object;
 	}
 
-	private DefaultApplicationContext withWriteSessionService(WriteSessionService service) {
-		this.writeSessionService = checkNotNull(service,"Write session service cannot be null");
-		return this;
-	}
-
-	private DefaultApplicationContext withEndpointManagementService(EndpointManagementService service) {
-		this.endpointManagementService = checkNotNull(service,"Endpoint management service cannot be null");
-		return this;
-	}
-
-	private DefaultApplicationContext withApplicationLifecycleService(ApplicationLifecycleService service) {
-		this.applicationLifecycleService = checkNotNull(service,"Application lifecycle service cannot be null");
-		return this;
-	}
-
-	private DefaultApplicationContext withTemplateManagementService(TemplateManagementService service) {
-		this.templateManagementService = checkNotNull(service,"Template management service cannot be null");
-		return this;
-	}
-
-	private DefaultApplicationContext withResourceControllerService(ResourceControllerService service) {
-		this.resourceControllerService = checkNotNull(service,"Resource controller service cannot be null");
-		return this;
-	}
-
-	private DefaultApplicationContext withResourceRepository(ResourceRepository resourceRepository) {
-		this.resourceRepository=checkNotNull(resourceRepository,"Resource repository cannot be null");
-		return this;
-	}
-
-	private DefaultApplicationContext withEndpointRepository(EndpointRepository endpointRepository) {
-		this.endpointRepository=checkNotNull(endpointRepository,"Endpoint repository cannot be null");
-		return this;
-	}
-
 	private String applicationFailureMessage(String message, Object... objects) {
 		return "[" + this.application.getName() + "] " + String.format(message,objects);
 	}
@@ -224,42 +168,16 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return application;
 	}
 
-	private void initializeComponents() throws LifecycleException {
-		LifecycleManager.init(this.resourceRepository);
-		LifecycleManager.init(this.endpointRepository);
-		LifecycleManager.init(this.endpointManagementService);
-		LifecycleManager.init(this.resourceControllerService);
-		LifecycleManager.init(this.templateManagementService);
-		LifecycleManager.init(this.writeSessionService);
-	}
-
-	private void shutdownComponents() {
-		shutdown(this.endpointManagementService);
-		shutdown(this.resourceControllerService);
-		shutdown(this.templateManagementService);
-		shutdown(this.writeSessionService);
-		shutdown(this.endpointRepository);
-		shutdown(this.resourceRepository);
-	}
-
-	private <T> void shutdown(T object) {
-		try {
-			LifecycleManager.shutdown(object);
-		} catch (LifecycleException e) {
-			LOGGER.error("Could not shutdown "+object,e);
-		}
-	}
-
 	DataSet getResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Resource resource = this.resourceRepository.find(resourceId,Resource.class);
+		Resource resource = this.engine().resourceRepository().find(resourceId,Resource.class);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
 			throw new ApplicationExecutionException(errorMessage);
 		}
 		try {
-			return this.resourceControllerService.getResource(resource);
+			return this.engine().resourceControllerService().getResource(resource);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource '%s' retrieval failed ",endpoint);
 			LOGGER.error(errorMessage,e);
@@ -268,23 +186,23 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	}
 
 	Resource resolveResource(Endpoint endpoint) {
-		return this.resourceRepository.find(endpoint.resourceId(), Resource.class);
+		return this.engine().resourceRepository().find(endpoint.resourceId(), Resource.class);
 	}
 
 	Endpoint resolveResource(ResourceId id) {
-		return this.endpointRepository.endpointOfResource(id);
+		return this.engine().endpointRepository().endpointOfResource(id);
 	}
 
 	Resource createResource(Endpoint endpoint, DataSet dataSet, String desiredPath) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Container resource = this.resourceRepository.find(resourceId,Container.class);
+		Container resource = this.engine().resourceRepository().find(resourceId,Container.class);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find container for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
 			throw new ApplicationExecutionException(errorMessage);
 		}
 		try {
-			return this.resourceControllerService.createResource(resource, dataSet,desiredPath);
+			return this.engine().resourceControllerService().createResource(resource, dataSet,desiredPath);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource create failed at '%s'",endpoint);
 			LOGGER.error(errorMessage,e);
@@ -294,14 +212,14 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	void deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Resource resource = this.resourceRepository.find(resourceId,Resource.class);
+		Resource resource = this.engine().resourceRepository().find(resourceId,Resource.class);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find container for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
 			throw new ApplicationExecutionException(errorMessage);
 		}
 		try {
-			this.resourceControllerService.deleteResource(resource, WriteSessionConfiguration.builder().build());
+			this.engine().resourceControllerService().deleteResource(resource, WriteSessionConfiguration.builder().build());
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource deletion failed at '%s'",endpoint);
 			LOGGER.error(errorMessage,e);
@@ -311,14 +229,14 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	void modifyResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Resource resource = this.resourceRepository.find(resourceId,Resource.class);
+		Resource resource = this.engine().resourceRepository().find(resourceId,Resource.class);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
 			throw new ApplicationExecutionException(errorMessage);
 		}
 		try {
-			this.resourceControllerService.updateResource(resource,dataSet, WriteSessionConfiguration.builder().build());
+			this.engine().resourceControllerService().updateResource(resource,dataSet, WriteSessionConfiguration.builder().build());
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource modification failed at '%s'",endpoint);
 			LOGGER.error(errorMessage,e);
@@ -341,26 +259,24 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	}
 
 	ResourceTemplate resourceTemplate(Resource resource) {
-		return this.templateManagementService.findTemplateById(resource.id().templateId());
+		return this.engine().templateManagementService().findTemplateById(resource.id().templateId());
 	}
 
 	public void initialize(String applicationClassName) throws ApplicationInitializationException {
 		try {
-			this.endpointManagementService.registerEndpointLifecycleListener(this.endpointLifecycleListener);
-			this.application = this.applicationLifecycleService.initialize(applicationClassName);
+			this.engine().endpointManagementService().registerEndpointLifecycleListener(this.endpointLifecycleListener);
+			this.application = this.engine().applicationLifecycleService().initialize(applicationClassName);
 		} catch (ApplicationInitializationException e) {
 			String errorMessage = "Application '"+applicationClassName+"' initilization failed";
 			LOGGER.error(errorMessage,e);
-			shutdownComponents();
 			throw e;
 		}
 	}
 
 	public boolean shutdown() {
-		this.applicationLifecycleService.shutdown();
-		this.endpointManagementService.deregisterEndpointLifecycleListener(this.endpointLifecycleListener);
-		shutdownComponents();
-		return this.applicationLifecycleService.isShutdown();
+		this.engine().applicationLifecycleService().shutdown();
+		this.engine().endpointManagementService().deregisterEndpointLifecycleListener(this.endpointLifecycleListener);
+		return this.engine().applicationLifecycleService().isShutdown();
 	}
 
 	/**
@@ -402,7 +318,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	public PublicResource resolveResource(final String path) {
 		checkNotNull(path,"Endpoint path cannot be null");
 		PublicResource resolved=null;
-		Endpoint endpoint = this.endpointManagementService.resolveEndpoint(path);
+		Endpoint endpoint = this.engine().endpointManagementService().resolveEndpoint(path);
 		if(endpoint!=null) {
 			resolved = this.factory.createResource(endpoint);
 		}
@@ -424,7 +340,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	@Override
 	public void registerApplicationLifecycleListener(ApplicationLifecycleListener listener) {
 		checkNotNull(listener,"Application lifecycle listener cannot be null");
-		this.applicationLifecycleService.registerApplicationLifecycleListener(listener);
+		this.engine().applicationLifecycleService().registerApplicationLifecycleListener(listener);
 	}
 
 	/**
@@ -433,65 +349,11 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	@Override
 	public void deregisterApplicationLifecycleListener(ApplicationLifecycleListener listener) {
 		checkNotNull(listener,"Application lifecycle listener cannot be null");
-		this.applicationLifecycleService.deregisterApplicationLifecycleListener(listener);
+		this.engine().applicationLifecycleService().deregisterApplicationLifecycleListener(listener);
 	}
 
-	private static void setCurrentContext(DefaultApplicationContext context) {
-		DefaultApplicationContext.context = context;
+	public DefaultApplicationEngine engine() {
+		return engine;
 	}
-
-	private static DefaultApplicationContext newApplicationContext() {
-		RuntimeInstance instance = RuntimeInstance.getInstance();
-		RepositoryRegistry repositoryRegistry = instance.getRepositoryRegistry();
-		ServiceRegistry serviceRegistry = instance.getServiceRegistry();
-		DefaultApplicationContext context=
-			new DefaultApplicationContext().
-				withEndpointRepository(repositoryRegistry.getEndpointRepository()).
-				withResourceRepository(repositoryRegistry.getResourceRepository()).
-				withApplicationLifecycleService(serviceRegistry.getService(ApplicationLifecycleService.class)).
-				withTemplateManagementService(serviceRegistry.getService(TemplateManagementService.class)).
-				withEndpointManagementService(serviceRegistry.getService(EndpointManagementService.class)).
-				withWriteSessionService(serviceRegistry.getService(WriteSessionService.class)).
-				withResourceControllerService(serviceRegistry.getService(ResourceControllerService.class));
-		return context;
-	}
-
-	public static synchronized DefaultApplicationContext currentContext() {
-		if(DefaultApplicationContext.context==null) {
-			DefaultApplicationContext.context=newApplicationContext();
-		}
-		return DefaultApplicationContext.context;
-	}
-
-	public static synchronized ApplicationContext createContext(String applicationClassName) {
-		// Candidate application context configuration
-		DefaultApplicationContext context = newApplicationContext();
-
-		// Candidate application context component initialization
-		try {
-			context.initializeComponents();
-		} catch (LifecycleException e) {
-			String errorMessage = "Could not initialize application context components";
-			LOGGER.error(errorMessage,e);
-			throw new ApplicationContextException(errorMessage,e);
-		}
-
-		// Candidate application context target application initialization
-		try {
-			context.initialize(applicationClassName);
-		} catch (ApplicationInitializationException e) {
-			String errorMessage = "Application '"+applicationClassName+"' initilization failed";
-			LOGGER.error(errorMessage,e);
-			context.shutdownComponents();
-			throw new ApplicationContextException(errorMessage,e);
-		}
-
-		// Current application context setup
-		setCurrentContext(context);
-		return currentContext();
-	}
-
-
-
 
 }

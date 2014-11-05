@@ -24,50 +24,28 @@
  *   Bundle      : ldp4j-application-engine-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.lifecycle;
+package org.ldp4j.application.engine;
 
-public enum ApplicationEngineState {
-	UNAVAILABLE,
-	UNDEFINED,
-	AVAILABLE {
-		@Override
-		public boolean canStart() {
-			return true;
-		}
-	},
-	STARTED {
-		@Override
-		public boolean isStarted() {
-			return true;
-		}
-		@Override
-		public boolean canShutdown() {
-			return true;
-		}
+import org.ldp4j.application.engine.lifecycle.ApplicationEngineState;
 
-	},
-	SHUTDOWN {
-		@Override
-		public boolean isShutdown() {
-			return true;
-		}
-	}
-	;
+public class ApplicationEngineInitializationException extends ApplicationEngineLifecycleException {
 
-	public boolean canStart() {
-		return false;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 8445377002673357521L;
+
+	public ApplicationEngineInitializationException(String message) {
+		this(message,null);
 	}
 
-	public boolean isStarted() {
-		return false;
+	public ApplicationEngineInitializationException(Throwable cause) {
+		this("Unexpected failure while starting application engine", cause);
 	}
 
-	public boolean canShutdown() {
-		return false;
+	public ApplicationEngineInitializationException(String message,Throwable cause) {
+		super(ApplicationEngineState.AVAILABLE, ApplicationEngineState.STARTED, message, cause);
 	}
 
-	public boolean isShutdown() {
-		return false;
-	}
 
 }

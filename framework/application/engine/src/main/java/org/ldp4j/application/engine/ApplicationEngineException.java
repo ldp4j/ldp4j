@@ -24,50 +24,28 @@
  *   Bundle      : ldp4j-application-engine-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.lifecycle;
+package org.ldp4j.application.engine;
 
-public enum ApplicationEngineState {
-	UNAVAILABLE,
-	UNDEFINED,
-	AVAILABLE {
-		@Override
-		public boolean canStart() {
-			return true;
-		}
-	},
-	STARTED {
-		@Override
-		public boolean isStarted() {
-			return true;
-		}
-		@Override
-		public boolean canShutdown() {
-			return true;
-		}
+public class ApplicationEngineException extends Exception {
 
-	},
-	SHUTDOWN {
-		@Override
-		public boolean isShutdown() {
-			return true;
-		}
-	}
-	;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 7277235988477021917L;
 
-	public boolean canStart() {
-		return false;
+	public ApplicationEngineException() {
 	}
 
-	public boolean isStarted() {
-		return false;
+	public ApplicationEngineException(String message) {
+		super(message);
 	}
 
-	public boolean canShutdown() {
-		return false;
+	public ApplicationEngineException(Throwable cause) {
+		super(cause);
 	}
 
-	public boolean isShutdown() {
-		return false;
+	public ApplicationEngineException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
 }

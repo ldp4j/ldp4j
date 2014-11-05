@@ -26,8 +26,62 @@
  */
 package org.ldp4j.application.engine.lifecycle;
 
-public interface ApplicationEngineLifecycleListener {
+import static com.google.common.base.Preconditions.*;
 
-	void stateChanged(ApplicationEngineState newState);
+public abstract class ApplicationEngineLifecycleListener {
+
+	public final void stateChanged(ApplicationEngineState newState) {
+		checkNotNull(newState,"Application engine state cannot be null");
+		switch(newState) {
+		case AVAILABLE:
+			onApplicationEngineAvailable();
+			break;
+		case SHUTDOWN:
+			onApplicationEngineShutdown();
+			break;
+		case STARTED:
+			onApplicationEngineStarted();
+			break;
+		case UNAVAILABLE:
+			onApplicationEngineUnavailable();
+			break;
+		case UNDEFINED:
+			onApplicationEngineUndefined();
+			break;
+		default:
+			throw new IllegalArgumentException("Unknown application engine state '"+newState+"'");
+		}
+		onStateChange(newState);
+	}
+
+	protected void onApplicationEngineUndefined() {
+		// To be overriden by implementations that just want to worry about the
+		// event, but not the value
+	}
+
+	protected void onApplicationEngineUnavailable() {
+		// To be overriden by implementations that just want to worry about the
+		// event, but not the value
+	}
+
+	protected void onApplicationEngineStarted() {
+		// To be overriden by implementations that just want to worry about the
+		// event, but not the value
+	}
+
+	protected void onApplicationEngineShutdown() {
+		// To be overriden by implementations that just want to worry about the
+		// event, but not the value
+	}
+
+	protected void onApplicationEngineAvailable() {
+		// To be overriden by implementations that just want to worry about the
+		// event, but not the value
+	}
+
+	protected void onStateChange(ApplicationEngineState newState) {
+		// To be overriden by implementations that just want to worry about the
+		// event, but not the value
+	}
 
 }

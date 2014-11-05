@@ -45,8 +45,9 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 
-import org.ldp4j.application.DefaultApplicationContext;
-import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
+import org.ldp4j.application.engine.ApplicationEngine;
+import org.ldp4j.application.engine.lifecycle.ApplicationEngineLifecycleListener;
+import org.ldp4j.application.engine.lifecycle.ApplicationEngineState;
 import org.ldp4j.application.engine.lifecycle.ApplicationState;
 import org.ldp4j.server.Endpoint;
 import org.ldp4j.server.EndpointFactory;
@@ -63,7 +64,7 @@ import org.slf4j.LoggerFactory;
 public class JAXRSFrontend {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(JAXRSFrontend.class);
-	
+
 	private static final String ENDPOINT_PATH_PARAM = "path";
 	private static final String ENDPOINT_PATH = "/legacy/{"+ENDPOINT_PATH_PARAM+":.*}";
 
@@ -71,29 +72,27 @@ public class JAXRSFrontend {
 
 	private final CommandProcessingService service;
 
-	protected ApplicationState state;
+	protected ApplicationEngineState state;
 
 	public JAXRSFrontend(EndpointRegistry registry, CommandProcessingService service) {
 		this.registry=registry;
 		this.service=service;
-		DefaultApplicationContext.
-			currentContext().
-				registerApplicationLifecycleListener( 
-					new ApplicationLifecycleListener() {
-						@Override
-						public void applicationStateChanged(ApplicationState newState) {
-							JAXRSFrontend.this.state=newState;
-							LOGGER.debug("{} :: Application state changed to '{}'",this,newState);
-							if(ApplicationState.SHUTDOWN.equals(newState)) {
-								DefaultApplicationContext.
-									currentContext().
-										deregisterApplicationLifecycleListener(this);
-							}
+		ApplicationEngine.
+			registerLifecycleListener(
+				new ApplicationEngineLifecycleListener() {
+					@Override
+					public void onStateChange(ApplicationEngineState newState) {
+						JAXRSFrontend.this.state=newState;
+						LOGGER.debug("{} :: Application state changed to '{}'",this,newState);
+						if(ApplicationState.SHUTDOWN.equals(newState)) {
+							ApplicationEngine.
+								deregisterLifecycleListener(this);
 						}
 					}
+				}
 			);
 	}
-	
+
 	private URI normalizePath(String path) {
 		String tPath=path;
 		if(tPath==null) {
@@ -128,7 +127,7 @@ public class JAXRSFrontend {
 	@Produces("text/plain")
 	@Path("/action")
 	public Response processCommand(
-		@Context UriInfo uriInfo, 
+		@Context UriInfo uriInfo,
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
@@ -185,11 +184,11 @@ public class JAXRSFrontend {
 	@HEAD
 	@Path(ENDPOINT_PATH)
 	public Response head(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		return 
+		return
 			findEndpoint(path).
 				getHeader(uriInfo,headers,request);
 	}
@@ -197,11 +196,11 @@ public class JAXRSFrontend {
 	@GET
 	@Path(ENDPOINT_PATH)
 	public Response get(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		return 
+		return
 			findEndpoint(path).
 				retrieveResource(uriInfo,headers,request);
 	}
@@ -209,25 +208,25 @@ public class JAXRSFrontend {
 	@PUT
 	@Path(ENDPOINT_PATH)
 	public Response put(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
-		return 
+		return
 			findEndpoint(path).
 				updateResource(uriInfo,headers,request,entity);
 	}
-	
+
 	@POST
 	@Path(ENDPOINT_PATH)
 	public Response post(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
-		return 
+		return
 			findEndpoint(path).
 				createResource(uriInfo,headers,request,entity);
 	}
@@ -235,12 +234,12 @@ public class JAXRSFrontend {
 	@DELETE
 	@Path(ENDPOINT_PATH)
 	public Response delete(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
-		return 
+		return
 			findEndpoint(path).
 				deleteResource(uriInfo,headers,request);
 	}
@@ -248,12 +247,12 @@ public class JAXRSFrontend {
 	@PATCH
 	@Path(ENDPOINT_PATH)
 	public Response patch(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request,
 		String entity) {
-		return 
+		return
 			findEndpoint(path).
 				patchResource(uriInfo,headers,request,entity);
 	}
@@ -263,7 +262,7 @@ public class JAXRSFrontend {
 	 * HTTP/1.1 - 9.2 : The current support for the OPTIONS method
 	 * <b>discards</b> request entity-bodies and does not return a response
 	 * body.
-	 * 
+	 *
 	 * @param uriInfo
 	 * @param path
 	 * @param headers
@@ -273,11 +272,11 @@ public class JAXRSFrontend {
 	@OPTIONS
 	@Path(ENDPOINT_PATH)
 	public Response options(
-		@Context UriInfo uriInfo, 
-		@PathParam(ENDPOINT_PATH_PARAM) String path, 
+		@Context UriInfo uriInfo,
+		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		return 
+		return
 			findEndpoint(path).
 				getOptions(uriInfo,headers,request);
 	}

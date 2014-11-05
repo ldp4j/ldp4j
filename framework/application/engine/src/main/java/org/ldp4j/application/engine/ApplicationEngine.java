@@ -39,20 +39,10 @@ import java.util.Properties;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Stack;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-
-
-
-
-
-
-
-
-
 
 import org.ldp4j.application.engine.context.ApplicationContext;
 import org.ldp4j.application.engine.lifecycle.ApplicationEngineLifecycleListener;
@@ -64,13 +54,57 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Maps;
 
+/**
+ * ApplicationEngine is an abstract facade class for the <b>LDP4j Application
+ * Engine API</b>. The class defines the default behavior of the <b>LDP4j Application
+ * Engine</b> and provides an extension point for pluging-in alternative
+ * implementations of the <i>LDP4j Application Engine API</i>. These extension points
+ * are designed for use by other <i>LDP4j Application Engine</i> classes and are not
+ * intended to be called directly by applications using the <i>LDP4j Application
+ * Engine API</i>.<br />
+ * <br/>
+ *
+ * An implementation of LPD4j Application Engine API MUST provide a concrete
+ * subclass of {@code ApplicationEngine}. Using the supplied
+ * {@code ApplicationEngine} this can be achieved in one of two ways:<br />
+ * <ol>
+ * <li>An instance of {@code ApplicationEngine} can be instantiated and injected
+ * using its static method {@link ApplicationEngine#setEngine(ApplicationEngine) setEngine}. In this case the
+ * implementation is responsible for creating the instance; this option is
+ * intended for use with implementations based on IoC frameworks.</li>
+ * <li>The class to be used can be configured, (see {@link ApplicationEngine#engine() below}). In this case the
+ * <i>LDP4j Application Engine</i> is responsible for instantiating an instance of the
+ * class. The configured class MUST have a public constructor which takes no
+ * arguments.</li>
+ * </ol>
+ *
+ * A <i>LDP4j Application Engine API</i> implementation may rely on a particular
+ * implementation of the {@code ApplicationEngine} being used, however applications
+ * SHOULD NOT depend on this nor override the supplied {@code ApplicationEngine}
+ * instance with an application-supplied alternative as doing so may cause
+ * unexpected problems. <br/>
+ *
+ * @author Miguel Esteban Gutiérrez
+ * @since 1.0.0
+ * @version 1.0
+ */
 public abstract class ApplicationEngine {
 
-	public static final String LDP4J_APPLICATION_ENGINE_FINDER = "org.ldp4j.application.application.engine.finder";
+	private static final String DISABLE = "disable";
+
+	/**
+	 * Name of the system property for controlling the resolution of the
+	 * {@code ApplicationEngine} runtime delegate instance leveraging the
+	 * {@link java.util.ServiceLoader} mechanism.
+	 *
+	 * The absence of this property or any value but {@value #DISABLE}, despite
+	 * the case, will enable the enable the usage of this mechanism.
+	 */
+	public static final String LDP4J_APPLICATION_ENGINE_FINDER = "org.ldp4j.application.engine.finder";
 
 	/**
 	 * Name of the configuration file where the
-	 * {@link ApplicationEngine#LDP4J_APPLICATION_SPI_PROPERTY} property that
+	 * {@value #LDP4J_APPLICATION_ENGINE_PROPERTY} property that
 	 * identifies the {@link ApplicationEngine} implementation to be returned from
 	 * {@link ApplicationEngine#engine()} can be defined.
 	 */
@@ -94,10 +128,11 @@ public abstract class ApplicationEngine {
 
 	private final Lock read;
 	private final Lock write;
-	private final AtomicBoolean shutdown;
 	private final Map<String,ApplicationContext> contexts;
 	private final Stack<String> loadedContexts;
 	private final AtomicReference<ApplicationContext> currentContext;
+
+	private ApplicationEngineState state;
 
 	protected static abstract class ApplicationContextManager<T extends ApplicationContext> {
 
@@ -131,28 +166,62 @@ public abstract class ApplicationEngine {
 		this.read=lock.readLock();
 		this.write=lock.writeLock();
 		this.currentContext=new AtomicReference<ApplicationContext>();
-		this.shutdown=new AtomicBoolean(false);
+		this.state=ApplicationEngineState.UNAVAILABLE;
 		this.loadedContexts=new Stack<String>();
 	}
 
 	private void refreshCurrentContext() {
-		this.currentContext.set(this.contexts.get(this.loadedContexts.peek()));
+		String current=this.loadedContexts.isEmpty()?null:this.loadedContexts.peek();
+		this.currentContext.set(this.contexts.get(current));
 	}
 
 	private boolean isApplicationContextLoaded(ApplicationContext context) {
 		return this.contexts.containsKey(context.applicationClassName()) && this.contexts.containsValue(context);
 	}
 
-	private void checkApplicationEngineActive() {
-		if(!shutdown.compareAndSet(false,false)) {
-			throw new IllegalStateException("Application engine is shutdown");
-		}
-	}
-
 	private void unsafeDisposeContext(ApplicationContext applicationContext) {
 		applicationContextManager().disposeContext(applicationContext);
 		this.loadedContexts.remove(applicationContext.applicationClassName());
 		this.contexts.remove(applicationContext.applicationClassName());
+	}
+
+	private void setState(ApplicationEngineState newState) {
+		this.state=newState;
+		ApplicationEngine.notifyStateChange(newState);
+	}
+
+	private synchronized void checkApplicationEngineActive() {
+		if(!ApplicationEngineState.STARTED.equals(this.state)) {
+			throw new ApplicationEngineRuntimeException("Application engine is not available ("+this.state+")");
+		}
+	}
+
+	public synchronized final void start() throws ApplicationEngineLifecycleException {
+		if(ApplicationEngineState.STARTED.equals(this.state)) {
+			return;
+		}
+		ApplicationEngineState newState=ApplicationEngineState.UNDEFINED;
+		try {
+			setUp();
+			newState=ApplicationEngineState.STARTED;
+		} finally {
+			setState(newState);
+		}
+	}
+
+	public synchronized final void shutdown() throws ApplicationEngineLifecycleException {
+		if(!ApplicationEngineState.STARTED.equals(this.state)) {
+			return;
+		}
+		this.currentContext.set(null);
+		for(ApplicationContext ctx:this.contexts.values()) {
+			unsafeDisposeContext(ctx);
+		}
+		try {
+			cleanUp();
+		} finally {
+			setState(ApplicationEngineState.SHUTDOWN);
+		}
 	}
 
 	public final ApplicationContext load(String applicationClassName) throws ApplicationInitializationException {
@@ -219,38 +288,32 @@ public abstract class ApplicationEngine {
 		}
 	}
 
+	@Deprecated
 	public final ApplicationContext currentContext() {
 		checkApplicationEngineActive();
 		return currentContext.get();
 	}
 
-	public synchronized final void shutdown() {
-		if(!shutdown.compareAndSet(false,true)) {
-			return;
-		}
-		this.currentContext.set(null);
-		for(ApplicationContext ctx:this.contexts.values()) {
-			unsafeDisposeContext(ctx);
-		}
-		cleanUp();
-		ApplicationEngine.notifyStateChange(ApplicationEngineState.SHUTDOWN);
-	}
-
 	protected abstract ApplicationContextManager<? extends ApplicationContext> applicationContextManager();
 
-	protected void cleanUp() {
+	protected void setUp() throws ApplicationEngineInitializationException {
+		// To be overriden by implementations
+	}
+
+	protected void cleanUp() throws ApplicationEngineTerminationException {
 		// To be overriden by implementations
 	}
 
 	/**
-	 * Obtain a {@code RuntimeInstance} instance using the method described in
-	 * {@link #getInstance}.
+	 * Obtain an {@code ApplicationEngine} instance using the method described
+	 * in {@link ApplicationEngine#engine()}.
 	 *
-	 * @return an instance of {@code ApplicationEngine}.
+	 * @return an instance of {@code ApplicationEngine} if available, or null if
+	 *         a default implementation class is to be selected.
 	 */
 	private static ApplicationEngine findDelegate() {
 		try {
-			ApplicationEngine result=createRuntimeInstanceFromSPI();
+			ApplicationEngine result=createApplicationEngineFromSPI();
 			if(result==null) {
 				result=createApplicationEngineFromConfigurationFile();
 			}
@@ -300,9 +363,9 @@ public abstract class ApplicationEngine {
 	}
 
 	/**
-	 * Get the configuration file for the Runtime Instance: a file named
-	 * {@link RuntimeInstance#LDP4J_APPLICATION_SPI_CFG} in the <code>lib</code> directory of
-	 * current JAVA_HOME.
+	 * Get the configuration file for the Application Engine, that is, the a
+	 * file named {@value #LDP4J_APPLICATION_ENGINE_CFG} in the <code>lib</code>
+	 * directory of current JAVA_HOME.
 	 *
 	 * @return The configuration file for the runtime instance.
 	 */
@@ -327,8 +390,8 @@ public abstract class ApplicationEngine {
 		}
 	}
 
-	private static ApplicationEngine createRuntimeInstanceFromSPI() {
-		if(!"disable".equalsIgnoreCase(System.getProperty(LDP4J_APPLICATION_ENGINE_FINDER))) {
+	private static ApplicationEngine createApplicationEngineFromSPI() {
+		if(!DISABLE.equalsIgnoreCase(System.getProperty(LDP4J_APPLICATION_ENGINE_FINDER))) {
 			try {
 				for (ApplicationEngine delegate : ServiceLoader.load(ApplicationEngine.class)) {
 					return delegate;
@@ -358,42 +421,49 @@ public abstract class ApplicationEngine {
 		return result;
 	}
 
-	/**
-	 * @param delegateClassName
-	 * @param action
-	 * @param failure
-	 */
 	private static void handleFailure(String delegateClassName, String action, Exception failure) {
 		if(LOGGER.isWarnEnabled()) {
 			LOGGER.warn("Could not "+action+" delegate class "+delegateClassName,failure);
 		}
 	}
 
+	private static final void notifyStateChange(final ApplicationEngineState newState) {
+		LISTENERS.notify(
+			new Notification<ApplicationEngineLifecycleListener>() {
+				@Override
+				public void propagate(ApplicationEngineLifecycleListener listener) {
+					listener.stateChanged(newState);
+				}
+			}
+		);
+	}
+
 	/**
-	 * Obtain a {@code RuntimeInstance} instance. If an instance had not already
-	 * been created and set via {@link #setEngine(RuntimeInstance)}, the first
-	 * invocation will create an instance which will then be cached for future
-	 * use.
+	 * Obtain a {@code ApplicationEngine} instance. If an instance had not
+	 * already been created and set via {@link #setEngine(ApplicationEngine)},
+	 * the first invocation will create an instance which will then be cached
+	 * for future use.
 	 *
 	 * <p>
-	 * The algorithm used to locate the RuntimeInstance subclass to use consists
-	 * of the following steps:
+	 * The algorithm used to locate the {@code ApplicationEngine} subclass to
+	 * use consists of the following steps:
 	 * </p>
 	 * <ul>
 	 * <li>
 	 * If a resource with the name of
-	 * {@code META-INF/services/org.centeropenmiddleware.almistack.poc.clients.spi.RuntimeInstance} exists, then
-	 * its first line, if present, is used as the UTF-8 encoded name of the
-	 * implementation class.</li>
+	 * {@code META-INF/services/org.ldp4j.application.engine.ApplicationEngine}
+	 * exists, then its first line, if present, is used as the UTF-8 encoded
+	 * name of the implementation class.</li>
 	 * <li>
-	 * If the $java.home/lib/poc-business-logic.properties file exists and it is readable by
-	 * the {@code java.util.Properties.load(InputStream)} method and it contains
-	 * an entry whose key is {@code org.centeropenmiddleware.almistack.poc.clients.spi.RuntimeInstance}, then the
-	 * value of that entry is used as the name of the implementation class.</li>
+	 * If a file named {@value #LDP4J_APPLICATION_ENGINE_CFG} in the
+	 * <code>lib</code> directory of current JAVA_HOME exists and it is readable
+	 * by the {@code java.util.Properties.load(InputStream)} method and it
+	 * contains an entry whose key is
+	 * {@value #LDP4J_APPLICATION_ENGINE_PROPERTY}, then the value of that entry
+	 * is used as the name of the implementation class.</li>
 	 * <li>
-	 * If a system property with the name
-	 * {@code org.centeropenmiddleware.almistack.poc.clients.spi.RuntimeInstance} is defined, then its value is
-	 * used as the name of the implementation class.</li>
+	 * If a system property named {@value #LDP4J_APPLICATION_ENGINE_PROPERTY} is
+	 * defined, then its value is used as the name of the implementation class.</li>
 	 * <li>
 	 * Finally, a default implementation class name is used.</li>
 	 * </ul>
@@ -415,19 +485,20 @@ public abstract class ApplicationEngine {
 					state=ApplicationEngineState.UNDEFINED;
 				}
 				ApplicationEngine.CACHED_DELEGATE.set(result);
-				ApplicationEngine.notifyStateChange(state);
+				result.setState(state);
 			}
 			return result;
 		}
 	}
 
 	/**
-	 * Set the runtime delegate that will be used by Client Business Logic API
-	 * classes. If this method is not called prior to {@link #getInstance} then
-	 * an implementation will be sought as described in {@link #getInstance}.
+	 * Set the application engine that will be used by clients. If this method
+	 * is not called prior to {@link ApplicationEngine#engine()} then an
+	 * implementation will be sought as described in
+	 * {@link ApplicationEngine#engine()}.
 	 *
 	 * @param delegate
-	 *            the {@code RuntimeInstance} runtime delegate instance.
+	 *            the {@code ApplicationEngine} runtime delegate instance.
 	 * @throws SecurityException
 	 *             if there is a security manager and the permission
 	 *             ReflectPermission("suppressAccessChecks") has not been
@@ -441,25 +512,17 @@ public abstract class ApplicationEngine {
 		synchronized(ApplicationEngine.CACHED_DELEGATE) {
 			ApplicationEngine current=ApplicationEngine.CACHED_DELEGATE.get();
 			if(current!=null) {
-				current.shutdown();
-				ApplicationEngine.notifyStateChange(ApplicationEngineState.UNAVAILABLE);
+				try {
+					current.shutdown();
+				} catch (ApplicationEngineLifecycleException e) {
+					LOGGER.error("Shutdown of previous engine failed. Full stacktrace follows:",e);
+				}
 			}
 			ApplicationEngine.CACHED_DELEGATE.set(delegate);
 			if(delegate!=null) {
-				ApplicationEngine.notifyStateChange(ApplicationEngineState.AVAILABLE);
+				delegate.setState(ApplicationEngineState.AVAILABLE);
 			}
 		}
-	}
-
-	private static final void notifyStateChange(final ApplicationEngineState newState) {
-		LISTENERS.notify(
-			new Notification<ApplicationEngineLifecycleListener>() {
-				@Override
-				public void propagate(ApplicationEngineLifecycleListener listener) {
-					listener.stateChanged(newState);
-				}
-			}
-		);
 	}
 
 	public static void registerLifecycleListener(ApplicationEngineLifecycleListener listener) {

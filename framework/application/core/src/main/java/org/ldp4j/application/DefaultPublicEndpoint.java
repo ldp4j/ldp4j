@@ -49,7 +49,7 @@ abstract class DefaultPublicEndpoint implements PublicEndpoint {
 	protected DefaultPublicEndpoint(DefaultApplicationContext applicationContext, Endpoint endpoint) {
 		this.applicationContext = applicationContext;
 		this.endpoint = endpoint;
-		this.factory = DefaultPublicResourceFactory.newInstance(applicationContext());
+		this.factory = DefaultPublicResourceFactory.newInstance(applicationContext);
 	}
 
 	protected final boolean isRoot() {

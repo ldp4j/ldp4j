@@ -44,6 +44,7 @@ import javax.servlet.SessionTrackingMode;
 import javax.servlet.annotation.WebListener;
 
 import org.ldp4j.application.engine.ApplicationEngine;
+import org.ldp4j.application.engine.ApplicationEngineLifecycleException;
 import org.ldp4j.application.engine.ApplicationEngineRuntimeException;
 import org.ldp4j.application.engine.ApplicationInitializationException;
 import org.ldp4j.application.engine.context.ApplicationContext;
@@ -208,13 +209,17 @@ public final class BootstrapContextListener implements ServletContextListener {
 
 		try {
 			String targetApplicationClassName=getTargetApplicationClassName(sce);
-			ApplicationContext applicationContext=ApplicationEngine.engine().load(targetApplicationClassName);
+			ApplicationEngine engine = ApplicationEngine.engine();
+			engine.start();
+			ApplicationContext applicationContext=engine.load(targetApplicationClassName);
 			sce.getServletContext().setAttribute(ServerFrontend.LDP4J_APPLICATION_CONTEXT, applicationContext);
 			LOGGER.info("LDP4j Application '{}' ({}) initialized.",applicationContext.applicationName(),applicationContext.applicationClassName());
 		} catch (ApplicationInitializationException e) {
 			LOGGER.error("Could not configure LDP4j Application to be used within the LDP4j Server Frontend. Full stacktrace follows:",e);
 		} catch (ApplicationEngineRuntimeException e) {
 			LOGGER.error("Could not configure LDP4j Server Frontend due to an unexpected LDP4j Application Engine failure. Full stacktrace follows:",e);
+		} catch (ApplicationEngineLifecycleException e) {
+			LOGGER.error("LDP4j Application Engine could not start. Full stacktrace follows:",e);
 		}
 	}
 
@@ -233,6 +238,8 @@ public final class BootstrapContextListener implements ServletContextListener {
 			ApplicationEngine.engine().shutdown();
 		} catch (ApplicationEngineRuntimeException e) {
 			LOGGER.error("Could not shutdown LDP4j Server Frontend due to an unexpected LDP4j Application Engine failure. Full stacktrace follows:",e);
+		} catch (ApplicationEngineLifecycleException e) {
+			LOGGER.error("LDP4j Application Engine could not shutdown. Full stacktrace follows:",e);
 		}
 	}
 
