@@ -163,7 +163,7 @@ final class TripleSetBuilder {
 				public void visitManagedIndividual(ManagedIndividual individual) {
 					ManagedIndividualId id = individual.id();
 					URI indirectId=id.indirectId();
-					if(indirectId==null) {
+					if(indirectId!=null) {
 						id=ManagedIndividualId.createId(id.name(),id.managerId());
 					}
 					URI path=resourceResolver.resolveResource(id);
