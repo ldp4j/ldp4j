@@ -65,15 +65,12 @@ final class OperationContextImpl implements OperationContext {
 
 		@Override
 		public URI resolveResource(ManagedIndividualId id) {
+			URI result=null;
 			PublicResource resource=applicationContext.resolveResource(id);
-			if(resource==null) {
-				throw new IllegalStateException("Could not resolve resource "+id);
+			if(resource!=null) {
+				result=base().resolve(resource.path());
+				LOGGER.trace("Resolved resource {} URI to '{}'",id,result);
 			}
-			URI result=base().resolve(resource.path());
-			if(id.indirectId()!=null) {
-				result=result.resolve(id.indirectId());
-			}
-			LOGGER.trace("Resolved resource {} URI to '{}'",id,result);
 			return result;
 		}
 

@@ -51,7 +51,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
-public class DefaultApplicationEngine extends ApplicationEngine {
+public final class DefaultApplicationEngine extends ApplicationEngine {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(DefaultApplicationEngine.class);
 
@@ -187,9 +187,12 @@ public class DefaultApplicationEngine extends ApplicationEngine {
 		}
 
 		@Override
-		protected void doDisposeContext(DefaultApplicationContext applicationContext) {
+		protected boolean doDisposeContext(DefaultApplicationContext applicationContext) {
+			this.defaultApplicationEngine.applicationLifecycleService().shutdown();
 			applicationContext.shutdown();
+			return this.defaultApplicationEngine.applicationLifecycleService().isShutdown();
 		}
+
 	}
 
 	@Override

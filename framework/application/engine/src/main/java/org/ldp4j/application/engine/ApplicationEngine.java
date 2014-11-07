@@ -149,11 +149,11 @@ public abstract class ApplicationEngine {
 
 		protected abstract T createContext(String applicationClassName) throws ApplicationInitializationException;
 
-		protected final void disposeContext(ApplicationContext applicationContext) {
-			doDisposeContext(this.managedClass.cast(applicationContext));
+		protected final boolean disposeContext(ApplicationContext applicationContext) {
+			return doDisposeContext(this.managedClass.cast(applicationContext));
 		}
 
-		protected abstract void doDisposeContext(T applicationContext);
+		protected abstract boolean doDisposeContext(T applicationContext);
 
 	}
 

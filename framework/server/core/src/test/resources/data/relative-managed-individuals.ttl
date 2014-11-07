@@ -1,0 +1,11 @@
+@base <http://localhost:8080/ldp4j/api/nandana/> .
+
+<http://localhost:8080/ldp4j/api/nandana/>
+<http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://www.w3.org/ns/ldp#RDFSource>, <http://www.w3.org/ns/ldp#Resource>, <http://xmlns.com/foaf/0.1/PersonalProfileDocument> ;
+<http://purl.org/dc/terms/title> "Nandana's  FOAF file"^^<http://www.w3.org/2001/XMLSchema#string> ;
+<http://xmlns.com/foaf/0.1/primaryTopic> <http://localhost:8080/ldp4j/api/nandana/#me> .
+
+<http://localhost:8080/ldp4j/api/nandana/#me>
+<http://xmlns.com/foaf/0.1/firstName> "Mihindukulasooriya2"^^<http://www.w3.org/2001/XMLSchema#string> ;
+<http://xmlns.com/foaf/0.1/mbox> "nmihindu@fi.upm.es"^^<http://www.w3.org/2001/XMLSchema#string> ;
+<http://xmlns.com/foaf/0.1/surname> "Mihindukulasooriya"^^<http://www.w3.org/2001/XMLSchema#string> .

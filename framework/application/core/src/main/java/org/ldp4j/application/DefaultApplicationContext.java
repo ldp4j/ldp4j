@@ -165,7 +165,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	}
 
 	private Application<Configuration> application() {
-		return application;
+		return this.application;
 	}
 
 	DataSet getResource(Endpoint endpoint) throws ApplicationExecutionException {
@@ -274,9 +274,8 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	}
 
 	public boolean shutdown() {
-		this.engine().applicationLifecycleService().shutdown();
 		this.engine().endpointManagementService().deregisterEndpointLifecycleListener(this.endpointLifecycleListener);
-		return this.engine().applicationLifecycleService().isShutdown();
+		return true;
 	}
 
 	/**

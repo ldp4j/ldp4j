@@ -36,6 +36,7 @@ import java.net.URISyntaxException;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;
 import org.ldp4j.server.spi.IMediaTypeProvider.Marshaller;
@@ -121,6 +122,38 @@ public final class DataTransformator {
 		URI transformationBase = this.applicationBase.resolve(this.endpoint);
 		if(!this.permanent) {
 			resolver=createSafeResolver(entity,transformationBase);
+		} else {
+			resolver=new ResourceResolver() {
+
+				private URI endpoint() {
+					return DataTransformator.this.applicationBase.resolve(DataTransformator.this.endpoint);
+				}
+
+				private ResourceResolver resolver() {
+					return DataTransformator.this.resourceResolver;
+				}
+
+				@Override
+				public URI resolveResource(ManagedIndividualId id) {
+					return resolver().resolveResource(id);
+				}
+
+				@Override
+				public ManagedIndividualId resolveLocation(URI path) {
+					ManagedIndividualId id = resolver().resolveLocation(path);
+					if(id==null) {
+						ManagedIndividualId self = resolver().resolveLocation(endpoint());
+						if(self!=null) {
+							URI indirectId = endpoint().relativize(path);
+							if(!indirectId.isAbsolute()) {
+								id=ManagedIndividualId.createId(indirectId,self);
+							}
+						}
+					}
+					return id;
+				}
+
+			};
 		}
 		return ImmutableContext.newInstance(transformationBase,resolver);
 	}

@@ -31,45 +31,45 @@ import java.util.concurrent.atomic.AtomicReference;
 
 
 public abstract class IndividualReference<T, S extends Individual<T,S>> {
-	
+
 	public static class ManagedIndividualReference extends IndividualReference<ManagedIndividualId,ManagedIndividual> {
-	
+
 		private ManagedIndividualReference(ManagedIndividualId resourceId) {
 			super(resourceId,ManagedIndividual.class);
 		}
-		
+
 		@Override
 		public void accept(IndividualReferenceVisitor visitor) {
 			visitor.visitManagedIndividualReference(this);
 		}
-		
+
 	}
 
 	@SuppressWarnings("rawtypes")
 	public static final class LocalIndividualReference extends IndividualReference<Name,LocalIndividual> {
-	
+
 		private LocalIndividualReference(Name<?> name) {
 			super(name,LocalIndividual.class);
 		}
-		
+
 		@Override
 		public void accept(IndividualReferenceVisitor visitor) {
 			visitor.visitLocalIndividualReference(this);
 		}
-		
+
 	}
 
 	public static final class ExternalIndividualReference extends IndividualReference<URI,ExternalIndividual> {
-	
+
 		private ExternalIndividualReference(URI location) {
 			super(location,ExternalIndividual.class);
 		}
-		
+
 		@Override
 		public void accept(IndividualReferenceVisitor visitor) {
 			visitor.visitExternalIndividualReference(this);
 		}
-		
+
 	}
 
 	private final T id;
@@ -79,11 +79,11 @@ public abstract class IndividualReference<T, S extends Individual<T,S>> {
 		this.id = id;
 		this.clazz = clazz;
 	}
-	
+
 	public T ref() {
 		return id;
 	}
-	
+
 	public boolean isPresent(DataSet dataSet) {
 		return dataSet.hasIndividual(ref());
 	}
@@ -95,13 +95,13 @@ public abstract class IndividualReference<T, S extends Individual<T,S>> {
 		}
 		return clazz.cast(resolvedIndividual);
 	}
-	
+
 	public Individual<T,S> realize(DataSet dataSet) {
 		return dataSet.individual(ref(),clazz);
 	}
 
 	abstract void accept(IndividualReferenceVisitor visitor);
-	
+
 	@SuppressWarnings("rawtypes")
 	public static IndividualReference<Name,?> anonymous(Name<?> name) {
 		return new LocalIndividualReference(name);
@@ -113,6 +113,14 @@ public abstract class IndividualReference<T, S extends Individual<T,S>> {
 
 	public static IndividualReference<ManagedIndividualId,?> managed(Name<?> name, String templateId) {
 		return managed(ManagedIndividualId.createId(name, templateId));
+	}
+
+	public static IndividualReference<ManagedIndividualId,?> managed(Name<?> name, String templateId, URI indirectId) {
+		return managed(indirectId,ManagedIndividualId.createId(name, templateId));
+	}
+
+	public static IndividualReference<ManagedIndividualId,?> managed(URI indirectId, ManagedIndividualId parent) {
+		return managed(ManagedIndividualId.createId(indirectId, parent));
 	}
 
 	public static IndividualReference<URI,?> external(URI location) {

@@ -162,9 +162,15 @@ final class TripleSetBuilder {
 				@Override
 				public void visitManagedIndividual(ManagedIndividual individual) {
 					ManagedIndividualId id = individual.id();
-					URI path = resourceResolver.resolveResource(id);
+					URI indirectId=id.indirectId();
+					if(indirectId==null) {
+						id=ManagedIndividualId.createId(id.name(),id.managerId());
+					}
+					URI path=resourceResolver.resolveResource(id);
 					if(path==null) {
 						throw new IllegalStateException("Could not resolve individual '"+id+"'");
+					} else if(indirectId!=null) {
+						path=path.resolve(indirectId);
 					}
 					result.set(uriRef(base.resolve(path)));
 				}
