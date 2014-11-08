@@ -49,9 +49,9 @@ public class URIDescriptorTest {
 	public void setUp() throws Exception {
 		candidateMap = ImmutableMap.
 			<URIDescriptor,Boolean>builder().
-				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.SELF),false). 
-				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.CHILD),false).
-				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.ANCESTOR),false).
+				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.SELF),true).
+				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.CHILD),true).
+				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.ANCESTOR),true).
 				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.ABSOLUTE),true).
 				put(URIDescriptor.newDescriptor(Scope.ENDPOINT,Type.ABSOLUTE),true).
 				put(URIDescriptor.newDescriptor(Scope.APPLICATION,Type.ABSOLUTE),true).
@@ -59,11 +59,11 @@ public class URIDescriptorTest {
 				put(URIDescriptor.newDescriptor(Scope.EXTERNAL,Type.OPAQUE),false).
 				build();
 	}
-	
+
 	@Test
 	public void testIsResolvable() {
 		for(Entry<URIDescriptor,Boolean> entry:candidateMap.entrySet()) {
-			assertThat(entry.getKey().isResolvable(),equalTo(entry.getValue()));
+			assertThat("Resolution of "+entry.getKey()+" failed",entry.getKey().isResolvable(),equalTo(entry.getValue()));
 		}
 	}
 }

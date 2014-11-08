@@ -26,14 +26,61 @@
  */
 package org.ldp4j.application.data;
 
-public interface IndividualVisitor {
+import java.net.URI;
 
-	void visitManagedIndividual(ManagedIndividual individual);
+import com.google.common.base.Objects;
+import static com.google.common.base.Preconditions.*;
 
-	void visitLocalIndividual(LocalIndividual individual);
+public final class RelativeIndividualId {
 
-	void visitExternalIndividual(ExternalIndividual individual);
+	private final ManagedIndividualId parentId;
+	private final URI path;
 
-	void visitRelativeIndividual(RelativeIndividual individual);
+	private RelativeIndividualId(ManagedIndividualId parentId, URI path) {
+		this.parentId = parentId;
+		this.path = path;
+	}
+
+	public ManagedIndividualId parentId() {
+		return this.parentId;
+	}
+
+	public URI path() {
+		return this.path;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(this.parentId,this.path);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj!=null && obj.getClass()==this.getClass()) {
+			RelativeIndividualId that=(RelativeIndividualId)obj;
+			result=
+				Objects.equal(this.parentId, that.parentId) &&
+				Objects.equal(this.path, that.path);
+		}
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return
+			Objects.
+				toStringHelper(getClass()).
+					omitNullValues().
+					add("parentId", this.parentId).
+					add("path", this.path).
+					toString();
+	}
+
+	public static RelativeIndividualId createId(ManagedIndividualId parentId, URI path) {
+		checkNotNull(parentId,"Parent identifier cannot be null");
+		checkNotNull(path,"Relative path cannot be null");
+		return new RelativeIndividualId(parentId,path);
+	}
 
 }

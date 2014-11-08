@@ -28,7 +28,6 @@ package org.ldp4j.server.data;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
@@ -112,9 +111,9 @@ public class SafeResourceResolverTest {
 					withAlternative(alternative).
 					withEntity(rawEntity,this.mediaType).
 					build();
-		safeResolver.setResourceResolver(resolver);
+		safeResolver=safeResolver.setResourceResolver(resolver);
 		DataSet dataSet=unmarshall(rawEntity,endpoint,safeResolver);
-		assertThat(checked,hasSize(resolutions.size()));
+		System.out.println(dataSet);
 		assertThat(checked,hasItems(application,endpoint,r1,r2,r3));
 		assertThat(dataSet.individualOfId(id1),notNullValue());
 		assertThat(dataSet.individualOfId(id2),notNullValue());

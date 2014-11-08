@@ -31,7 +31,8 @@ import java.net.URI;
 import static com.google.common.base.Preconditions.*;
 
 final class URIResolver {
-	
+
+	private static final URI SELF_URI = URI.create("");
 	private final URI endpoint;
 	private final URI alternative;
 
@@ -59,7 +60,7 @@ final class URIResolver {
 		URI resolved=null;
 		if(cr1.equals(cr2)) {
 			resolved=c1;
-		} else if(cr1.equals(URI.create("")) && cr2.equals(this.alternative)) {
+		} else if(cr1.equals(SELF_URI) && cr2.equals(this.alternative)) {
 			resolved=cr1;
 		} else if(cr1.isAbsolute() && !cr2.isAbsolute()){
 			resolved=c2;

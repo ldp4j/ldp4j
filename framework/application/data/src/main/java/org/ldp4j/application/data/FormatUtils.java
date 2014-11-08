@@ -55,6 +55,12 @@ public final class FormatUtils implements IndividualVisitor {
 	}
 
 	@Override
+	public void visitRelativeIndividual(RelativeIndividual individual) {
+		RelativeIndividualId id = individual.id();
+		log("<%s> {Parent: %s}",id.path(),formatId(id.parentId()));
+	}
+
+	@Override
 	public void visitLocalIndividual(LocalIndividual individual) {
 		Name<?> name = individual.id();
 		Object id=name.id();
@@ -99,7 +105,14 @@ public final class FormatUtils implements IndividualVisitor {
 			result=String.format("%s [%s] {Local}",name,name.getClass().getCanonicalName());
 		} else if(id instanceof ManagedIndividualId) {
 			ManagedIndividualId mid = (ManagedIndividualId)id;
-			result=String.format("%s {Managed by: %s}",mid.name(),mid.managerId());
+			if(mid.indirectId()==null) {
+				result=String.format("%s {Managed by: %s}",mid.name(),mid.managerId());
+			} else {
+				result=String.format("%s {Managed by: %s, indirect id: <%s>}",mid.name(),mid.managerId(),mid.indirectId());
+			}
+		} else if(id instanceof RelativeIndividualId){
+			RelativeIndividualId rid = (RelativeIndividualId)id;
+			result=String.format("<%s> {Parent: %s}",rid.path(),rid.parentId());
 		} else {
 			result=id.toString();
 		}

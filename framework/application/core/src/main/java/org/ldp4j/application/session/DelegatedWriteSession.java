@@ -44,6 +44,7 @@ import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.RelativeIndividual;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Resource;
@@ -210,6 +211,9 @@ final class DelegatedWriteSession implements WriteSession {
 		final AtomicReference<ResourceId> resourceId=new AtomicReference<ResourceId>();
 		individual.accept(
 			new IndividualVisitor() {
+				private ResourceId translateIdentifier(ManagedIndividualId id) {
+					return ResourceId.createId(id.name(), id.managerId());
+				}
 				@Override
 				public void visitManagedIndividual(ManagedIndividual individual) {
 					resourceId.set(translateIdentifier(individual.id()));
@@ -222,8 +226,9 @@ final class DelegatedWriteSession implements WriteSession {
 				public void visitExternalIndividual(ExternalIndividual individual) {
 					resourceId.set(null);
 				}
-				private ResourceId translateIdentifier(ManagedIndividualId id) {
-					return ResourceId.createId(id.name(), id.managerId());
+				@Override
+				public void visitRelativeIndividual(RelativeIndividual individual) {
+					resourceId.set(null);
 				}
 			}
 		);

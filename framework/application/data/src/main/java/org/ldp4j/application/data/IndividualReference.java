@@ -45,6 +45,19 @@ public abstract class IndividualReference<T, S extends Individual<T,S>> {
 
 	}
 
+	public static class RelativeIndividualReference extends IndividualReference<RelativeIndividualId,RelativeIndividual> {
+
+		private RelativeIndividualReference(RelativeIndividualId resourceId) {
+			super(resourceId,RelativeIndividual.class);
+		}
+
+		@Override
+		public void accept(IndividualReferenceVisitor visitor) {
+			visitor.visitRelativeIndividualReference(this);
+		}
+
+	}
+
 	@SuppressWarnings("rawtypes")
 	public static final class LocalIndividualReference extends IndividualReference<Name,LocalIndividual> {
 
@@ -123,6 +136,14 @@ public abstract class IndividualReference<T, S extends Individual<T,S>> {
 		return managed(ManagedIndividualId.createId(indirectId, parent));
 	}
 
+	public static IndividualReference<RelativeIndividualId,?> relative(ManagedIndividualId parentId, URI path) {
+		return relative(RelativeIndividualId.createId(parentId,path));
+	}
+
+	public static IndividualReference<RelativeIndividualId,?> relative(RelativeIndividualId individualId) {
+		return new RelativeIndividualReference(individualId);
+	}
+
 	public static IndividualReference<URI,?> external(URI location) {
 		return new ExternalIndividualReference(location);
 	}
@@ -143,6 +164,10 @@ public abstract class IndividualReference<T, S extends Individual<T,S>> {
 				@Override
 				public void visitExternalIndividual(ExternalIndividual individual) {
 					result.set(IndividualReference.external(individual.id()));
+				}
+				@Override
+				public void visitRelativeIndividual(RelativeIndividual individual) {
+					result.set(IndividualReference.relative(individual.id()));
 				}
 			}
 		);

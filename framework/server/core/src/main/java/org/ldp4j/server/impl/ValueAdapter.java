@@ -37,6 +37,8 @@ import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.data.RelativeIndividual;
+import org.ldp4j.application.data.RelativeIndividualId;
 import org.ldp4j.application.data.Value;
 import org.ldp4j.rdf.BlankNode;
 import org.ldp4j.rdf.LanguageLiteral;
@@ -47,24 +49,20 @@ import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.TypedLiteral;
 import org.ldp4j.rdf.URIRef;
 import org.ldp4j.server.data.ResourceResolver;
+import org.ldp4j.server.utils.URIHelper;
 
 final class ValueAdapter {
 
-	private final class NameGenerator extends NodeVisitor<Individual<?,?>> {
+	private final class IndividualGenerator extends NodeVisitor<Individual<?,?>> {
 
 		@Override
 		public Individual<?,?> visitURIRef(URIRef node, Individual<?,?> defaultResult) {
-			ManagedIndividualId resourceId = resourceResolver.resolveLocation(node.getIdentity());
-			if(resourceId==null) {
-				return dataSet.individual(base.relativize(node.getIdentity()),ExternalIndividual.class);
-			}
-			return dataSet.individual(resourceId, ManagedIndividual.class);
+			return resolveURIRef(node);
 		}
 
-		@SuppressWarnings("rawtypes")
 		@Override
 		public Individual<?,?> visitBlankNode(BlankNode node, Individual<?,?> defaultResult) {
-			return dataSet.individual((Name)NamingScheme.getDefault().name(node.getIdentity()), LocalIndividual.class);
+			return resolveBlankNode(node);
 		}
 
 	}
@@ -88,17 +86,12 @@ final class ValueAdapter {
 
 		@Override
 		public Value visitURIRef(URIRef node, Value defaultResult) {
-			ManagedIndividualId resourceId = resourceResolver.resolveLocation(node.getIdentity());
-			if(resourceId==null) {
-				return dataSet.individual(base.relativize(node.getIdentity()),ExternalIndividual.class);
-			}
-			return dataSet.individual(resourceId, ManagedIndividual.class);
+			return resolveURIRef(node);
 		}
 
-		@SuppressWarnings("rawtypes")
 		@Override
 		public Value visitBlankNode(BlankNode node, Value defaultResult) {
-			return dataSet.individual((Name)NamingScheme.getDefault().name(node.getIdentity()), LocalIndividual.class);
+			return resolveBlankNode(node);
 		}
 
 	}
@@ -106,7 +99,7 @@ final class ValueAdapter {
 	private final ResourceResolver resourceResolver;
 
 	private final ObjectGenerator objectGenerator;
-	private final NameGenerator nameGenerator;
+	private final IndividualGenerator individualGenerator;
 
 	private final DataSet dataSet;
 
@@ -116,12 +109,33 @@ final class ValueAdapter {
 		this.resourceResolver = resourceResolver;
 		this.dataSet = dataSet;
 		this.base = base;
-		this.nameGenerator = new NameGenerator();
+		this.individualGenerator = new IndividualGenerator();
 		this.objectGenerator = new ObjectGenerator();
 	}
 
+	private Individual<?, ?> resolveURIRef(URIRef node) {
+		for(URI identity:URIHelper.getParents(node.getIdentity())) {
+			ManagedIndividualId resourceId = resourceResolver.resolveLocation(identity);
+			if(resourceId!=null) {
+				if(identity.equals(node.getIdentity())) {
+					return dataSet.individual(resourceId, ManagedIndividual.class);
+				} else {
+					URI relativePath = identity.relativize(node.getIdentity());
+					RelativeIndividualId relativeId = RelativeIndividualId.createId(resourceId, relativePath);
+					return dataSet.individual(relativeId,RelativeIndividual.class);
+				}
+			}
+		}
+		return dataSet.individual(base.relativize(node.getIdentity()),ExternalIndividual.class);
+	}
+
+	@SuppressWarnings("rawtypes")
+	private Individual<?, ?> resolveBlankNode(BlankNode node) {
+		return dataSet.individual((Name)NamingScheme.getDefault().name(node.getIdentity()), LocalIndividual.class);
+	}
+
 	Individual<?,?> getIndividual(Resource<?> resource) {
-		return resource.accept(nameGenerator);
+		return resource.accept(individualGenerator);
 	}
 
 	Value getValue(Node object) {

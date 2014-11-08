@@ -34,43 +34,48 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public final class DataSetUtils {
 
 	private static final class IndividualFinder implements IndividualVisitor {
-		
+
 		private final DataSet dataSet;
 		private Individual<?,?> found=null;
-		
+
 		IndividualFinder(DataSet dataSet) {
 			this.dataSet = dataSet;
 		}
-		
+
 		Individual<?,?> findOrCreate(Individual<?,?> individual) {
 			individual.accept(this);
 			return found;
 		}
-		
+
 		@Override
 		public void visitManagedIndividual(ManagedIndividual individual) {
 			found=dataSet.individual(individual.id(),ManagedIndividual.class);
 		}
-		
+
 		@Override
 		public void visitLocalIndividual(LocalIndividual individual) {
 			found=dataSet.individual(individual.id(),LocalIndividual.class);
 		}
-		
+
 		@Override
 		public void visitExternalIndividual(ExternalIndividual individual) {
 			found=dataSet.individual(individual.id(),ExternalIndividual.class);
 		}
+
+		@Override
+		public void visitRelativeIndividual(RelativeIndividual individual) {
+			found=dataSet.individual(individual.id(),RelativeIndividual.class);
+		}
 	}
-	
+
 	private static class ValueReplicator implements ValueVisitor {
 		private final IndividualFinder finder;
 		private Value result=null;
-		
+
 		ValueReplicator(DataSet dataSet) {
 			finder=new IndividualFinder(dataSet);
 		}
-		
+
 		Value replicate(Value value) {
 			value.accept(this);
 			return result;
@@ -86,62 +91,62 @@ public final class DataSetUtils {
 	}
 
 	static abstract class ValueMatcher implements ValueVisitor {
-		
+
 		private boolean matches;
-		
+
 		public final boolean matchesValue(Value propertyValue) {
 			this.setMatches(false);
 			propertyValue.accept(this);
 			return this.matches;
 		}
-	
+
 		protected final void setMatches(boolean matches) {
 			this.matches = matches;
 		}
-		
+
 	}
 
 	static final class LiteralMatcher extends ValueMatcher {
-	
+
 		private final Literal<?> literal;
-	
+
 		LiteralMatcher(Literal<?> literal) {
 			this.literal = literal;
 		}
-	
+
 		@Override
 		public void visitLiteral(Literal<?> value) {
 			super.setMatches(literal.get().equals(value.get()));
 		}
-	
+
 		@Override
 		public void visitIndividual(Individual<?, ?> value) {
 		}
-	
+
 	}
 
 	static final class IndividualReferenceMatcher extends ValueMatcher {
-	
+
 		private final Object id;
-	
+
 		IndividualReferenceMatcher(Object id) {
 			this.id = id;
 		}
-	
+
 		@Override
 		public void visitLiteral(Literal<?> value) {
 		}
-	
+
 		@Override
 		public void visitIndividual(Individual<?, ?> value) {
 			super.setMatches(value.id().equals(this.id));
 		}
-	
+
 	}
 
 	private DataSetUtils() {
 	}
-	
+
 	private static boolean hasValue(ValueMatcher matcher, Collection<? extends Value> values) {
 		for(Value value:values) {
 			if(matcher.matchesValue(value)) {
@@ -156,9 +161,9 @@ public final class DataSetUtils {
 		for(Individual<?, ?> individual:source) {
 			merge(individual,finder.findOrCreate(individual));
 		}
-		
+
 	}
-	
+
 	public static void merge(Individual<?,?> source, Individual<?,?> target) {
 		ValueReplicator replicator=new ValueReplicator(target.dataSet());
 		for(Property property:source.properties()) {
@@ -173,9 +178,9 @@ public final class DataSetUtils {
 		for(Individual<?, ?> individual:source) {
 			remove(individual,finder.findOrCreate(individual));
 		}
-		
+
 	}
-	
+
 	public static void remove(Individual<?,?> source, final Individual<?,?> target) {
 		for(Property property:source.properties()) {
 			final URI propertyId=property.predicate();
@@ -201,7 +206,7 @@ public final class DataSetUtils {
 	public static <T> Literal<T> newLiteral(T value) {
 		return new ImmutableLiteral<T>(value);
 	}
-	
+
 	public static boolean hasLiteral(Literal<?> literal, Property property) {
 		return hasLiteral(literal,property.values());
 	}
@@ -225,7 +230,7 @@ public final class DataSetUtils {
 	public static boolean hasIdentifiedIndividual(Object id, Collection<? extends Value> values) {
 		return hasValue(new DataSetUtils.IndividualReferenceMatcher(id),values);
 	}
-	
+
 	public static boolean hasValue(Value value, Property property) {
 		return hasValue(value,property.values());
 	}
@@ -248,5 +253,5 @@ public final class DataSetUtils {
 		});
 		return found.get();
 	}
-	
+
 }

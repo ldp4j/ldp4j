@@ -52,6 +52,7 @@ public class URIDescriberTest {
 	@Before
 	public void setUp() throws Exception {
 		endpoint = URI.create("http://www.example.org/target/resource/");
+		application = endpoint.resolve("..");
 		target = URI.create("http://www.ldp4j.org/target/resource/");
 		candidateMap = ImmutableMap.
 			<String,URIDescriptor>builder().
@@ -61,12 +62,11 @@ public class URIDescriberTest {
 				put(endpoint.resolve("relative").toString(),URIDescriptor.newDescriptor(Scope.ENDPOINT,Type.ABSOLUTE)).
 				put(endpoint.resolve("relative/resource").toString(),URIDescriptor.newDescriptor(Scope.RESOURCE,Type.ABSOLUTE)).
 				put("..",URIDescriptor.newDescriptor(Scope.RESOURCE,Type.ANCESTOR)).
-				put(endpoint.resolve("..").toString(),URIDescriptor.newDescriptor(Scope.APPLICATION,Type.ABSOLUTE)).
+				put(application.toString(),URIDescriptor.newDescriptor(Scope.APPLICATION,Type.ABSOLUTE)).
 				put(target.toString(),URIDescriptor.newDescriptor(Scope.EXTERNAL,Type.ABSOLUTE)).
 				put("urn:example",URIDescriptor.newDescriptor(Scope.EXTERNAL,Type.OPAQUE)).
 				put("urn:/test/test2",URIDescriptor.newDescriptor(Scope.EXTERNAL,Type.ABSOLUTE)).
 				build();
-		application = endpoint.resolve("..");
 		sut = URIDescriber.newInstance(application, endpoint);
 	}
 

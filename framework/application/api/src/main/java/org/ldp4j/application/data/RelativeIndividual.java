@@ -20,29 +20,18 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
-import org.junit.Test;
+import java.net.URI;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+public interface RelativeIndividual extends Individual<RelativeIndividualId,RelativeIndividual> {
 
-public class IndividualReferenceBuilderTest {
+	URI path();
 
-	@Test
-	public void testRelative() {
-		IndividualReference<?, ?> reference = IndividualReferenceBuilder.
-			newReference().
-				toRelativeIndividual().
-					atLocation("..").
-					ofIndividualManagedBy("template").
-					named(23);
-		assertThat(reference.ref(),instanceOf(ManagedIndividualId.class));
-		System.out.println(reference.ref());
-	}
+	ManagedIndividualId parentId();
 
 }

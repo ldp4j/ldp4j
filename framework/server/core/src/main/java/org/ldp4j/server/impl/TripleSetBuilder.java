@@ -50,10 +50,13 @@ import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NameVisitor;
 import org.ldp4j.application.data.Property;
+import org.ldp4j.application.data.RelativeIndividual;
+import org.ldp4j.application.data.RelativeIndividualId;
 import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.rdf.BlankNode;
 import org.ldp4j.rdf.Resource;
+import org.ldp4j.rdf.URIRef;
 import org.ldp4j.rdf.util.TripleSet;
 import org.ldp4j.server.data.ResourceResolver;
 
@@ -159,9 +162,7 @@ final class TripleSetBuilder {
 		final AtomicReference<Resource<?>> result=new AtomicReference<Resource<?>>();
 		individual.accept(
 			new IndividualVisitor() {
-				@Override
-				public void visitManagedIndividual(ManagedIndividual individual) {
-					ManagedIndividualId id = individual.id();
+				private URIRef resolveManagedIndividualId(ManagedIndividualId id) {
 					URI indirectId=id.indirectId();
 					if(indirectId!=null) {
 						id=ManagedIndividualId.createId(id.name(),id.managerId());
@@ -172,7 +173,19 @@ final class TripleSetBuilder {
 					} else if(indirectId!=null) {
 						path=path.resolve(indirectId);
 					}
-					result.set(uriRef(base.resolve(path)));
+					URIRef resolved = uriRef(base.resolve(path));
+					return resolved;
+				}
+				@Override
+				public void visitManagedIndividual(ManagedIndividual individual) {
+					ManagedIndividualId id = individual.id();
+					result.set(resolveManagedIndividualId(id));
+				}
+				@Override
+				public void visitRelativeIndividual(RelativeIndividual individual) {
+					RelativeIndividualId id = individual.id();
+					ManagedIndividualId mid = ManagedIndividualId.createId(id.path(), id.parentId());
+					result.set(resolveManagedIndividualId(mid));
 				}
 				@Override
 				public void visitLocalIndividual(LocalIndividual individual) {

@@ -73,7 +73,7 @@ final class URIDescriptor {
 	private final Type type;
 
 	boolean isResolvable() {
-		return scope.equals(Scope.APPLICATION) || scope.equals(Scope.ENDPOINT) || (scope.equals(Scope.RESOURCE) && type.equals(Type.ABSOLUTE));
+		return scope.equals(Scope.APPLICATION) || scope.equals(Scope.ENDPOINT) || (scope.equals(Scope.RESOURCE) /*&& type.equals(Type.ABSOLUTE)*/);
 	}
 
 	private URIDescriptor(URIDescriptor.Scope scope, URIDescriptor.Type type) {

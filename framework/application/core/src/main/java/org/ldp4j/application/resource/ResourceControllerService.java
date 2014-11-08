@@ -44,6 +44,7 @@ import org.ldp4j.application.data.Literal;
 import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.Property;
+import org.ldp4j.application.data.RelativeIndividual;
 import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -158,6 +159,10 @@ public class ResourceControllerService implements Service {
 								@Override
 								public void visitExternalIndividual(ExternalIndividual individual) {
 									indirectIdentities.add(individual.id());
+								}
+								@Override
+								public void visitRelativeIndividual(RelativeIndividual individual) {
+									// TODO: We should fail here
 								}
 							}
 						);

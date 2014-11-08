@@ -103,6 +103,15 @@ final class IndividualFactory {
 							}
 						}
 					).
+					put(
+						RelativeIndividual.class,
+						new SimpleFactory<RelativeIndividualId,MutableRelativeIndividual>(RelativeIndividualId.class) {
+							@Override
+							protected MutableRelativeIndividual createIndividual(RelativeIndividualId id, MutableDataSet context) {
+								return new MutableRelativeIndividual(id,context);
+							}
+						}
+					).
 					build();
 	}
 

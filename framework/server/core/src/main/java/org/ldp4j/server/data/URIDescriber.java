@@ -36,6 +36,8 @@ import org.ldp4j.server.data.URIDescriptor.Type;
 
 final class URIDescriber {
 	
+	private static final String ANCESTOR_SEGMENT = "..";
+	private static final URI SELF_URI = URI.create("");
 	private final URI application;
 	private final URI endpoint;
 
@@ -69,9 +71,9 @@ final class URIDescriber {
 			}
 		} else {
 			scope=Scope.RESOURCE;
-			if(candidate.equals(URI.create(""))) {
+			if(candidate.equals(SELF_URI)) {
 				type=Type.SELF;
-			} else if(candidate.normalize().getPath().startsWith("..")) {
+			} else if(candidate.normalize().getPath().startsWith(ANCESTOR_SEGMENT)) {
 				type=Type.ANCESTOR;
 			} else {
 				type=Type.CHILD;

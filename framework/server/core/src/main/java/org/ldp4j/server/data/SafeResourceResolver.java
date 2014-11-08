@@ -29,74 +29,59 @@ package org.ldp4j.server.data;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.server.data.ResolutionContext.ResolutionContextBuilder;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;
 import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;
 import org.ldp4j.server.spi.RuntimeInstance;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
 
 final class SafeResourceResolver implements ResourceResolver {
 
-	static final class Resolution {
+	static final Logger LOGGER=LoggerFactory.getLogger(SafeResourceResolver.class);
 
-		private final URI path;
-		private final URIDescriptor descriptor;
-		private final URI realPath;
-
-		Resolution(URI path, URIDescriptor descriptor, URI realPath) {
-			this.path = path;
-			this.descriptor = descriptor;
-			this.realPath = realPath;
-		}
-
-		@Override
-		public String toString() {
-			return String.format("<%s> [<%s>] : %s",path,realPath,descriptor);
-		}
-
-	}
-
-	private Iterator<Resolution> resolutions;
-	private ResourceResolver resolver;
+	private ResourceResolver delegate;
+	private ResolutionContext resolutionContext;
 
 	private SafeResourceResolver() {
-		this.resolver=new NullResourceResolver();
+		this.delegate=new NullResourceResolver();
+		this.resolutionContext=ResolutionContext.builder().build();
+	}
+
+	private void setResolutionContext(ResolutionContext resolutionContext) {
+		this.resolutionContext=resolutionContext.withDelegate(this.delegate);
 	}
 
 	@Override
 	public URI resolveResource(ManagedIndividualId id) {
-		return this.resolver.resolveResource(id);
+		return this.delegate.resolveResource(id);
 	}
 
 	@Override
 	public ManagedIndividualId resolveLocation(URI path) {
-		if(!resolutions.hasNext()) {
-			throw new IllegalStateException("Unexpected resolution <"+path+">");
+		return this.resolutionContext.currentResolver().resolve(path);
+	}
+
+	SafeResourceResolver setResourceResolver(ResourceResolver resolver) {
+		SafeResourceResolver result = new SafeResourceResolver();
+		if(resolver==null) {
+			resolver=new NullResourceResolver();
 		}
-		Resolution resolution=resolutions.next();
-		if(!resolution.path.equals(path)) {
-			throw new IllegalStateException("Invalid resolution: expected <"+resolution.path+"> but requested <"+path+">");
-		}
-		ManagedIndividualId result=null;
-		if(resolution.descriptor.isResolvable()) {
-			result=this.resolver.resolveLocation(path);
-		}
+		result.delegate=resolver;
+		result.resolutionContext=this.resolutionContext.withDelegate(resolver);
 		return result;
-	}
-
-	void setResourceResolver(ResourceResolver resolver) {
-		if(resolver!=null) {
-			this.resolver = resolver;
-		}
-	}
-
-	void setResolutions(Iterable<Resolution> resolutions) {
-		this.resolutions=resolutions.iterator();
 	}
 
 	static SafeResourceResolver.SafeResourceResolverBuilder builder() {
@@ -109,19 +94,37 @@ final class SafeResourceResolver implements ResourceResolver {
 
 			private final List<URI> uris=new ArrayList<URI>();
 
+			private final Map<URI,ManagedIndividualId> cachedIds;
+			private final AtomicInteger counter;
+
+			private ManagedIndividualId getId(URI path) {
+				ManagedIndividualId id = cachedIds.get(path);
+				if(id==null) {
+					Name<Integer> name = NamingScheme.getDefault().name(this.counter.incrementAndGet());
+					id=ManagedIndividualId.createId(name, "URITrackingResourceResolver");
+					this.cachedIds.put(path, id);
+				}
+				return id;
+			}
+
+			private URITrackingResourceResolver() {
+				this.cachedIds=Maps.newLinkedHashMap();
+				this.counter=new AtomicInteger();
+			}
+
 			@Override
 			public URI resolveResource(ManagedIndividualId id) {
-				return null;
+				throw new UnsupportedOperationException("Method not supported yet");
 			}
 
 			@Override
 			public ManagedIndividualId resolveLocation(URI path) {
-				uris.add(path);
-				return null;
+				this.uris.add(path);
+				return getId(path);
 			}
 
 			public List<URI> getURIs() {
-				return Collections.unmodifiableList(uris);
+				return Collections.unmodifiableList(this.uris);
 			}
 
 		}
@@ -158,41 +161,40 @@ final class SafeResourceResolver implements ResourceResolver {
 		}
 
 		SafeResourceResolver build() throws ContentTransformationException {
-			List<Resolution> resolutions = this.init();
 			SafeResourceResolver result = new SafeResourceResolver();
-			result.setResolutions(resolutions);
+			result.setResolutionContext(this.createResolutionContext());
 			return result;
 		}
 
-		private List<Resolution> init() throws ContentTransformationException {
+		private ResolutionContext createResolutionContext() throws ContentTransformationException {
 			URIResolver resolver=URIResolver.newInstance(this.endpoint,this.alternative);
 			URIDescriber describer=URIDescriber.newInstance(this.application,this.endpoint);
 			List<URI> endpointExternals = externals(this.endpoint);
 			List<URI> alternativeExternals = externals(this.alternative);
-			List<Resolution> descriptors=new ArrayList<Resolution>();
+			ResolutionContextBuilder builder=ResolutionContext.builder();
 			for(int i=0;i<endpointExternals.size();i++) {
 				URI c1=endpointExternals.get(i);
 				URI c2=alternativeExternals.get(i);
 				URI uri = resolver.resolve(c1, c2);
 				URIDescriptor descriptor = describer.describe(uri);
-				descriptors.add(new Resolution(c1, descriptor, uri));
+				builder.withResolution(c1, descriptor, uri);
 			}
-			return descriptors;
+			return builder.build();
 		}
 
 		private List<URI> externals(URI base) throws ContentTransformationException {
-			URITrackingResourceResolver index = new URITrackingResourceResolver();
+			URITrackingResourceResolver resolver = new URITrackingResourceResolver();
 			Unmarshaller unmarshaller=
 				provider().
 					newUnmarshaller(
 						ImmutableContext.
 							newInstance(
 								base,
-								index
+								resolver
 							)
 						);
 			unmarshaller.unmarshall(this.entity, this.type);
-			return index.getURIs();
+			return resolver.getURIs();
 		}
 
 		private IMediaTypeProvider provider() {

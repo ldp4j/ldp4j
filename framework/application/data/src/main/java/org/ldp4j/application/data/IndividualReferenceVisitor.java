@@ -29,6 +29,7 @@ package org.ldp4j.application.data;
 import org.ldp4j.application.data.IndividualReference.ExternalIndividualReference;
 import org.ldp4j.application.data.IndividualReference.LocalIndividualReference;
 import org.ldp4j.application.data.IndividualReference.ManagedIndividualReference;
+import org.ldp4j.application.data.IndividualReference.RelativeIndividualReference;
 
 
 interface IndividualReferenceVisitor {
@@ -37,6 +38,8 @@ interface IndividualReferenceVisitor {
 
 	void visitManagedIndividualReference(ManagedIndividualReference reference);
 
+	void visitRelativeIndividualReference(RelativeIndividualReference reference);
+
 	void visitExternalIndividualReference(ExternalIndividualReference reference);
-	
+
 }

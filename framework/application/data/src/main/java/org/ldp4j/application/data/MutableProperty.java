@@ -41,14 +41,14 @@ final class MutableProperty implements Property {
 	private final Individual<?,?> individual;
 	private final Set<Value> values;
 	private final MutableDataSet dataSet;
-	
+
 	MutableProperty(Individual<?,?> individual, MutableDataSet dataSet, URI predicate) {
 		this.individual = individual;
 		this.dataSet = dataSet;
 		this.predicate = predicate;
 		this.values=new CopyOnWriteArraySet<Value>();
 	}
-	
+
 	MutableProperty(MutableProperty property) {
 		this(property.individual,property.dataSet,property.predicate);
 		this.values.addAll(property.values());
@@ -144,6 +144,10 @@ final class MutableProperty implements Property {
 							@Override
 							public void visitExternalIndividual(ExternalIndividual individual) {
 								newIndividual.set(dataSet().individual(individual.id(), ExternalIndividual.class));
+							}
+							@Override
+							public void visitRelativeIndividual(RelativeIndividual individual) {
+								newIndividual.set(dataSet().individual(individual.id(), RelativeIndividual.class));
 							}
 						}
 					);
