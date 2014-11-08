@@ -35,7 +35,7 @@
 	<!-- =================================================================== -->
 	<!--   MODULE COORDINATES                                                -->
 	<!-- =================================================================== -->
-	
+
 	<parent>
 		<groupId>org.ldp4j.framework</groupId>
 		<artifactId>ldp4j-server</artifactId>
@@ -110,10 +110,6 @@
 					<groupId>org.eclipse.jetty</groupId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-application-examples</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

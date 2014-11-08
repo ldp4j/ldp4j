@@ -27,7 +27,6 @@
 package org.ldp4j.server.tckf;
 
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetHelper;
@@ -35,14 +34,12 @@ import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.ContentProcessingException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
-import org.ldp4j.example.InMemoryContainerHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

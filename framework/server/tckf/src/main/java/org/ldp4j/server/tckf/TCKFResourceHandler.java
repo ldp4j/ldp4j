@@ -35,7 +35,6 @@ import org.ldp4j.application.ext.annotations.Resource;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
-import org.ldp4j.example.InMemoryResourceHandler;
 
 @Resource(
 	id=TCKFResourceHandler.ID,
@@ -53,7 +52,7 @@ import org.ldp4j.example.InMemoryResourceHandler;
 public class TCKFResourceHandler extends InMemoryResourceHandler implements Modifiable, Deletable {
 
 	public static final String ID="ResourceHandler";
-	
+
 	public TCKFResourceHandler() {
 		super(ID);
 	}
