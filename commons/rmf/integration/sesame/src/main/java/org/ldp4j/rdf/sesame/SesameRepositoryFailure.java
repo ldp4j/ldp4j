@@ -24,34 +24,19 @@
  *   Bundle      : integration-sesame-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.megatwork.rdf.sesame;
+package org.ldp4j.rdf.sesame;
 
-import java.net.URL;
-import java.util.ArrayList;
-import java.util.List;
+import org.openrdf.repository.RepositoryException;
 
-import org.junit.Test;
-import org.megatwork.rdf.sesame.SesameUtils;
-import org.openrdf.model.URI;
-import org.openrdf.repository.RepositoryConnection;
+public final class SesameRepositoryFailure extends SesameUtilsUnexpectedException {
 
-public class SesameUtilsTest extends AbstractRDFTestCase {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4379532634050969238L;
 
-	protected URL getExamplesResource() {
-		return ClassLoader.getSystemResource("turtles.ttl");
-	}
-
-	@Test
-	public void shouldPrettyPrint() throws Exception {
-		RepositoryConnection connection=getConnection();
-		URI ctx=connection.getValueFactory().createURI("http://example.org/one");
-		URI ctx_res=connection.getValueFactory().createURI("http://example.org/two");
-		SesameUtils.load(connection, getExamplesResource(), ctx);
-		List<URI> ctxs=new ArrayList<URI>();
-		ctxs.add(ctx);
-		String result = SesameUtils.prettyPrint(connection, ctxs);
-		dumpTurtle(result);
-		SesameUtils.load(connection, result, ctx_res);
+	public SesameRepositoryFailure(String message, RepositoryException cause) {
+		super(message,cause);
 	}
 
 }

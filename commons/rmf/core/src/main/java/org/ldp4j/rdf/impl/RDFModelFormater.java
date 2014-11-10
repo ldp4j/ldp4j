@@ -41,7 +41,7 @@ import org.ldp4j.rdf.NodeVisitor;
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.TypedLiteral;
 import org.ldp4j.rdf.URIRef;
-import org.megatwork.rdf.sesame.TurtlePrettyPrinter;
+import org.ldp4j.rdf.sesame.TurtlePrettyPrinter;
 import org.openrdf.model.Statement;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.repository.RepositoryConnection;

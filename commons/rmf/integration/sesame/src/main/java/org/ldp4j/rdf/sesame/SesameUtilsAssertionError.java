@@ -24,16 +24,14 @@
  *   Bundle      : integration-sesame-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.megatwork.rdf.sesame;
+package org.ldp4j.rdf.sesame;
 
+public final class SesameUtilsAssertionError extends SesameUtilsUnexpectedException {
 
-public abstract class SesameUtilsUnexpectedException extends SesameUtilsException {
+	private static final long serialVersionUID = 2316170232426568880L;
 
-
-	private static final long serialVersionUID = 8629957020253876412L;
-
-	public SesameUtilsUnexpectedException(String message, Throwable cause) {
-		super(message,cause);
+	public SesameUtilsAssertionError(String message, Throwable cause) {
+		super(message, cause);
 	}
-
+	
 }

@@ -24,33 +24,18 @@
  *   Bundle      : integration-sesame-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.megatwork.rdf.sesame;
+package org.ldp4j.rdf.sesame;
 
-import java.util.Set;
 
-import org.openrdf.model.Resource;
-import org.openrdf.model.URI;
+public final class ContentProcessingException extends SesameUtilsException {
 
-interface Individual extends Iterable<URI>{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4623594930401056112L;
 
-	boolean isAnonymous();
-
-	boolean isReference();
-
-	boolean isReferred();
-
-	boolean isFoldable();
-
-	Resource getSubject();
-
-	<T extends Resource> T getSubject(Class<T> clazz);
-
-	boolean canBeFoldedBy(Resource subject);
-
-	Assertions getAssertions(URI predicate);
-
-	long getReferences();
-
-	Set<Resource> getReferrers();
+	public ContentProcessingException(String message, Throwable cause) {
+		super(message,cause);
+	}
 
 }

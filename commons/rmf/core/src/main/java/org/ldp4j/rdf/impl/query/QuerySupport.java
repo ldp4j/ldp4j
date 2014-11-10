@@ -34,9 +34,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import org.ldp4j.commons.Assertions;
 import org.ldp4j.rdf.io.Module;
 import org.ldp4j.rdf.query.QueryTemplate;
-import org.megatwork.rdf.sesame.ContentProcessingException;
-import org.megatwork.rdf.sesame.SesameUtils;
-import org.megatwork.rdf.sesame.SesameUtilsException;
+import org.ldp4j.rdf.sesame.ContentProcessingException;
+import org.ldp4j.rdf.sesame.SesameUtils;
+import org.ldp4j.rdf.sesame.SesameUtilsException;
 import org.openrdf.model.URI;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
@@ -60,7 +60,7 @@ final class QuerySupport {
 	private final Repository repository;
 
 	private final QueryTemplate template;
-	
+
 	private final Map<String,URI> loadedGraphs;
 
 	private final AtomicLong graphCounter;
@@ -71,7 +71,7 @@ final class QuerySupport {
 		this.loadedGraphs=new HashMap<String,URI>();
 		this.graphCounter=new AtomicLong();
 	}
-	
+
 	private boolean isReady() {
 		return template.getRequiredNamedGraphs().equals(loadedGraphs.keySet());
 	}
@@ -108,7 +108,7 @@ final class QuerySupport {
 	}
 
 	private URI nextContext(RepositoryConnection connection, String graph, String base) {
-		return 
+		return
 			connection.
 				getValueFactory().
 					createURI(
@@ -132,7 +132,7 @@ final class QuerySupport {
 			loadGraph(graphName, module);
 		}
 	}
-	
+
 	boolean clear() {
 		boolean result = false;
 		RepositoryConnection connection=null;
@@ -175,7 +175,7 @@ final class QuerySupport {
 		}
 		return result;
 	}
-	
+
 	void close(RepositoryConnection connection) {
 		if(connection==null) {
 			return;
@@ -208,5 +208,5 @@ final class QuerySupport {
 			throw new QueryTemplateSupportFailure("Could not initialize internal Sesame repository",e);
 		}
 	}
-	
+
 }

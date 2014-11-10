@@ -24,19 +24,18 @@
  *   Bundle      : integration-sesame-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.megatwork.rdf.sesame;
+package org.ldp4j.rdf.sesame;
 
-import org.openrdf.repository.RepositoryException;
+import java.util.Map;
 
-public final class SesameRepositoryFailure extends SesameUtilsUnexpectedException {
+import org.openrdf.model.Resource;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 4379532634050969238L;
+interface Graph extends Iterable<Individual> {
 
-	public SesameRepositoryFailure(String message, RepositoryException cause) {
-		super(message,cause);
-	}
+	Resource getBase();
+
+	Map<String, String> getNamespaces();
+
+	Individual findIndividual(Resource object);
 
 }

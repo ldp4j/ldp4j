@@ -24,7 +24,7 @@
  *   Bundle      : integration-sesame-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.megatwork.rdf.sesame;
+package org.ldp4j.rdf.sesame;
 
 
 import java.util.HashMap;
@@ -32,7 +32,7 @@ import java.util.Map;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.megatwork.rdf.sesame.TurtleValueUtils;
+import org.ldp4j.rdf.sesame.TurtleValueUtils;
 import org.openrdf.model.ValueFactory;
 import org.openrdf.sail.memory.model.MemValueFactory;
 
@@ -42,7 +42,7 @@ public class TurtleValueUtilsTest {
 	private Map<String,String> namespaces;
 	private ValueFactory vf;
 	private TurtleValueUtils sut;
-	
+
 	@Before
 	public void setUp() throws Exception {
 		vf=new MemValueFactory();

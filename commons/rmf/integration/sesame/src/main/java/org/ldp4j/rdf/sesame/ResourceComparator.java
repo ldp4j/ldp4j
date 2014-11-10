@@ -24,57 +24,43 @@
  *   Bundle      : integration-sesame-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.megatwork.rdf.sesame;
+package org.ldp4j.rdf.sesame;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.StringReader;
+import java.io.Serializable;
+import java.util.Comparator;
 
-import org.junit.After;
-import org.junit.Before;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.memory.MemoryStore;
+import org.openrdf.model.BNode;
+import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
 
-public abstract class AbstractRDFTestCase {
+final class ResourceComparator implements Comparator<Resource>, Serializable {
 
-	private Repository repository;
-	private RepositoryConnection connection;
-	
-	@Before
-	public void setUpConnection() throws Exception {
-		repository = new SailRepository(new MemoryStore());
-		repository.initialize();
-		connection = repository.getConnection();
+	private static final long serialVersionUID = 3688707084336037225L;
+
+	public int compare(Resource o1, Resource o2) {
+		int result=0;
+		if(o1 instanceof URI) {
+			result=compareURI(o2, (URI)o1);
+		} else { 
+			result=compareOther(o1, o2);
+		}
+		return result;
 	}
-	
-	@After
-	public void tearDownConnection() throws Exception {
-		if(connection!=null) {
-			try {
-				connection.close();
-			} finally {
-				repository.shutDown();
-			}
+
+	private int compareOther(Resource o1, Resource o2) {
+		if(o2 instanceof BNode) {
+			return o1.toString().compareTo(o2.toString());
+		} else {
+			return 1;
 		}
 	}
 
-	public final RepositoryConnection getConnection() {
-		return connection;
-	}
-
-	public final void dumpTurtle(String result) throws IOException {
-		BufferedReader reader=new BufferedReader(new StringReader(result));
-		boolean eol=false;
-		int i=0;
-		while(!eol) {
-			String line=reader.readLine();
-			if(line==null) {
-				eol=true;
-			} else {
-				System.out.println(String.format("[%03d]\t%s",++i,line));
-			}
+	private int compareURI(Resource o2, URI uri) {
+		if(o2 instanceof URI) {
+			return TurtleValueUtils.compare(uri,(URI)o2);
+		} else {
+			return -1;
 		}
 	}
+
 }

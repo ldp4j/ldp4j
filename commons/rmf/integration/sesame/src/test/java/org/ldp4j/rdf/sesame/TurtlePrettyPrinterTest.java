@@ -24,7 +24,7 @@
  *   Bundle      : integration-sesame-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.megatwork.rdf.sesame;
+package org.ldp4j.rdf.sesame;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -39,8 +39,8 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.megatwork.rdf.sesame.SesameUtils;
-import org.megatwork.rdf.sesame.TurtlePrettyPrinter;
+import org.ldp4j.rdf.sesame.SesameUtils;
+import org.ldp4j.rdf.sesame.TurtlePrettyPrinter;
 import org.openrdf.model.BNode;
 import org.openrdf.model.Resource;
 import org.openrdf.model.Statement;
@@ -55,14 +55,14 @@ public class TurtlePrettyPrinterTest extends AbstractRDFTestCase {
 	private static final String NO_NAMESPACE = "http://www.example.org/no";
 
 	private static final String NO_PX = "np";
-	
+
 	private static final String COMMENT = "My comment";
 	private static final String NS1_PX1="p1_1";
 	private static final String NS1_PX2="p2_2";
 	private static final String NS1_NAMESPACE="http://www.example.org/one#";
 	private static final String NS2_PX="p2";
 	private static final String NS2_NAMESPACE="http://www.example.org/other#";
-	
+
 	private static final String BN_FOLDED="bnFolded";
 	@SuppressWarnings("unused")
 	private static final String BN_UNFOLDED="bnUnfolded";
@@ -81,7 +81,7 @@ public class TurtlePrettyPrinterTest extends AbstractRDFTestCase {
 	private TurtlePrettyPrinter withBase;
 	private StringWriter outWithBase;
 	private ValueFactory vf;
-	
+
 	private URI uri(String value) {
 		return vf.createURI(value);
 	}
@@ -89,7 +89,7 @@ public class TurtlePrettyPrinterTest extends AbstractRDFTestCase {
 	private BNode blankNode(String value) {
 		return vf.createBNode(value);
 	}
-	
+
 	private Statement statement(Resource subject, URI predicate, Value object) {
 		return vf.createStatement(subject, predicate, object);
 	}
@@ -118,7 +118,7 @@ public class TurtlePrettyPrinterTest extends AbstractRDFTestCase {
 		noBase = new TurtlePrettyPrinter(outNoBase);
 		withBase = new TurtlePrettyPrinter(vf.createURI(BASE),outWithBase);
 	}
-	
+
 	@Test
 	public void testNoBase$emptyDoc() throws Exception {
 		noBase.startRDF();
@@ -181,7 +181,7 @@ public class TurtlePrettyPrinterTest extends AbstractRDFTestCase {
 		assertThat(outWithBase.toString(),containsString(qname(NS1_PX1,URI1)));
 		assertThat(outWithBase.toString(),containsString(qname(NS2_PX,URI2)));
 		assertThat(outWithBase.toString(),containsString(blankNode(BN_FOLDED).toString()));
-		
+
 		assertThat(outWithBase.toString(),not(containsString(prefixDirective(NO_PX, NO_NAMESPACE))));
 		assertThat(outWithBase.toString(),not(containsString(uriRef(NS1_NAMESPACE,URI1).toString())));
 		assertThat(outWithBase.toString(),not(containsString(uriRef(NS2_NAMESPACE,URI2).toString())));
@@ -201,7 +201,7 @@ public class TurtlePrettyPrinterTest extends AbstractRDFTestCase {
 		assertThat(outWithBase.toString(),containsString(qname(NS1_PX2,URI1)));
 		assertThat(outWithBase.toString(),containsString(qname(NS2_PX,URI2)));
 		assertThat(outWithBase.toString(),containsString(blankNode(BN_FOLDED).toString()));
-		
+
 		assertThat(outWithBase.toString(),not(containsString(prefixDirective(NS1_PX1, NS1_NAMESPACE))));
 		assertThat(outWithBase.toString(),not(containsString(qname(NS1_PX1,URI1))));
 		assertThat(outWithBase.toString(),not(containsString(uriRef(NS1_NAMESPACE,URI1).toString())));
@@ -211,7 +211,7 @@ public class TurtlePrettyPrinterTest extends AbstractRDFTestCase {
 	protected URL getExamplesResource() {
 		return ClassLoader.getSystemResource("corner_cases.ttl");
 	}
-	
+
 	@Test
 	public void testCornerCases() throws Exception {
 		RepositoryConnection connection=getConnection();

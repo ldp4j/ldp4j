@@ -24,14 +24,33 @@
  *   Bundle      : integration-sesame-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.megatwork.rdf.sesame;
+package org.ldp4j.rdf.sesame;
 
-public final class SesameUtilsAssertionError extends SesameUtilsUnexpectedException {
+import java.util.Set;
 
-	private static final long serialVersionUID = 2316170232426568880L;
+import org.openrdf.model.Resource;
+import org.openrdf.model.URI;
 
-	public SesameUtilsAssertionError(String message, Throwable cause) {
-		super(message, cause);
-	}
-	
+interface Individual extends Iterable<URI>{
+
+	boolean isAnonymous();
+
+	boolean isReference();
+
+	boolean isReferred();
+
+	boolean isFoldable();
+
+	Resource getSubject();
+
+	<T extends Resource> T getSubject(Class<T> clazz);
+
+	boolean canBeFoldedBy(Resource subject);
+
+	Assertions getAssertions(URI predicate);
+
+	long getReferences();
+
+	Set<Resource> getReferrers();
+
 }

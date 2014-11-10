@@ -38,7 +38,7 @@ import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.impl.UnmarshallOptions.Ordering;
 import org.ldp4j.rdf.impl.UnmarshallOptions.UnmarshallStyle;
 import org.ldp4j.rdf.util.TripleSet;
-import org.megatwork.rdf.sesame.SesameModelParser;
+import org.ldp4j.rdf.sesame.SesameModelParser;
 import org.openrdf.OpenRDFException;
 import org.openrdf.model.Namespace;
 import org.openrdf.model.Statement;
@@ -60,27 +60,27 @@ import org.slf4j.LoggerFactory;
 final class RDFModelParser {
 
 	private interface TripleSink {
-		
+
 		Iterable<Triple> triples();
-		
+
 		void addTriple(Triple triple);
-		
+
 	}
 
 	private interface TripleProducer {
-		
+
 		void injectTriples(TripleSink sink) throws IOException;
-		
+
 	}
 
 	private final class UnorderedTripleSink implements TripleSink {
 		private List<Triple> triples=new ArrayList<Triple>();
-	
+
 		@Override
 		public Iterable<Triple> triples() {
 			return triples;
 		}
-	
+
 		@Override
 		public void addTriple(Triple triple) {
 			triples.add(triple);
@@ -89,12 +89,12 @@ final class RDFModelParser {
 
 	private final class SortingTripleSink implements TripleSink {
 		private TripleSet triples=new TripleSet();
-	
+
 		@Override
 		public Iterable<Triple> triples() {
 			return triples;
 		}
-	
+
 		@Override
 		public void addTriple(Triple triple) {
 			triples.add(triple);
@@ -105,13 +105,13 @@ final class RDFModelParser {
 		private final String content;
 		private final RDFFormat format;
 		private final String base;
-	
+
 		private RepositoryBasedTripleProducer(String content, RDFFormat format, String base) {
 			this.content = content;
 			this.format = format;
 			this.base = base;
 		}
-	
+
 		private void closeQuietly(RepositoryResult<?> results, String message) {
 			if(results!=null) {
 				try {
@@ -203,19 +203,19 @@ final class RDFModelParser {
 		private final String content;
 		private final RDFFormat format;
 		private final String base;
-	
+
 		private ParserBasedTripleProducer(String content, RDFFormat format, String base) {
 			this.content = content;
 			this.format = format;
 			this.base = base;
 		}
-	
+
 		@Override
 		public void injectTriples(TripleSink sink) throws IOException {
 			try {
 				final Namespaces namespaces = new Namespaces();
 				final List<Statement> statements=new ArrayList<Statement>();
-				RDFParser parser = 
+				RDFParser parser =
 					Rio.createParser(this.format);
 						parser.setRDFHandler(
 							new RDFHandler() {
@@ -250,7 +250,7 @@ final class RDFModelParser {
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(RDFModelParser.class);
-	
+
 
 	private final URI baseURI;
 	private final Format format;
@@ -266,10 +266,10 @@ final class RDFModelParser {
 	}
 
 	private TripleProducer getProducer(String content) {
-		RDFFormat format = 
+		RDFFormat format =
 			RDFFormat.
 				forMIMEType(
-					this.format.getMime(), 
+					this.format.getMime(),
 					RDFFormat.TURTLE);
 		TripleProducer producer=null;
 		switch(unmarshallStyle) {

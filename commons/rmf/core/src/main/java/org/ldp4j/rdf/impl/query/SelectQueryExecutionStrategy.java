@@ -35,7 +35,7 @@ import org.ldp4j.rdf.Node;
 import org.ldp4j.rdf.query.Query;
 import org.ldp4j.rdf.query.QueryResultHandler;
 import org.ldp4j.rdf.query.SelectQuery;
-import org.megatwork.rdf.sesame.SesameModelParser;
+import org.ldp4j.rdf.sesame.SesameModelParser;
 import org.openrdf.query.BindingSet;
 import org.openrdf.query.MalformedQueryException;
 import org.openrdf.query.QueryEvaluationException;
@@ -49,7 +49,7 @@ import org.openrdf.repository.RepositoryException;
 final class SelectQueryExecutionStrategy<R> extends QueryExecutionStrategy<R,Map<String,Node>>{
 
 	private final class TupleQueryResultHandlerAdapter implements TupleQueryResultHandler {
-		
+
 		private static final String EXPECTED_BINDINGS_MISSING = "Expected bindings missing";
 
 		private final QueryResultHandler<Map<String,Node>> handler;
@@ -67,7 +67,7 @@ final class SelectQueryExecutionStrategy<R> extends QueryExecutionStrategy<R,Map
 			}
 			handler.startResult();
 		}
-	
+
 		@Override
 		public void handleSolution(BindingSet bindingSet) throws TupleQueryResultHandlerException {
 			Map<String,Node> result=new HashMap<String,Node>();
@@ -83,21 +83,21 @@ final class SelectQueryExecutionStrategy<R> extends QueryExecutionStrategy<R,Map
 			}
 			handler.handleSolution(Collections.unmodifiableMap(result));
 		}
-	
+
 		@Override
 		public void handleLinks(List<String> linkUrls) {
 			/**
 			 * This method is not yet needed
 			 */
 		}
-	
+
 		@Override
 		public void handleBoolean(boolean value) {
 			/**
 			 * This method is not yet needed
 			 */
 		}
-	
+
 		@Override
 		public void endQueryResult() {
 			handler.endResult();
@@ -124,7 +124,7 @@ final class SelectQueryExecutionStrategy<R> extends QueryExecutionStrategy<R,Map
 			TupleQuery preparedQuery=
 			connection.
 				prepareTupleQuery(
-					QueryLanguage.SPARQL, 
+					QueryLanguage.SPARQL,
 					instantiatedQuery);
 			TupleQueryResultHandler adapter=new TupleQueryResultHandlerAdapter(handler);
 			preparedQuery.evaluate(adapter);
