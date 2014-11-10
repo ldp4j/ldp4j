@@ -28,29 +28,60 @@ package org.ldp4j.server.data;
 
 import java.net.URI;
 
+import org.ldp4j.rdf.Namespaces;
+
 
 public final class ImmutableContext implements Context {
 
-	private final URI base;
-	private final ResourceResolver resourceResolver;
+	private URI base;
+	private ResourceResolver resourceResolver;
+	private Namespaces namespaces;
 
-	private ImmutableContext(URI base, ResourceResolver resourceResolver) {
+	private ImmutableContext(URI base, ResourceResolver resourceResolver, Namespaces namespaces) {
 		this.base = base;
 		this.resourceResolver = resourceResolver;
+		this.namespaces = namespaces;
+	}
+
+	private ImmutableContext(ImmutableContext context) {
+		this(context.base,context.resourceResolver,context.namespaces);
 	}
 
 	@Override
 	public URI getBase() {
 		return this.base;
 	}
-	
+
 	@Override
 	public ResourceResolver getResourceResolver() {
 		return this.resourceResolver;
 	}
-	
-	public static ImmutableContext newInstance(URI base, ResourceResolver index) {
-		return new ImmutableContext(base,index);
+
+	@Override
+	public Namespaces getNamespaces() {
+		return new Namespaces(this.namespaces);
 	}
-	
+
+	public ImmutableContext setBase(URI base) {
+		ImmutableContext copy=new ImmutableContext(this);
+		copy.base=base;
+		return copy;
+	}
+
+	public ImmutableContext setResourceResolver(ResourceResolver resourceResolver) {
+		ImmutableContext copy=new ImmutableContext(this);
+		copy.resourceResolver=resourceResolver;
+		return copy;
+	}
+
+	public ImmutableContext setNamespaces(Namespaces namespaces) {
+		ImmutableContext copy=new ImmutableContext(this);
+		copy.namespaces=new Namespaces(namespaces);
+		return copy;
+	}
+
+	public static ImmutableContext newInstance(URI base, ResourceResolver resolver) {
+		return new ImmutableContext(base,resolver, new Namespaces());
+	}
+
 }

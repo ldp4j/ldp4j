@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 final class GraphImpl implements Graph {
 
 	private final class IndividualIterator implements Iterator<Individual> {
-	
+
 		private final Iterator<Resource> subjects;
 
 		private IndividualIterator(Iterator<Resource> subjects) {
@@ -83,8 +83,16 @@ final class GraphImpl implements Graph {
 	}
 
 	private void collectNamespace(Value element) {
+		URI uri=null;
+		boolean datatype=false;
 		if(element instanceof URI) {
-			String namespace = ((URI)element).getNamespace();
+			uri=(URI)element;
+		} else if(element instanceof Literal) {
+			uri=((Literal)element).getDatatype();
+			datatype=true;
+		}
+		if(uri!=null && !(datatype && TurtleValueUtils.canOmmitDatatype(uri))) {
+			String namespace=uri.getNamespace();
 			if(LOGGER.isTraceEnabled() && !usedNamespaces.contains(namespace)) {
 				LOGGER.trace(String.format("Collected namespace: %s",namespace));
 			}

@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Stack;
 import java.util.StringTokenizer;
 
 import org.ldp4j.commons.Assertions;
@@ -41,12 +42,69 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class URIUtils {
-	
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(URIUtils.class);
 
 	private URIUtils() {
 	}
-	
+
+	public static URL toURL(URI uri) throws MalformedURLException {
+		Assertions.notNull(uri, "uri");
+		try {
+			return uri.toURL();
+		} catch(MalformedURLException e) {
+			return tryFallback(uri, e);
+		}
+	}
+
+	public static URI relativize(URI base, URI target) {
+		if(
+			!base.getScheme().equals(target.getScheme()) ||
+			!base.getAuthority().equals(target.getAuthority())) {
+			return target;
+		}
+		URI nBase = base.normalize();
+		URI nTarget = target.normalize();
+		if(nBase.equals(nTarget)) {
+			return URI.create("");
+		}
+		URI walkthrough = absoluteRelativization(nBase,nTarget);
+		if(walkthrough.getPath().startsWith("..") && nTarget.getPath().equals("")) {
+			return nTarget;
+		}
+		return walkthrough;
+	}
+
+	public static URI resolve(URI base, URI target) {
+		if(base==null) {
+			throw new NullPointerException("Base URI cannot be null");
+		}
+		if(target==null) {
+			throw new NullPointerException("Base URI cannot be null");
+		}
+		if(base.isOpaque()) {
+			throw new IllegalArgumentException("Base URI must be hierarchical");
+		}
+		if(!base.isAbsolute()) {
+			throw new IllegalArgumentException("Base URI must be absolute");
+		}
+		if(target.isOpaque()) {
+			throw new IllegalArgumentException("Target URI reference must be hierarchical");
+		}
+		if(target.isAbsolute()) {
+			throw new IllegalArgumentException("Target URI reference must be relative");
+		}
+		if(target.equals(URI.create(""))) {
+			return base;
+		}
+		URIRef T = relativeResolution(target, base);
+		return T.toURI();
+	}
+
+	private static boolean defined(String value) {
+		return value!=null && !value.isEmpty();
+	}
+
 	private static URL createFallback(URI uri) {
 		URL fallback=null;
 		String scheme = uri.getScheme();
@@ -83,82 +141,307 @@ public final class URIUtils {
 		}
 	}
 
-	public static URL toURL(URI uri) throws MalformedURLException {
-		Assertions.notNull(uri, "uri");
-		try {
-			return uri.toURL();
-		} catch(MalformedURLException e) {
-			return tryFallback(uri, e);
+	/**
+	 * 5.2.  Relative Resolution
+	 *
+	 *    This section describes an algorithm for converting a URI reference
+	 *    that might be relative to a given base URI into the parsed components
+	 *    of the reference's target.  The components can then be recomposed, as
+	 *    described in Section 5.3, to form the target URI.  This algorithm
+	 *    provides definitive results that can be used to test the output of
+	 *    other implementations.  Applications may implement relative reference
+	 *    resolution by using some other algorithm, provided that the results
+	 *    match what would be given by this one.
+	 *
+	 * 5.2.1.  Pre-parse the Base URI
+	 *
+	 *    The base URI (Base) is established according to the procedure of
+	 *    Section 5.1 and parsed into the five main components described in
+	 *    Section 3.  Note that only the scheme component is required to be
+	 *    present in a base URI; the other components may be empty or
+	 *    undefined.  A component is undefined if its associated delimiter does
+	 *    not appear in the URI reference; the path component is never
+	 *    undefined, though it may be empty.
+	 *
+	 *    Normalization of the base URI, as described in Sections 6.2.2 and
+	 *    6.2.3, is optional.  A URI reference must be transformed to its
+	 *    target URI before it can be normalized.
+	 *
+	 * 5.2.2.  Transform References
+	 *
+	 *    For each URI reference (R), the following pseudocode describes an
+	 *    algorithm for transforming R into its target URI (T):
+	 *       -- The URI reference is parsed into the five URI components
+	 *       --
+	 *       (R.scheme, R.authority, R.path, R.query, R.fragment) = parse(R);
+	 *
+	 *       -- A non-strict parser may ignore a scheme in the reference
+	 *       -- if it is identical to the base URI's scheme.
+	 *       --
+	 *       if ((not strict) and (R.scheme == Base.scheme)) then
+	 *          undefine(R.scheme);
+	 *       endif;
+	 *
+	 *       if defined(R.scheme) then
+	 *          T.scheme    = R.scheme;
+	 *          T.authority = R.authority;
+	 *          T.path      = remove_dot_segments(R.path);
+	 *          T.query     = R.query;
+	 *       else
+	 *          if defined(R.authority) then
+	 *             T.authority = R.authority;
+	 *             T.path      = remove_dot_segments(R.path);
+	 *             T.query     = R.query;
+	 *          else
+	 *             if (R.path == "") then
+	 *                T.path = Base.path;
+	 *                if defined(R.query) then
+	 *                   T.query = R.query;
+	 *                else
+	 *                   T.query = Base.query;
+	 *                endif;
+	 *             else
+	 *                if (R.path starts-with "/") then
+	 *                   T.path = remove_dot_segments(R.path);
+	 *                else
+	 *                   T.path = merge(Base.path, R.path);
+	 *                   T.path = remove_dot_segments(T.path);
+	 *                endif;
+	 *                T.query = R.query;
+	 *             endif;
+	 *             T.authority = Base.authority;
+	 *          endif;
+	 *          T.scheme = Base.scheme;
+	 *       endif;
+	 *
+	 *       T.fragment = R.fragment;
+	 */
+	private static URIRef relativeResolution(URI target, URI nBase) {
+		URIRef Base=URIRef.create(nBase);
+		URIRef R=URIRef.create(target);
+		URIRef T=URIRef.create();
+		if(defined(R.scheme)) {
+			T.scheme    = R.scheme;
+			T.authority = R.authority;
+			T.path      = remove_dot_segments(R.path);
+			T.query     = R.query;
+		} else {
+			if(defined(R.authority)) {
+				T.authority = R.authority;
+				T.path      = remove_dot_segments(R.path);
+				T.query     = R.query;
+			} else {
+				if(R.path.equals("")) {
+					T.path=Base.path;
+					if(defined(R.query)) {
+						T.query=R.query;
+					} else {
+						T.query=Base.query;
+					}
+				} else {
+					if(R.path.startsWith("/")) {
+						T.path=remove_dot_segments(R.path);
+					} else {
+						T.path=merge(Base.path, R.path,defined(Base.authority));
+						T.path=remove_dot_segments(T.path);
+					}
+					T.query=R.query;
+				}
+				T.authority = Base.authority;
+			}
+			T.scheme = Base.scheme;
 		}
+		T.fragment = R.fragment;
+		return T;
 	}
 
-	public static URI resolve(URI base, URI target) {
-		if(
-			!base.getScheme().equals(target.getScheme()) || 
-			!base.getAuthority().equals(target.getAuthority())) {
-			return target;
+	/**
+	 * 5.2.3.  Merge Paths
+	 *
+	 *    The pseudocode above refers to a "merge" routine for merging a
+	 *    relative-path reference with the path of the base URI.  This is
+	 *    accomplished as follows:
+	 *
+	 *    o  If the base URI has a defined authority component and an empty
+	 *       path, then return a string consisting of "/" concatenated with the
+	 *       reference's path; otherwise,
+	 *    o  return a string consisting of the reference's path component
+	 *       appended to all but the last segment of the base URI's path (i.e.,
+	 *       excluding any characters after the right-most "/" in the base URI
+	 *       path, or excluding the entire base URI path if it does not contain
+	 *       any "/" characters).
+	 *
+	 * @param hasAuthority
+	 */
+	private static String merge(String path, String relativePath, boolean hasAuthority) {
+		String parent=path;
+		if(hasAuthority && parent.equals("")) {
+			parent="/";
 		}
-		URI result = walkthrough(base.normalize(),target.normalize());
-		System.out.printf(", Resolution: %s%n",base,target,result);
-		System.out.flush();
+		return parent.substring(0,parent.lastIndexOf('/')+1).concat(relativePath);
+	}
+
+	/**
+	 * 5.2.4.  Remove Dot Segments
+	 *
+	 *    The pseudocode also refers to a "remove_dot_segments" routine for
+	 *    interpreting and removing the special "." and ".." complete path
+	 *    segments from a referenced path.  This is done after the path is
+	 *    extracted from a reference, whether or not the path was relative, in
+	 *    order to remove any invalid or extraneous dot-segments prior to
+	 *    forming the target URI.  Although there are many ways to accomplish
+	 *    this removal process, we describe a simple method using two string
+	 *    buffers.
+	 *
+	 *    1.  The input buffer is initialized with the now-appended path
+	 *        components and the output buffer is initialized to the empty
+	 *        string.
+	 *
+	 *    2.  While the input buffer is not empty, loop as follows:
+	 *
+	 *        A.  If the input buffer begins with a prefix of "../" or "./",
+	 *            then remove that prefix from the input buffer; otherwise,
+	 *
+	 *        B.  if the input buffer begins with a prefix of "/./" or "/.",
+	 *            where "." is a complete path segment, then replace that
+	 *            prefix with "/" in the input buffer; otherwise,
+	 *
+	 *        C.  if the input buffer begins with a prefix of "/../" or "/..",
+	 *            where ".." is a complete path segment, then replace that
+	 *            prefix with "/" in the input buffer and remove the last
+	 *            segment and its preceding "/" (if any) from the output
+	 *            buffer; otherwise,
+	 *
+	 *        D.  if the input buffer consists only of "." or "..", then remove
+	 *            that from the input buffer; otherwise,
+	 *
+	 *        E.  move the first path segment in the input buffer to the end of
+	 *            the output buffer, including the initial "/" character (if
+	 *            any) and any subsequent characters up to, but not including,
+	 *            the next "/" character or the end of the input buffer.
+	 *
+	 *    3.  Finally, the output buffer is returned as the result of
+	 *        remove_dot_segments.
+	 */
+	private static String remove_dot_segments(String path) {
+		Stack<String> outputBuffer=new Stack<String>();
+		String input=path;
+		while(!input.isEmpty()) {
+			String next=null;
+			if(input.startsWith("../")) {
+				next=input.substring(3);
+			} else if(input.startsWith("./")) {
+				next=input.substring(2);
+			} else if(input.startsWith("/./")) {
+				next=input.substring(2);
+			} else if(input.equals("/.")) {
+				next="/";
+			} else if(input.startsWith("/../")) {
+				next=discardSegment(outputBuffer, input, "/../");
+			} else if(input.equals("/..")) {
+				next=discardSegment(outputBuffer, input, "/..");
+			} else if(input.equals("..") || input.equals(".")) {
+				next="";
+			} else {
+				int firstSlash=input.indexOf('/');
+				int nextSlash=input.indexOf('/',firstSlash+1);
+				String nextSegment=null;
+				if(nextSlash<0) {
+					nextSegment=input;
+					next="";
+				} else if(nextSlash==0) {
+					nextSegment="/";
+					next="";
+				} else {
+					nextSegment=input.substring(0,nextSlash);
+					next=input.substring(nextSlash);
+				}
+				addSegment(outputBuffer, nextSegment);
+			}
+			input=next;
+		}
+		return assembleInOrder(outputBuffer);
+	}
+
+	private static String assembleInOrder(Stack<String> outputBuffer) {
+		Stack<String> reverse=new Stack<String>();
+		for(String item:outputBuffer) {
+			reverse.push(item);
+		}
+		StringBuilder builder=new StringBuilder();
+		for(String item:reverse) {
+			builder.append(item);
+		}
+		String result = builder.toString();
 		return result;
+	}
+
+	private static void addSegment(Stack<String> outputBuffer, String nextSegment) {
+		outputBuffer.push(nextSegment);
+	}
+
+	private static String discardSegment(Stack<String> outputBuffer, String input, String prefix) {
+		if(!outputBuffer.isEmpty()) {
+			outputBuffer.pop();
+		}
+		if(!outputBuffer.isEmpty()) {
+			if(outputBuffer.peek().equals("/")) {
+				outputBuffer.pop();
+			}
+		}
+		return "/"+input.substring(prefix.length());
+	}
+
+	private static URI absoluteRelativization(URI base, URI target) {
+		URI relative = null;
+		URIDescriptor dBase=URIDescriptor.create(base);
+		URIDescriptor dTarget=URIDescriptor.create(target);
+		if(dBase.getDir().equals(dTarget.getDir())) {
+			String rawURI="";
+			if(!dBase.getFile().equals(dTarget.getFile())) {
+				rawURI=dTarget.getFile();
+			}
+			rawURI+=makeSuffix(dTarget.getQuery(),dTarget.getFragment());
+			relative = URI.create(rawURI);
+		} else {
+			String[] baseDirPathSegments=tokenize(dBase.getDir());
+			String[] targetDirPathSegments=tokenize(dTarget.getDir());
+			int common = findCommonSegments(baseDirPathSegments, targetDirPathSegments);
+			List<String> segments=
+				getRelativeSegments(
+					targetDirPathSegments,
+					common,
+					baseDirPathSegments.length-common);
+
+			relative = recreateFromSegments(segments, dTarget);
+		}
+		return relative;
 	}
 
 	private static String[] tokenize(String path) {
 		StringTokenizer tokenizer=new StringTokenizer(path,"/");
 		List<String> segments=new ArrayList<String>();
-		while(tokenizer.hasMoreTokens()) {
-			segments.add(tokenizer.nextToken());
-		}
-		if(path.endsWith("/")) {
+		if(path.contains("/")) {
 			segments.add("");
+			while(tokenizer.hasMoreTokens()) {
+				segments.add(tokenizer.nextToken());
+			}
 		}
 		return segments.toArray(new String[segments.size()]);
 	}
-	
-	
-	private static URI walkthrough(URI base, URI target) {
-//		if(base.equals(target)){
-//			return URI.create("");
-//		} else if(base.getPath().endsWith("/") && target.toString().startsWith(base.toString())) {
-//			return URI.create(target.toString().substring(base.toString().length()));
-//		}
-//		String[] basePath=tokenize(base.getPath());
-//		String[] targetPath=tokenize(target.getPath());
-		System.out.printf("Base: %s, Target: %s%n",base,target);
-		String[] basePath=base.getPath().split("/");
-		String[] targetPath=target.getPath().split("/");
-		int common = findCommons(basePath, targetPath);
-		System.out.printf("- Base path: %s%n", base.getPath());
-		System.out.printf("- Base segments: %s%n", Arrays.toString(basePath));
-		System.out.printf("- Target path: %s%n", base.getPath());
-		System.out.printf("- Target segments: %s%n", Arrays.toString(basePath));
-		System.out.printf("- # of common segments: %d%n ", common);
 
-		if(targetPath.length==common) {
-			URI result=null;
-			if(base.getPath().endsWith("/") && !target.getPath().endsWith("/")) {
-				result=URI.create("../"+basePath[common-1]);
-			} else if(!base.getPath().endsWith("/") && target.getPath().endsWith("/")) {
-				result=URI.create("./"+basePath[common-1]+"/");
-			} else if(base.getPath().equals(target.getPath())) {
-				result=URI.create("");
-			} else {
-				throw new IllegalStateException("Don't know how to shorten...");
-			}
-			return result;
-		} else {
-			List<String> segments=
-					getSegments(
-						targetPath, 
-						common,
-						basePath.length-common);
-
-			return recreateFromSegments(segments, target);
+	private static String makeSuffix(String query, String fragment) {
+		StringBuilder suffix=new StringBuilder();
+		if(defined(query)) {
+			suffix.append("?").append(query);
 		}
+		if(defined(fragment)) {
+			suffix.append("#").append(fragment);
+		}
+		return suffix.toString();
 	}
 
-	private static int findCommons(String[] basePath, String[] targetPath) {
+	private static int findCommonSegments(String[] basePath, String[] targetPath) {
 		int common=0;
 		while(common<basePath.length && common<targetPath.length) {
 			if(basePath[common].equals(targetPath[common])) {
@@ -170,9 +453,9 @@ public final class URIUtils {
 		return common;
 	}
 
-	private static List<String> getSegments(
+	private static List<String> getRelativeSegments(
 			String[] targetPath,
-			int commonSegments, 
+			int commonSegments,
 			int discardedSegments) {
 		List<String> segments=new ArrayList<String>();
 		for(int j=0;j<discardedSegments;j++) {
@@ -188,22 +471,32 @@ public final class URIUtils {
 		return segments;
 	}
 
-	private static URI recreateFromSegments(List<String> segments, URI target) {
+	private static URI recreateFromSegments(List<String> segments, URIDescriptor target) {
 		StringBuilder builder=new StringBuilder();
-		for(Iterator<String> it=segments.iterator();it.hasNext();) {
-			builder.append(it.next());
-			if(it.hasNext()) {
-				builder.append("/");
+		boolean ancestor=false;
+		if(!segments.isEmpty()) {
+			for(Iterator<String> it=segments.iterator();it.hasNext();) {
+				String last = it.next();
+				builder.append(last);
+				if(it.hasNext()) {
+					builder.append("/");
+				} else {
+					ancestor=last.equals("..");
+				}
 			}
 		}
 
-		if(target.getFragment()!=null) {
-			builder.append("#").append(target.getFragment());
+		String file=
+			new StringBuilder().
+				append(target.getFile()).
+				append(makeSuffix(target.getQuery(),target.getFragment())).
+				toString();
+
+		if(!ancestor || !file.isEmpty()) {
+			builder.append("/");
 		}
-		if(target.getQuery()!=null) {
-			builder.append("?").append(target.getQuery());
-		}
-		
+		builder.append(file);
+
 		return URI.create(builder.toString());
 	}
 

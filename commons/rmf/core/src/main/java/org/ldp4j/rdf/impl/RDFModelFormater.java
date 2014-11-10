@@ -98,18 +98,18 @@ final class RDFModelFormater {
 	}
 
 	private static class TripleFormater {
-		
+
 		private final class ObjectFormater extends NodeVisitor<org.openrdf.model.Value> {
 			@Override
 			public org.openrdf.model.Value visitURIRef(URIRef node, org.openrdf.model.Value defaultResult) {
 				return valueFactory.createURI(baseURI.resolve(node.getIdentity()).toString());
 			}
-	
+
 			@Override
 			public org.openrdf.model.Value visitBlankNode(BlankNode node, org.openrdf.model.Value defaultResult) {
 				return valueFactory.createBNode(node.getIdentity());
 			}
-	
+
 			@Override
 			public org.openrdf.model.Value visitLiteral(Literal<?> node, org.openrdf.model.Value defaultResult) {
 				org.openrdf.model.Value result=null;
@@ -135,20 +135,20 @@ final class RDFModelFormater {
 				}
 				return result;
 			}
-	
+
 			@Override
 			public org.openrdf.model.Value visitLanguageLiteral(LanguageLiteral node, org.openrdf.model.Value defaultResult) {
 				return valueFactory.createLiteral(node.getValue(),node.getLanguage());
 			}
-	
+
 			@Override
 			public org.openrdf.model.Value visitTypedLiteral(TypedLiteral<?> node, org.openrdf.model.Value defaultResult) {
 				URI type = node.getType().toURI();
 				return valueFactory.createLiteral(node.getValue().toString(),valueFactory.createURI(type.toString()));
 			}
-			
+
 		}
-	
+
 		private final class SubjectFormater extends NodeVisitor<org.openrdf.model.Resource> {
 			@Override
 			public org.openrdf.model.Resource visitURIRef(
@@ -156,7 +156,7 @@ final class RDFModelFormater {
 					org.openrdf.model.Resource defaultResult) {
 				return valueFactory.createURI(baseURI.resolve(node.getIdentity()).toString());
 			}
-	
+
 			@Override
 			public org.openrdf.model.Resource visitBlankNode(
 					BlankNode node,
@@ -164,32 +164,32 @@ final class RDFModelFormater {
 				return valueFactory.createBNode(node.getIdentity());
 			}
 		}
-	
+
 		private final ValueFactory valueFactory;
 		private final SubjectFormater subjectFormater;
 		private final ObjectFormater objectFormater;
 		private final URI baseURI;
-	
+
 		public TripleFormater(URI baseURI) {
 			this.baseURI = baseURI;
 			this.valueFactory = new MemValueFactory();
 			this.subjectFormater = new SubjectFormater();
 			this.objectFormater = new ObjectFormater();
 		}
-	
+
 		public Statement formatTriple(Triple t) {
-			return 
+			return
 				valueFactory.
 					createStatement(
-						t.getSubject().accept(subjectFormater), 
-						formatPredicate(t.getPredicate()), 
+						t.getSubject().accept(subjectFormater),
+						formatPredicate(t.getPredicate()),
 						t.getObject().accept(objectFormater));
 		}
-	
+
 		private org.openrdf.model.URI formatPredicate(URIRef predicate) {
 			return valueFactory.createURI(baseURI.resolve(predicate.getIdentity()).toString());
 		}
-		
+
 	}
 
 	private final URI baseURI;
@@ -205,7 +205,7 @@ final class RDFModelFormater {
 	public String format(Iterable<Triple> triples) throws IOException {
 		StringWriter writer=new StringWriter();
 		try {
-			exportTriples(triples, cretateWriter(writer));
+			exportTriples(triples, createWriter(writer));
 			return writer.toString();
 		} catch (RDFHandlerException e) {
 			throw new IOException(e);
@@ -239,7 +239,7 @@ final class RDFModelFormater {
 		}
 	}
 
-	private RDFWriter cretateWriter(StringWriter writer) {
+	private RDFWriter createWriter(StringWriter writer) {
 		RDFWriter result=null;
 		if(format.equals(Format.TURTLE)) {
 			result=new TurtlePrettyPrinter(new MemValueFactory().createURI(baseURI.toString()),writer);
@@ -262,5 +262,5 @@ final class RDFModelFormater {
 		populateRepository(triples, handler);
 		handler.endRDF();
 	}
-	
+
 }

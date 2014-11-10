@@ -46,12 +46,12 @@ final class TurtleValueUtils {
 		;
 		private final String id;
 		private final int priority;
-	
+
 		Namespace(String id, int priority) {
 			this.id = id;
 			this.priority = priority;
 		}
-	
+
 		static Namespace fromURI(URI uri) {
 			for(Namespace namespace:values()) {
 				if(namespace.getId().equals(uri.getNamespace())) {
@@ -60,15 +60,15 @@ final class TurtleValueUtils {
 			}
 			return UNKNOWN;
 		}
-	
+
 		int compare(Namespace n) {
 			return priority-n.priority;
 		}
-	
+
 		String getId() {
 			return id;
 		}
-	
+
 	}
 
 	private static final String BLANK_NODE_PREFIX = "_:";
@@ -84,8 +84,8 @@ final class TurtleValueUtils {
 		this.base = base;
 		this.namespaceTable = namespaceTable;
 	}
-	
-	
+
+
 	public String toString(Value v) {
 		String result=null;
 		if(v instanceof URI) {
@@ -112,8 +112,8 @@ final class TurtleValueUtils {
 			result=String.format("%s:%s",prefix,uri.getLocalName());
 		} else {
 			// Namespace is not mapped to a prefix; write the resolved URI
-//			result=String.format("<%s>",TurtleUtil.encodeURIString(resolve(uri).toString()));
-			result=String.format("<%s>",TurtleUtil.encodeURIString(uri.toString()));
+			result=String.format("<%s>",TurtleUtil.encodeURIString(resolve(uri).toString()));
+//			result=String.format("<%s>",TurtleUtil.encodeURIString(uri.toString()));
 		}
 		return result;
 	}
@@ -126,7 +126,7 @@ final class TurtleValueUtils {
 	private java.net.URI resolve(URI uri) {
 		java.net.URI resolved = toURI(uri);
 		if(base!=null) {
-			resolved = URIUtils.resolve(toURI(base), resolved);
+			resolved = URIUtils.relativize(toURI(base), resolved);
 		}
 		return resolved;
 	}
@@ -155,21 +155,34 @@ final class TurtleValueUtils {
 			// Append the literal's language
 			builder.append("@");
 			builder.append(lit.getLanguage());
-		} else if(lit.getDatatype()!=null) {
-			/**
-			 * Append the literal's datatype (possibly written as an abbreviated
-			 * URI)
-			 */
-			builder.append("^^");
-			builder.append(writeURI(lit.getDatatype()));
+		} else {
+			URI datatype = lit.getDatatype();
+			if(datatype!=null) {
+				// TODO: This should be configurable
+				if(!canOmmitDatatype(datatype)) {
+					/**
+					 * Append the literal's datatype (possibly written as an abbreviated
+					 * URI)
+					 */
+					builder.append("^^");
+					builder.append(writeURI(datatype));
+				}
+			}
 		}
 		return builder.toString();
 	}
 
+
+	static boolean canOmmitDatatype(URI datatype) {
+		return
+			datatype.getLocalName().equals("string") &&
+			datatype.getNamespace().equals("http://www.w3.org/2001/XMLSchema#");
+	}
+
 	private boolean isMultiLineString(String label) {
-		return 
-			label.indexOf(NEW_LINE)!=-1 || 
-			label.indexOf(LINE_FEED)!= -1 || 
+		return
+			label.indexOf(NEW_LINE)!=-1 ||
+			label.indexOf(LINE_FEED)!= -1 ||
 			label.indexOf(TAB) != -1;
 	}
 

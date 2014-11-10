@@ -36,6 +36,10 @@ import java.net.URISyntaxException;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.domain.RDFS;
+import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;
 import org.ldp4j.server.spi.IMediaTypeProvider.Marshaller;
@@ -67,9 +71,23 @@ public final class DataTransformator {
 	private MediaType mediaType;
 	private IMediaTypeProvider provider;
 
+	private Namespaces namespaces;
+
 	private DataTransformator() {
 		setResourceResolver(DEFAULT_RESOLVER);
 		setEndpoint(DEFAULT_ENDPOINT, true);
+		setNamespaces(defaultNamespaces());
+	}
+
+	private Namespaces defaultNamespaces() {
+		Namespaces namespaces=
+			new Namespaces().
+				addPrefix("rdf", RDF.NAMESPACE).
+				addPrefix("rdfs", RDFS.NAMESPACE).
+				addPrefix("xsd", "http://www.w3.org/2001/XMLSchema#").
+				addPrefix("ldp", LDP.NAMESPACE);
+
+		return namespaces;
 	}
 
 	private DataTransformator(DataTransformator dataTransformation) {
@@ -77,6 +95,7 @@ public final class DataTransformator {
 		setEndpoint(dataTransformation.endpoint, dataTransformation.permanent);
 		setResourceResolver(dataTransformation.resourceResolver);
 		setMediaType(dataTransformation.mediaType, dataTransformation.provider);
+		setNamespaces(dataTransformation.namespaces);
 	}
 
 	private void setMediaType(MediaType mediaType, IMediaTypeProvider provider) {
@@ -97,6 +116,10 @@ public final class DataTransformator {
 		this.applicationBase = applicationBase;
 	}
 
+	private void setNamespaces(Namespaces namespaces) {
+		this.namespaces=new Namespaces(namespaces);
+	}
+
 	private static IMediaTypeProvider getProvider(MediaType mediaType) throws UnsupportedMediaTypeException {
 		IMediaTypeProvider provider =
 			RuntimeInstance.
@@ -112,7 +135,10 @@ public final class DataTransformator {
 	private Context createMarshallingContext() {
 		ResourceResolver resolver = this.resourceResolver;
 		URI transformationBase = this.applicationBase.resolve(this.endpoint);
-		Context context=ImmutableContext.newInstance(transformationBase, resolver);
+		Context context=
+			ImmutableContext.
+				newInstance(transformationBase, resolver).
+					setNamespaces(this.namespaces);
 		return context;
 	}
 
@@ -177,6 +203,13 @@ public final class DataTransformator {
 		checkNotNull(mediaType,"Media type cannot be null");
 		DataTransformator result = new DataTransformator(this);
 		result.setMediaType(mediaType,getProvider(mediaType));
+		return result;
+	}
+
+	public DataTransformator namespaces(Namespaces namespaces) {
+		checkNotNull(namespaces,"Namespaces cannot be null");
+		DataTransformator result = new DataTransformator(this);
+		result.setNamespaces(namespaces);
 		return result;
 	}
 

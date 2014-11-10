@@ -67,9 +67,10 @@ public class TurtleMediaTypeProvider extends AbstractMediaTypeProvider {
 	protected String doMarshallContent(Context context, Iterable<Triple> content, MediaType type) throws ContentTransformationException {
 		try {
 			RDFContext rdfContext = RDFContext.createContext(context.getBase());
+			rdfContext.setNamespaces(context.getNamespaces());
 			StringWriter writer = new StringWriter();
 			rdfContext.serialize(content, Format.TURTLE, writer);
-			return writer.toString(); 
+			return writer.toString();
 		} catch (IOException e) {
 			throw new ContentTransformationException("Could not marshall contents",e);
 		}
