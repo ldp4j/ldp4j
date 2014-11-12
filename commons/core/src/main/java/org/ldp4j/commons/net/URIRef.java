@@ -107,7 +107,8 @@ final class URIRef {
 			builder.append("#");
 			builder.append(this.fragment);
 		}
-		return URI.create(builder.toString());
+		String rawURI = builder.toString();
+		return URI.create(rawURI);
 	}
 
 	static URIRef create(URI ref) {

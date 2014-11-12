@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-commons-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.commons.net;
+package org.ldp4j.net;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -32,20 +32,19 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.net.MalformedURLException;
-import java.net.URI;
-import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
-import org.ldp4j.net.Examples;
-import org.ldp4j.util.ListBuilder;
-import org.ldp4j.util.MapBuilder;
+import org.ldp4j.commons.net.Handler;
+import org.ldp4j.commons.net.ProtocolHandlerConfigurator;
+import org.ldp4j.net.URI.Path;
 
-
-public class URIUtilsTest {
+// TODO: Add normalization tests
+// TODO: Add getter tests
+// TODO: Add builder tests
+public class URITest {
 
 	private static final String OTHER_FRAGMENT = "other";
 	private static final String OTHER_QUERY = "otherParam=otherValue";
@@ -58,8 +57,100 @@ public class URIUtilsTest {
 	private static final String DIR = "/directory/subdirectory/";
 
 	private static final String BASE = "http://www.megatwork.org/smart-aggregator/entity/component/";
+	private static int roundtripScenarioCounter=0;
+	private static int relativizationScenarioCounter=0;
+
 	private URI existing;
 	private URI custom;
+
+	@SuppressWarnings("unused")
+	private void verifyRoundtripScenario(String base, String target) {
+		verifyRoundtripScenario(URI.create(base), URI.create(target));
+	}
+
+	private void verifyRoundtripScenario(URI uBase, URI uTarget) {
+		URI customRelative = uBase.relativize(uTarget);
+		assertThat(customRelative,notNullValue());
+		URI customAbsolute = uBase.resolve(customRelative);
+		assertThat(customAbsolute,notNullValue());
+		System.out.printf("Scenario %d:%n",++roundtripScenarioCounter);
+		System.out.printf("\t- Base...........: %s%n",uBase);
+		System.out.printf("\t- Target.........: %s%n",uTarget);
+		System.out.printf("\t- Relativization%n");
+		System.out.printf("\t  + Custom.......: <%s>%n",customRelative);
+		System.out.printf("\t- Roundtrip%n");
+		System.out.printf("\t  + Custom.......: %s%n",customAbsolute);
+		assertThat(customAbsolute,equalTo(uTarget));
+	}
+
+	private URI testCase(String authority, String dir, String file, String query, String fragment) {
+		String suffix = "";
+		if(query!=null) {
+			suffix+="?"+query;
+		}
+		if(fragment!=null) {
+			suffix+="#"+fragment;
+		}
+		return URI.create(authority+dir+file+suffix);
+	}
+
+	private String decorateURI(String baseURI, boolean withQuery, boolean withFragment) {
+		StringBuilder builder=new StringBuilder();
+		builder.append(baseURI);
+		if(withQuery) {
+			builder.append("?query=value");
+		}
+		if(withFragment) {
+			builder.append("#fragment");
+		}
+		return builder.toString();
+	}
+
+	private URI verifyRelativizationScenario(URI base, URI target) {
+		URI customRelative = base.relativize(target);
+		assertThat(customRelative,notNullValue());
+
+		System.out.printf("Scenario %d:%n",++relativizationScenarioCounter);
+		System.out.printf("\t- Base...........: %s%n",base);
+		System.out.printf("\t- Target.........: %s%n",target);
+		System.out.printf("\t- Relativization%n");
+		System.out.printf("\t  + Custom.......: <%s>%n",customRelative);
+
+		assertThat(String.format("<%s> --> <%s> : <%s>",base,target,customRelative),base.resolve(customRelative),equalTo(target));
+		return customRelative;
+	}
+
+	private void verifyConfigurableRelativizationScenario(String base, String target, String resolution, boolean query, boolean fragment) {
+		String extendedTarget = decorateURI(target,query,fragment);
+		String extendedResolution = decorateURI(resolution,query,fragment);
+		URI baseURI =URI.create(base);
+		URI targetURI = URI.create(extendedTarget);
+		URI resolutionURI = URI.create(extendedResolution);
+		URI relative = verifyRelativizationScenario(baseURI, targetURI);
+		assertThat("Invalid relativization {"+baseURI+", "+targetURI+"}",relative,equalTo(resolutionURI));
+		assertThat(baseURI.resolve(resolutionURI),equalTo(targetURI));
+	}
+
+	private void verifyResolutionScenarios(String rawBase, Map<String, String> scenarios) {
+		URI base=URI.create(rawBase);
+		int i=0;
+		for(Entry<String,String> entry:scenarios.entrySet()) {
+			URI relative = URI.create(entry.getKey());
+			URI customResolved = base.resolve(relative);
+			System.out.printf("Scenario %d:%n",++i);
+			System.out.printf("\t- Base....: %s %n",base);
+			System.out.printf("\t- Relative: <%s> %n",relative);
+			System.out.printf("\t- Resolved%n");
+			System.out.printf("\t  + Custom: %s %n",customResolved);
+			assertThat(customResolved,notNullValue());
+			assertThat(relative.toString(),customResolved,equalTo(URI.create(entry.getValue())));
+		}
+	}
+
+	private void show(int i, String title, String rawURI, boolean query, boolean fragment) {
+		URI uri = URI.create(decorateURI(rawURI,query,fragment));
+		System.out.printf("[%03d] %s%n",i,uri.prettyPrint());
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -70,178 +161,33 @@ public class URIUtilsTest {
 
 	@Test
 	public void testToURL$existing() throws Exception {
-		assertThat(URIUtils.toURL(existing),notNullValue());
+		assertThat(existing.toURL(),notNullValue());
 	}
 
 	@Test(expected=MalformedURLException.class)
 	public void testToURL$nonLoaded() throws Exception {
 		org.junit.Assume.assumeFalse(ProtocolHandlerConfigurator.isSupported("net"));
-		URIUtils.toURL(custom);
+		custom.toURL();
 	}
 
 	@Test
 	public void testToURL$loaded() throws Exception {
 		ProtocolHandlerConfigurator.addProvider(Handler.class);
-		assertThat(URIUtils.toURL(custom),notNullValue());
-	}
-
-	@Test(expected=NullPointerException.class)
-	public void testRelativize$nullBase() {
-		URIUtils.relativize(null, URI.create(BASE));
-	}
-
-	@Test(expected=NullPointerException.class)
-	public void testRelativize$nullTarget() {
-		URIUtils.relativize(URI.create(BASE), null);
-	}
-
-	@Test
-	public void testRelativize$opaqueBase() {
-		URI target = URI.create(BASE);
-		URI opaque = URI.create("urn:opaque");
-		assertThat(URIUtils.relativize(opaque,target),equalTo(target));
-	}
-
-	@Test
-	public void uriBreakDown() {
-		Map<String,String> cases=
-			MapBuilder.
-				<String,String>builder().
-					add("Hierarchical only host and protocol default port","http://www.example.org").
-					add("Hierarchical only host and port","http://www.example.org:8080").
-					add("Hierarchical only user info, host and port","http://user:password@www.example.org:8080").
-					add("Hierarchical authority with root directory path","http://www.example.org/").
-					add("Hierarchical authority with root file path","http://www.example.org/file").
-					add("Hierarchical authority with deep directory path","http://www.example.org/directory/subdirectory/").
-					add("Hierarchical authority with deep file path","http://www.example.org/directory/subdirectory/file").
-					add("Hierarchical no-authority with root directory path","urn:/").
-					add("Hierarchical no-authority with root file path","urn:/file").
-					add("Hierarchical no-authority with deep directory path","urn:/directory/subdirectory/").
-					add("Hierarchical no-authority with deep file path","urn:/directory/subdirectory/file").
-					add("Hierarchical relative only host and protocol default port","//www.example.org").
-					add("Hierarchical relative only host and port","//www.example.org:8080").
-					add("Hierarchical relative only user info, host and port","//user:password@www.example.org:8080").
-					add("Hierarchical relative authority with root directory path","//www.example.org/").
-					add("Hierarchical relative authority with root file path","//www.example.org/file").
-					add("Hierarchical relative authority with deep directory path","//www.example.org/directory/subdirectory/").
-					add("Hierarchical relative authority with deep file path","//www.example.org/directory/subdirectory/file").
-					add("Hierarchical relative no-authority with root directory path","/").
-					add("Hierarchical relative no-authority with root file path","/file").
-					add("Hierarchical relative no-authority with root deep directory path","/directory/subdirectory/").
-					add("Hierarchical relative no-authority with root deep file path","/directory/subdirectory/file").
-					add("Hierarchical relative no-authority with file path","file").
-					add("Hierarchical relative no-authority with deep directory path","directory/subdirectory/").
-					add("Hierarchical relative no-authority with deep file path","directory/subdirectory/file").
-					add("Null","").
-					add("Opaque","urn:opaque:ssp").
-					build();
-		boolean[] flags = new boolean[]{false,true};
-		int exampleCase=0;
-		for(Entry<String,String> entry:cases.entrySet()) {
-			for(boolean query:flags) {
-				for(boolean fragment:flags) {
-					show(++exampleCase,entry.getKey(),entry.getValue(), query, fragment);
-				}
-			}
-		}
-	}
-
-	@Test
-	public void relativization() {
-		List<String> cases=
-			ListBuilder.
-				<String>builder().
-					add("http://www.example.org").
-					add("http://www.example.org/").
-					add("http://www.example.org/file").
-					add("http://www.example.org/directory/subdirectory/").
-					add("http://www.example.org/directory/subdirectory/file").
-					add("//www.example.org").
-					add("//www.example.org/").
-					add("//www.example.org/file").
-					add("//www.example.org/directory/subdirectory/").
-					add("//www.example.org/directory/subdirectory/file").
-					add("").
-					add("/").
-					add("/file").
-					add("/directory/subdirectory/").
-					add("/directory/subdirectory/file").
-					add("file").
-					add("directory/subdirectory/").
-					add("directory/subdirectory/file").
-					add("urn:opaque:path").
-					build();
-		for(String rawBase:cases) {
-			URI base=URI.create(rawBase);
-			for(String rawTarget:cases) {
-				URI target=URI.create(rawTarget);
-				System.out.printf("<%s>.relativize(<%s>)=%n\t- JDK: <%s>%n\t- Custom: <%s>%n",base,target,base.relativize(target),URIUtils.relativize(base, target));
-			}
-		}
-	}
-
-
-	public void show(int i, String title, String rawURI, boolean query, boolean fragment) {
-		URI uri = URI.create(extendURI(rawURI,query,fragment));
-		System.out.printf("[%03d] %s (%s) {%n",i,extendTitle(title,query,fragment),uri);
-		System.out.printf("\t- Scheme..............: %s%n",uri.getScheme());
-		System.out.printf("\t- Scheme specific part: %s%n",uri.getSchemeSpecificPart());
-		System.out.printf("\t  + Authority.........: %s%n",uri.getAuthority());
-		System.out.printf("\t    * User info.......: %s%n",uri.getUserInfo());
-		System.out.printf("\t    * Host............: %s%n",uri.getHost());
-		System.out.printf("\t    * Port............: %s%n",uri.getPort());
-		System.out.printf("\t  + Path..............: %s%n",uri.getPath());
-		System.out.printf("\t  + Query.............: %s%n",uri.getQuery());
-		System.out.printf("\t- Fragment............: %s%n",uri.getFragment());
-		System.out.printf("\t- Flags...............: %s%n",flags(uri));
-		System.out.printf("}%n");
-	}
-	private String flags(URI uri) {
-		return
-			String.format(
-				"[%s][%s]",
-				uri.isOpaque()?
-					"O":
-					"H",
-				uri.isOpaque()?
-					"-":
-					uri.isAbsolute()?
-						"A":
-						"R"
-			);
-	}
-
-	private String extendTitle(String title, boolean query, boolean fragment) {
-		StringBuilder builder=new StringBuilder();
-		builder.append(title);
-		if(query) {
-			builder.append(" with query");
-		}
-		if(fragment) {
-			builder.append(" with fragment");
-		}
-		return builder.toString();
-	}
-
-	@Test
-	public void testRelativize$opaqueTarget() {
-		URI base = URI.create(BASE);
-		URI opaque = URI.create("urn:opaque");
-		assertThat(URIUtils.relativize(base,opaque),equalTo(opaque));
+		assertThat(custom.toURL(),notNullValue());
 	}
 
 	@Test
 	public void testRelativize$differentScheme() {
 		URI base = URI.create(BASE);
 		URI other = URI.create(BASE.replace("http","https"));
-		assertThat(URIUtils.relativize(base, other),equalTo(other));
+		assertThat(base.relativize(other),equalTo(other));
 	}
 
 	@Test
 	public void testRelativize$differentAuthority() {
 		URI base = URI.create(BASE);
 		URI other = URI.create(BASE.replace(".org",".org:8080"));
-		assertThat(URIUtils.relativize(base, other),equalTo(other));
+		assertThat(base.relativize(other),equalTo(other));
 	}
 
 	@Test
@@ -300,7 +246,6 @@ public class URIUtilsTest {
 		verifyRelativizationScenario(base, target);
 	}
 
-	@Ignore("JDK Failure")
 	@Test
 	public void testRelativize$rootFile$queryChange() {
 		URI base   = testCase(AUTHORITY,ROOT_DIR,FILE,QUERY,null);
@@ -315,7 +260,6 @@ public class URIUtilsTest {
 		verifyRoundtripScenario(base, target);
 	}
 
-	@Ignore("JDK Failure")
 	@Test
 	public void testRelativize$file$queryChange() {
 		URI base   = testCase(AUTHORITY,DIR,FILE,QUERY,null);
@@ -429,19 +373,19 @@ public class URIUtilsTest {
 	@Test
 	public void testRelativize$same() {
 		URI base = URI.create(BASE);
-		assertThat(URIUtils.relativize(base, base),equalTo(URI.create("")));
+		assertThat(base.relativize(base),equalTo(URI.create("")));
 	}
 
 	@Test
 	public void testRelativize$child() {
-		assertThat(URIUtils.relativize(URI.create(BASE), URI.create(BASE+"child")),equalTo(URI.create("child")));
+		assertThat(URI.create(BASE).relativize(URI.create(BASE+"child")),equalTo(URI.create("child")));
 	}
 
 	@Test
 	public void testRelativize$ancestor() {
 		URI relativeAncestor = URI.create("../..");
 		URI base = URI.create(BASE);
-		assertThat(URIUtils.relativize(base, base.resolve(relativeAncestor)),equalTo(relativeAncestor));
+		assertThat(base.relativize(base.resolve(relativeAncestor)),equalTo(relativeAncestor));
 	}
 
 	@Test
@@ -598,6 +542,17 @@ public class URIUtilsTest {
 	}
 
 	@Test
+	public void testRelativize$customCases() {
+		for(String rawBase:Examples.Custom.uris()) {
+			URI base=URI.create(rawBase);
+			for(String rawTarget:Examples.Custom.uris()) {
+				URI target=URI.create(rawTarget);
+				System.out.printf("<%s>.relativize(<%s>)=<%s>%n",base,target,base.relativize(target));
+			}
+		}
+	}
+
+	@Test
 	public void testResolve$normalExamples() throws Exception {
 		verifyResolutionScenarios(
 			Examples.
@@ -658,237 +613,24 @@ public class URIUtilsTest {
 	}
 
 	@Test
-	public void testResolve$normalExamples$noAuthority() throws Exception {
-		Map<String,String> examples=
-			MapBuilder.
-				<String,String>builder().
-				add("g:h"           ,  "g:h").
-				add("g"             ,  "urn:/a/b/c/g").
-				add("./g"           ,  "urn:/a/b/c/g").
-				add("g/"            ,  "urn:/a/b/c/g/").
-				add("/g"            ,  "urn:/g").
-				add("//g"           ,  "urn://g").
-				add("?y"            ,  "urn:/a/b/c/d;p?y").
-				add("g?y"           ,  "urn:/a/b/c/g?y").
-				add("#s"            ,  "urn:/a/b/c/d;p?q#s").
-				add("g#s"           ,  "urn:/a/b/c/g#s").
-				add("g?y#s"         ,  "urn:/a/b/c/g?y#s").
-				add(";x"            ,  "urn:/a/b/c/;x").
-				add("g;x"           ,  "urn:/a/b/c/g;x").
-				add("g;x?y#s"       ,  "urn:/a/b/c/g;x?y#s").
-				add(""              ,  "urn:/a/b/c/d;p?q").
-				add("."             ,  "urn:/a/b/c/").
-				add("./"            ,  "urn:/a/b/c/").
-				add(".."            ,  "urn:/a/b/").
-				add("../"           ,  "urn:/a/b/").
-				add("../g"          ,  "urn:/a/b/g").
-				add("../.."         ,  "urn:/a/").
-				add("../../"        ,  "urn:/a/").
-				add("../../g"       ,  "urn:/a/g").
-				build();
-		verifyResolutionScenarios("urn:/a/b/c/d;p?q",examples);
-	}
-
-	@Test
-	public void testResolve$normalExamples$relativeBase() throws Exception {
-		Map<String,String> examples=
-			MapBuilder.
-				<String,String>builder().
-				add("g:h"           ,  "g:h").
-				add("g"             ,  "a/b/c/g").
-				add("./g"           ,  "a/b/c/g").
-				add("g/"            ,  "a/b/c/g/").
-				add("/g"            ,  "/g").
-				add("//g"           ,  "//g").
-				add("?y"            ,  "a/b/c/d;p?y").
-				add("g?y"           ,  "a/b/c/g?y").
-				add("#s"            ,  "a/b/c/d;p?q#s").
-				add("g#s"           ,  "a/b/c/g#s").
-				add("g?y#s"         ,  "a/b/c/g?y#s").
-				add(";x"            ,  "a/b/c/;x").
-				add("g;x"           ,  "a/b/c/g;x").
-				add("g;x?y#s"       ,  "a/b/c/g;x?y#s").
-				add(""              ,  "a/b/c/d;p?q").
-				add("."             ,  "a/b/c/").
-				add("./"            ,  "a/b/c/").
-				add(".."            ,  "a/b/").
-				add("../"           ,  "a/b/").
-				add("../g"          ,  "a/b/g").
-				add("../.."         ,  "a/").
-				add("../../"        ,  "a/").
-				add("../../g"       ,  "a/g").
-				build();
-		verifyResolutionScenarios("a/b/c/d;p?q",examples);
-	}
-
-	@Test
-	public void testResolve$extraExamples() throws Exception {
-		Map<String,String> examples=
-			MapBuilder.
-				<String,String>builder().
-				add("http://a/b/./c/g"        ,  "http://a/b/c/g").
-				add("http://a/b/../b/c/g"     ,  "http://a/b/c/g").
-				add("http://a/b/./c/g/."      ,  "http://a/b/c/g/").
-				add("http://a/b/../b/c/g/.."  ,  "http://a/b/c/").
-				build();
-		verifyResolutionScenarios("http://a/b/c/d;p?q",examples);
-	}
-
-	@Test
-	public void testResolve$extraExamples$noAuthority() throws Exception {
-		Map<String,String> examples=
-			MapBuilder.
-				<String,String>builder().
-				add("urn:/a/b/./c/g"        ,  "urn:/a/b/c/g").
-				add("urn:/a/b/../b/c/g"     ,  "urn:/a/b/c/g").
-				add("urn:/a/b/./c/g/."      ,  "urn:/a/b/c/g/").
-				add("urn:/a/b/../b/c/g/.."  ,  "urn:/a/b/c/").
-				build();
-		verifyResolutionScenarios("urn:/a/b/c/d;p?q",examples);
-	}
-
-	@Test
-	public void testResolve$non_normalized_base() {
-		verifyResolutionScenario("http://a/./b/c/d;p?q","g","http://a/b/c/g");
-		verifyResolutionScenario("http://a/././b/c/d;p?q","g","http://a/b/c/g");
-		verifyResolutionScenario("http://a/b/../c/d;p?q","g","http://a/c/g");
-		verifyResolutionScenario("http://a/b/../c/../d;p?q","g","http://a/g");
-	}
-
-	@Test
-	public void testResolve$non_normalized_base$noAuthority() {
-		verifyResolutionScenario("urn:/a/./b/c/d;p?q","g","urn:/a/b/c/g");
-		verifyResolutionScenario("urn:/a/././b/c/d;p?q","g","urn:/a/b/c/g");
-		verifyResolutionScenario("urn:/a/b/../c/d;p?q","g","urn:/a/c/g");
-		verifyResolutionScenario("urn:/a/b/../c/../d;p?q","g","urn:/a/g");
-	}
-
-	@Test
-	public void testResolve$non_normalized_base$relative() {
-		verifyResolutionScenario("/a/./b/c/d;p?q","g","/a/b/c/g");
-		verifyResolutionScenario("/a/././b/c/d;p?q","g","/a/b/c/g");
-		verifyResolutionScenario("/a/b/../c/d;p?q","g","/a/c/g");
-		verifyResolutionScenario("/a/b/../c/../d;p?q","g","/a/g");
-	}
-
-	private static int roundtripScenarioCounter=0;
-
-	private static int relativizationScenarioCounter=0;
-
-	private static int resolutionScenarioCounter=0;
-
-	@SuppressWarnings("unused")
-	private void verifyRoundtripScenario(String base, String target) {
-		verifyRoundtripScenario(URI.create(base), URI.create(target));
-	}
-
-	private void verifyRoundtripScenario(URI uBase, URI uTarget) {
-		URI customRelative = URIUtils.relativize(uBase, uTarget);
-		assertThat(customRelative,notNullValue());
-		URI customAbsolute = URIUtils.resolve(uBase, customRelative);
-		System.out.printf("Scenario %d:%n",++roundtripScenarioCounter);
-		System.out.printf("\t- Base...........: %s%n",uBase);
-		System.out.printf("\t- Target.........: %s%n",uTarget);
-		System.out.printf("\t- Relativization%n");
-		URI jdkRelative = uBase.relativize(uTarget);
-		URI jdkAbsolute = uBase.resolve(jdkRelative);
-		System.out.printf(
-			"\t  + JDK%2$s: <%1$s>%n",
-			jdkRelative,
-			jdkAbsolute.equals(uTarget)?
-				"..........":
-				" [INVALID]");
-		System.out.printf("\t  + Custom.......: <%s>%n",customRelative);
-		System.out.printf("\t- Roundtrip%n");
-		System.out.printf(
-				"\t  + JDK%2$s: %1$s%n",
-				uBase.resolve(customRelative),
-				uBase.resolve(customRelative).equals(uTarget)?
-					"..........":
-					" [INVALID]");
-		System.out.printf("\t  + Custom.......: %s%n",customAbsolute);
-		assertThat(customAbsolute,notNullValue());
-		assertThat(customAbsolute,equalTo(uTarget));
-	}
-
-	private URI testCase(String authority, String dir, String file, String query, String fragment) {
-		String suffix = "";
-		if(query!=null) {
-			suffix+="?"+query;
-		}
-		if(fragment!=null) {
-			suffix+="#"+fragment;
-		}
-		return URI.create(authority+dir+file+suffix);
-	}
-
-	private String extendURI(String base, boolean query, boolean fragment) {
-		StringBuilder builder=new StringBuilder();
-		builder.append(base);
-		if(query) {
-			builder.append("?query=value");
-		}
-		if(fragment) {
-			builder.append("#fragment");
-		}
-		return builder.toString();
-	}
-
-	private URI verifyRelativizationScenario(URI base, URI target) {
-		URI jdkRelative = base.relativize(target);
-		URI customRelative = URIUtils.relativize(base, target);
-		assertThat(customRelative,notNullValue());
-
-		URI jdkResolution = base.resolve(jdkRelative);
-
-		System.out.printf("Relativization scenario %d:%n",++relativizationScenarioCounter);
-		System.out.printf("\t- Base...........: %s%n",base);
-		System.out.printf("\t- Target.........: %s%n",target);
-		System.out.printf("\t- Relativization%n");
-		System.out.printf(
-			"\t  + JDK%2$s: <%1$s>%n",
-			jdkRelative,
-			jdkResolution.equals(target)?
-				"..........":
-				" [INVALID]");
-		System.out.printf("\t  + Custom.......: <%s>%n",customRelative);
-
-		assertThat(String.format("<%s> --> <%s> : <%s>",base,target,customRelative),base.resolve(customRelative),equalTo(target));
-		return customRelative;
-	}
-
-	private void verifyConfigurableRelativizationScenario(String base, String target, String resolution, boolean query, boolean fragment) {
-		String extendedTarget = extendURI(target,query,fragment);
-		String extendedResolution = extendURI(resolution,query,fragment);
-		URI baseURI =URI.create(base);
-		URI targetURI = URI.create(extendedTarget);
-		URI resolutionURI = URI.create(extendedResolution);
-		URI relative = verifyRelativizationScenario(baseURI, targetURI);
-		assertThat("Invalid relativization {"+baseURI+", "+targetURI+"}",relative,equalTo(resolutionURI));
-		assertThat(baseURI.resolve(resolutionURI),equalTo(targetURI));
-	}
-
-	private void verifyResolutionScenarios(String rawBase, Map<String, String> scenarios) {
-		for(Entry<String,String> entry:scenarios.entrySet()) {
-			verifyResolutionScenario(rawBase, entry.getKey(), entry.getValue());
+	public void testPathNormalize() {
+		for(String scenario:Examples.Custom.paths()) {
+			Path path=Path.create(scenario);
+			System.out.println(path+" : "+path.normalize());
 		}
 	}
 
-	private void verifyResolutionScenario(String rawBase, String rawTarget,
-			String rawResolution) {
-		URI base=URI.create(rawBase);
-		URI relative = URI.create(rawTarget);
-		URI jdkResolved=base.resolve(relative);
-		URI customResolved = URIUtils.resolve(base,relative);
-		System.out.printf("Resolution scenario %d:%n",++resolutionScenarioCounter);
-		System.out.printf("\t- Base....: %s %n",base);
-		System.out.printf("\t- Relative: <%s> %n",relative);
-		System.out.printf("\t- Resolved%n");
-		System.out.printf("\t  + JDK...: %s %n",jdkResolved);
-		System.out.printf("\t  + Custom: %s %n",customResolved);
-		assertThat(customResolved,notNullValue());
-		assertThat(relative.toString(),customResolved,equalTo(URI.create(rawResolution)));
-//			assertThat(jdkResolved,equalTo(URI.create(entry.getValue())));
+	@Test
+	public void uriBreakDown() {
+		boolean[] flags = new boolean[]{false,true};
+		int exampleCase=0;
+		for(String rawURI:Examples.Custom.uris()) {
+			for(boolean query:flags) {
+				for(boolean fragment:flags) {
+					show(++exampleCase,"URI",rawURI, query, fragment);
+				}
+			}
+		}
 	}
 
 }

@@ -57,9 +57,9 @@ public class URIDescriptorTest {
 		URIDescriptor.create(uri("urn:opaque:uri"));
 	}
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test
 	public void testCreate$relative() throws Exception {
-		URIDescriptor.create(uri("relative/path"));
+		testCase(null,DIR,EMPTY_STRING,null,null);
 	}
 
 	@Test
@@ -170,7 +170,11 @@ public class URIDescriptorTest {
 		if(fragment!=null) {
 			suffix+="#"+fragment;
 		}
-		verifyCase(uri(authority+dir+file+suffix), dir, file, query, fragment);
+		verifyCase(uri(nullable(authority)+dir+file+suffix), dir, file, query, fragment);
+	}
+
+	private static String nullable(String string) {
+		return string==null?"":string;
 	}
 
 	private void verifyCase(URI target, String dir, String file, String query, String fragment) {

@@ -57,10 +57,26 @@ public final class URIUtils {
 		}
 	}
 
+	private static boolean equals(Object one, Object other) {
+		return
+			one==null?
+				other==null:
+				other==null?
+					false:
+					one.equals(other);
+	}
+
 	public static URI relativize(URI base, URI target) {
-		if(
-			!base.getScheme().equals(target.getScheme()) ||
-			!base.getAuthority().equals(target.getAuthority())) {
+		if(base==null) {
+			throw new NullPointerException("Base URI cannot be null");
+		}
+		if(target==null) {
+			throw new NullPointerException("Target URI cannot be null");
+		}
+		if(base.isOpaque() || target.isOpaque()) {
+			return target;
+		}
+		if(!equals(base.getScheme(),target.getScheme()) || !equals(base.getAuthority(),target.getAuthority())) {
 			return target;
 		}
 		URI nBase = base.normalize();
@@ -82,20 +98,8 @@ public final class URIUtils {
 		if(target==null) {
 			throw new NullPointerException("Base URI cannot be null");
 		}
-		if(base.isOpaque()) {
-			throw new IllegalArgumentException("Base URI must be hierarchical");
-		}
-		if(!base.isAbsolute()) {
-			throw new IllegalArgumentException("Base URI must be absolute");
-		}
-		if(target.isOpaque()) {
-			throw new IllegalArgumentException("Target URI reference must be hierarchical");
-		}
-		if(target.isAbsolute()) {
-			throw new IllegalArgumentException("Target URI reference must be relative");
-		}
-		if(target.equals(URI.create(""))) {
-			return base;
+		if(base.isOpaque() || target.isOpaque()) {
+			return target;
 		}
 		URIRef T = relativeResolution(target, base);
 		return T.toURI();
@@ -216,8 +220,8 @@ public final class URIUtils {
 	 *
 	 *       T.fragment = R.fragment;
 	 */
-	private static URIRef relativeResolution(URI target, URI nBase) {
-		URIRef Base=URIRef.create(nBase);
+	private static URIRef relativeResolution(URI target, URI base) {
+		URIRef Base=URIRef.create(base);
 		URIRef R=URIRef.create(target);
 		URIRef T=URIRef.create();
 		if(defined(R.scheme)) {
@@ -242,7 +246,7 @@ public final class URIUtils {
 					if(R.path.startsWith("/")) {
 						T.path=remove_dot_segments(R.path);
 					} else {
-						T.path=merge(Base.path, R.path,defined(Base.authority));
+						T.path=merge(Base.path,R.path,defined(Base.authority));
 						T.path=remove_dot_segments(T.path);
 					}
 					T.query=R.query;
@@ -325,7 +329,7 @@ public final class URIUtils {
 	 */
 	private static String remove_dot_segments(String path) {
 		Stack<String> outputBuffer=new Stack<String>();
-		String input=path;
+		String input=path==null?"":path;
 		while(!input.isEmpty()) {
 			String next=null;
 			if(input.startsWith("../")) {
@@ -343,14 +347,15 @@ public final class URIUtils {
 			} else if(input.equals("..") || input.equals(".")) {
 				next="";
 			} else {
-				int firstSlash=input.indexOf('/');
-				int nextSlash=input.indexOf('/',firstSlash+1);
+				int nextSlash=0;
+				if(input.startsWith("/")) {
+					nextSlash=input.indexOf('/',1);
+				} else {
+					nextSlash=input.indexOf('/',0);
+				}
 				String nextSegment=null;
 				if(nextSlash<0) {
 					nextSegment=input;
-					next="";
-				} else if(nextSlash==0) {
-					nextSegment="/";
 					next="";
 				} else {
 					nextSegment=input.substring(0,nextSlash);
@@ -474,15 +479,13 @@ public final class URIUtils {
 	private static URI recreateFromSegments(List<String> segments, URIDescriptor target) {
 		StringBuilder builder=new StringBuilder();
 		boolean ancestor=false;
-		if(!segments.isEmpty()) {
-			for(Iterator<String> it=segments.iterator();it.hasNext();) {
-				String last = it.next();
-				builder.append(last);
-				if(it.hasNext()) {
-					builder.append("/");
-				} else {
-					ancestor=last.equals("..");
-				}
+		for(Iterator<String> it=segments.iterator();it.hasNext();) {
+			String last = it.next();
+			builder.append(last);
+			if(it.hasNext()) {
+				builder.append("/");
+			} else {
+				ancestor=last.equals("..");
 			}
 		}
 

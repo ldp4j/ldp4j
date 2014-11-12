@@ -67,10 +67,6 @@ final class URIDescriptor {
 		return this.file.isEmpty();
 	}
 
-	public boolean isRoot() {
-		return this.dir.equals("/");
-	}
-
 	public String getQuery() {
 		return query;
 	}
@@ -106,9 +102,9 @@ final class URIDescriptor {
 		if(target.isOpaque()) {
 			throw new IllegalArgumentException("URI must be hierarchical");
 		}
-		if(!target.isAbsolute()) {
-			throw new IllegalArgumentException("URI must be absolute");
-		}
+//		if(!target.isAbsolute()) {
+//			throw new IllegalArgumentException("URI must be absolute");
+//		}
 		URI targetDir = target.resolve(".");
 		String targetFile=target.getPath().substring(targetDir.getPath().length());
 		String targetQuery = target.getQuery();
