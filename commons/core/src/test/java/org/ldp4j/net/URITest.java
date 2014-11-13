@@ -39,6 +39,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.ldp4j.commons.net.Handler;
 import org.ldp4j.commons.net.ProtocolHandlerConfigurator;
+import org.ldp4j.net.Examples.Custom.Resolution.Variant;
 import org.ldp4j.net.URI.Path;
 
 // TODO: Add normalization tests
@@ -138,10 +139,11 @@ public class URITest {
 			URI relative = URI.create(entry.getKey());
 			URI customResolved = base.resolve(relative);
 			System.out.printf("Scenario %d:%n",++i);
-			System.out.printf("\t- Base....: %s %n",base);
-			System.out.printf("\t- Relative: <%s> %n",relative);
-			System.out.printf("\t- Resolved%n");
-			System.out.printf("\t  + Custom: %s %n",customResolved);
+			System.out.printf("\t- Base......: %s%n",base);
+			System.out.printf("\t- Relative..: <%s>%n",relative);
+			System.out.printf("\t- Resolved: %n");
+			System.out.printf("\t  + Expected: %s%n", entry.getValue());
+			System.out.printf("\t  + Result..: %s%n",customResolved);
 			assertThat(customResolved,notNullValue());
 			assertThat(relative.toString(),customResolved,equalTo(URI.create(entry.getValue())));
 		}
@@ -610,6 +612,20 @@ public class URITest {
 				Normative.
 					Resolution.
 						notIsolatedPath());
+	}
+
+	@Test
+	public void testResolve$normalExamples$noAuthority() throws Exception {
+		verifyResolutionScenarios(
+			Examples.Custom.Resolution.base(Variant.NO_AUTHORITY),
+			Examples.Custom.Resolution.scenarios(Variant.NO_AUTHORITY));
+	}
+
+	@Test
+	public void testResolve$normalExamples$relativeBase() throws Exception {
+		verifyResolutionScenarios(
+			Examples.Custom.Resolution.base(Variant.RELATIVE),
+			Examples.Custom.Resolution.scenarios(Variant.RELATIVE));
 	}
 
 	@Test

@@ -32,7 +32,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.ldp4j.commons.Assertions;
 import org.ldp4j.util.ListBuilder;
 import org.ldp4j.util.MapBuilder;
 
@@ -149,8 +148,6 @@ public final class Examples {
 				private final String alternativeAuthority;
 
 				private Variant(String alternativeScheme, String alternativeAuthority) {
-					Assertions.notNull(alternativeScheme, "Alternative scheme cannot be null");
-					Assertions.notNull(alternativeAuthority, "Alternative authority cannot be null");
 					this.alternativeScheme = alternativeScheme;
 					this.alternativeAuthority = alternativeAuthority;
 				}
@@ -161,28 +158,18 @@ public final class Examples {
 
 				private String modify(final String uri) {
 					String result=uri;
-					boolean no_scheme=false;
 					if(alternativeScheme!=null) {
 						if(!alternativeScheme.isEmpty()) {
 							result=result.replace("http", alternativeScheme);
 						} else {
 							result=result.replace("http"+":", "");
-							no_scheme=true;
 						}
-
 					}
-					boolean no_authority=false;
 					if(alternativeAuthority!=null) {
 						if(!alternativeAuthority.isEmpty()) {
 							result=result.replace("//a", "//"+alternativeAuthority);
 						} else {
 							result=result.replace("//a", "");
-							no_authority=true;
-						}
-					}
-					if(no_scheme && no_authority) {
-						if(result.startsWith("/")) {
-							result=result.substring(1);
 						}
 					}
 					return result;
@@ -196,8 +183,8 @@ public final class Examples {
 					return regular;
 				}
 
-				public static final Variant RELATIVE=new Variant("",null);
-				public static final Variant NO_AUTHORITY=new Variant(null,"file");
+				public static final Variant RELATIVE=new Variant("","");
+				public static final Variant NO_AUTHORITY=new Variant("file","");
 
 			}
 

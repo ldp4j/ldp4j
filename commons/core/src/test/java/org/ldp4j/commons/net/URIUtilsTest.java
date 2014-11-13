@@ -41,6 +41,7 @@ import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.ldp4j.net.Examples;
+import org.ldp4j.net.Examples.Custom.Resolution.Variant;
 import org.ldp4j.util.ListBuilder;
 import org.ldp4j.util.MapBuilder;
 
@@ -659,66 +660,16 @@ public class URIUtilsTest {
 
 	@Test
 	public void testResolve$normalExamples$noAuthority() throws Exception {
-		Map<String,String> examples=
-			MapBuilder.
-				<String,String>builder().
-				add("g:h"           ,  "g:h").
-				add("g"             ,  "urn:/a/b/c/g").
-				add("./g"           ,  "urn:/a/b/c/g").
-				add("g/"            ,  "urn:/a/b/c/g/").
-				add("/g"            ,  "urn:/g").
-				add("//g"           ,  "urn://g").
-				add("?y"            ,  "urn:/a/b/c/d;p?y").
-				add("g?y"           ,  "urn:/a/b/c/g?y").
-				add("#s"            ,  "urn:/a/b/c/d;p?q#s").
-				add("g#s"           ,  "urn:/a/b/c/g#s").
-				add("g?y#s"         ,  "urn:/a/b/c/g?y#s").
-				add(";x"            ,  "urn:/a/b/c/;x").
-				add("g;x"           ,  "urn:/a/b/c/g;x").
-				add("g;x?y#s"       ,  "urn:/a/b/c/g;x?y#s").
-				add(""              ,  "urn:/a/b/c/d;p?q").
-				add("."             ,  "urn:/a/b/c/").
-				add("./"            ,  "urn:/a/b/c/").
-				add(".."            ,  "urn:/a/b/").
-				add("../"           ,  "urn:/a/b/").
-				add("../g"          ,  "urn:/a/b/g").
-				add("../.."         ,  "urn:/a/").
-				add("../../"        ,  "urn:/a/").
-				add("../../g"       ,  "urn:/a/g").
-				build();
-		verifyResolutionScenarios("urn:/a/b/c/d;p?q",examples);
+		verifyResolutionScenarios(
+			Examples.Custom.Resolution.base(Variant.NO_AUTHORITY),
+			Examples.Custom.Resolution.scenarios(Variant.NO_AUTHORITY));
 	}
 
 	@Test
 	public void testResolve$normalExamples$relativeBase() throws Exception {
-		Map<String,String> examples=
-			MapBuilder.
-				<String,String>builder().
-				add("g:h"           ,  "g:h").
-				add("g"             ,  "a/b/c/g").
-				add("./g"           ,  "a/b/c/g").
-				add("g/"            ,  "a/b/c/g/").
-				add("/g"            ,  "/g").
-				add("//g"           ,  "//g").
-				add("?y"            ,  "a/b/c/d;p?y").
-				add("g?y"           ,  "a/b/c/g?y").
-				add("#s"            ,  "a/b/c/d;p?q#s").
-				add("g#s"           ,  "a/b/c/g#s").
-				add("g?y#s"         ,  "a/b/c/g?y#s").
-				add(";x"            ,  "a/b/c/;x").
-				add("g;x"           ,  "a/b/c/g;x").
-				add("g;x?y#s"       ,  "a/b/c/g;x?y#s").
-				add(""              ,  "a/b/c/d;p?q").
-				add("."             ,  "a/b/c/").
-				add("./"            ,  "a/b/c/").
-				add(".."            ,  "a/b/").
-				add("../"           ,  "a/b/").
-				add("../g"          ,  "a/b/g").
-				add("../.."         ,  "a/").
-				add("../../"        ,  "a/").
-				add("../../g"       ,  "a/g").
-				build();
-		verifyResolutionScenarios("a/b/c/d;p?q",examples);
+		verifyResolutionScenarios(
+			Examples.Custom.Resolution.base(Variant.RELATIVE),
+			Examples.Custom.Resolution.scenarios(Variant.RELATIVE));
 	}
 
 	@Test

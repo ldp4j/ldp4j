@@ -40,6 +40,30 @@ import org.ldp4j.commons.net.URIUtils;
 
 public final class URI {
 
+	private static final class Objects {
+
+		private Objects() {
+		}
+
+		static boolean defined(Object value) {
+			return value!=null;
+		}
+
+		static int hashCode(Object obj) {
+			return obj!=null?obj.hashCode():0;
+		}
+
+		static boolean equals(Object one, Object other) {
+			return
+				one==null?
+					other==null:
+					other==null?
+						false:
+						one.equals(other);
+		}
+
+	}
+
 	public static final class Authority {
 
 		private static final int DEFAULT_SCHEME_PORT = -1;
@@ -212,19 +236,6 @@ public final class URI {
 			return builder.toString();
 		}
 
-		private int hashCode(Object obj) {
-			return obj!=null?obj.hashCode():0;
-		}
-
-		private boolean equals(Object one, Object other) {
-			return
-				one==null?
-					other==null:
-					other==null?
-						false:
-						one.equals(other);
-		}
-
 		private String normalizePath(String[] segments, String file) {
 			LinkedList<String> buffer=new LinkedList<String>();
 			for(String segment:segments) {
@@ -354,7 +365,9 @@ public final class URI {
 			String[] segments=
 				this.directory==null?
 					new String[0]:
-					this.directory.split("/");
+					this.directory.equals("/")?
+						new String[] {""}:
+						this.directory.split("/");
 			return Path.create(normalizePath(segments, getFile()));
 		}
 
@@ -466,9 +479,9 @@ public final class URI {
 		@Override
 		public int hashCode() {
 			return
-				13*hashCode(this.directory)+
-				17*hashCode(this.fileName)+
-				19*hashCode(this.fileExtension);
+				13*Objects.hashCode(this.directory)+
+				17*Objects.hashCode(this.fileName)+
+				19*Objects.hashCode(this.fileExtension);
 		}
 
 		@Override
@@ -477,9 +490,9 @@ public final class URI {
 			if(obj instanceof Path) {
 				Path that=(Path)obj;
 				result=
-					equals(this.directory,that.directory) &&
-					equals(this.fileName,that.fileName) &&
-					equals(this.fileExtension,that.fileExtension);
+					Objects.equals(this.directory,that.directory) &&
+					Objects.equals(this.fileName,that.fileName) &&
+					Objects.equals(this.fileExtension,that.fileExtension);
 			}
 			return result;
 		}
@@ -557,6 +570,7 @@ public final class URI {
 	}
 
 	private String buildHierarchicalSchemeSpecificPart(
+			String aScheme,
 			Authority aAuthority,
 			Path aPath,
 			String aQuery) {
@@ -565,7 +579,7 @@ public final class URI {
 			builder.append("//").append(aAuthority.toString());
 		}
 		if(aPath!=null && !aPath.isEmpty()) {
-			if(aAuthority!=null) {
+			if(aScheme!=null && aAuthority==null && !aPath.isRoot()) {
 				builder.append("/");
 			}
 			builder.append(aPath.toString());
@@ -626,18 +640,36 @@ public final class URI {
 		return wrap(this.delegate.normalize());
 	}
 
-	public URI resolve(URI uri) {
-		if(uri==null) {
+	public URI resolve(URI target) {
+		if(target==null) {
 			throw new NullPointerException("URI cannot be null");
 		}
-		return wrap(URIUtils.resolve(this.delegate,uri.unwrap()));
+		URI base=this;
+		if(base.isOpaque() || target.isOpaque()) {
+			return target;
+		}
+		return relativeResolution(base,target);
 	}
 
-	public URI relativize(URI uri) {
-		if(uri==null) {
+	public URI relativize(URI target) {
+		if(target==null) {
 			throw new NullPointerException("URI cannot be null");
 		}
-		return wrap(URIUtils.relativize(this.delegate,uri.unwrap()));
+
+		URI base=this;
+		if(base.isOpaque() || target.isOpaque()) {
+			return target;
+		}
+
+		if(!Objects.equals(base.getScheme(),target.getScheme()) ||
+			!Objects.equals(base.getAuthority(),target.getAuthority())) {
+			return target;
+		}
+
+		Path basePath = base.normalize().getPath();
+		Path targetPath = target.normalize().getPath();
+		Path relativePath = basePath.relativize(targetPath);
+		return target.withPath(relativePath).withScheme(null);
 	}
 
 	public URL toURL() throws MalformedURLException {
@@ -645,11 +677,22 @@ public final class URI {
 	}
 
 	public URI withScheme(String scheme) {
+		String schemeSpecificPart=null;
+		if(isHierarchical()) {
+			schemeSpecificPart=
+				buildHierarchicalSchemeSpecificPart(
+					scheme,
+					this.getAuthority(),
+					this.getPath(),
+					this.getQuery());
+		} else {
+			schemeSpecificPart=this.getSchemeSpecificPart();
+		}
 		return
 			wrap(
 				createDelegate(
 					scheme,
-					this.getSchemeSpecificPart(),
+					schemeSpecificPart,
 					this.getFragment()));
 	}
 
@@ -666,6 +709,7 @@ public final class URI {
 		return
 			withSchemeSpecificPart(
 				buildHierarchicalSchemeSpecificPart(
+					this.getScheme(),
 					authority,
 					this.getPath(),
 					this.getQuery()
@@ -677,6 +721,7 @@ public final class URI {
 		return
 			withSchemeSpecificPart(
 				buildHierarchicalSchemeSpecificPart(
+					this.getScheme(),
 					this.getAuthority(),
 					path,
 					this.getQuery()
@@ -687,6 +732,7 @@ public final class URI {
 		return
 			withSchemeSpecificPart(
 				buildHierarchicalSchemeSpecificPart(
+					this.getScheme(),
 					this.getAuthority(),
 					this.getPath(),
 					query
@@ -703,11 +749,17 @@ public final class URI {
 					fragment));
 	}
 
+	/**
+	 * TODO: Verify weird equals/hashCode behaviour (java.net.URI bug)
+	 */
 	@Override
 	public int hashCode() {
 		return this.delegate.hashCode();
 	}
 
+	/**
+	 * TODO: Verify weird equals/hashCode behaviour (java.net.URI bug)
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		boolean result=false;
@@ -725,6 +777,50 @@ public final class URI {
 
 	public String prettyPrint() {
 		return URI.prettyPrint(this);
+	}
+
+	public java.net.URI unwrap() {
+		return this.delegate;
+	}
+
+	private static URI relativeResolution(URI Base, URI R) {
+		URIRef T=URIRef.empty();
+		if(Objects.defined(R.getScheme())) {
+			T.scheme=R.getScheme();
+			T.authority=R.getAuthority();
+			T.path=R.getPath().normalize();
+			T.query=R.getQuery();
+		} else {
+			if(Objects.defined(R.getAuthority())) {
+				T.authority=R.getAuthority();
+				T.path=R.getPath().normalize();
+				T.query=R.getQuery();
+			} else {
+				if(R.getPath().isEmpty()) {
+					T.path=Base.getPath().normalize();
+					if(Objects.defined(R.getQuery())) {
+						T.query=R.getQuery();
+					} else {
+						T.query=Base.getQuery();
+					}
+				} else {
+					if(R.getPath().isRoot()) {
+						T.path=R.getPath().normalize();
+					} else {
+						Path base=Base.getPath();
+						if(base.isEmpty() && !Objects.defined(Base.getAuthority())) {
+							base=Path.create("/");
+						}
+						T.path=base.resolve(R.getPath());
+					}
+					T.query=R.getQuery();
+				}
+				T.authority=Base.getAuthority();
+			}
+			T.scheme=Base.getScheme();
+		}
+		T.fragment=R.getFragment();
+		return T.toURI();
 	}
 
 	private static String prettyPrint(URI uri) {
@@ -757,13 +853,14 @@ public final class URI {
 			out.printf("\t  + Query.............: %s%n",uri.getQuery());
 		}
 		out.printf("\t- Fragment............: %s%n",uri.getFragment());
-		out.printf("\t- Flags...............: %s%n",uriflags(uri));
+		out.printf("\t- Flags...............: %s%n",uriFlags(uri));
 		out.printf("}");
 		out.flush();
 		writer.flush();
 		return writer.toString();
 	}
-	private static String uriflags(URI uri) {
+
+	private static String uriFlags(URI uri) {
 		StringBuilder builder=new StringBuilder();
 		if(uri.isOpaque()) {
 			builder.append("[Opaque]");
@@ -800,10 +897,6 @@ public final class URI {
 		return builder.toString();
 	}
 
-
-	public java.net.URI unwrap() {
-		return this.delegate;
-	}
 
 	public static URI wrap(java.net.URI delegate) {
 		return new URI(delegate);

@@ -30,6 +30,8 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Ignore;
+import org.junit.Test;
 import org.ldp4j.commons.net.URIUtils;
 import org.ldp4j.net.URI.Path;
 import org.ldp4j.util.ListBuilder;
@@ -64,7 +66,7 @@ public final class URIOpsImpComparator {
 		}
 
 		@SuppressWarnings("unchecked")
-		public void test(String rawBase, String rawTarget) {
+		public void roundtrip(String rawBase, String rawTarget) {
 			T base=wrap(rawBase);
 			T target=wrap(rawTarget);
 			try {
@@ -206,6 +208,34 @@ public final class URIOpsImpComparator {
 
 	}
 
+	private static class CustomTester extends RoundtripResolutionTester<URI> {
+
+		@Override
+		protected URI expected(URI base, URI target) {
+			URI expected = target.normalize();
+			if(!(target.isHierarchical() && target.getPath().isRoot())) {
+				expected=base.resolve(target);
+			}
+			return expected;
+		}
+
+		@Override
+		protected URI relativize(URI base, URI target) {
+			return base.relativize(target);
+		}
+
+		@Override
+		protected URI resolve(URI base, URI target) {
+			return base.resolve(target);
+		}
+
+		@Override
+		protected URI wrap(String value) {
+			return URI.create(value);
+		}
+
+	}
+
 	private static class URIUtilsTester extends NativeTester {
 
 		@Override
@@ -251,16 +281,50 @@ public final class URIOpsImpComparator {
 		URIUtilsTester uTester=new URIUtilsTester();
 		NativeTester nTester=new NativeTester();
 		PathTester pTester=new PathTester();
+		CustomTester cTester=new CustomTester();
 		for(String rawBase:pathScenarios) {
 			for(String rawTarget:pathScenarios) {
-				nTester.test(rawBase, rawTarget);
-				uTester.test(rawBase, rawTarget);
-				pTester.test(rawBase, rawTarget);
+				nTester.roundtrip(rawBase, rawTarget);
+				uTester.roundtrip(rawBase, rawTarget);
+				pTester.roundtrip(rawBase, rawTarget);
+				cTester.roundtrip(rawBase, rawTarget);
 			}
 		}
 		nTester.showStatistics();
 		uTester.showStatistics();
 		pTester.showStatistics();
+		cTester.showStatistics();
+	}
+
+	@Ignore
+	@Test
+	public void simpleRoundtripTest() {
+		CustomTester cTester=new CustomTester();
+		cTester.roundtrip("/a/b/c/d/f", "/a/b/c/d/.");
+		cTester.showStatistics();
+	}
+
+	@Ignore
+	@Test
+	public void simpleResolutionTest() {
+		String rawBase = "/b/c/d;p?q";
+		String rawTarget = "/g";
+		System.out.printf("\"%s\".resolve(\"%s\")=\"%s\"",rawBase,rawTarget,URI.create(rawBase).resolve(URI.create(rawTarget)));
+	}
+
+	@Ignore
+	@Test
+	public void simpleRelativizationTest() {
+		String rawBase = "/b/c/d;p?q";
+		String rawTarget = "/g";
+		System.out.printf("\"%s\".relativize(\"%s\")=\"%s\"",rawBase,rawTarget,URI.create(rawBase).relativize(URI.create(rawTarget)));
+	}
+
+	@Ignore
+	@Test
+	public void simpleNormalizationTest() {
+		String rawBase = "/./b/c/d/.././../../a";
+		System.out.printf("\"%s\".normalize()=\"%s\"",rawBase,URI.create(rawBase).normalize());
 	}
 
 	@SuppressWarnings("unused")
