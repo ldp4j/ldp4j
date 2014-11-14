@@ -30,11 +30,13 @@ import java.util.Date;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetHelper;
+import org.ldp4j.application.data.DataSetModificationException;
 import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ContentProcessingException;
+import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
@@ -62,7 +64,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 	}
 
 	@Override
-	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
+	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) throws ContentProcessingException {
 		Name<?> name = TCKFHelper.nextName(getHandlerName());
 
 
@@ -71,20 +73,22 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 		DataSetHelper helper=
 				DataSetHelper.newInstance(representation);
 
-		ManagedIndividual individual =
-			helper.
-				replace(
-					DataSetHelper.SELF,
-					ManagedIndividualId.
-						createId(
-							name,
-							TCKFResourceHandler.ID),
-					ManagedIndividual.class);
+		ManagedIndividualId newId =
+			ManagedIndividualId.
+				createId(
+					name,
+					TCKFResourceHandler.ID);
 
-		individual.
-			addValue(
-				TCKFHelper.READ_ONLY_PROPERTY,
-				DataSetUtils.newLiteral(new Date().toString()));
+		try {
+			ManagedIndividual individual=helper.manage(newId);
+			individual.
+				addValue(
+					TCKFHelper.READ_ONLY_PROPERTY,
+					DataSetUtils.newLiteral(new Date().toString()));
+		} catch (DataSetModificationException e) {
+			throw new InvalidContentException("Could not process request", e);
+		}
+
 		try {
 			handler().add(name, representation);
 			ResourceSnapshot member = container.addMember(name);

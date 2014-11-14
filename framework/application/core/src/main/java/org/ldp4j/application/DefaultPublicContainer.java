@@ -40,6 +40,7 @@ import org.ldp4j.application.data.IndividualVisitor;
 import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.data.NewIndividual;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.RelativeIndividual;
 import org.ldp4j.application.data.Value;
@@ -100,6 +101,11 @@ abstract class DefaultPublicContainer<T extends ContainerTemplate> extends Defau
 
 		@Override
 		public void visitRelativeIndividual(RelativeIndividual individual) {
+			toRemove.add(individual);
+		}
+
+		@Override
+		public void visitNewIndividual(NewIndividual individual) {
 			toRemove.add(individual);
 		}
 	}

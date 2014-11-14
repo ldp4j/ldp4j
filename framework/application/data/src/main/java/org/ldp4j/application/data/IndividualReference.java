@@ -85,6 +85,19 @@ public abstract class IndividualReference<T, S extends Individual<T,S>> {
 
 	}
 
+	public static final class NewIndividualReference extends IndividualReference<URI,NewIndividual> {
+
+		private NewIndividualReference(URI location) {
+			super(location,NewIndividual.class);
+		}
+
+		@Override
+		public void accept(IndividualReferenceVisitor visitor) {
+			visitor.visitNewIndividualReference(this);
+		}
+
+	}
+
 	private final T id;
 	private final Class<? extends S> clazz;
 
@@ -148,6 +161,10 @@ public abstract class IndividualReference<T, S extends Individual<T,S>> {
 		return new ExternalIndividualReference(location);
 	}
 
+	public static IndividualReference<URI,?> newIndividual(URI location) {
+		return new NewIndividualReference(location);
+	}
+
 	@SuppressWarnings("unchecked")
 	public static <T,S extends Individual<T,S>> IndividualReference<T,S> fromIndividual(Individual<T,S> value) {
 		final AtomicReference<IndividualReference<?,?>> result=new AtomicReference<IndividualReference<?,?>>();
@@ -168,6 +185,10 @@ public abstract class IndividualReference<T, S extends Individual<T,S>> {
 				@Override
 				public void visitRelativeIndividual(RelativeIndividual individual) {
 					result.set(IndividualReference.relative(individual.id()));
+				}
+				@Override
+				public void visitNewIndividual(NewIndividual individual) {
+					result.set(IndividualReference.newIndividual(individual.id()));
 				}
 			}
 		);

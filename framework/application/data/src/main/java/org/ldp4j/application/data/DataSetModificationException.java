@@ -26,23 +26,19 @@
  */
 package org.ldp4j.application.data;
 
-import org.ldp4j.application.data.IndividualReference.ExternalIndividualReference;
-import org.ldp4j.application.data.IndividualReference.LocalIndividualReference;
-import org.ldp4j.application.data.IndividualReference.ManagedIndividualReference;
-import org.ldp4j.application.data.IndividualReference.NewIndividualReference;
-import org.ldp4j.application.data.IndividualReference.RelativeIndividualReference;
+public class DataSetModificationException extends Exception {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 5214622641554473538L;
 
-interface IndividualReferenceVisitor {
+	public DataSetModificationException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-	void visitLocalIndividualReference(LocalIndividualReference reference);
-
-	void visitManagedIndividualReference(ManagedIndividualReference reference);
-
-	void visitRelativeIndividualReference(RelativeIndividualReference reference);
-
-	void visitExternalIndividualReference(ExternalIndividualReference reference);
-
-	void visitNewIndividualReference(NewIndividualReference reference);
+	public DataSetModificationException(String message) {
+		super(message);
+	}
 
 }

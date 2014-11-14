@@ -44,6 +44,7 @@ import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.NewIndividual;
 import org.ldp4j.application.data.RelativeIndividual;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -228,6 +229,10 @@ final class DelegatedWriteSession implements WriteSession {
 				}
 				@Override
 				public void visitRelativeIndividual(RelativeIndividual individual) {
+					resourceId.set(null);
+				}
+				@Override
+				public void visitNewIndividual(NewIndividual individual) {
 					resourceId.set(null);
 				}
 			}

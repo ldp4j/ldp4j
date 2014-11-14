@@ -43,6 +43,7 @@ import org.ldp4j.application.data.IndividualVisitor;
 import org.ldp4j.application.data.Literal;
 import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
+import org.ldp4j.application.data.NewIndividual;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.RelativeIndividual;
 import org.ldp4j.application.data.Value;
@@ -131,7 +132,7 @@ public class ResourceControllerService implements Service {
 	}
 
 	private Property getInsertedContentRelation(DataSet dataSet, URI insertedContentRelation) {
-		ExternalIndividual individual = dataSet.individual(NEW_RESOURCE_SURROGATE_ID, ExternalIndividual.class);
+		NewIndividual individual = dataSet.individual(NEW_RESOURCE_SURROGATE_ID, NewIndividual.class);
 		return individual.property(insertedContentRelation);
 	}
 
@@ -163,6 +164,11 @@ public class ResourceControllerService implements Service {
 								@Override
 								public void visitRelativeIndividual(RelativeIndividual individual) {
 									// TODO: We should fail here
+								}
+								@Override
+								public void visitNewIndividual( NewIndividual individual) {
+									// TODO: We should fail here
+
 								}
 							}
 						);

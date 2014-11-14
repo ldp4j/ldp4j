@@ -20,29 +20,7 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.commons.rmf:integration-sesame:1.0.0-SNAPSHOT
+ *   Bundle      : integration-sesame-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.data;
-
-import org.ldp4j.application.data.IndividualReference.ExternalIndividualReference;
-import org.ldp4j.application.data.IndividualReference.LocalIndividualReference;
-import org.ldp4j.application.data.IndividualReference.ManagedIndividualReference;
-import org.ldp4j.application.data.IndividualReference.NewIndividualReference;
-import org.ldp4j.application.data.IndividualReference.RelativeIndividualReference;
-
-
-interface IndividualReferenceVisitor {
-
-	void visitLocalIndividualReference(LocalIndividualReference reference);
-
-	void visitManagedIndividualReference(ManagedIndividualReference reference);
-
-	void visitRelativeIndividualReference(RelativeIndividualReference reference);
-
-	void visitExternalIndividualReference(ExternalIndividualReference reference);
-
-	void visitNewIndividualReference(NewIndividualReference reference);
-
-}

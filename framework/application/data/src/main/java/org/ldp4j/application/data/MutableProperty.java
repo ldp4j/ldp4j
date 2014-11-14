@@ -149,6 +149,10 @@ final class MutableProperty implements Property {
 							public void visitRelativeIndividual(RelativeIndividual individual) {
 								newIndividual.set(dataSet().individual(individual.id(), RelativeIndividual.class));
 							}
+							@Override
+							public void visitNewIndividual(NewIndividual individual) {
+								newIndividual.set(dataSet().individual(individual.id(), NewIndividual.class));
+							}
 						}
 					);
 					return newIndividual.get();

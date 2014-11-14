@@ -33,18 +33,18 @@ import java.util.Map;
 import com.google.common.collect.ImmutableMap;
 
 final class IndividualFactory {
-	
+
 	private interface Factory<T extends Individual<?,?>> {
-		
+
 		Class<?> idClass();
-		
+
 		T newIndividual(Object id, MutableDataSet context);
-		
+
 	}
-	
+
 
 	private static abstract class SimpleFactory<S,T extends Individual<?,?>> implements Factory<T> {
-		
+
 		private final Class<? extends S> clazz;
 
 		private SimpleFactory(Class<? extends S> clazz) {
@@ -62,7 +62,7 @@ final class IndividualFactory {
 		}
 
 		protected abstract T createIndividual(S id, MutableDataSet context);
-		
+
 	}
 
 	private static final Map<Class<? extends Individual<?,?>>, Factory<?>> FACTORIES;
@@ -95,6 +95,15 @@ final class IndividualFactory {
 						}
 					).
 					put(
+						RelativeIndividual.class,
+						new SimpleFactory<RelativeIndividualId,MutableRelativeIndividual>(RelativeIndividualId.class) {
+							@Override
+							protected MutableRelativeIndividual createIndividual(RelativeIndividualId id, MutableDataSet context) {
+								return new MutableRelativeIndividual(id,context);
+							}
+						}
+					).
+					put(
 						ExternalIndividual.class,
 						new SimpleFactory<URI,MutableExternalIndividual>(URI.class) {
 							@Override
@@ -104,11 +113,11 @@ final class IndividualFactory {
 						}
 					).
 					put(
-						RelativeIndividual.class,
-						new SimpleFactory<RelativeIndividualId,MutableRelativeIndividual>(RelativeIndividualId.class) {
+						NewIndividual.class,
+						new SimpleFactory<URI,MutableNewIndividual>(URI.class) {
 							@Override
-							protected MutableRelativeIndividual createIndividual(RelativeIndividualId id, MutableDataSet context) {
-								return new MutableRelativeIndividual(id,context);
+							protected MutableNewIndividual createIndividual(URI id, MutableDataSet context) {
+								return new MutableNewIndividual(id,context);
 							}
 						}
 					).

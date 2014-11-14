@@ -66,6 +66,11 @@ public final class DataSetUtils {
 		public void visitRelativeIndividual(RelativeIndividual individual) {
 			found=dataSet.individual(individual.id(),RelativeIndividual.class);
 		}
+
+		@Override
+		public void visitNewIndividual(NewIndividual individual) {
+			found=dataSet.individual(individual.id(),NewIndividual.class);
+		}
 	}
 
 	private static class ValueReplicator implements ValueVisitor {

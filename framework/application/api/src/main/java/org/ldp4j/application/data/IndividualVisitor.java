@@ -30,10 +30,12 @@ public interface IndividualVisitor {
 
 	void visitManagedIndividual(ManagedIndividual individual);
 
+	void visitRelativeIndividual(RelativeIndividual individual);
+
 	void visitLocalIndividual(LocalIndividual individual);
 
 	void visitExternalIndividual(ExternalIndividual individual);
 
-	void visitRelativeIndividual(RelativeIndividual individual);
+	void visitNewIndividual(NewIndividual individual);
 
 }

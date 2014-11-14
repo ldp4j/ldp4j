@@ -30,6 +30,13 @@ import java.net.URI;
 
 public interface RelativeIndividual extends Individual<RelativeIndividualId,RelativeIndividual> {
 
+	/**
+	 * The relative path w.r.t. the location where the parent managed resource
+	 * is available. This URI will always be relative child the previously
+	 * mentioned location.
+	 * 
+	 * @return
+	 */
 	URI path();
 
 	ManagedIndividualId parentId();

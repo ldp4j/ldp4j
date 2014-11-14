@@ -49,6 +49,7 @@ import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NameVisitor;
+import org.ldp4j.application.data.NewIndividual;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.RelativeIndividual;
 import org.ldp4j.application.data.RelativeIndividualId;
@@ -121,11 +122,20 @@ final class TripleSetBuilder {
 
 		@Override
 		public void visitIndividual(Individual<?,?> individual) {
+			// Individual is a NewIndividual, ignore
+			if(subject==null) {
+				return;
+			}
+			Resource<?> object = toResource(individual);
+			// Object individual is a NewIndividual
+			if(object==null) {
+				return;
+			}
 			triples.add(
 				triple(
 					subject,
 					predicate,
-					toResource(individual)
+					object
 				)
 			);
 			TripleSetBuilder.this.generateTriples(individual);
@@ -133,6 +143,10 @@ final class TripleSetBuilder {
 
 		@Override
 		public void visitLiteral(Literal<?> literal) {
+			// Individual is a NewIndividual, ignore
+			if(subject==null) {
+				return;
+			}
 			triples.add(
 				triple(
 					subject,
@@ -194,6 +208,10 @@ final class TripleSetBuilder {
 				@Override
 				public void visitExternalIndividual(ExternalIndividual individual) {
 					result.set(uriRef(individual.id()));
+				}
+				@Override
+				public void visitNewIndividual(NewIndividual individual) {
+					// Nothing to do
 				}
 			}
 		);

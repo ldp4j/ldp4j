@@ -37,6 +37,7 @@ import java.util.Map;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.ext.ContentProcessingException;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
@@ -44,19 +45,19 @@ import org.ldp4j.application.session.WriteSession;
 public class InMemoryContainerHandler extends InMemoryResourceHandler implements ContainerHandler {
 
 	public static class NameProvider {
-		
+
 		public class NameSource {
-			
+
 			private final Deque<Name<?>> pendingNames;
 			private final List<Name<?>> consumedNames;
 			private final String tag;
-			
+
 			private NameSource(String tag) {
 				this.tag = tag;
 				this.pendingNames=new LinkedList<Name<?>>();
 				this.consumedNames=new ArrayList<Name<?>>();
 			}
-			
+
 			public Name<?> nextName() {
 				if(this.pendingNames.isEmpty()) {
 					throw new IllegalStateException(String.format("No more '%s' names available for resource '%s'",tag,NameProvider.this.owner));
@@ -65,21 +66,21 @@ public class InMemoryContainerHandler extends InMemoryResourceHandler implements
 				this.consumedNames.add(result);
 				return result;
 			}
-			
+
 			public void addName(Name<?> name) {
 				this.pendingNames.addLast(name);
 			}
-			
+
 			public boolean isServed(Name<?> name) {
 				return this.consumedNames.contains(name);
 			}
-			
+
 			public boolean isPending(Name<?> name) {
 				return this.pendingNames.contains(name);
 			}
 
 		}
-		
+
 
 		private final Name<?> owner;
 		private final Map<String,NameSource> attachmentNameSources;
@@ -92,7 +93,7 @@ public class InMemoryContainerHandler extends InMemoryResourceHandler implements
 			this.resourceNamesSource=new NameSource("resource");
 			this.memberNamesSource=new NameSource("member");
 		}
-		
+
 		public Name<?> owner() {
 			return this.owner;
 		}
@@ -105,7 +106,7 @@ public class InMemoryContainerHandler extends InMemoryResourceHandler implements
 			}
 			return result;
 		}
-		
+
 		public List<Name<?>> pendingAttachmentNames(String attachmentId) {
 			List<Name<?>> result = new ArrayList<Name<?>>();
 			NameSource source = this.attachmentNameSources.get(attachmentId);
@@ -122,7 +123,7 @@ public class InMemoryContainerHandler extends InMemoryResourceHandler implements
 		public List<Name<?>> pendingMemberNames(String attachmentId) {
 			return new ArrayList<Name<?>>(this.memberNamesSource.pendingNames);
 		}
-		
+
 		public void addResourceName(Name<?> nextName) {
 			this.resourceNamesSource.addName(nextName);
 		}
@@ -142,28 +143,28 @@ public class InMemoryContainerHandler extends InMemoryResourceHandler implements
 		public Name<?> nextMemberName() {
 			return this.memberNamesSource.nextName();
 		}
-		
+
 //		public static NameProvider create(Resource resource) {
 //			return create(resource.id().name());
 //		}
-		
+
 		public static NameProvider create(Name<?> resource) {
 			return new NameProvider(resource);
 		}
 
 	}
-	
+
 	private final Map<Name<?>,NameProvider> nameProviders;
 
 	protected InMemoryContainerHandler(String handlerName) {
 		super(handlerName);
 		this.nameProviders=new HashMap<Name<?>, NameProvider>();
 	}
-	
+
 	public final void addNameProvider(Name<?> containerName, NameProvider provider) {
 		this.nameProviders.put(containerName, provider);
 	}
-	
+
 	public final NameProvider nameProvider(Name<?> containerName) {
 		NameProvider result = this.nameProviders.get(containerName);
 		if(result==null) {
@@ -173,8 +174,8 @@ public class InMemoryContainerHandler extends InMemoryResourceHandler implements
 	}
 
 	@Override
-	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
+	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) throws ContentProcessingException {
 		throw new UnsupportedOperationException("["+getHandlerName()+"] Method not implemented yet");
 	}
-	
+
 }

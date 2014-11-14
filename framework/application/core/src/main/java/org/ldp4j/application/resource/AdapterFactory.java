@@ -42,13 +42,13 @@ import org.ldp4j.application.ext.ResourceHandler;
 final class AdapterFactory {
 
 	private static class ResourceAdapter<T extends ResourceSnapshot> implements Adapter {
-		
+
 		private final T resource;
 		private final ResourceId resourceId;
 		private final ResourceHandler delegate;
 		private final WriteSession session;
 		private final WriteSessionService service;
-	
+
 		private ResourceAdapter(T resource, ResourceId resourceId, ResourceHandler delegate, WriteSession session, WriteSessionService service) {
 			this.resource = resource;
 			this.resourceId = resourceId;
@@ -56,18 +56,18 @@ final class AdapterFactory {
 			this.session = session;
 			this.service = service;
 		}
-	
+
 		protected WriteSession writeSession() {
 			return this.session;
 		}
-		
+
 		protected final <S> S as(Class<? extends S> clazz) throws UnsupportedFeatureException {
 			if(clazz.isInstance(this.delegate)) {
 				return clazz.cast(this.delegate);
 			}
 			throw new UnsupportedFeatureException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),clazz.getCanonicalName());
 		}
-	
+
 		protected final T resource() {
 			return this.resource;
 		}
@@ -75,11 +75,11 @@ final class AdapterFactory {
 		protected void finalizeSession() {
 			this.service.terminateSession(this.session);
 		}
-		
+
 		protected Resource detach(ResourceSnapshot snapshot) {
 			return this.service.detach(this.session, snapshot);
 		}
-		
+
 		@Override
 		public ResourceId resourceId() {
 			return this.resourceId;
@@ -104,7 +104,7 @@ final class AdapterFactory {
 				finalizeSession();
 			}
 		}
-	
+
 		@Override
 		public final void delete() throws UnsupportedFeatureException {
 			try {
@@ -113,11 +113,11 @@ final class AdapterFactory {
 				finalizeSession();
 			}
 		}
-	
+
 		@Override
-		public Resource create(DataSet content) {
+		public Resource create(DataSet content) throws FeatureException {
 			finalizeSession();
-			throw 
+			throw
 				new IllegalStateException(
 					new UnsupportedFeatureException(
 						this.resourceId.templateId(),
@@ -128,28 +128,35 @@ final class AdapterFactory {
 	}
 
 	private static class ContainerAdapter extends ResourceAdapter<ContainerSnapshot> {
-		
+
+		private final ResourceId resourceId;
+		private final ResourceHandler delegate;
+
 		private ContainerAdapter(ContainerSnapshot container, ResourceId resourceId, ResourceHandler delegate, WriteSession session, WriteSessionService service) {
 			super(container,resourceId,delegate,session,service);
+			this.resourceId = resourceId;
+			this.delegate = delegate;
 		}
-	
+
 		@Override
-		public Resource create(DataSet content) {
+		public Resource create(DataSet content) throws FeatureException {
 			try {
 				ResourceSnapshot create = as(ContainerHandler.class).create(resource(),content,writeSession());
 				Resource detach = detach(create);
 				return detach;
 			} catch (UnsupportedFeatureException e) {
 				throw new IllegalStateException(e);
+			} catch (ContentProcessingException e) {
+				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),ContainerHandler.class.getCanonicalName(),e);
 			} finally {
 				finalizeSession();
 			}
 		}
-	
+
 	}
 
 	private static final class FactoryVistor implements SnapshotVisitor {
-	
+
 		private final ResourceHandler delegate;
 		private final WriteSession session;
 		private final ResourceId resourceId;
@@ -176,9 +183,9 @@ final class AdapterFactory {
 		public void visitContainerSnapshot(ContainerSnapshot resource) {
 			this.adapter=new ContainerAdapter(resource,resourceId,this.delegate,session,service);
 		}
-	
+
 	}
-	
+
 	static Adapter newAdapter(Resource resource, ResourceHandler resourceHandler, WriteSessionService writeSessionService, WriteSessionConfiguration configuration) {
 		WriteSession session = writeSessionService.createSession(configuration);
 		ResourceSnapshot snapshot = writeSessionService.attach(session,resource,resourceHandler.getClass());
@@ -187,5 +194,5 @@ final class AdapterFactory {
 		snapshot.accept(factory);
 		return factory.getAdapter();
 	}
-	
+
 }

@@ -33,6 +33,6 @@ import org.ldp4j.application.data.DataSet;
 
 public interface ContainerHandler extends ResourceHandler {
 
-	ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session);
+	ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) throws ContentProcessingException;
 
 }

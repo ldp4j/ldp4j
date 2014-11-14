@@ -32,15 +32,15 @@ import java.util.Iterator;
 import java.util.Set;
 
 
-final class MutableExternalIndividual implements ExternalIndividual {
+final class MutableNewIndividual implements NewIndividual {
 
 	private final URI id;
 	private final PropertyCollection properties;
 	private final MutableDataSet context;
 
-	protected MutableExternalIndividual(URI id, MutableDataSet context) {
-		if(!id.isAbsolute()) {
-			throw new IllegalArgumentException("External individual URIs must be absolute");
+	protected MutableNewIndividual(URI id, MutableDataSet context) {
+		if(id.isAbsolute()) {
+			throw new IllegalArgumentException("New individual URIs must be relative");
 		}
 		this.id=id;
 		this.context = context;
@@ -53,7 +53,7 @@ final class MutableExternalIndividual implements ExternalIndividual {
 	}
 
 	@Override
-	public URI location() {
+	public URI path() {
 		return this.id;
 	}
 
@@ -88,13 +88,13 @@ final class MutableExternalIndividual implements ExternalIndividual {
 	}
 
 	@Override
-	public ExternalIndividual addValue(URI propertyId, Value value) {
+	public NewIndividual addValue(URI propertyId, Value value) {
 		this.properties.addValue(propertyId, value);
 		return this;
 	}
 
 	@Override
-	public ExternalIndividual removeValue(URI propertyId, Value value) {
+	public NewIndividual removeValue(URI propertyId, Value value) {
 		this.properties.removeValue(propertyId, value);
 		return this;
 	}
@@ -106,7 +106,7 @@ final class MutableExternalIndividual implements ExternalIndividual {
 
 	@Override
 	public void accept(IndividualVisitor visitor) {
-		visitor.visitExternalIndividual(this);
+		visitor.visitNewIndividual(this);
 	}
 
 	@Override

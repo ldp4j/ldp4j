@@ -20,29 +20,22 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
-import org.ldp4j.application.data.IndividualReference.ExternalIndividualReference;
-import org.ldp4j.application.data.IndividualReference.LocalIndividualReference;
-import org.ldp4j.application.data.IndividualReference.ManagedIndividualReference;
-import org.ldp4j.application.data.IndividualReference.NewIndividualReference;
-import org.ldp4j.application.data.IndividualReference.RelativeIndividualReference;
+import java.net.URI;
 
+public interface NewIndividual extends Individual<URI,NewIndividual> {
 
-interface IndividualReferenceVisitor {
-
-	void visitLocalIndividualReference(LocalIndividualReference reference);
-
-	void visitManagedIndividualReference(ManagedIndividualReference reference);
-
-	void visitRelativeIndividualReference(RelativeIndividualReference reference);
-
-	void visitExternalIndividualReference(ExternalIndividualReference reference);
-
-	void visitNewIndividualReference(NewIndividualReference reference);
+	/**
+	 * The path where the individual should be made available. The URI will
+	 * always be relative.
+	 *
+	 * @return
+	 */
+	URI path();
 
 }

@@ -37,6 +37,7 @@ import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.data.NewIndividual;
 import org.ldp4j.application.data.RelativeIndividual;
 import org.ldp4j.application.data.RelativeIndividualId;
 import org.ldp4j.application.data.Value;
@@ -114,19 +115,24 @@ final class ValueAdapter {
 	}
 
 	private Individual<?, ?> resolveURIRef(URIRef node) {
-		for(URI identity:URIHelper.getParents(node.getIdentity())) {
+		URI location = node.getIdentity();
+		for(URI identity:URIHelper.getParents(location)) {
 			ManagedIndividualId resourceId = resourceResolver.resolveLocation(identity);
 			if(resourceId!=null) {
-				if(identity.equals(node.getIdentity())) {
+				if(identity.equals(location)) {
 					return dataSet.individual(resourceId, ManagedIndividual.class);
 				} else {
-					URI relativePath = identity.relativize(node.getIdentity());
+					URI relativePath = identity.relativize(location);
 					RelativeIndividualId relativeId = RelativeIndividualId.createId(resourceId, relativePath);
 					return dataSet.individual(relativeId,RelativeIndividual.class);
 				}
 			}
 		}
-		return dataSet.individual(base.relativize(node.getIdentity()),ExternalIndividual.class);
+		URI path = base.relativize(location);
+		if(!path.isAbsolute()) {
+			return dataSet.individual(path,NewIndividual.class);
+		}
+		return dataSet.individual(location,ExternalIndividual.class);
 	}
 
 	@SuppressWarnings("rawtypes")

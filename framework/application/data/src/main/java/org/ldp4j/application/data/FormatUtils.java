@@ -72,6 +72,11 @@ public final class FormatUtils implements IndividualVisitor {
 		log("<%s> {External}",individual.id());
 	}
 
+	@Override
+	public void visitNewIndividual(NewIndividual individual) {
+		log("<%s> {New}",individual.id());
+	}
+
 	public static String formatLiteral(Literal<?> literal) {
 		return String.format("%s [%s]",literal.get(),literal.get().getClass().getCanonicalName());
 	}
