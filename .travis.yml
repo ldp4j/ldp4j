@@ -7,3 +7,8 @@ notifications:
       - ldp4j-commits@googlegroups.com
     on_success: always
     on_failure: always
+script: "mvn deploy -Dossrh --settings config/target/classes/ci/settings.xml"
+env:
+  global:
+   - secure: "LFXi83cGlanplH/xOMC7OFYMtt6A+SGnOLB7/kfwa+7O7hkRVb3sml2CpS++evKfZbrNfvZayIghB2cBqR3aUp2GjTmpc7C57z3RK7Q4ttkCLkJE3Mku7114zrWJqlG1mvKudX4KCR5jNWZUAsC0WiMO9IvfJvxtB08wTtRHFF4="
+   - secure: "TVgBkgz/vI4n521yM0bhr5qMGh2maJSFm/zxnlRuDHrwtsHOYFJb06dc85dQFcujG6mnehoSIMD8JzHn71Z7z5/wa6jFKlqazZh1vR5vDsQugpnd2dSuU+ssSRmFQndPWu/ve3Z4kvzfX7OTN507FE2nJcuWCfKBw1FpWlf4n2I="
