@@ -6,3 +6,7 @@ A Java-based framework for the development of read-write Linked Data application
 LDP4j is distributed under the Apache License, version 2.0.
 
 For more information, please visit [LDP4j website](http://www.ldp4j.org/).
+
+## Build Status
+
+[![Build Status](https://travis-ci.org/nandana/ldp4j.svg?branch=master)](https://travis-ci.org/nandana/ldp4j)
