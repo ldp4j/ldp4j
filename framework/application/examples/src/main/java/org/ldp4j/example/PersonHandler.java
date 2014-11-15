@@ -37,7 +37,6 @@ import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.ValidationReport;
 import org.ldp4j.application.data.validation.Validator;
 import org.ldp4j.application.ext.Deletable;
-import org.ldp4j.application.ext.ContentProcessingException;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.annotations.Attachment;
@@ -59,24 +58,24 @@ import org.slf4j.LoggerFactory;
 		@Attachment(
 			id="books",
 			path="books",
-			handler=BookContainerHandler.class),	
+			handler=BookContainerHandler.class),
 		@Attachment(
 			id=PersonHandler.RELATIVES_ID,
 			path=PersonHandler.RELATIVES_PATH,
-			handler=RelativeContainerHandler.class)	
+			handler=RelativeContainerHandler.class)
 	}
 )
 public class PersonHandler extends InMemoryResourceHandler implements Modifiable, Deletable {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(PersonHandler.class);
-	
+
 	public static final String ID="personTemplate";
-	
+
 	public static final String RELATIVES_ID   = "personRelatives";
 	public static final String RELATIVES_PATH = "relatives";
 
 	public static final URI READ_ONLY_PROPERTY = URI.create("http://www.example.org/vocab#creationDate");
-	
+
 	public PersonHandler() {
 		super("Person");
 	}
@@ -97,7 +96,7 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 	}
 
 	@Override
-	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws ContentProcessingException {
+	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InconsistentContentException {
 		DataSet dataSet = get(resource);
 		logDebug(resource, "Enforcing consistency...");
 		enforceConsistency(resource,content,dataSet);
@@ -126,12 +125,12 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 		}
 	}
 
-	protected void enforceConsistency(ResourceSnapshot resource, DataSet content, DataSet dataSet) throws ContentProcessingException {
+	protected void enforceConsistency(ResourceSnapshot resource, DataSet content, DataSet dataSet) throws InconsistentContentException {
 		ManagedIndividualId id = ManagedIndividualId.createId(resource.name(),PersonHandler.ID);
-		ManagedIndividual stateIndividual = 
+		ManagedIndividual stateIndividual =
 			dataSet.
 				individual(
-					id, 
+					id,
 					ManagedIndividual.class);
 		Property stateProperty=
 				stateIndividual.property(PersonHandler.READ_ONLY_PROPERTY);
@@ -142,15 +141,15 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 		} else {
 			constraint=ValidationConstraintFactory.readOnlyProperty(id,PersonHandler.READ_ONLY_PROPERTY);
 		}
-		Validator helper = 
+		Validator helper =
 				Validator.
 					builder().
 						withPropertyConstraint(constraint).
 						build();
-		
+
 		ValidationReport report = helper.validate(content);
 		if(!report.isValid()) {
-			ContentProcessingException error = new InconsistentContentException("Validation failed: "+report.validationFailures());
+			InconsistentContentException error = new InconsistentContentException("Validation failed: "+report.validationFailures());
 			logError(resource,error,"Something went wrong when validating %n%s",content);
 			throw error;
 		}

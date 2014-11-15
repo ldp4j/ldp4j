@@ -26,10 +26,12 @@
  */
 package org.ldp4j.application.engine.context;
 
-public class ApplicationExecutionException extends Exception {
+import org.ldp4j.application.engine.ApplicationEngineException;
+
+public class ApplicationExecutionException extends ApplicationEngineException {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 1016171692089629099L;
 

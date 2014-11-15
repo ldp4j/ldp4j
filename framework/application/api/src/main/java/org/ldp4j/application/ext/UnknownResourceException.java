@@ -20,28 +20,28 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-engine:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-engine-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine;
+package org.ldp4j.application.ext;
 
-public class ApplicationBootstrapException extends ApplicationInitializationException {
+public class UnknownResourceException extends ApplicationUsageException {
 
 	/**
-	 * 
+	 *
 	 */
-	private static final long serialVersionUID = 4448203110510857304L;
+	private static final long serialVersionUID = 1641191423008569285L;
 
-	public ApplicationBootstrapException(String message, Throwable cause) {
+	public UnknownResourceException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	public ApplicationBootstrapException(String message) {
+	public UnknownResourceException(String message) {
 		super(message);
 	}
 
-	public ApplicationBootstrapException(Throwable cause) {
+	public UnknownResourceException(Throwable cause) {
 		super(cause);
 	}
 

@@ -26,18 +26,19 @@
  */
 package org.ldp4j.application.resource;
 
+import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.ext.ApplicationRuntimeException;
+import org.ldp4j.application.ext.ApplicationUsageException;
+import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.ext.Deletable;
+import org.ldp4j.application.ext.Modifiable;
+import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.SnapshotVisitor;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionConfiguration;
 import org.ldp4j.application.session.WriteSessionService;
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.ext.ContainerHandler;
-import org.ldp4j.application.ext.Deletable;
-import org.ldp4j.application.ext.ContentProcessingException;
-import org.ldp4j.application.ext.Modifiable;
-import org.ldp4j.application.ext.ResourceHandler;
 
 final class AdapterFactory {
 
@@ -86,19 +87,12 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final DataSet get() {
+		public final DataSet get() throws FeatureException {
 			try {
 				return this.delegate.get(resource());
-			} finally {
-				finalizeSession();
-			}
-		}
-
-		@Override
-		public final void update(DataSet content) throws UnsupportedFeatureException, FeatureExecutionException {
-			try {
-				as(Modifiable.class).update(resource(), content, writeSession());
-			} catch (ContentProcessingException e) {
+			} catch (ApplicationUsageException e) {
+				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
+			} catch (ApplicationRuntimeException e) {
 				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
 			} finally {
 				finalizeSession();
@@ -106,9 +100,26 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final void delete() throws UnsupportedFeatureException {
+		public final void update(DataSet content) throws FeatureException {
+			try {
+				as(Modifiable.class).update(resource(), content, writeSession());
+			} catch (ApplicationUsageException e) {
+				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
+			} catch (ApplicationRuntimeException e) {
+				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
+			} finally {
+				finalizeSession();
+			}
+		}
+
+		@Override
+		public final void delete() throws FeatureException {
 			try {
 				as(Deletable.class).delete(resource(),writeSession());
+			} catch (ApplicationUsageException e) {
+				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
+			} catch (ApplicationRuntimeException e) {
+				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
 			} finally {
 				finalizeSession();
 			}
@@ -118,11 +129,10 @@ final class AdapterFactory {
 		public Resource create(DataSet content) throws FeatureException {
 			finalizeSession();
 			throw
-				new IllegalStateException(
-					new UnsupportedFeatureException(
-						this.resourceId.templateId(),
-						this.delegate.getClass().getCanonicalName(),
-						Container.class.getCanonicalName()));
+				new UnsupportedFeatureException(
+					this.resourceId.templateId(),
+					this.delegate.getClass().getCanonicalName(),
+					Container.class.getCanonicalName());
 		}
 
 	}
@@ -144,10 +154,10 @@ final class AdapterFactory {
 				ResourceSnapshot create = as(ContainerHandler.class).create(resource(),content,writeSession());
 				Resource detach = detach(create);
 				return detach;
-			} catch (UnsupportedFeatureException e) {
-				throw new IllegalStateException(e);
-			} catch (ContentProcessingException e) {
+			} catch (ApplicationUsageException e) {
 				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),ContainerHandler.class.getCanonicalName(),e);
+			} catch (ApplicationRuntimeException e) {
+				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
 			} finally {
 				finalizeSession();
 			}

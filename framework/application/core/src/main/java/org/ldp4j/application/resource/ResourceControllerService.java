@@ -86,7 +86,7 @@ public class ResourceControllerService implements Service {
 		return AdapterFactory.newAdapter(resource,delegate,this.writeSessionService,configuration);
 	}
 
-	public DataSet getResource(Resource resource) {
+	public DataSet getResource(Resource resource) throws FeatureException {
 		return adapter(resource, WriteSessionConfiguration.builder().build()).get();
 	}
 

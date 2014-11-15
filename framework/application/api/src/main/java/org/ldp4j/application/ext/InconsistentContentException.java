@@ -26,13 +26,9 @@
  */
 package org.ldp4j.application.ext;
 
-public class InconsistentContentException extends ContentProcessingException {
+public class InconsistentContentException extends InvalidContentException {
 
 	private static final long serialVersionUID = -9204136391485005628L;
-
-	public InconsistentContentException() {
-		super();
-	}
 
 	public InconsistentContentException(String message, Throwable cause) {
 		super(message, cause);

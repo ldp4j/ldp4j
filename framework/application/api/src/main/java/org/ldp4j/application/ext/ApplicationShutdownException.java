@@ -26,23 +26,22 @@
  */
 package org.ldp4j.application.ext;
 
-public abstract class ContentProcessingException extends Exception {
+public class ApplicationShutdownException extends ApplicationLifecycleException {
 
-	private static final long serialVersionUID = 1090034112299823594L;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 1517147774180322641L;
 
-	public ContentProcessingException() {
-		super();
-	}
-
-	public ContentProcessingException(String message, Throwable cause) {
+	public ApplicationShutdownException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
-	public ContentProcessingException(String message) {
+	public ApplicationShutdownException(String message) {
 		super(message);
 	}
 
-	public ContentProcessingException(Throwable cause) {
+	public ApplicationShutdownException(Throwable cause) {
 		super(cause);
 	}
 

@@ -26,7 +26,7 @@
  */
 package org.ldp4j.application.engine;
 
-public class ApplicationConfigurationException extends ApplicationBootstrapException {
+public class ApplicationConfigurationException extends ApplicationContextBootstrapException {
 
 	/**
 	 * 

@@ -27,9 +27,11 @@
 package org.ldp4j.application.lifecycle;
 
 import org.ldp4j.application.endpoint.EndpointFactoryService;
-import org.ldp4j.application.engine.ApplicationBootstrapException;
+import org.ldp4j.application.engine.ApplicationContextBootstrapException;
 import org.ldp4j.application.engine.ApplicationConfigurationException;
 import org.ldp4j.application.ext.Application;
+import org.ldp4j.application.ext.ApplicationInitializationException;
+import org.ldp4j.application.ext.ApplicationSetupException;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.resource.ResourceFactoryService;
 import org.ldp4j.application.session.WriteSession;
@@ -66,7 +68,7 @@ final class ApplicationLoader<T extends Configuration> {
 		this.endpointFactoryService=serviceRegistry.getService(EndpointFactoryService.class);
 		this.resourceFactoryService=serviceRegistry.getService(ResourceFactoryService.class);
 	}
-	
+
 	private WriteSessionService writeSessionService() {
 		return this.writeSessionService;
 	}
@@ -133,7 +135,7 @@ final class ApplicationLoader<T extends Configuration> {
 		return this;
 	}
 
-	Application<T> bootstrap() throws ApplicationBootstrapException {
+	Application<T> bootstrap() throws ApplicationContextBootstrapException {
 		Application<T> application=instantiateApplication();
 		T configuration = instantiateConfiguration(application);
 		setup(application, configuration);
@@ -143,47 +145,56 @@ final class ApplicationLoader<T extends Configuration> {
 
 	private void initialize(Application<T> application) throws ApplicationConfigurationException {
 		WriteSession session = writeSessionService().createSession(WriteSessionConfiguration.builder().build());
-		application.initialize(session);
-		writeSessionService().terminateSession(session);
+		try {
+			application.initialize(session);
+		} catch (ApplicationInitializationException e) {
+			throw new ApplicationConfigurationException(e);
+		} finally {
+			writeSessionService().terminateSession(session);
+		}
 	}
 
 	private void setup(Application<T> application, T configuration) throws ApplicationConfigurationException {
 		BootstrapImpl<T> bootstrap=new BootstrapImpl<T>(configuration,templateManagementService());
 		EnvironmentImpl environment=
 			new EnvironmentImpl(
-				templateManagementService(), 
-				resourceFactoryService(), 
-				endpointFactoryService(), 
-				resourceRepository(), 
+				templateManagementService(),
+				resourceFactoryService(),
+				endpointFactoryService(),
+				resourceRepository(),
 				endpointRepository()
 			);
-		application.setup(environment,bootstrap);
-		bootstrap.configureTemplates();
-		environment.configureRootResources();
-	}
-	
-	private Application<T> instantiateApplication() throws ApplicationBootstrapException {
 		try {
-			return this.appClass.newInstance();
-		} catch (InstantiationException e) {
-			throw new ApplicationBootstrapException(e);
-		} catch (IllegalAccessException e) {
-			throw new ApplicationBootstrapException(e);
+			application.setup(environment,bootstrap);
+			bootstrap.configureTemplates();
+			environment.configureRootResources();
+		} catch (ApplicationSetupException e) {
+			throw new ApplicationConfigurationException(e);
 		}
 	}
 
-	private T instantiateConfiguration(Application<T> app) throws ApplicationBootstrapException {
+	private Application<T> instantiateApplication() throws ApplicationContextBootstrapException {
+		try {
+			return this.appClass.newInstance();
+		} catch (InstantiationException e) {
+			throw new ApplicationContextBootstrapException(e);
+		} catch (IllegalAccessException e) {
+			throw new ApplicationContextBootstrapException(e);
+		}
+	}
+
+	private T instantiateConfiguration(Application<T> app) throws ApplicationContextBootstrapException {
 		try {
 			Class<T> configurationClass = app.getConfigurationClass();
 			return configurationClass.newInstance();
 		} catch (InstantiationException e) {
-			throw new ApplicationBootstrapException("Could not load configuration", e);
+			throw new ApplicationContextBootstrapException("Could not load configuration", e);
 		} catch (IllegalAccessException e) {
-			throw new ApplicationBootstrapException("Could not load configuration", e);
+			throw new ApplicationContextBootstrapException("Could not load configuration", e);
 		}
 	}
-	
-	static <T extends Configuration> ApplicationLoader<T> newInstance(Class<? extends Application<T>> appClass) throws ApplicationBootstrapException {
+
+	static <T extends Configuration> ApplicationLoader<T> newInstance(Class<? extends Application<T>> appClass) throws ApplicationContextBootstrapException {
 		return new ApplicationLoader<T>(appClass);
 	}
 

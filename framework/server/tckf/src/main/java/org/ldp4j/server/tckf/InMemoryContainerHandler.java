@@ -34,15 +34,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ContainerHandler;
-import org.ldp4j.application.ext.ContentProcessingException;
-import org.ldp4j.application.session.ContainerSnapshot;
-import org.ldp4j.application.session.ResourceSnapshot;
-import org.ldp4j.application.session.WriteSession;
 
-public class InMemoryContainerHandler extends InMemoryResourceHandler implements ContainerHandler {
+public abstract class InMemoryContainerHandler extends InMemoryResourceHandler implements ContainerHandler {
 
 	public static class NameProvider {
 
@@ -144,10 +139,6 @@ public class InMemoryContainerHandler extends InMemoryResourceHandler implements
 			return this.memberNamesSource.nextName();
 		}
 
-//		public static NameProvider create(Resource resource) {
-//			return create(resource.id().name());
-//		}
-
 		public static NameProvider create(Name<?> resource) {
 			return new NameProvider(resource);
 		}
@@ -171,11 +162,6 @@ public class InMemoryContainerHandler extends InMemoryResourceHandler implements
 			throw new IllegalStateException("Unknown container '"+containerName+"'");
 		}
 		return result;
-	}
-
-	@Override
-	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) throws ContentProcessingException {
-		throw new UnsupportedOperationException("["+getHandlerName()+"] Method not implemented yet");
 	}
 
 }

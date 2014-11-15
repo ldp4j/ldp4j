@@ -32,6 +32,20 @@ import org.ldp4j.application.data.DataSet;
 
 public interface ResourceHandler {
 
-	DataSet get(ResourceSnapshot resource);
+	/**
+	 * Get a representation of a resource managed by the resource handler.
+	 *
+	 * @param resource
+	 *            the resource whose representation is to be retrieved.
+	 * @return the data set that represents the specified resource.
+	 * @throws UnknownResourceException
+	 *             if the resource handler does not manage the specified
+	 *             resource.
+	 * @throws ApplicationRuntimeException
+	 *             if an internal exception prevents the retrieval of the
+	 *             representation.
+	 */
+	DataSet get(ResourceSnapshot resource)
+			throws UnknownResourceException, ApplicationRuntimeException;
 
 }

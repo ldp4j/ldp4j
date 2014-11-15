@@ -147,13 +147,13 @@ public abstract class ApplicationEngine {
 			return this.managedClass.isInstance(instance);
 		}
 
-		protected abstract T createContext(String applicationClassName) throws ApplicationInitializationException;
+		protected abstract T createContext(String applicationClassName) throws ApplicationContextCreationException;
 
-		protected final boolean disposeContext(ApplicationContext applicationContext) {
+		protected final boolean disposeContext(ApplicationContext applicationContext) throws ApplicationContextTerminationException {
 			return doDisposeContext(this.managedClass.cast(applicationContext));
 		}
 
-		protected abstract boolean doDisposeContext(T applicationContext);
+		protected abstract boolean doDisposeContext(T applicationContext) throws ApplicationContextTerminationException ;
 
 	}
 
@@ -179,7 +179,7 @@ public abstract class ApplicationEngine {
 		return this.contexts.containsKey(context.applicationClassName()) && this.contexts.containsValue(context);
 	}
 
-	private void unsafeDisposeContext(ApplicationContext applicationContext) {
+	private void unsafeDisposeContext(ApplicationContext applicationContext) throws ApplicationContextTerminationException {
 		applicationContextManager().disposeContext(applicationContext);
 		this.loadedContexts.remove(applicationContext.applicationClassName());
 		this.contexts.remove(applicationContext.applicationClassName());
@@ -215,7 +215,13 @@ public abstract class ApplicationEngine {
 		}
 		this.currentContext.set(null);
 		for(ApplicationContext ctx:this.contexts.values()) {
-			unsafeDisposeContext(ctx);
+			try {
+				unsafeDisposeContext(ctx);
+			} catch (ApplicationContextTerminationException e) {
+				if(LOGGER.isErrorEnabled()) {
+					LOGGER.error("Could not terminate context", e);
+				}
+			}
 		}
 		try {
 			cleanUp();
@@ -224,7 +230,7 @@ public abstract class ApplicationEngine {
 		}
 	}
 
-	public final ApplicationContext load(String applicationClassName) throws ApplicationInitializationException {
+	public final ApplicationContext load(String applicationClassName) throws ApplicationContextCreationException {
 		checkNotNull(applicationClassName,"Application class name cannot be null");
 		checkApplicationEngineActive();
 		write.lock();
@@ -269,13 +275,13 @@ public abstract class ApplicationEngine {
 		}
 	}
 
-	public final boolean dispose(ApplicationContext applicationContext) {
+	public final boolean dispose(ApplicationContext applicationContext) throws ApplicationContextTerminationException {
 		checkNotNull(applicationContext,"Application context cannot be null");
 		checkApplicationEngineActive();
 		write.lock();
 		try {
 			if(!applicationContextManager().isManaged(applicationContext)) {
-				throw new IllegalArgumentException("Invalid application context class "+applicationContext.getClass().getName());
+				throw new ApplicationContextTerminationException("Invalid application context class "+applicationContext.getClass().getName());
 			}
 			if(!isApplicationContextLoaded(applicationContext)) {
 				return false;

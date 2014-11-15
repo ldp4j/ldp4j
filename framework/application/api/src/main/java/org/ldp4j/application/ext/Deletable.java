@@ -31,6 +31,22 @@ import org.ldp4j.application.session.WriteSession;
 
 public interface Deletable {
 
-	void delete(ResourceSnapshot resource, WriteSession session);
+	/**
+	 * Delete a resource managed by a resource handler.
+	 *
+	 * @param resource
+	 *            the resource that is to be deleted.
+	 * @param session
+	 *            the session to use for registering the side effects of the
+	 *            operation.
+	 * @throws UnknownResourceException
+	 *             if the specified resource is not managed by the resource
+	 *             handler.
+	 * @throws ApplicationRuntimeException
+	 *             if an internal exception prevents the deletion of the
+	 *             resource.
+	 */
+	void delete(ResourceSnapshot resource, WriteSession session)
+				throws UnknownResourceException, ApplicationRuntimeException;
 
 }

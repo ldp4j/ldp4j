@@ -26,13 +26,9 @@
  */
 package org.ldp4j.application.ext;
 
-public class InvalidContentException extends ContentProcessingException {
+public class InvalidContentException extends ApplicationUsageException {
 
-	private static final long serialVersionUID = -9204136391485005628L;
-
-	public InvalidContentException() {
-		super();
-	}
+	private static final long serialVersionUID = 1090034112299823594L;
 
 	public InvalidContentException(String message, Throwable cause) {
 		super(message, cause);

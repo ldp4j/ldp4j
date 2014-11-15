@@ -32,6 +32,32 @@ import org.ldp4j.application.data.DataSet;
 
 public interface Modifiable {
 
-	void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws ContentProcessingException;
+	/**
+	 * Update the state of a resource managed by a handler.
+	 *
+	 * @param resource
+	 *            the resource whose state is to be updated.
+	 * @param content
+	 *            the new content for the resource.
+	 * @param session
+	 *            the session to use for registering the side effects of the
+	 *            operation.
+	 * @throws UnknownResourceException
+	 *             if the handler does not manage the specified resource.
+	 * @throws UnsupportedContentException
+	 *             if the resource cannot be updated with the specified
+	 *             contents.
+	 * @throws InconsistentContentException
+	 *             if the specified contents include values that modify current
+	 *             values of server managed properties.
+	 * @throws ApplicationRuntimeException
+	 *             if internal exception prevents the update of the resource.
+	 */
+	void update(ResourceSnapshot resource, DataSet content, WriteSession session)
+			throws
+				UnknownResourceException,
+				UnsupportedContentException,
+				InconsistentContentException,
+				ApplicationRuntimeException;
 
 }

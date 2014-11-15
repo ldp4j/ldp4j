@@ -58,7 +58,7 @@ import org.ldp4j.application.engine.context.PublicIndirectContainer;
 import org.ldp4j.application.engine.context.PublicRDFSource;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
-import org.ldp4j.application.ext.ContentProcessingException;
+import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.resource.Attachment;
 import org.ldp4j.application.resource.Resource;
@@ -304,7 +304,7 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 
 		ValidationReport report = validator.validate(dataSet);
 		if(!report.isValid()) {
-			ContentProcessingException error = new InconsistentContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures());
+			InvalidContentException error = new InconsistentContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures());
 			throw new ApplicationExecutionException("Protocol/framework managed metadata validation failure",error);
 		}
 	}

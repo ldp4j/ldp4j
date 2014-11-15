@@ -26,24 +26,23 @@
  */
 package org.ldp4j.application.engine;
 
-
-public class ApplicationInitializationException extends Exception {
+public class ApplicationContextTerminationException extends ApplicationContextLifecycleException {
 
 	/**
-	 * 
+	 *
 	 */
-	private static final long serialVersionUID = -66733720651527415L;
+	private static final long serialVersionUID = -6845938217868712101L;
 
-	public ApplicationInitializationException(Throwable e) {
-		super(e);
-	}
-
-	public ApplicationInitializationException(String message) {
+	public ApplicationContextTerminationException(String message) {
 		super(message);
 	}
 
-	public ApplicationInitializationException(String message, Throwable e) {
-		super(message,e);
+	public ApplicationContextTerminationException(Throwable cause) {
+		super(cause);
+	}
+
+	public ApplicationContextTerminationException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
 }

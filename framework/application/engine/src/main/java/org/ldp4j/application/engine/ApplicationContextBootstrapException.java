@@ -20,24 +20,29 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-core:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-engine:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-engine-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.resource;
+package org.ldp4j.application.engine;
 
-import org.ldp4j.application.data.DataSet;
+public class ApplicationContextBootstrapException extends ApplicationContextCreationException {
 
-interface Adapter {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4448203110510857304L;
 
-	ResourceId resourceId();
+	public ApplicationContextBootstrapException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-	DataSet get() throws FeatureException;
+	public ApplicationContextBootstrapException(String message) {
+		super(message);
+	}
 
-	void update(DataSet content) throws FeatureException;
-
-	void delete() throws FeatureException;
-
-	Resource create(DataSet content) throws FeatureException;
+	public ApplicationContextBootstrapException(Throwable cause) {
+		super(cause);
+	}
 
 }

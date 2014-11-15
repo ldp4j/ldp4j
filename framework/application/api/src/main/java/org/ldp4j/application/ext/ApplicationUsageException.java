@@ -26,35 +26,23 @@
  */
 package org.ldp4j.application.ext;
 
-import org.ldp4j.application.session.ContainerSnapshot;
-import org.ldp4j.application.session.ResourceSnapshot;
-import org.ldp4j.application.session.WriteSession;
-import org.ldp4j.application.data.DataSet;
-
-public interface ContainerHandler extends ResourceHandler {
+public abstract class ApplicationUsageException extends ApplicationException {
 
 	/**
-	 * Creates a member of a container managed by the container handler.
 	 *
-	 * @param container
-	 *            the container to which a member will be added.
-	 * @param representation
-	 *            the representation of the member that will be created.
-	 * @param session
-	 *            the session to use for registering the side effects of the
-	 *            operation.
-	 * @return the resource created.
-	 * @throws UnknownResourceException
-	 *             if the container handler does not manage the specified
-	 *             container.
-	 * @throws UnsupportedContentException
-	 *             if the specified contents are not valid for creating the
-	 *             member of the container.
-	 * @throws ApplicationRuntimeException
-	 *             if an internal exception prevents the creation of the member
-	 *             resource.
 	 */
-	ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session)
-			throws UnknownResourceException, UnsupportedContentException, ApplicationRuntimeException;
+	private static final long serialVersionUID = -5587982746340556713L;
+
+	public ApplicationUsageException(String message, Throwable cause) {
+		super(message, cause);
+	}
+
+	public ApplicationUsageException(String message) {
+		super(message);
+	}
+
+	public ApplicationUsageException(Throwable cause) {
+		super(cause);
+	}
 
 }

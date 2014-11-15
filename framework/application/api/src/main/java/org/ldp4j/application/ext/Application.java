@@ -35,7 +35,7 @@ public abstract class Application<T extends Configuration> {
 
 	/**
 	 * Returns the {@link Class} of the configuration class type parameter.
-	 * 
+	 *
 	 * @return the configuration class
 	 * @see Generics#getTypeParameter(Class, Class)
 	 */
@@ -45,17 +45,17 @@ public abstract class Application<T extends Configuration> {
 
 	/**
 	 * Returns the name of the application.
-	 * 
+	 *
 	 * @return the application's name
 	 */
 	public String getName() {
 		return getClass().getSimpleName();
 	}
 
-	public abstract void setup(Environment environment, Bootstrap<T> bootstrap);
+	public abstract void setup(Environment environment, Bootstrap<T> bootstrap) throws ApplicationSetupException;
 
-	public abstract void initialize(WriteSession session);
-		
-	public abstract void shutdown();
-	
+	public abstract void initialize(WriteSession session) throws ApplicationInitializationException;
+
+	public abstract void shutdown() throws ApplicationShutdownException;
+
 }

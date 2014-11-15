@@ -28,13 +28,14 @@ package org.ldp4j.application.lifecycle;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import org.ldp4j.application.engine.ApplicationBootstrapException;
-import org.ldp4j.application.engine.ApplicationInitializationException;
+import org.ldp4j.application.engine.ApplicationContextBootstrapException;
+import org.ldp4j.application.engine.ApplicationContextCreationException;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.engine.lifecycle.ApplicationState;
 import org.ldp4j.application.engine.util.ListenerManager;
 import org.ldp4j.application.engine.util.Notification;
 import org.ldp4j.application.ext.Application;
+import org.ldp4j.application.ext.ApplicationShutdownException;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.spi.Service;
 import org.ldp4j.application.spi.ServiceBuilder;
@@ -43,8 +44,8 @@ import org.slf4j.LoggerFactory;
 
 public final class ApplicationLifecycleService implements Service {
 
-	private static final Logger LOGGER=LoggerFactory.getLogger(ApplicationLifecycleService.class); 
-	
+	private static final Logger LOGGER=LoggerFactory.getLogger(ApplicationLifecycleService.class);
+
 	private final class ApplicationStateChangeNotification implements
 			Notification<ApplicationLifecycleListener> {
 		private final ApplicationState state;
@@ -60,7 +61,7 @@ public final class ApplicationLifecycleService implements Service {
 	}
 
 	private static class ApplicationFrontendServiceBuilder extends ServiceBuilder<ApplicationLifecycleService> {
-		
+
 		private ApplicationFrontendServiceBuilder() {
 			super(ApplicationLifecycleService.class);
 		}
@@ -68,30 +69,30 @@ public final class ApplicationLifecycleService implements Service {
 		public ApplicationLifecycleService build() {
 			return new ApplicationLifecycleService();
 		}
-		
+
 	}
 
 	private volatile ApplicationState state;
 
 	private Application<?> application;
 	private ListenerManager<ApplicationLifecycleListener> listenerManager;
-	
+
 	private ApplicationLifecycleService() {
 		this.listenerManager=ListenerManager.<ApplicationLifecycleListener>newInstance();
 		this.state=ApplicationState.UNDEFINED;
 	}
 
 	@SuppressWarnings("unchecked")
-	private <T extends Configuration> Class<? extends Application<T>> loadApplicationClass(String className) throws ApplicationInitializationException {
+	private <T extends Configuration> Class<? extends Application<T>> loadApplicationClass(String className) throws ApplicationContextCreationException {
 		ClassLoader contextClassLoader = Thread.currentThread().getContextClassLoader();
 		try {
 			Class<?> targetApplicationClass = contextClassLoader.loadClass(className);
 			if(!Application.class.isAssignableFrom(targetApplicationClass)) {
-				throw new ApplicationInitializationException("Invalid application class");
+				throw new ApplicationContextCreationException("Invalid application class");
 			}
 			return (Class<? extends Application<T>>)targetApplicationClass.asSubclass(Application.class);
 		} catch (ClassNotFoundException e) {
-			throw new ApplicationInitializationException("Unknown application class", e);
+			throw new ApplicationContextCreationException("Unknown application class", e);
 		}
 	}
 
@@ -108,11 +109,11 @@ public final class ApplicationLifecycleService implements Service {
 		this.listenerManager.deregisterListener(listener);
 	}
 
-	public <T extends Configuration> Application<T> initialize(String className) throws ApplicationInitializationException {
+	public <T extends Configuration> Application<T> initialize(String className) throws ApplicationContextCreationException {
 		checkState(this.state.canInitialize(),"Application cannot be initialized at this moment ("+this.state+")");
 		if(className==null) {
 			notifyApplicationStateChange(ApplicationState.UNDEFINED);
-			throw new ApplicationInitializationException("No LDP4j application class specified");
+			throw new ApplicationContextCreationException("No LDP4j application class specified");
 		}
 		ApplicationState newState = ApplicationState.UNAVAILABLE;
 		try {
@@ -122,14 +123,14 @@ public final class ApplicationLifecycleService implements Service {
 			this.application = application;
 			LOGGER.info("Application '{}' ({}) initialized.",this.application.getName(),this.application.getClass().getCanonicalName());
 			return application;
-		} catch (ApplicationBootstrapException e) {
+		} catch (ApplicationContextBootstrapException e) {
 			throw e;
 		} finally {
 			notifyApplicationStateChange(newState);
 		}
 	}
-	
-	public void shutdown() {
+
+	public void shutdown() throws ApplicationShutdownException {
 		if(!this.state.isShutdown()) {
 			if(this.application!=null) {
 				this.application.shutdown();
@@ -137,12 +138,12 @@ public final class ApplicationLifecycleService implements Service {
 			}
 			notifyApplicationStateChange(ApplicationState.SHUTDOWN);
 		}
-	}	
+	}
 
 	public static ServiceBuilder<ApplicationLifecycleService> serviceBuilder() {
 		return new ApplicationFrontendServiceBuilder();
 	}
-	
+
 	public static ApplicationLifecycleService defaultService() {
 		return serviceBuilder().build();
 	}

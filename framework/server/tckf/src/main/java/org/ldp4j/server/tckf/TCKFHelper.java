@@ -44,9 +44,8 @@ import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.ValueVisitor;
-import org.ldp4j.application.ext.ContentProcessingException;
 import org.ldp4j.application.ext.InconsistentContentException;
-import org.ldp4j.application.ext.InvalidContentException;
+import org.ldp4j.application.ext.UnsupportedContentException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +55,7 @@ final class TCKFHelper {
 
 	static final URI READ_ONLY_PROPERTY = URI.create("http://www.example.org/vocab#creationDate");
 	static final URI UNKNOWN_PROPERTY = URI.create("http://example.com/ns#comment");
-	
+
 	private static Logger LOGGER=LoggerFactory.getLogger(TCKFHelper.class);
 
 	private TCKFHelper() {
@@ -70,29 +69,29 @@ final class TCKFHelper {
 				put(TCKFDirectContainerHandler.ID,new AtomicLong()).
 				put(TCKFIndirectContainerHandler.ID,new AtomicLong()).
 				build();
-	
+
 	static Name<?> nextName(String templateId) {
 		return NamingScheme.getDefault().name(templateId, Long.toHexString(COUNTERS.get(templateId).getAndIncrement()).toUpperCase(Locale.ENGLISH));
 	}
-	
-	static void enforceConsistency(Name<?> resourceName, String managerId, DataSet newState, DataSet currentState) throws ContentProcessingException {
+
+	static void enforceConsistency(Name<?> resourceName, String managerId, DataSet newState, DataSet currentState) throws InconsistentContentException, UnsupportedContentException {
 		ManagedIndividualId id = ManagedIndividualId.createId(resourceName,managerId);
 		LOGGER.debug("Checking consistency of {}",format(id));
 		LOGGER.trace("- Current state:\n{}",currentState);
 		LOGGER.trace("- New state:\n{}",newState);
-		ManagedIndividual stateIndividual = 
+		ManagedIndividual stateIndividual =
 			currentState.
 				individual(
-					id, 
+					id,
 					ManagedIndividual.class);
 
 		Property stateProperty=
 				stateIndividual.property(READ_ONLY_PROPERTY);
 
-		ManagedIndividual inIndividual = 
+		ManagedIndividual inIndividual =
 			newState.
 				individual(
-					id, 
+					id,
 					ManagedIndividual.class);
 
 		Property inProperty=
@@ -129,9 +128,9 @@ final class TCKFHelper {
 		LOGGER.debug("Verifing absence of unknown properties...");
 		if(inIndividual.property(UNKNOWN_PROPERTY)!=null) {
 			LOGGER.error("Unknown property '{}' specified",UNKNOWN_PROPERTY);
-			throw new InvalidContentException("Unknown property '"+UNKNOWN_PROPERTY+"' specified");
+			throw new UnsupportedContentException("Unknown property '"+UNKNOWN_PROPERTY+"' specified");
 		}
-		
+
 	}
 
 	private static String format(ManagedIndividualId id) {
@@ -155,5 +154,5 @@ final class TCKFHelper {
 		return result.get();
 	}
 
-	
+
 }

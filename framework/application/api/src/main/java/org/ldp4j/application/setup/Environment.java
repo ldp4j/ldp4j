@@ -32,11 +32,17 @@ import org.ldp4j.application.ext.ResourceHandler;
 public interface Environment {
 
 	/**
-	 * Publish a resource managed by particular handler class at a given path. 
-	 * @param resourceName The name of the resource that is to be published.
-	 * @param handlerClass The class of the handler that will be manage the resource behind the endpoint. 
-	 * @param path The path used to publish the resource. The path must end with a single '/'. 
+	 * Publish a resource managed by particular handler class at a given path.
+	 *
+	 * @param resourceName
+	 *            The name of the resource that is to be published.
+	 * @param handlerClass
+	 *            The class of the handler that will manage the resource
+	 *            behind the endpoint.
+	 * @param path
+	 *            The path used to publish the resource. The path must end with
+	 *            a single '/'.
 	 */
-	void publishResource(Name<?> resourceName, Class<? extends ResourceHandler> handlerClass, String path); 
-	
+	void publishResource(Name<?> resourceName, Class<? extends ResourceHandler> handlerClass, String path);
+
 }

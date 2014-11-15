@@ -43,10 +43,11 @@ import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.annotation.WebListener;
 
+import org.ldp4j.application.engine.ApplicationContextTerminationException;
 import org.ldp4j.application.engine.ApplicationEngine;
 import org.ldp4j.application.engine.ApplicationEngineLifecycleException;
 import org.ldp4j.application.engine.ApplicationEngineRuntimeException;
-import org.ldp4j.application.engine.ApplicationInitializationException;
+import org.ldp4j.application.engine.ApplicationContextCreationException;
 import org.ldp4j.application.engine.context.ApplicationContext;
 import org.ldp4j.server.frontend.ServerFrontend;
 import org.slf4j.Logger;
@@ -214,7 +215,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 			ApplicationContext applicationContext=engine.load(targetApplicationClassName);
 			sce.getServletContext().setAttribute(ServerFrontend.LDP4J_APPLICATION_CONTEXT, applicationContext);
 			LOGGER.info("LDP4j Application '{}' ({}) initialized.",applicationContext.applicationName(),applicationContext.applicationClassName());
-		} catch (ApplicationInitializationException e) {
+		} catch (ApplicationContextCreationException e) {
 			LOGGER.error("Could not configure LDP4j Application to be used within the LDP4j Server Frontend. Full stacktrace follows:",e);
 		} catch (ApplicationEngineRuntimeException e) {
 			LOGGER.error("Could not configure LDP4j Server Frontend due to an unexpected LDP4j Application Engine failure. Full stacktrace follows:",e);
@@ -232,8 +233,12 @@ public final class BootstrapContextListener implements ServletContextListener {
 			ApplicationContext applicationContext = (ApplicationContext)sce.getServletContext().getAttribute(ServerFrontend.LDP4J_APPLICATION_CONTEXT);
 			if(applicationContext!=null) {
 				sce.getServletContext().removeAttribute(ServerFrontend.LDP4J_APPLICATION_CONTEXT);
-				ApplicationEngine.engine().dispose(applicationContext);
-				LOGGER.info("LDP4j Application '{}' ({}) shutdown.",applicationContext.applicationName(),applicationContext.applicationClassName());
+				try {
+					ApplicationEngine.engine().dispose(applicationContext);
+					LOGGER.info("LDP4j Application '{}' ({}) shutdown.",applicationContext.applicationName(),applicationContext.applicationClassName());
+				} catch (ApplicationContextTerminationException e) {
+					LOGGER.error(String.format("Could not shutdown LDP4j Application '%s' (%s) due to an unexpected context failure. Full stacktrace follows:",applicationContext.applicationName(),applicationContext.applicationClassName()),e);
+				}
 			}
 			ApplicationEngine.engine().shutdown();
 		} catch (ApplicationEngineRuntimeException e) {

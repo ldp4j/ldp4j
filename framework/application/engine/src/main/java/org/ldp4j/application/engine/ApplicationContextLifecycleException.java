@@ -20,24 +20,33 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-core:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-engine:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-engine-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.resource;
+package org.ldp4j.application.engine;
 
-import org.ldp4j.application.data.DataSet;
+public class ApplicationContextLifecycleException extends ApplicationEngineException {
 
-interface Adapter {
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -6033456690321569124L;
 
-	ResourceId resourceId();
+	public ApplicationContextLifecycleException() {
+		super();
+	}
 
-	DataSet get() throws FeatureException;
+	public ApplicationContextLifecycleException(String message) {
+		super(message);
+	}
 
-	void update(DataSet content) throws FeatureException;
+	public ApplicationContextLifecycleException(Throwable cause) {
+		super(cause);
+	}
 
-	void delete() throws FeatureException;
-
-	Resource create(DataSet content) throws FeatureException;
+	public ApplicationContextLifecycleException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
 }

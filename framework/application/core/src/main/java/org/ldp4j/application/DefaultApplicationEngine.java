@@ -30,11 +30,13 @@ import java.util.List;
 import java.util.Stack;
 
 import org.ldp4j.application.endpoint.EndpointManagementService;
+import org.ldp4j.application.engine.ApplicationContextTerminationException;
 import org.ldp4j.application.engine.ApplicationEngine;
 import org.ldp4j.application.engine.ApplicationEngineInitializationException;
 import org.ldp4j.application.engine.ApplicationEngineRuntimeException;
 import org.ldp4j.application.engine.ApplicationEngineTerminationException;
-import org.ldp4j.application.engine.ApplicationInitializationException;
+import org.ldp4j.application.engine.ApplicationContextCreationException;
+import org.ldp4j.application.ext.ApplicationShutdownException;
 import org.ldp4j.application.lifecycle.ApplicationLifecycleService;
 import org.ldp4j.application.lifecycle.LifecycleException;
 import org.ldp4j.application.lifecycle.LifecycleManager;
@@ -180,17 +182,21 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		}
 
 		@Override
-		protected DefaultApplicationContext createContext(String applicationClassName) throws ApplicationInitializationException {
+		protected DefaultApplicationContext createContext(String applicationClassName) throws ApplicationContextCreationException {
 			DefaultApplicationContext currentContext=new DefaultApplicationContext(this.defaultApplicationEngine);
 			currentContext.initialize(applicationClassName);
 			return currentContext;
 		}
 
 		@Override
-		protected boolean doDisposeContext(DefaultApplicationContext applicationContext) {
-			this.defaultApplicationEngine.applicationLifecycleService().shutdown();
-			applicationContext.shutdown();
-			return this.defaultApplicationEngine.applicationLifecycleService().isShutdown();
+		protected boolean doDisposeContext(DefaultApplicationContext applicationContext) throws ApplicationContextTerminationException {
+			try {
+				this.defaultApplicationEngine.applicationLifecycleService().shutdown();
+				applicationContext.shutdown();
+				return this.defaultApplicationEngine.applicationLifecycleService().isShutdown();
+			} catch (ApplicationShutdownException e) {
+				throw new ApplicationContextTerminationException(e);
+			}
 		}
 
 	}

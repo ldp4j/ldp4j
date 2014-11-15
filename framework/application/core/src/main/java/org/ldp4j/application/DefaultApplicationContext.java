@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application;
 
+import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
@@ -34,7 +35,7 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EndpointLifecycleListener;
-import org.ldp4j.application.engine.ApplicationInitializationException;
+import org.ldp4j.application.engine.ApplicationContextCreationException;
 import org.ldp4j.application.engine.context.ApplicationContext;
 import org.ldp4j.application.engine.context.ApplicationContextException;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
@@ -50,8 +51,11 @@ import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.FeatureException;
+import org.ldp4j.application.resource.FeatureExecutionException;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.resource.UnsupportedFeatureException;
 import org.ldp4j.application.session.WriteSessionConfiguration;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateIntrospector;
@@ -180,9 +184,16 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			return this.engine().resourceControllerService().getResource(resource);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource '%s' retrieval failed ",endpoint);
-			LOGGER.error(errorMessage,e);
-			throw new ApplicationExecutionException(errorMessage,e);
+			throw createException(errorMessage,e);
 		}
+	}
+
+	private ApplicationExecutionException createException(String errorMessage, Exception e) {
+		LOGGER.error(errorMessage,e);
+		if(e instanceof FeatureExecutionException) {
+			return new ApplicationExecutionException(errorMessage,e.getCause());
+		}
+		throw new ApplicationContextException(errorMessage,e);
 	}
 
 	Resource resolveResource(Endpoint endpoint) {
@@ -205,8 +216,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			return this.engine().resourceControllerService().createResource(resource,dataSet,desiredPath);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource create failed at '%s'",endpoint);
-			LOGGER.error(errorMessage,e);
-			throw new ApplicationExecutionException(errorMessage,e);
+			throw createException(errorMessage,e);
 		}
 	}
 
@@ -222,8 +232,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			this.engine().resourceControllerService().deleteResource(resource, WriteSessionConfiguration.builder().build());
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource deletion failed at '%s'",endpoint);
-			LOGGER.error(errorMessage,e);
-			throw new ApplicationExecutionException(errorMessage,e);
+			throw createException(errorMessage,e);
 		}
 	}
 
@@ -239,8 +248,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			this.engine().resourceControllerService().updateResource(resource,dataSet, WriteSessionConfiguration.builder().build());
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource modification failed at '%s'",endpoint);
-			LOGGER.error(errorMessage,e);
-			throw new ApplicationExecutionException(errorMessage,e);
+			throw createException(errorMessage,e);
 		}
 	}
 
@@ -262,11 +270,11 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return this.engine().templateManagementService().findTemplateById(resource.id().templateId());
 	}
 
-	public void initialize(String applicationClassName) throws ApplicationInitializationException {
+	public void initialize(String applicationClassName) throws ApplicationContextCreationException {
 		try {
 			this.engine().endpointManagementService().registerEndpointLifecycleListener(this.endpointLifecycleListener);
 			this.application = this.engine().applicationLifecycleService().initialize(applicationClassName);
-		} catch (ApplicationInitializationException e) {
+		} catch (ApplicationContextCreationException e) {
 			String errorMessage = "Application '"+applicationClassName+"' initilization failed";
 			LOGGER.error(errorMessage,e);
 			throw e;
