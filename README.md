@@ -9,4 +9,4 @@ For more information, please visit [LDP4j website](http://www.ldp4j.org/).
 
 ## Build Status
 
-[![Build Status](https://travis-ci.org/nandana/ldp4j.svg?branch=master)](https://travis-ci.org/nandana/ldp4j)
+[![Build Status](https://travis-ci.org/ldp4j/ldp4j.svg?branch=master)](https://travis-ci.org/ldp4j/ldp4j)
