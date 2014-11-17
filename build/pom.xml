@@ -129,6 +129,7 @@
 
 		<openejb.version>4.5.1</openejb.version>
 		<openejb.jee6.api.version>6.0-4</openejb.jee6.api.version>
+		<git.tag>${project.version}</git.tag>
 	</properties>
 
 	<dependencyManagement>
@@ -484,6 +485,58 @@
 			<!-- Plugins for delivery configuration -->
 			<!-- ================================== -->
 
+			<!-- Prepare build information-->
+			<plugin>
+				<groupId>ru.concerteza.buildnumber</groupId>
+				<artifactId>maven-jgit-buildnumber-plugin</artifactId>
+				<version>1.2.8</version>
+				<executions>
+					<execution>
+						<id>git-buildnumber</id>
+						<goals>
+							<goal>extract-buildnumber</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<runOnlyAtExecutionRoot>false</runOnlyAtExecutionRoot>
+							<javaScriptBuildnumberCallback>
+								shortRevision
+							</javaScriptBuildnumberCallback>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.groovy.maven</groupId>
+				<artifactId>gmaven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>buildNumber</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<color>true</color>
+							<source>
+								tag=project.properties.get('git.tag')
+								if(tag=='') {
+									tag=project.version
+								}
+								commitsCount=project.properties.get('git.commitsCount')
+								branch=project.properties.get('git.branch')
+								revision=project.properties.get('git.buildnumber')
+								buildNumber="${tag} build ${commitsCount} (${branch}@${revision})"
+								project.properties.setProperty('ldp4j.buildNumber',buildNumber)
+								println "Build number: " + buildNumber
+							</source>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
 			<!-- Deliver the sources together with the JARs-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -502,10 +555,20 @@
 									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 								</manifest>
 								<manifestEntries>
-									<Implementation-Version>${project.version}</Implementation-Version>
-									<Implementation-Date>${maven.build.timestamp}</Implementation-Date>
-									<!-- <Implementation-Build>${buildNumber}</Implementation-Build> -->
+									<Implementation-Version>${ldp4j.buildNumber}</Implementation-Version>
 								</manifestEntries>
+								<manifestSections>
+									<manifestSection>
+										<name>Build</name>
+										<manifestEntries>
+											<Build-Tag>${git.tag}</Build-Tag>
+											<Build-Branch>${git.branch}</Build-Branch>
+											<Build-Revision>${git.revision}</Build-Revision>
+											<Build-Commit-Count>${git.commitsCount}</Build-Commit-Count>
+											<Build-Date>${maven.build.timestamp}</Build-Date>
+										</manifestEntries>
+									</manifestSection>
+								</manifestSections>
 							</archive>
 						</configuration>
 					</execution>
@@ -535,10 +598,20 @@
 						<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 					</manifest>
 					<manifestEntries>
-						<Implementation-Version>${project.version}</Implementation-Version>
-						<Implementation-Date>${maven.build.timestamp}</Implementation-Date>
-						<!-- <Implementation-Build>${buildNumber}</Implementation-Build> -->
+						<Implementation-Version>${ldp4j.buildNumber}</Implementation-Version>
 					</manifestEntries>
+					<manifestSections>
+						<manifestSection>
+							<name>Build</name>
+							<manifestEntries>
+								<Build-Tag>${git.tag}</Build-Tag>
+								<Build-Branch>${git.branch}</Build-Branch>
+								<Build-Revision>${git.revision}</Build-Revision>
+								<Build-Commit-Count>${git.commitsCount}</Build-Commit-Count>
+								<Build-Date>${maven.build.timestamp}</Build-Date>
+							</manifestEntries>
+						</manifestSection>
+					</manifestSections>
 					</archive>
 				</configuration>
 			</plugin>
@@ -554,10 +627,20 @@
 							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
 						</manifest>
 						<manifestEntries>
-							<Implementation-Version>${project.version}</Implementation-Version>
-							<Implementation-Date>${maven.build.timestamp}</Implementation-Date>
-							<!-- <Implementation-Build>${buildNumber}</Implementation-Build> -->
+							<Implementation-Version>${ldp4j.buildNumber}</Implementation-Version>
 						</manifestEntries>
+						<manifestSections>
+							<manifestSection>
+								<name>Build</name>
+								<manifestEntries>
+									<Build-Tag>${git.tag}</Build-Tag>
+									<Build-Branch>${git.branch}</Build-Branch>
+									<Build-Revision>${git.revision}</Build-Revision>
+									<Build-Commit-Count>${git.commitsCount}</Build-Commit-Count>
+									<Build-Date>${maven.build.timestamp}</Build-Date>
+								</manifestEntries>
+							</manifestSection>
+						</manifestSections>
 					</archive>
 				</configuration>
 				<executions>
