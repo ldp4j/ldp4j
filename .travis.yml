@@ -10,5 +10,5 @@ notifications:
 script: "mvn deploy -Dossrh --settings config/target/classes/ci/settings.xml"
 env:
   global:
-   - secure: "LFXi83cGlanplH/xOMC7OFYMtt6A+SGnOLB7/kfwa+7O7hkRVb3sml2CpS++evKfZbrNfvZayIghB2cBqR3aUp2GjTmpc7C57z3RK7Q4ttkCLkJE3Mku7114zrWJqlG1mvKudX4KCR5jNWZUAsC0WiMO9IvfJvxtB08wTtRHFF4="
-   - secure: "TVgBkgz/vI4n521yM0bhr5qMGh2maJSFm/zxnlRuDHrwtsHOYFJb06dc85dQFcujG6mnehoSIMD8JzHn71Z7z5/wa6jFKlqazZh1vR5vDsQugpnd2dSuU+ssSRmFQndPWu/ve3Z4kvzfX7OTN507FE2nJcuWCfKBw1FpWlf4n2I="
+   - secure: "huXk6otUYsg6kfy+pLJDQSGJLThOuoh6cfmu0USsf2Hc4xlSa7tXYroagO+GL43EkmtpziMf8S7bnaQNPvuj2pA/4ZFAgks6o8GMrvefR6ssWyDKtFdP3k/0d/gvYPj0+CnNELXq1+govjjwWlqy0c57HszgvrbI+4ZcExyW6vY="
+   - secure: "jkRsbfTTfgV/HhyCN0GNJF9Y80jmAg8W3sHZkPA/8Kb1p0B9Q4KGDEhtfE5mUZ0dhgT2IYdzmhC2MwxTEx76WjJmRNQX6XXnInQvuZaR2uD7RGIVbDUdcnw4XV4wF6BLg5fb5TBNCXTfdv3GVmK5rBQ+YlBYtK2fW2O3RRXiH+k="
