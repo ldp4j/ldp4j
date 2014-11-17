@@ -215,15 +215,19 @@ abstract class DefaultPublicContainer<T extends ContainerTemplate> extends Defau
 			new TemplateVisitor() {
 				@Override
 				public void visitResourceTemplate(ResourceTemplate template) {
+					acceptable.add(InteractionModel.RESOURCE);
 				}
 				@Override
 				public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
+					acceptable.add(InteractionModel.INDIRECT_CONTAINER);
 				}
 				@Override
 				public void visitDirectContainerTemplate(DirectContainerTemplate template) {
+					acceptable.add(InteractionModel.DIRECT_CONTAINER);
 				}
 				@Override
 				public void visitBasicContainerTemplate(BasicContainerTemplate template) {
+					acceptable.add(InteractionModel.BASIC_CONTAINER);
 				}
 				@Override
 				public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
