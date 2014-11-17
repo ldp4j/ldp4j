@@ -9,6 +9,7 @@ notifications:
     on_failure: always
 before_install :
  - git fetch --unshallow # we need a full clone for the build
+ - git checkout master
 script: "mvn deploy -Dossrh --settings config/target/classes/ci/settings.xml"
 env:
   global:
