@@ -7,6 +7,8 @@ notifications:
       - ldp4j-commits@googlegroups.com
     on_success: always
     on_failure: always
+before_script:
+ - git fetch --unshallow # we need a full clone for tests
 script: "mvn deploy -Dossrh --settings config/target/classes/ci/settings.xml"
 env:
   global:
