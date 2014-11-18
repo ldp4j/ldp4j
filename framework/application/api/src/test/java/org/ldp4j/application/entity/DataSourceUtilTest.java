@@ -76,6 +76,10 @@ public class DataSourceUtilTest {
 		System.out.println("After removing: "+DataSourceUtil.formatIdentity(ent2));
 		System.out.println(DataSourceUtil.formatDataSource(dataSource));
 
+		dataSource.merge(ent2);
+		System.out.println("After merging: "+DataSourceUtil.formatIdentity(ent2));
+		System.out.println(DataSourceUtil.formatDataSource(dataSource));
+
 	}
 
 }
