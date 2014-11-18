@@ -9,7 +9,7 @@ notifications:
     on_failure: always
 before_install :
  - git fetch --unshallow # we need a full clone for the build
- - git checkout master
+ - git checkout ${TRAVIS_BRANCH} # we need to be on the HEAD of the target branch
 script: "if [ ${TRAVIS_PULL_REQUEST} = 'false' ]; then mvn deploy -Dossrh --settings config/target/classes/ci/settings.xml; else mvn clean verify; fi"
 env:
   global:
