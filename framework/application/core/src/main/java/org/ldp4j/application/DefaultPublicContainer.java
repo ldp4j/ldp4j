@@ -206,6 +206,11 @@ abstract class DefaultPublicContainer<T extends ContainerTemplate> extends Defau
 		return id.managerId().equals(resourceId.templateId()) && id.name().equals(resourceId.name());
 	}
 
+	/**
+	 * NOTE: For the time being containers will always behave as containers.
+	 * Whenever we support downgrading containers to resources the visitor will
+	 * have to be updated to reflect that.
+	 */
 	private void verifyInteractionModel(InteractionModel interactionModel) throws UnsupportedInteractionModelException {
 		if(interactionModel==null) {
 			return;
