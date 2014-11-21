@@ -26,42 +26,84 @@
  */
 package org.ldp4j.application.entity;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.net.URI;
+import java.util.UUID;
+import java.util.concurrent.atomic.AtomicLong;
+
+import org.ldp4j.application.entity.spi.IdentifierGenerator;
 
 
 final class IdentityFactory {
 
-	private IdentityFactory() {
+	@SuppressWarnings("unused")
+	private UUID randomUUID;
+
+	private IdentifierGenerator<?> identifierGenerator;
+
+	private static final class DefaultIdentifierGenerator implements IdentifierGenerator<Long> {
+
+		private AtomicLong counter;
+
+		private DefaultIdentifierGenerator() {
+			this.counter=new AtomicLong();
+		}
+
+		@Override
+		public Long nextIdentifier() {
+			return counter.incrementAndGet();
+		}
+
 	}
 
-	public static <T> ManagedIdentity<T> createManagedIdentity(Key<T> key) {
+	private IdentityFactory(UUID randomUUID, IdentifierGenerator<?> identifierGenerator) {
+		this.randomUUID = randomUUID;
+		this.identifierGenerator = identifierGenerator;
+	}
+
+	private Object nextLocalId() {
+		return this.identifierGenerator.nextIdentifier();
+	}
+
+	Identity createIdentity() {
+		return LocalIdentity.create(nextLocalId());
+	}
+
+	<T> ManagedIdentity<T> createManagedIdentity(Key<T> key) {
 		checkNotNull(key,"Key cannot be null");
 		return ManagedIdentity.create(key);
 	}
 
-	public static <T,V> ManagedIdentity<T> createManagedIdentity(Class<T> owner, V nativeId) {
+	<T,V> ManagedIdentity<T> createManagedIdentity(Class<T> owner, V nativeId) {
 		checkNotNull(owner,"Key owner cannot be null");
 		checkNotNull(nativeId,"Key native identifier cannot be null");
 		return createManagedIdentity(Key.create(owner, nativeId));
 	}
 
-	public static ExternalIdentity createExternalIdentity(URI location) {
+	ExternalIdentity createExternalIdentity(URI location) {
 		checkNotNull(location,"Location cannot be null");
 		return ExternalIdentity.create(location);
 	}
 
-	public static <T> RelativeIdentity<T> createRelativeIdentity(Key<T> parent, URI path) {
+	<T> RelativeIdentity<T> createRelativeIdentity(Key<T> parent, URI path) {
 		checkNotNull(parent,"Parent key cannot be null");
 		checkNotNull(path,"Path cannot be null");
 		return RelativeIdentity.create(parent, path);
 	}
 
-	public static <T,V> RelativeIdentity<T> createRelativeIdentity(Class<T> owner, V nativeId, URI path) {
+	<T,V> RelativeIdentity<T> createRelativeIdentity(Class<T> owner, V nativeId, URI path) {
 		checkNotNull(owner,"Key owner cannot be null");
 		checkNotNull(nativeId,"Key native identifier cannot be null");
 		return createRelativeIdentity(Key.create(owner, nativeId),path);
+	}
+
+	public static IdentityFactory create() {
+		return create(new DefaultIdentifierGenerator());
+	}
+
+	public static IdentityFactory create(IdentifierGenerator<?> nameGenerator) {
+		return new IdentityFactory(UUID.randomUUID(),nameGenerator);
 	}
 
 }

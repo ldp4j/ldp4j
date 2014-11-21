@@ -33,6 +33,21 @@ import com.google.common.base.Objects.ToStringHelper;
 
 public abstract class Identity implements Comparable<Identity> {
 
+	protected static final class StringHelper {
+
+		private final ToStringHelper helper;
+
+		private StringHelper(ToStringHelper helper) {
+			this.helper = helper;
+		}
+
+		protected StringHelper add(String name, Object value) {
+			this.helper.add(name, value);
+			return this;
+		}
+
+	}
+
 	private final URI identifier;
 
 	Identity(URI identifier) {
@@ -58,6 +73,7 @@ public abstract class Identity implements Comparable<Identity> {
 		}
 		return this.identifier().toString().compareTo(this.toString());
 	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -91,21 +107,6 @@ public abstract class Identity implements Comparable<Identity> {
 					add("identifier",this.identifier);
 		toString(new StringHelper(helper));
 		return helper.toString();
-	}
-
-	protected static final class StringHelper {
-
-		private ToStringHelper helper;
-
-		private StringHelper(ToStringHelper helper) {
-			this.helper = helper;
-		}
-
-		public StringHelper add(String name, Object value) {
-			this.helper.add(name, value);
-			return this;
-		}
-
 	}
 
 	protected void toString(StringHelper helper) {

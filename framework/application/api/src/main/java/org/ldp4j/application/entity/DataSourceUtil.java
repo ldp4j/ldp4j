@@ -67,7 +67,7 @@ public final class DataSourceUtil {
 					@Override
 					public void visitLocal(LocalIdentity<?> identity) {
 						Object localId = identity.localId();
-						log("<'%s' [%s]> {Local to %s}",localId,localId.getClass().getName(),identity.ownerId());
+						log("<'%s' [%s]> {Local}",localId,localId.getClass().getName());
 					}
 					@Override
 					public void visitManaged(ManagedIdentity<?> identity) {

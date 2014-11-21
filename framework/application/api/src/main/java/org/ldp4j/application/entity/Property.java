@@ -28,6 +28,25 @@ package org.ldp4j.application.entity;
 
 import java.net.URI;
 
+/**
+ * TODO: We must be clear about the semantics of the property:
+ * - Cardinality
+ *   + Single valued
+ *   + Multi valued
+ *     - Bounds
+ *       + Bounded
+ *       + Unbounded
+ *     - Repetitions
+ *       + Allowed (list semantics)
+ *       + Disallowed (set semantics)
+ * - Range
+ *   + Literal
+ *   + Entity
+ *   + Any
+ * - Entity handling:
+ *   + Multiple entities per identity
+ *   + Single entity per identity
+ */
 public interface Property extends Iterable<Value>, Comparable<Property> {
 
 	Entity owningEntity();

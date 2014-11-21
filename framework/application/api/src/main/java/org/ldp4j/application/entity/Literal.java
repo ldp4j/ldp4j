@@ -29,7 +29,7 @@ package org.ldp4j.application.entity;
 import com.google.common.base.Objects;
 import static com.google.common.base.Preconditions.*;
 
-public final class Literal<T> extends Value {
+public final class Literal<T> implements Value {
 
 	private final T value;
 
@@ -48,8 +48,8 @@ public final class Literal<T> extends Value {
 		return clazz.isInstance(this.value);
 	}
 
-	public <S> ObjectAdapter<S> valueAs(Class<? extends S> clazz) {
-		return new ObjectAdapter<S>(clazz,this.value);
+	public <S> ObjectAdapter<S> valueAs(Class<? extends S> targetClass) {
+		return ObjectAdapter.create(targetClass,this.value);
 	}
 
 	/**

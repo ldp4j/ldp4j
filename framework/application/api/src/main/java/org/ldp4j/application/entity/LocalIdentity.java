@@ -27,23 +27,26 @@
 package org.ldp4j.application.entity;
 
 import java.net.URI;
-import java.util.UUID;
 
 import com.google.common.base.Objects;
+import static com.google.common.base.Preconditions.*;
 
-/**
- * Should not be extended outside the API
- *
- */
-public abstract class LocalIdentity<T> extends Identity {
+public final class LocalIdentity<T> extends Identity {
 
-	LocalIdentity(URI identifier) {
+	private final T localId;
+
+	private LocalIdentity(URI identifier, T localId) {
 		super(identifier);
+		this.localId = localId;
 	}
 
-	public abstract UUID ownerId();
-
-	public abstract T localId();
+	public T localId() {
+		return this.localId;
+	}
+	public <S> ObjectAdapter<S> localIdas(Class<? extends S> targetClass) {
+		checkNotNull(targetClass,"Target class cannot be null");
+		return ObjectAdapter.create(targetClass, this.localId);
+	}
 
 	/**
 	 * {@inheritDoc}
@@ -58,7 +61,7 @@ public abstract class LocalIdentity<T> extends Identity {
 	 */
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(super.hashCode(),this.ownerId(),this.localId());
+		return Objects.hashCode(super.hashCode(),this.localId());
 	}
 
 	/**
@@ -69,9 +72,7 @@ public abstract class LocalIdentity<T> extends Identity {
 		boolean result=super.equals(obj);
 		if(result && obj.getClass()==getClass()) {
 			LocalIdentity<?> that=(LocalIdentity<?>)obj;
-			result=
-				Objects.equal(this.ownerId(), that.ownerId()) &&
-				Objects.equal(this.localId(), that.localId());
+			result=Objects.equal(this.localId(), that.localId());
 		}
 		return result;
 	}
@@ -82,8 +83,12 @@ public abstract class LocalIdentity<T> extends Identity {
 	@Override
 	protected void toString(StringHelper helper) {
 		helper.
-			add("ownerId",this.ownerId()).
 			add("localId",this.localId());
+	}
+
+	public static <T> LocalIdentity<T> create(T localId) {
+		URI uri=IdentifierUtil.createLocalIdentifier(localId);
+		return new LocalIdentity<T>(uri,localId);
 	}
 
 }

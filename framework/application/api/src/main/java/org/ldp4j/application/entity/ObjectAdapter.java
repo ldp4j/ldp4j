@@ -32,7 +32,7 @@ public final class ObjectAdapter<S> {
 	private final Object object;
 	private final boolean compatible;
 
-	ObjectAdapter(Class<? extends S> targetClazz, Object object) {
+	private ObjectAdapter(Class<? extends S> targetClazz, Object object) {
 		this.targetClazz=targetClazz;
 		this.object=object;
 		this.compatible=isCompatible(targetClazz, object);
@@ -68,8 +68,12 @@ public final class ObjectAdapter<S> {
 		return safeCast();
 	}
 
-	public S now() throws ClassCastException {
+	public S exactly() throws ClassCastException {
 		return orFail(new ClassCastException("Object is not of type '"+this.targetClazz.getName()+"'"));
+	}
+
+	static <T> ObjectAdapter<T> create(Class<? extends T> targetClass, Object object) {
+		return new ObjectAdapter<T>(targetClass, object);
 	}
 
 }

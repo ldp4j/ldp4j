@@ -66,13 +66,13 @@ public class IdentityFactoryTest {
 
 	}
 
-	private DataSource dataSource;
 	private ControlledIdentifierGenerator identifierGenerator;
+	private IdentityFactory sut;
 
 	@Before
 	public void setUp() {
-		identifierGenerator = new ControlledIdentifierGenerator();
-		dataSource = DataSource.create(identifierGenerator);
+		this.identifierGenerator = new ControlledIdentifierGenerator();
+		this.sut=IdentityFactory.create(identifierGenerator);
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -84,8 +84,8 @@ public class IdentityFactoryTest {
 	@Test
 	public void testLocalCreation() {
 		String nativeId = "$example%+%value^";
-		identifierGenerator.addNextNativeId(nativeId);
-		Identity local = dataSource.newEntity().identity();
+		this.identifierGenerator.addNextNativeId(nativeId);
+		Identity local = sut.createIdentity();
 		assertThat(local,instanceOf(LocalIdentity.class));
 		URI identifier = local.identifier();
 		System.out.println(String.format("%s --> %s",nativeId,identifier));
@@ -94,14 +94,14 @@ public class IdentityFactoryTest {
 		assertThat(introspector.subject(),is(identifier));
 		assertThat(introspector.isValid(),is(true));
 		assertThat(introspector.classifier(),is(Classifier.LOCAL));
-		assertInvariant(introspector, dataSource.id(), String.class);
+		assertInvariant(introspector, "", String.class);
 		assertThat(introspector.value(String.class),equalTo(nativeId));
 	}
 
 	@Test
 	public void testManagedCreation() {
 		int nativeId = 23;
-		ManagedIdentity<DataSet> managed = IdentityFactory.createManagedIdentity(DataSet.class,nativeId);
+		ManagedIdentity<DataSet> managed = sut.createManagedIdentity(DataSet.class,nativeId);
 		URI identifier = managed.identifier();
 		assertThat(identifier,notNullValue());
 		IdentifierIntrospector introspector = IdentifierUtil.introspect(identifier);
@@ -116,7 +116,7 @@ public class IdentityFactoryTest {
 	@Test
 	public void testExternalCreation() {
 		URI location = URI.create("http://localhost:8080/ldp4j/resource/1/");
-		ExternalIdentity external = IdentityFactory.createExternalIdentity(location);
+		ExternalIdentity external = sut.createExternalIdentity(location);
 		URI identifier = external.identifier();
 		System.out.println(String.format("%s --> %s",location,identifier));
 		assertThat(identifier,notNullValue());
@@ -132,7 +132,7 @@ public class IdentityFactoryTest {
 	public void testRelativeCreation() {
 		Key<DataSource> key=Key.create(DataSource.class, 23);
 		URI path = URI.create("http://localhost:8080/ldp4j/resource/1/");
-		RelativeIdentity<DataSource> relative = IdentityFactory.createRelativeIdentity(key,path);
+		RelativeIdentity<DataSource> relative = sut.createRelativeIdentity(key,path);
 		URI identifier = relative.identifier();
 		System.out.println(String.format("{%s,%s} --> %s",key,path,identifier));
 		assertThat(identifier,notNullValue());

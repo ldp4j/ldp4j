@@ -26,12 +26,12 @@
  */
 package org.ldp4j.application.entity;
 
-/**
- * The base class for representing the data items managed by the LDP4j Application
- * Engine and LDP4j Applications.
- */
-public interface Value {
+import java.util.UUID;
 
-	void accept(ValueVisitor visitor);
+abstract class ManagedEntity extends BaseEntity {
+
+	abstract void attach(UUID id, DataSource dataSource);
+
+	abstract void dettach(DataSource dataSource);
 
 }

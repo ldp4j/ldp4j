@@ -314,7 +314,7 @@ final class IdentifierUtil {
 
 			populateIntrospector(
 				introspector,
-				getDataSourceId(breakdown),
+				getEntityFactoryId(breakdown),
 				rawValue,
 				valueClass,
 				ObjectUtil.fromString(valueClass,rawValue));
@@ -381,13 +381,8 @@ final class IdentifierUtil {
 			return value;
 		}
 
-		private static UUID getDataSourceId(IdentifierParser breakdown) {
-			UUID owner=null;
-			String path=breakdown.path();
-			if(path!=null) {
-				owner=UUID.fromString(path);
-			}
-			return owner;
+		private static String getEntityFactoryId(IdentifierParser breakdown) {
+			return breakdown.path();
 		}
 
 		private static Class<?> getOwner(IdentifierParser breakdown) {
@@ -427,13 +422,11 @@ final class IdentifierUtil {
 
 	private static final String IDENTIFIER_SCHEME = "ldp4j";
 
-	static <T> URI createLocalIdentifier(UUID ownerId,T localId) {
-		checkNotNull(ownerId,"Data source identifier cannot be null");
+	static <T> URI createLocalIdentifier(T localId) {
 		checkNotNull(localId,"Local identifier cannot be null");
 		return
 			new IdentifierBuilder().
 				withClassifier(Classifier.LOCAL).
-				withOwner(ownerId).
 				withParameter("class", localId.getClass().getName()).
 				withParameter("value", localId).
 				build();

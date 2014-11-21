@@ -26,236 +26,46 @@
  */
 package org.ldp4j.application.entity;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.net.URI;
 import java.util.Iterator;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.ldp4j.application.entity.Entity.EntityController;
-import org.ldp4j.application.entity.spi.IdentifierGenerator;
-
-import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
 public class DataSource implements Iterable<Entity> {
 
-
-	private static final class DefaultLocalIdentity<T> extends LocalIdentity<T> {
-
-		private UUID ownerId;
-		private T localId;
-
-		private DefaultLocalIdentity(UUID ownerId, T localId) {
-			super(IdentifierUtil.createLocalIdentifier(ownerId, localId));
-			this.ownerId = ownerId;
-			this.localId = localId;
-		}
-
-		@Override
-		public UUID ownerId() { return this.ownerId; }
-
-		@Override
-		public T localId() { return this.localId ; }
-
-		private static <T> LocalIdentity<T> create(UUID ownerId, T localId) {
-			return new DefaultLocalIdentity<T>(ownerId,localId);
-		}
-
-	}
-
-	private static final class DefaultNameGenerator implements IdentifierGenerator<Long> {
-
-		private AtomicLong counter;
-
-		private DefaultNameGenerator() {
-			this.counter=new AtomicLong();
-		}
-
-		@Override
-		public Long nextIdentifier() {
-			return counter.incrementAndGet();
-		}
-
-	}
-
-	private interface EntityManager {
-
-		Entity entity();
-
-		void detach();
-
-	}
-
-	private static final class NullEntityManager implements EntityManager {
-
-		private Identity identity;
-
-		private NullEntityManager(Identity identity) {
-			this.identity = identity;
-		}
-
-		@Override
-		public Entity entity() {
-			return null;
-		}
-
-		@Override
-		public void detach() {
-			throw new IllegalStateException("Entity '"+identity+"' is not managed by the data source");
-		}
-
-	}
-
-	private static final class DefaultEntityManager implements EntityManager {
-
-		private final class InnerEntityController implements EntityController {
-
-			private final UUID ownerId=DefaultEntityManager.this.dataSource.id();
-			private final UUID id=DefaultEntityManager.this.identifier;
-
-			/**
-			 * {@inheritDoc}
-			 */
-			@Override
-			public UUID ownerId() {
-				return detached?null:ownerId;
-			}
-
-			/**
-			 * {@inheritDoc}
-			 */
-			@Override
-			public UUID id() {
-				return detached?null:id;
-			}
-
-			/**
-			 * {@inheritDoc}
-			 */
-			@Override
-			public Entity attach(Entity entity) {
-				checkState(!detached,"Entity is detached");
-				return DefaultEntityManager.this.dataSource.merge(entity);
-			}
-
-			/**
-			 * {@inheritDoc}
-			 */
-			@Override
-			public int hashCode() {
-				return Objects.hashCode(this.ownerId,this.id);
-			}
-
-			/**
-			 * {@inheritDoc}
-			 */
-			@Override
-			public boolean equals(Object obj) {
-				boolean result=false;
-				if(obj instanceof InnerEntityController) {
-					InnerEntityController that = (InnerEntityController) obj;
-					result=
-						Objects.equal(this.ownerId, that.ownerId) &&
-						Objects.equal(this.id, that.id);
-				}
-				return result;
-			}
-
-			/**
-			 * {@inheritDoc}
-			 */
-			@Override
-			public String toString() {
-				return
-					String.format(
-						detached?
-							"{%2$s} detached from data source {%1$s}":
-							"{%2$s} attached to data source {%1$s}",
-						this.ownerId,this.id);
-			}
-
-		}
-
-		private boolean detached;
-
-		private DataSource dataSource;
-		private InnerEntityController controller;
-		private Entity entity;
-		private UUID identifier;
-
-		private DefaultEntityManager(DataSource dataSource, UUID identifier, Identity identity) {
-			this.dataSource=dataSource;
-			this.identifier=identifier;
-			this.controller=new InnerEntityController();
-			this.entity=new Entity(this.controller,identity);
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public Entity entity() {
-			return this.entity;
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void detach() {
-			this.detached=true;
-		}
-
-	}
-
 	private final UUID identifier;
-	private final IdentifierGenerator<?> identifierGenerator;
-
 	private final Lock write;
 	private final Lock read;
-	private final Map<Identity,EntityManager> entityManagers;
+	private final Map<Identity,CompositeManagedEntity> entities;
 	private final Map<UUID,Identity> entityIdentifiers;
+	private final MergeStrategy mergeStrategy;
 
-	private DataSource(UUID identifier, IdentifierGenerator<?> nameGenerator) {
+	private DataSource(UUID identifier, MergeStrategy mergeStrategy) {
 		this.identifier = identifier;
-		this.identifierGenerator = nameGenerator;
+		this.mergeStrategy = mergeStrategy;
 		ReadWriteLock lock = new ReentrantReadWriteLock();
 		this.write = lock.writeLock();
 		this.read = lock.readLock();
-		this.entityManagers=Maps.newLinkedHashMap();
+		this.entities=Maps.newLinkedHashMap();
 		this.entityIdentifiers=Maps.newLinkedHashMap();
 	}
 
-	private Entity safeNewEntity(Identity identity) {
-		this.write.lock();
-		try {
-			if(findByIdentity(identity)!=null) {
-				throw new IllegalArgumentException("An entity with the same identity is already managed by the datasource");
-			}
-			EntityManager manager=new DefaultEntityManager(this,this.nextEntityId(),identity);
-			Entity newEntity = manager.entity();
-			this.entityIdentifiers.put(newEntity.id(),newEntity.identity());
-			this.entityManagers.put(newEntity.identity(),manager);
-			return newEntity;
-		} finally {
-			this.write.unlock();
-		}
-	}
-
-	private EntityManager unsafeNullableEntityManager(Identity identity) {
-		EntityManager entityManager = this.entityManagers.get(identity);
-		if(entityManager==null) {
-			entityManager=new NullEntityManager(identity);
-		}
-		return entityManager;
+	private void unsafeRegisterEntity(CompositeManagedEntity newEntity) {
+		newEntity.attach(this.nextEntityId(), this);
+		this.entities.put(newEntity.identity(),newEntity);
+		this.entityIdentifiers.put(newEntity.id(),newEntity.identity());
 	}
 
 	private UUID nextEntityId() {
@@ -266,16 +76,108 @@ public class DataSource implements Iterable<Entity> {
 		return identifier;
 	}
 
-	private Object nextLocalId() {
-		return this.identifierGenerator.nextIdentifier();
+	private CompositeManagedEntity deepMerge(Entity entity) {
+		final Queue<Entity> pending=new LinkedList<Entity>();
+		final List<Entity> merged=Lists.<Entity>newArrayList();
+		Entity first=entity;
+		while(first!=null) {
+			if(!contains(first)) {
+				CompositeManagedEntity surrogate=newEntity(first.identity());
+				for(Property property:first) {
+					mergeLiteralValues(surrogate, property);
+					mergeEntityValues(surrogate, property, pending);
+				}
+				merged.add(first);
+			}
+			first=pending.poll();
+		}
+		return this.entities.get(entity.identity());
+	}
+
+	private void mergeLiteralValues(CompositeManagedEntity target, Property property) {
+		URI predicate=property.predicate();
+		for(Literal<?> value:property.literalValues()) {
+			target.addProperty(predicate, value);
+		}
+	}
+
+	private void mergeEntityValues(CompositeManagedEntity target, Property property, Queue<Entity> pendingMerges) {
+		URI predicate=property.predicate();
+		for(Entity value:property.entityValues()) {
+			if(contains(value)) {
+				target.addProperty(predicate,value);
+			} else {
+				CompositeManagedEntity valueSurrogate=newEntity(value.identity());
+				target.addProperty(predicate, valueSurrogate);
+				if(!pendingMerges.contains(value)) {
+					pendingMerges.offer(value);
+				}
+			}
+		}
+	}
+
+	// Implementation API
+
+	private CompositeManagedEntity getOrCreate(Identity identity) {
+		CompositeManagedEntity result=this.entities.get(identity);
+		if(result==null) {
+			result=CompositeManagedEntity.create(DefaultManagedEntity.create(identity));
+			unsafeRegisterEntity(result);
+		}
+		return result;
+	}
+	private CompositeManagedEntity attachEntity(Entity entity) {
+		CompositeManagedEntity target=findByIdentity(entity.identity());
+		if(target==null) {
+			target=newEntity(entity.identity());
+		} else if(target!=entity) {
+			target.join(CompositeManagedEntity.wrap(entity));
+		}
+		return target;
 	}
 
 	public UUID id() {
 		return this.identifier;
 	}
 
-	public Entity newEntity() {
-		return safeNewEntity(DefaultLocalIdentity.create(this.identifier, nextLocalId()));
+	/**
+	 * Find the entity managed by the data source that has the specified identifier.
+	 * If the data source does not manage an entity with such identity, null
+	 * be returned.
+	 *
+	 * @param identity
+	 * @return
+	 */
+	public CompositeManagedEntity findById(UUID id) {
+		checkNotNull(id,"Entity identifier cannot be null");
+		this.read.lock();
+		try {
+			Identity identity = this.entityIdentifiers.get(id);
+			if(identity==null) {
+				return null;
+			}
+			return this.entities.get(identity);
+		} finally {
+			this.read.unlock();
+		}
+	}
+
+	/**
+	 * Find the entity managed by the data source that has the specified identity.
+	 * If the data source does not manage an entity with such identity, null
+	 * be returned.
+	 *
+	 * @param identity
+	 * @return
+	 */
+	public CompositeManagedEntity findByIdentity(Identity identity) {
+		checkNotNull(identity,"Entity identity cannot be null");
+		this.read.lock();
+		try {
+			return this.entities.get(identity);
+		} finally {
+			this.read.unlock();
+		}
 	}
 
 	/**
@@ -291,45 +193,20 @@ public class DataSource implements Iterable<Entity> {
 	 *             if the data source already manages an entity with the
 	 *             specified identity
 	 */
-	public Entity newEntity(Identity identity) {
-		checkNotNull(identity,"Identity cannot be null");
-		checkArgument(!DataSource.isLocal(identity),"Identity cannot be local");
-		return safeNewEntity(identity);
-	}
-
- 	/**
-	 * Find the entity managed by the data source that has the specified identifier.
-	 * If the data source does not manage an entity with such identity, null
-	 * be returned.
-	 *
-	 * @param identity
-	 * @return
-	 */
-	public Entity findById(UUID id) {
-		checkNotNull(id,"Entity identifier cannot be null");
-		this.read.lock();
+	public CompositeManagedEntity newEntity(Identity identity) {
+		this.write.lock();
 		try {
-			return findByIdentity(this.entityIdentifiers.get(id));
+			if(findByIdentity(identity)!=null) {
+				throw new IllegalArgumentException("An entity with the same identity is already managed by the datasource");
+			}
+			// TODO: Instead of relying on a particular implementation class,
+			// delegate on an EntityFactory (which should be configurable as it
+			// is the IdentifierGenerator for the EntityFactory)
+			CompositeManagedEntity newEntity = CompositeManagedEntity.create(new DefaultManagedEntity(identity));
+			unsafeRegisterEntity(newEntity);
+			return newEntity;
 		} finally {
-			this.read.unlock();
-		}
-	}
-
-	/**
-	 * Find the entity managed by the data source that has the specified identity.
-	 * If the data source does not manage an entity with such identity, null
-	 * be returned.
-	 *
-	 * @param identity
-	 * @return
-	 */
-	public Entity findByIdentity(Identity identity) {
-		checkNotNull(identity,"Entity identity cannot be null");
-		this.read.lock();
-		try {
-			return unsafeNullableEntityManager(identity).entity();
-		} finally {
-			this.read.unlock();
+			this.write.unlock();
 		}
 	}
 
@@ -356,11 +233,12 @@ public class DataSource implements Iterable<Entity> {
 			if(!contains(entity)) {
 				return;
 			}
-			this.entityIdentifiers.remove(entity.id());
-			EntityManager manager = this.entityManagers.remove(entity.identity());
-			manager.detach();
-			for(EntityManager tmp:this.entityManagers.values()) {
-				tmp.entity().removeProperties(entity);
+			CompositeManagedEntity removedEntity = this.entities.remove(entity.identity());
+			assert removedEntity==entity;
+			removedEntity.dettach(this);
+			this.entityIdentifiers.remove(removedEntity.id());
+			for(CompositeManagedEntity tmp:this.entities.values()) {
+				tmp.removeProperties(removedEntity);
 			}
 		} finally {
 			this.write.unlock();
@@ -376,19 +254,25 @@ public class DataSource implements Iterable<Entity> {
 	 *         the entity managed by data source to which the input entity state
 	 *         was merged to otherwise
 	 */
-	public Entity merge(Entity entity) {
+	public CompositeManagedEntity merge(Entity entity) {
 		checkNotNull(entity,"Entity cannot be null");
 		this.write.lock();
 		try {
-			if(contains(entity)) {
-				return entity;
+			CompositeManagedEntity result=null;
+			switch(this.mergeStrategy) {
+			case BY_IDENTITY:
+				result=getOrCreate(entity.identity());
+				break;
+			case BY_REFERENCE:
+				result=attachEntity(entity);
+				break;
+			case BY_VALUE:
+				result=deepMerge(entity);
+				break;
+			default:
+				throw new IllegalStateException("Unsupported linking mechanism");
 			}
-			Entity target=findByIdentity(entity.identity());
-			if(target==null) {
-				target=newEntity(entity.identity());
-			}
-			target.merge(entity);
-			return target;
+			return result;
 		} finally {
 			this.write.unlock();
 		}
@@ -398,49 +282,21 @@ public class DataSource implements Iterable<Entity> {
 	public Iterator<Entity> iterator() {
 		this.read.lock();
 		try {
-			Builder<Entity> builder = ImmutableList.<Entity>builder();
-			for(EntityManager manager:this.entityManagers.values()) {
-				builder.add(manager.entity());
-			}
-			return builder.build().iterator();
+			return
+				ImmutableList.
+					<Entity>copyOf(this.entities.values()).
+						iterator();
 		} finally {
 			this.read.unlock();
 		}
 	}
 
-	// Syntactic sugar API
-
-	public Entity newEntity(Key<?> key) {
-		return newEntity(IdentityFactory.createManagedIdentity(key));
-	}
-
-	public Entity newEntity(Class<?> owner, Object nativeId) {
-		return newEntity(IdentityFactory.createManagedIdentity(owner,nativeId));
-	}
-
-	public Entity newEntity(Key<?> key, URI path) {
-		return newEntity(IdentityFactory.createRelativeIdentity(key,path));
-	}
-
-	public Entity newEntity(Class<?> owner, Object nativeId, URI path) {
-		return newEntity(IdentityFactory.createRelativeIdentity(owner,nativeId,path));
-	}
-
-	public Entity newEntity(URI location) {
-		return newEntity(IdentityFactory.createExternalIdentity(location));
-	}
-
-	private static boolean isLocal(Identity identity) {
-		return identity instanceof LocalIdentity<?>;
-	}
-
 	public static DataSource create() {
-		return create(new DefaultNameGenerator());
+		return create(MergeStrategy.BY_VALUE);
 	}
 
-	public static DataSource create(IdentifierGenerator<?> nameGenerator) {
-		return new DataSource(UUID.randomUUID(),nameGenerator);
+	public static DataSource create(MergeStrategy mergeStrategy) {
+		return new DataSource(UUID.randomUUID(),mergeStrategy);
 	}
-
 
 }

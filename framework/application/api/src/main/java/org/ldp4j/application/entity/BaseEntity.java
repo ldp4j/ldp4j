@@ -26,12 +26,28 @@
  */
 package org.ldp4j.application.entity;
 
-/**
- * The base class for representing the data items managed by the LDP4j Application
- * Engine and LDP4j Applications.
- */
-public interface Value {
+import java.net.URI;
+import java.util.Collection;
+import java.util.Iterator;
 
-	void accept(ValueVisitor visitor);
+import com.google.common.collect.ImmutableList;
+
+abstract class BaseEntity implements Entity {
+
+	public abstract ImmutableProperty getProperty(URI predicate);
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public final Iterator<Property> iterator() {
+		return
+			ImmutableList.
+				<Property>copyOf(properties()).
+					iterator();
+	}
+
+	abstract Collection<ImmutableProperty> properties();
+
+	abstract void removeProperties(Entity entity);
 
 }
