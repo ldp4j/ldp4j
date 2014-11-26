@@ -109,12 +109,12 @@ final class CompositeManagedEntity extends ManagedEntity {
 	// Lifecycle protocol
 
 	@Override
-	void attach(UUID id, DataSource dataSource) {
+	void attach(UUID id, CompositeDataSource dataSource) {
 		this.self.attach(id, dataSource);
 	}
 
 	@Override
-	void dettach(DataSource dataSource) {
+	void dettach(CompositeDataSource dataSource) {
 		this.self.dettach(dataSource);
 	}
 
@@ -171,7 +171,7 @@ final class CompositeManagedEntity extends ManagedEntity {
 	// Public API
 
 	@Override
-	public DataSource dataSource() {
+	public CompositeDataSource dataSource() {
 		return this.self.dataSource();
 	}
 
@@ -225,8 +225,12 @@ final class CompositeManagedEntity extends ManagedEntity {
 		CompositeManagedEntity part=null;
 		if(entity instanceof CompositeManagedEntity) {
 			part=(CompositeManagedEntity)entity;
+		} else if(entity instanceof ManagedEntity){
+			part=create((ManagedEntity)entity);
 		} else {
-			part=create(DelegatedManagedEntity.create(entity));
+			// TODO: We could make this behaviour configurable. We could select
+			// between a) failing, b) wrapping, c) deep cloning.
+			part=create(ManagedEntityAdapter.create(entity));
 		}
 		return part;
 	}

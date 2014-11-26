@@ -34,6 +34,8 @@ import com.google.common.collect.ImmutableList;
 
 abstract class BaseEntity implements Entity {
 
+	public abstract CompositeDataSource dataSource();
+
 	public abstract ImmutableProperty getProperty(URI predicate);
 
 	/**

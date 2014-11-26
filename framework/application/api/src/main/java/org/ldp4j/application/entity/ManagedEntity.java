@@ -30,8 +30,8 @@ import java.util.UUID;
 
 abstract class ManagedEntity extends BaseEntity {
 
-	abstract void attach(UUID id, DataSource dataSource);
+	abstract void attach(UUID id, CompositeDataSource dataSource);
 
-	abstract void dettach(DataSource dataSource);
+	abstract void dettach(CompositeDataSource dataSource);
 
 }

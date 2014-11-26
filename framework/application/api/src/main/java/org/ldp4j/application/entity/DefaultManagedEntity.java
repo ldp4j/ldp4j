@@ -46,7 +46,7 @@ final class DefaultManagedEntity extends ManagedEntity {
 
 	private interface EntityController {
 
-		DataSource owner();
+		CompositeDataSource owner();
 
 		UUID id();
 
@@ -57,16 +57,16 @@ final class DefaultManagedEntity extends ManagedEntity {
 	}
 
 	private final class AttachedEntityController implements EntityController {
-		private final DataSource dataSource;
+		private final CompositeDataSource dataSource;
 		private final UUID id;
 
-		private AttachedEntityController(DataSource dataSource, UUID id) {
+		private AttachedEntityController(CompositeDataSource dataSource, UUID id) {
 			this.dataSource = dataSource;
 			this.id = id;
 		}
 
 		@Override
-		public DataSource owner() {
+		public CompositeDataSource owner() {
 			return this.dataSource;
 		}
 
@@ -126,7 +126,7 @@ final class DefaultManagedEntity extends ManagedEntity {
 
 	private static final class DetachedEntityController implements EntityController {
 		@Override
-		public DataSource owner() {
+		public CompositeDataSource owner() {
 			return null;
 		}
 		@Override
@@ -247,7 +247,7 @@ final class DefaultManagedEntity extends ManagedEntity {
 	 * {@inheritDoc}
 	 */
 	@Override
-	synchronized void attach(UUID id, DataSource dataSource) {
+	synchronized void attach(UUID id, CompositeDataSource dataSource) {
 		setController(new AttachedEntityController(dataSource, id));
 	}
 
@@ -255,7 +255,7 @@ final class DefaultManagedEntity extends ManagedEntity {
 	 * {@inheritDoc}
 	 */
 	@Override
-	synchronized void dettach(DataSource dataSource) {
+	synchronized void dettach(CompositeDataSource dataSource) {
 		checkNotNull(dataSource,"Data source cannot be null");
 		checkArgument(this.controller.isOwner(dataSource),"Cannot detach from '"+dataSource.id()+"'");
 		setController(new DetachedEntityController());
@@ -290,7 +290,7 @@ final class DefaultManagedEntity extends ManagedEntity {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DataSource dataSource() {
+	public CompositeDataSource dataSource() {
 		return this.controller.owner();
 	}
 

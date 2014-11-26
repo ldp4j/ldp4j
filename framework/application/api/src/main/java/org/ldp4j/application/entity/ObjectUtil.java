@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-final class ObjectUtil {
+public final class ObjectUtil {
 
 	private static final class NullObjectFactory<T> implements ObjectFactory<T> {
 
@@ -116,12 +116,12 @@ final class ObjectUtil {
 		return (ObjectFactory<T>)rawResult;
 	}
 
-	static <T> T fromString(Class<T> clazz, String str) {
+	public static <T> T fromString(Class<T> clazz, String str) {
 		ObjectFactory<T> valueFactory=ObjectUtil.findObjectFactory(clazz);
 		return valueFactory.fromString(str);
 	}
 
-	static String toString(Object value) {
+	public static String toString(Object value) {
 		ObjectFactory<Object> valueFactory = ObjectUtil.findObjectFactory(value.getClass());
 		return valueFactory.toString(value);
 	}

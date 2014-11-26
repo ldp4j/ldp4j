@@ -33,6 +33,7 @@ import java.util.Collection;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -40,7 +41,31 @@ import com.google.common.base.Objects;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
-final class DelegatedManagedEntity extends ManagedEntity {
+final class ManagedEntityAdapter extends ManagedEntity {
+
+	private static final class Surrogate {
+
+		private final UUID id;
+		private final CompositeDataSource dataSource;
+
+		private Surrogate(UUID id, CompositeDataSource dataSource) {
+			this.id = id;
+			this.dataSource = dataSource;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			boolean result=false;
+			if(obj instanceof Surrogate) {
+				Surrogate that=(Surrogate)obj;
+				result=
+					Objects.equal(this.id, that.id) &&
+					Objects.equal(this.dataSource, that.dataSource);
+			}
+			return result;
+		}
+
+	}
 
 	private static final String LITERAL_VALUE_CANNOT_BE_NULL = "Literal value cannot be null";
 
@@ -61,11 +86,22 @@ final class DelegatedManagedEntity extends ManagedEntity {
 
 	private final Entity delegate;
 
-	private DelegatedManagedEntity(Entity src) {
+	private final AtomicReference<Surrogate> surrogate;
+
+	private ManagedEntityAdapter(Entity src) {
+		this.surrogate=new AtomicReference<Surrogate>(new Surrogate(null,null));
 		this.delegate = src;
 		ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
 		this.write = lock.writeLock();
 		this.read = lock.readLock();
+	}
+
+	private void setSurrogate(Surrogate newState) {
+		boolean updated=false;
+		do {
+			Surrogate current=this.surrogate.get();
+			updated=this.surrogate.compareAndSet(current, newState);
+		} while(!updated);
 	}
 
 	private ImmutableProperty immutable(URI predicate, Property property) {
@@ -112,13 +148,13 @@ final class DelegatedManagedEntity extends ManagedEntity {
 	}
 
 	@Override
-	synchronized void attach(UUID id, DataSource dataSource) {
-		throw new UnsupportedOperationException("Wrapped entities cannot be attached");
+	void attach(UUID id, CompositeDataSource dataSource) {
+		setSurrogate(new Surrogate(id,dataSource));
 	}
 
 	@Override
-	synchronized void dettach(DataSource dataSource) {
-		throw new UnsupportedOperationException("Wrapped entities cannot be dettached");
+	void dettach(CompositeDataSource dataSource) {
+		setSurrogate(new Surrogate(null,null));
 	}
 
 	@Override
@@ -143,13 +179,13 @@ final class DelegatedManagedEntity extends ManagedEntity {
 	}
 
 	@Override
-	public DataSource dataSource() {
-		return this.delegate.dataSource();
+	public CompositeDataSource dataSource() {
+		return this.surrogate.get().dataSource;
 	}
 
 	@Override
 	public UUID id() {
-		return this.delegate.id();
+		return this.surrogate.get().id;
 	}
 
 	@Override
@@ -247,8 +283,8 @@ final class DelegatedManagedEntity extends ManagedEntity {
 	@Override
 	public boolean equals(Object obj) {
 		boolean result=false;
-		if(obj instanceof DelegatedManagedEntity) {
-			DelegatedManagedEntity that= (DelegatedManagedEntity) obj;
+		if(obj instanceof ManagedEntityAdapter) {
+			ManagedEntityAdapter that= (ManagedEntityAdapter) obj;
 			result=Objects.equal(this.delegate,that.delegate);
 		}
 		return result;
@@ -267,9 +303,9 @@ final class DelegatedManagedEntity extends ManagedEntity {
 					toString();
 	}
 
-	static DelegatedManagedEntity create(Entity src) {
+	static ManagedEntityAdapter create(Entity src) {
 		checkNotNull(src,"Source entity cannot be null");
-		return new DelegatedManagedEntity(src);
+		return new ManagedEntityAdapter(src);
 	}
 
 }

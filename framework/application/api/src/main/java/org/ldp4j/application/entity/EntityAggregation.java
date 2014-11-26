@@ -91,7 +91,7 @@ final class EntityAggregation extends BaseEntity {
 	}
 
 	@Override
-	public DataSource dataSource() {
+	public CompositeDataSource dataSource() {
 		return this.owner.dataSource();
 	}
 
