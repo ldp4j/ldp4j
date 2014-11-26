@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity;
+package org.ldp4j.application.entity.core;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -37,6 +37,9 @@ import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import org.ldp4j.application.entity.Key;
+import org.ldp4j.application.entity.ObjectUtil;
 
 import com.google.common.collect.Maps;
 import com.google.common.escape.Escaper;

@@ -28,77 +28,10 @@ package org.ldp4j.application.entity;
 
 import java.net.URI;
 
-import com.google.common.base.Objects;
+public interface RelativeIdentity<T> extends Identity {
 
-public final class RelativeIdentity<T> extends Identity {
+	ManagedIdentity<T> parent();
 
-	private ManagedIdentity<T> parent;
-	private URI path;
-
-	private RelativeIdentity(URI identifier, ManagedIdentity<T> parent, URI path) {
-		super(identifier);
-		this.parent = parent;
-		this.path = path;
-	}
-
-	public ManagedIdentity<T> parent() {
-		return this.parent;
-	}
-
-	public URI path() {
-		return this.path;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void accept(IdentityVisitor visitor) {
-		visitor.visitRelative(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int hashCode() {
-		return super.hashCode()+Objects.hashCode(this.parent,this.path);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		boolean result=super.equals(obj);
-		if(result && obj instanceof RelativeIdentity) {
-			RelativeIdentity<?> that=(RelativeIdentity<?>) obj;
-			result=
-				Objects.equal(this.parent,that.parent) &&
-				Objects.equal(this.path,that.path);
-		}
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void toString(StringHelper helper) {
-		helper.
-			add("parent",this.parent).
-			add("path",this.path);
-	}
-
-	static <T,V> RelativeIdentity<T> create(Class<T> owner, V nativeId, URI path) {
-		return create(Key.create(owner, nativeId),path);
-	}
-
-	static <T> RelativeIdentity<T> create(Key<T> key, URI path) {
-		URI identifier=
-			IdentifierUtil.
-				createRelativeIdentifier(key,path);
-		return new RelativeIdentity<T>(identifier,ManagedIdentity.create(key),path);
-	}
+	URI path();
 
 }

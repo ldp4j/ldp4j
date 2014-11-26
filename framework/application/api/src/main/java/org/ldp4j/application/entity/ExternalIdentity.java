@@ -26,66 +26,10 @@
  */
 package org.ldp4j.application.entity;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.net.URI;
 
-import com.google.common.base.Objects;
+public interface ExternalIdentity extends Identity {
 
-public final class ExternalIdentity extends Identity {
-
-	private final URI location;
-
-	private ExternalIdentity(URI identifier, URI location) {
-		super(identifier);
-		this.location = location;
-	}
-
-	public URI location() {
-		return this.location;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void accept(IdentityVisitor visitor) {
-		visitor.visitExternal(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int hashCode() {
-		return super.hashCode()+Objects.hashCode(this.location);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		boolean result=super.equals(obj);
-		if(result && obj.getClass()==getClass()) {
-			ExternalIdentity that=(ExternalIdentity)obj;
-			result=Objects.equal(this.location, that.location);
-		}
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	protected void toString(StringHelper helper) {
-		helper.add("location",this.location);
-
-	}
-
-	static ExternalIdentity create(URI location) {
-		checkNotNull(location,"External location cannot be null");
-		return new ExternalIdentity(IdentifierUtil.createExternalIdentifier(location),location);
-	}
+	URI location();
 
 }

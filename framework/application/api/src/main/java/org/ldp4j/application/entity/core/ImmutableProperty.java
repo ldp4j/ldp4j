@@ -24,12 +24,18 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity;
+package org.ldp4j.application.entity.core;
 
 import java.net.URI;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Set;
+
+import org.ldp4j.application.entity.Entity;
+import org.ldp4j.application.entity.Literal;
+import org.ldp4j.application.entity.Property;
+import org.ldp4j.application.entity.Value;
+import org.ldp4j.application.entity.ValueVisitor;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Iterators;
@@ -63,7 +69,7 @@ final class ImmutableProperty implements Property {
 			}
 
 			@Override
-			final void visitLiteral(Literal<?> literal) {
+			public final void visitLiteral(Literal<?> literal) {
 				if(mustMutate(literal,this.property.literals)) {
 					this.property=new ImmutableProperty(this.property);
 					mutate(literal, this.property.literals);
@@ -71,7 +77,7 @@ final class ImmutableProperty implements Property {
 			}
 
 			@Override
-			final void visitEntity(Entity entity) {
+			public final void visitEntity(Entity entity) {
 				if(mustMutate(entity,this.property.entities)) {
 					this.property=new ImmutableProperty(this.property);
 					mutate(entity, this.property.entities);

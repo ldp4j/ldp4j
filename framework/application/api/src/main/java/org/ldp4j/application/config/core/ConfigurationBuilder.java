@@ -1,3 +1,29 @@
+/**
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   This file is part of the LDP4j Project:
+ *     http://www.ldp4j.org/
+ *
+ *   Center for Open Middleware
+ *     http://www.centeropenmiddleware.com/
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Copyright (C) 2014 Center for Open Middleware.
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *             http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ */
 package org.ldp4j.application.config.core;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -25,16 +51,18 @@ import com.google.common.collect.Maps;
 
 public final class ConfigurationBuilder<T extends Configuration> {
 
-	private static final class Customizer<T extends CustomizableConfiguration> {
+	private static final class Customizer<T extends Configuration> {
 
-		private final T config;
+		private final CustomizableConfiguration config;
+		private final Class<? extends T> clazz;
 
-		private Customizer(T config) {
+		private Customizer(CustomizableConfiguration config, Class<? extends T> clazz) {
 			this.config = config;
+			this.clazz = clazz;
 		}
 
 		private T customize() {
-			return this.config;
+			return this.clazz.cast(this.config);
 		}
 
 		private Customizer<T> withSourcePrecedence(List<ConfigurationSource> sourcePrecedence) {
@@ -52,8 +80,9 @@ public final class ConfigurationBuilder<T extends Configuration> {
 			return this;
 		}
 
-		private static <T extends CustomizableConfiguration> Customizer<T> create(T config) {
-			return new Customizer<T>(config);
+		private static <T extends Configuration> Customizer<T> create(CustomizableConfiguration config, Class<? extends T> type) {
+			checkArgument(type.isInstance(config));
+			return new Customizer<T>(config,type);
 		}
 
 	}
@@ -293,20 +322,23 @@ public final class ConfigurationBuilder<T extends Configuration> {
 		return
 			new ConfigurationBuilder<Configuration>(
 				Customizer.create(
-					new CustomizableConfiguration()));
+					new CustomizableConfiguration(),
+					Configuration.class));
 	}
 
 	public static ConfigurationBuilder<MutableConfiguration> createMutable() {
 		return
 			new ConfigurationBuilder<MutableConfiguration>(
 				Customizer.create(
-					new CustomizableMutableConfiguration()));
+					new CustomizableMutableConfiguration(),
+					MutableConfiguration.class));
 	}
 
 	public static ConfigurationBuilder<ImmutableConfiguration> createImmutable() {
 		return
 			new ConfigurationBuilder<ImmutableConfiguration>(
 				Customizer.create(
-					new CustomizableImmutableConfiguration()));
+					new CustomizableImmutableConfiguration(),
+					ImmutableConfiguration.class));
 	}
 }

@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity;
+package org.ldp4j.application.entity.core;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -37,6 +37,13 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import org.ldp4j.application.entity.DataSource;
+import org.ldp4j.application.entity.Entity;
+import org.ldp4j.application.entity.Identity;
+import org.ldp4j.application.entity.Literal;
+import org.ldp4j.application.entity.Value;
+import org.ldp4j.application.entity.ValueVisitor;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.Maps;

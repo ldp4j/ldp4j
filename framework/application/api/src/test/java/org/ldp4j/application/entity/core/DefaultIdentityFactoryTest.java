@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity;
+package org.ldp4j.application.entity.core;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -38,8 +38,14 @@ import java.util.Deque;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ldp4j.application.entity.IdentifierUtil.Classifier;
-import org.ldp4j.application.entity.IdentifierUtil.IdentifierIntrospector;
+import org.ldp4j.application.entity.DataSource;
+import org.ldp4j.application.entity.ExternalIdentity;
+import org.ldp4j.application.entity.Identity;
+import org.ldp4j.application.entity.Key;
+import org.ldp4j.application.entity.ManagedIdentity;
+import org.ldp4j.application.entity.RelativeIdentity;
+import org.ldp4j.application.entity.core.IdentifierUtil.Classifier;
+import org.ldp4j.application.entity.core.IdentifierUtil.IdentifierIntrospector;
 import org.ldp4j.application.entity.spi.IdentifierGenerator;
 
 import com.google.common.collect.Queues;
@@ -85,7 +91,7 @@ public class DefaultIdentityFactoryTest {
 		String nativeId = "$example%+%value^";
 		this.identifierGenerator.addNextNativeId(nativeId);
 		Identity local = sut.createIdentity();
-		assertThat(local,instanceOf(LocalIdentity.class));
+		assertThat(local,instanceOf(BaseLocalIdentity.class));
 		URI identifier = local.identifier();
 		System.out.println(String.format("%s --> %s",nativeId,identifier));
 		assertThat(identifier,notNullValue());

@@ -28,11 +28,11 @@ package org.ldp4j.application.entity;
 
 public class ValueVisitor {
 
-	void visitLiteral(Literal<?> value) {
+	public void visitLiteral(Literal<?> value) {
 		// To be overriden by implementors
 	}
 
-	void visitEntity(Entity entity) {
+	public void visitEntity(Entity entity) {
 		// To be overriden by implementors
 	}
 

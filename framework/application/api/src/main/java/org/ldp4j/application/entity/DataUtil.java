@@ -106,11 +106,11 @@ public final class DataUtil {
 					value.accept(
 						new ValueVisitor() {
 							@Override
-							void visitLiteral(Literal<?> value) {
+							public void visitLiteral(Literal<?> value) {
 								builder.append("Literal: ").append(prettyPrint(value));
 							}
 							@Override
-							void visitEntity(Entity entity) {
+							public void visitEntity(Entity entity) {
 								builder.append("Entity: ").append(DataUtil.toString(entity));
 							}
 						}

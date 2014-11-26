@@ -24,40 +24,35 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.config.core;
+package org.ldp4j.application.entity.core;
 
-import org.ldp4j.application.config.Configuration;
-import org.ldp4j.application.config.MutableConfiguration;
-import org.ldp4j.application.config.Setting;
+import java.net.URI;
+import java.util.Collection;
+import java.util.Iterator;
 
-public class DefaultMutableConfiguration extends BaseConfiguration implements MutableConfiguration {
+import org.ldp4j.application.entity.Entity;
+import org.ldp4j.application.entity.Property;
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -8811212400844264025L;
+import com.google.common.collect.ImmutableList;
 
-	public DefaultMutableConfiguration(Configuration config) {
-		super(config);
-	}
+abstract class BaseEntity implements Entity {
 
-	public DefaultMutableConfiguration() {
-		super();
-	}
+	public abstract CompositeDataSource dataSource();
+
+	public abstract ImmutableProperty getProperty(URI predicate);
 
 	/**
-	 * Sets a {@link Setting} to have a new value. If the value is null, the
-	 * setting is removed and the default will be used instead.
-	 *
-	 * @param setting
-	 *        The setting to set a new value for.
-	 * @param value
-	 *        The value for the setting, or null to reset the setting to use
-	 *        the default value.
+	 * {@inheritDoc}
 	 */
-	@Override
-	public <T> void set(Setting<T> setting, T value) {
-		super.update(setting, value);
+	public final Iterator<Property> iterator() {
+		return
+			ImmutableList.
+				<Property>copyOf(properties()).
+					iterator();
 	}
+
+	abstract Collection<ImmutableProperty> properties();
+
+	abstract void removeProperties(Entity entity);
 
 }

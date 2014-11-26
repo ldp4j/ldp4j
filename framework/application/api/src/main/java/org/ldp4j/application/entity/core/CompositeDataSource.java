@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity;
+package org.ldp4j.application.entity.core;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -39,11 +39,17 @@ import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.ldp4j.application.entity.DataSource;
+import org.ldp4j.application.entity.Entity;
+import org.ldp4j.application.entity.Identity;
+import org.ldp4j.application.entity.Literal;
+import org.ldp4j.application.entity.Property;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
-public class CompositeDataSource implements Iterable<Entity>, DataSource {
+final class CompositeDataSource implements Iterable<Entity>, DataSource {
 
 	private final UUID id;
 	private final Lock write;
@@ -274,11 +280,11 @@ public class CompositeDataSource implements Iterable<Entity>, DataSource {
 		}
 	}
 
-	public static DataSource create() {
+	public static CompositeDataSource create() {
 		return create(MergeStrategy.BY_VALUE);
 	}
 
-	public static DataSource create(MergeStrategy mergeStrategy) {
+	public static CompositeDataSource create(MergeStrategy mergeStrategy) {
 		return new CompositeDataSource(UUID.randomUUID(),mergeStrategy);
 	}
 

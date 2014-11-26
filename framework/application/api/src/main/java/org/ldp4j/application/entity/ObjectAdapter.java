@@ -72,7 +72,7 @@ public final class ObjectAdapter<S> {
 		return orFail(new ClassCastException("Object is not of type '"+this.targetClazz.getName()+"'"));
 	}
 
-	static <T> ObjectAdapter<T> create(Class<? extends T> targetClass, Object object) {
+	public static <T> ObjectAdapter<T> create(Class<? extends T> targetClass, Object object) {
 		return new ObjectAdapter<T>(targetClass, object);
 	}
 

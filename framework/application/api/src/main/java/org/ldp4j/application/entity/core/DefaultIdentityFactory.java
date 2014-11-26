@@ -24,12 +24,16 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity;
+package org.ldp4j.application.entity.core;
 
 import java.net.URI;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
+import org.ldp4j.application.entity.Identity;
+import org.ldp4j.application.entity.Key;
+import org.ldp4j.application.entity.ManagedIdentity;
+import org.ldp4j.application.entity.RelativeIdentity;
 import org.ldp4j.application.entity.spi.IdentifierGenerator;
 import org.ldp4j.application.entity.spi.IdentityFactory;
 
@@ -61,6 +65,10 @@ public final class DefaultIdentityFactory implements IdentityFactory {
 		this.identifierGenerator = identifierGenerator;
 	}
 
+	public DefaultIdentityFactory() {
+		this(UUID.randomUUID(),new DefaultIdentifierGenerator());
+	}
+
 	private Object nextLocalId() {
 		return this.identifierGenerator.nextIdentifier();
 	}
@@ -70,7 +78,7 @@ public final class DefaultIdentityFactory implements IdentityFactory {
 	 */
 	@Override
 	public Identity createIdentity() {
-		return LocalIdentity.create(nextLocalId());
+		return BaseLocalIdentity.create(nextLocalId());
 	}
 
 	/**
@@ -78,15 +86,15 @@ public final class DefaultIdentityFactory implements IdentityFactory {
 	 */
 	@Override
 	public <T> ManagedIdentity<T> createManagedIdentity(Key<T> key) {
-		return ManagedIdentity.create(key);
+		return BaseManagedIdentity.create(key);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ExternalIdentity createExternalIdentity(URI location) {
-		return ExternalIdentity.create(location);
+	public BaseExternalIdentity createExternalIdentity(URI location) {
+		return BaseExternalIdentity.create(location);
 	}
 
 	/**
@@ -94,13 +102,13 @@ public final class DefaultIdentityFactory implements IdentityFactory {
 	 */
 	@Override
 	public <T> RelativeIdentity<T> createRelativeIdentity(Key<T> parent, URI path) {
-		return RelativeIdentity.create(parent, path);
+		return BaseRelativeIdentity.create(parent, path);
 	}
 
-	public static DefaultIdentityFactory create() {
-		return create(new DefaultIdentifierGenerator());
-	}
-
+	/**
+	 * TODO: Migrate to new configuration API
+	 */
+	@Deprecated
 	public static DefaultIdentityFactory create(IdentifierGenerator<?> nameGenerator) {
 		return new DefaultIdentityFactory(UUID.randomUUID(),nameGenerator);
 	}

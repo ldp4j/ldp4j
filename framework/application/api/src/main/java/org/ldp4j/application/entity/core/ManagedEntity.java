@@ -24,32 +24,14 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity;
+package org.ldp4j.application.entity.core;
 
-import java.net.URI;
-import java.util.Collection;
-import java.util.Iterator;
+import java.util.UUID;
 
-import com.google.common.collect.ImmutableList;
+abstract class ManagedEntity extends BaseEntity {
 
-abstract class BaseEntity implements Entity {
+	abstract void attach(UUID id, CompositeDataSource dataSource);
 
-	public abstract CompositeDataSource dataSource();
-
-	public abstract ImmutableProperty getProperty(URI predicate);
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public final Iterator<Property> iterator() {
-		return
-			ImmutableList.
-				<Property>copyOf(properties()).
-					iterator();
-	}
-
-	abstract Collection<ImmutableProperty> properties();
-
-	abstract void removeProperties(Entity entity);
+	abstract void dettach(CompositeDataSource dataSource);
 
 }

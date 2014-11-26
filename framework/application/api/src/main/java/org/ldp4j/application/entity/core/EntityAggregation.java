@@ -1,4 +1,30 @@
-package org.ldp4j.application.entity;
+/**
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   This file is part of the LDP4j Project:
+ *     http://www.ldp4j.org/
+ *
+ *   Center for Open Middleware
+ *     http://www.centeropenmiddleware.com/
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Copyright (C) 2014 Center for Open Middleware.
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *             http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ */
+package org.ldp4j.application.entity.core;
 
 import static com.google.common.base.Preconditions.checkState;
 
@@ -6,9 +32,14 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 
+import org.ldp4j.application.entity.Entity;
+import org.ldp4j.application.entity.Identity;
+import org.ldp4j.application.entity.Literal;
+import org.ldp4j.application.entity.ValueVisitor;
+
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
@@ -161,7 +192,7 @@ final class EntityAggregation extends BaseEntity {
 		boolean result=obj!=this;
 		if(!result && obj.getClass()==getClass()) {
 			EntityAggregation that=(EntityAggregation)obj;
-			result=Objects.equals(this.parts,that.parts);
+			result=Objects.equal(this.parts,that.parts);
 		}
 		return result;
 	}

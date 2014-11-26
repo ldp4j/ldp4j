@@ -26,34 +26,35 @@
  */
 package org.ldp4j.application.entity;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+
 import java.net.URI;
 
 import org.junit.Test;
 import org.ldp4j.application.domain.RDFS;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
 public class DataUtilTest {
 
 	@Test
 	public void testPrettyPrint() {
-		DefaultIdentityFactory idFactory=DefaultIdentityFactory.create();
-		DataSource dataSource=CompositeDataSource.create();
+		DataSource dataSource=Data.createDataSource();
 
 		System.out.println("Initial dataset: ");
 		System.out.println(DataUtil.prettyPrint(dataSource));
 
 		URI ind1 = URI.create("http://www.ldp4j.org/ind1/");
-		Entity ent1 = dataSource.newEntity(idFactory.createExternalIdentity(ind1));
+		Entity ent1 = dataSource.newEntity(Data.createIdentity(ind1));
 		ent1.addProperty(RDFS.LABEL.as(URI.class), Literal.create("Individual 1 label"));
 		ent1.addProperty(RDFS.COMMENT.as(URI.class), Literal.create("Comment 1"));
 
-		Entity ent2 = dataSource.newEntity(idFactory.createManagedIdentity(Key.create(CompositeDataSource.class,123)));
+		Entity ent2 = dataSource.newEntity(Data.createIdentity(Key.create(DataSource.class,123)));
 		ent2.addProperty(RDFS.LABEL.as(URI.class), Literal.create("Individual 2 label"));
 		ent2.addProperty(RDFS.COMMENT.as(URI.class), Literal.create("Comment 2"));
 
-		Entity ent3 = dataSource.newEntity(idFactory.createIdentity());
+		Entity ent3 = dataSource.newEntity(Data.createIdentity());
 		ent3.addProperty(RDFS.LABEL.as(URI.class), Literal.create("Individual 3 label"));
 		ent3.addProperty(RDFS.COMMENT.as(URI.class), Literal.create("Comment 3"));
 

@@ -24,14 +24,24 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.entity;
+package org.ldp4j.application.entity.core;
 
-import java.util.UUID;
+import org.ldp4j.application.entity.spi.DataSourceFactory;
 
-abstract class ManagedEntity extends BaseEntity {
+public final class DefaultDataSourceFactory implements DataSourceFactory<CompositeDataSource> {
 
-	abstract void attach(UUID id, CompositeDataSource dataSource);
+	public DefaultDataSourceFactory() {
+	}
 
-	abstract void dettach(CompositeDataSource dataSource);
+	@Override
+	public String getVersion() {
+		// TODO: "Mavenize this"
+		return "1.0.0";
+	}
+
+	@Override
+	public CompositeDataSource createDataSource() {
+		return CompositeDataSource.create();
+	}
 
 }
