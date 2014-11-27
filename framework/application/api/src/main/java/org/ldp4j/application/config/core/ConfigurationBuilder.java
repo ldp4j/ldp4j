@@ -278,7 +278,7 @@ public final class ConfigurationBuilder<T extends Configuration> {
 		return this;
 	}
 
-	public <E> ConfigurationBuilder<T> withUserSetting(Setting<E> setting, T value) {
+	public <E> ConfigurationBuilder<T> withUserSetting(Setting<? super E> setting, E value) {
 		checkNotNull(setting,"Setting cannot be null");
 		checkNotNull(value,"Setting value cannot be null");
 		this.userSettings.put(setting, value);

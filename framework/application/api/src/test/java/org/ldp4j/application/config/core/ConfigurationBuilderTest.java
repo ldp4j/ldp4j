@@ -24,45 +24,31 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.config;
+package org.ldp4j.application.config.core;
 
-import java.io.Serializable;
+import org.junit.Test;
+import org.ldp4j.application.config.Configuration;
+import org.ldp4j.application.config.Setting;
 
-/**
- * A configurable setting. Settings are identified by their key and type.
- *
- * @param <T>
- *            The expected configuration value type for the setting.
- */
-public interface Setting<T> extends Serializable {
+public class ConfigurationBuilderTest {
 
-	/**
-	 * The type of the value of the setting.
-	 *
-	 * @return The class of the value of the setting.
-	 */
-	Class<? extends T> type();
-
-	/**
-	 * A unique key for this setting.
-	 *
-	 * @return A unique key identifying this setting.
-	 */
-	String getKey();
-
-	/**
-	 * The human readable name for this setting
-	 *
-	 * @return The name for this setting.
-	 */
-	String getDescription();
-
-	/**
-	 * Returns the default value for this setting if it is not set by a
-	 * user.
-	 *
-	 * @return The default value for this setting.
-	 */
-	T getDefaultValue();
+	@Test
+	public void testBuild() throws Exception {
+		Setting<Number> setting =
+			SettingBuilder.
+				create(Number.class).
+					withKey("key").
+					withDefaultValue(3).
+					build();
+		Configuration build =
+			ConfigurationBuilder.
+				create().
+					withSystemProperties().
+					withEnvironmentProperties().
+					withUserSetting(setting,15).
+					withUserSetting(setting,15.4).
+					build();
+		System.out.println(build);
+	}
 
 }

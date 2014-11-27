@@ -98,7 +98,7 @@ abstract class BaseConfiguration implements Serializable, Configuration {
 	 *        The value for the setting, or null to reset the setting to use
 	 *        the default value.
 	 */
-	protected final <T> void update(Setting<T> setting, T value) {
+	final <T> void update(Setting<T> setting, T value) {
 		if (value == null) {
 			this.settings.remove(setting);
 		} else {
