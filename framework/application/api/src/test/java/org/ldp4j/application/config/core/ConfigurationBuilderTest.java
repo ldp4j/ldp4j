@@ -29,7 +29,6 @@ package org.ldp4j.application.config.core;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -242,7 +241,7 @@ public class ConfigurationBuilderTest  {
 
 		}
 
-
+		@SuppressWarnings("unused")
 		private MyConfiguration configuration;
 
 		@Override
@@ -274,7 +273,7 @@ public class ConfigurationBuilderTest  {
 			for(Setting<?> setting:settings) {
 				System.out.println(setting);
 			}
-		} catch (InvalidConfigurableDefinitionException e) {
+		} catch (InvalidSettingDefinitionException e) {
 			e.toString(System.err);
 		}
 	}
@@ -313,19 +312,19 @@ public class ConfigurationBuilderTest  {
 						withKey("config.generic").
 						withDescription("Generic List<String>").
 						build();
-		MutableConfiguration build =
+		MutableConfiguration configuration =
 			ConfigurationBuilder.
 				createMutable().
 					withUserSetting(genericSetting,customValue).
 					build();
-		List<String> v = build.get(genericSetting);
+		List<String> v = configuration.get(genericSetting);
 		System.out.println(genericSetting.getKey()+" : "+v);
 		System.out.println(genericSetting.getKey()+" : "+v.get(0));
-		System.out.println(build);
+		System.out.println(configuration);
 		List<String> newDefaultValue = Arrays.asList("4","5","6");
-		build.set(genericSetting,newDefaultValue);
+		configuration.set(genericSetting,newDefaultValue);
 		System.out.println(genericSetting.getKey()+" : "+v);
-		System.out.println(build);
+		System.out.println(configuration);
 	}
 
 }

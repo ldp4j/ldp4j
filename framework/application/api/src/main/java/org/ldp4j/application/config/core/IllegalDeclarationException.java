@@ -26,7 +26,7 @@
  */
 package org.ldp4j.application.config.core;
 
-public class IllegalDeclarationException extends Exception {
+class IllegalDeclarationException extends Exception {
 
 	/**
 	 *

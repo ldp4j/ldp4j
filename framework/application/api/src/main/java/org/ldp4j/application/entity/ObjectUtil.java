@@ -67,6 +67,35 @@ public final class ObjectUtil {
 
 	}
 
+	private static final class EnumObjectFactory<S extends Enum<S>> implements ObjectFactory<S> {
+
+		private final Class<S> targetClass;
+
+		private EnumObjectFactory(Class<S> targetClass) {
+			this.targetClass = targetClass;
+		}
+
+		@Override
+		public Class<? extends S> targetClass() {
+			return this.targetClass;
+		}
+
+		@Override
+		public S fromString(final String rawValue) {
+			return Enum.valueOf(targetClass, rawValue);
+		}
+
+		@Override
+		public String toString(S value) {
+			return value.toString();
+		}
+
+		public static <S extends Enum<S>> ObjectFactory<?> create(Class<S> enumClass) {
+			return new EnumObjectFactory<S>(enumClass);
+		}
+	}
+
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(ObjectUtil.class);
 
 	private static final Map<Class<?>,ObjectFactory<?>> FACTORY_CACHE=Maps.newIdentityHashMap();
@@ -93,7 +122,7 @@ public final class ObjectUtil {
 							LOGGER.trace("Discarded cached factory '{}' for value class '{}'",prettyPrint(candidateClass),prettyPrint(valueClass));
 						}
 					} else {
-						Class targetClass = candidate.targetClass();
+						Class<?> targetClass = candidate.targetClass();
 						if(FACTORY_CACHE.containsKey(targetClass)) {
 							if(LOGGER.isWarnEnabled()) {
 								LOGGER.warn("Discarded clashing factory '{}' for value class '{}'",prettyPrint(candidateClass),prettyPrint(valueClass));
@@ -122,9 +151,16 @@ public final class ObjectUtil {
 			} while(rawResult==null && it.hasNext());
 		}
 		if(rawResult==null) {
-			rawResult=new NullObjectFactory<T>(valueClass);
-			if(LOGGER.isWarnEnabled()) {
-				LOGGER.warn("No factory found for value class '{}'",prettyPrint(valueClass));
+			if(valueClass.isEnum()) {
+				rawResult=EnumObjectFactory.create(valueClass.asSubclass(Enum.class));
+				if(LOGGER.isDebugEnabled()) {
+					LOGGER.debug("No factory found for enum value class '{}', using default enum object factory",prettyPrint(valueClass));
+				}
+			} else {
+				rawResult=new NullObjectFactory<T>(valueClass);
+				if(LOGGER.isWarnEnabled()) {
+					LOGGER.warn("No factory found for value class '{}'",prettyPrint(valueClass));
+				}
 			}
 		}
 		return (ObjectFactory<T>)rawResult;

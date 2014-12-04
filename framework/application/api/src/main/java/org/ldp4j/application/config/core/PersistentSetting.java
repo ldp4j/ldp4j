@@ -27,11 +27,9 @@
 package org.ldp4j.application.config.core;
 
 import org.ldp4j.application.config.Setting;
+import org.ldp4j.application.entity.spi.ObjectFactory;
 
-public interface PersistentSetting<T> extends Setting<T> {
+public interface PersistentSetting<T> extends Setting<T>, ObjectFactory<T> {
 
-	String toString(T value);
-
-	T valueOf(String rawValue);
 
 }

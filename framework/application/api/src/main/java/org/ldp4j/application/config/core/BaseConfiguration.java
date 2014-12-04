@@ -34,6 +34,7 @@ import java.util.concurrent.ConcurrentMap;
 
 import org.ldp4j.application.config.Configuration;
 import org.ldp4j.application.config.Setting;
+import org.ldp4j.application.config.util.ConfigurationUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

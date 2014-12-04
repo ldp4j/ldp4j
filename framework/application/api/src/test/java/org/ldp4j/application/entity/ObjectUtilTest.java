@@ -73,6 +73,12 @@ public class ObjectUtilTest {
 		UUID.randomUUID()
 	};
 
+	public enum DefaultEnumType {
+		V1,
+		V2,
+		;
+	}
+
 	@Test
 	public void testIsSupported$lang$primitiveObjects() throws Exception {
 		verifySupport(langPrimitiveObjects);
@@ -101,6 +107,11 @@ public class ObjectUtilTest {
 	}
 
 	@Test
+	public void testIsSupported$enumObjects() throws Exception {
+		verifySupport(DefaultEnumType.V1,DefaultEnumType.V2);
+	}
+
+	@Test
 	public void testRoundtrip$lang$primitiveObjects() throws Exception {
 		verifyRoundtrip(langPrimitiveObjects);
 	}
@@ -125,6 +136,11 @@ public class ObjectUtilTest {
 		URI uri=URI.create("http://www.example.org/");
 		URL url=uri.toURL();
 		verifyRoundtrip(uri,url);
+	}
+
+	@Test
+	public void testRoundtrip$enumObjects() throws Exception {
+		verifyRoundtrip(DefaultEnumType.V1,DefaultEnumType.V2);
 	}
 
 	private void verifySupport(Object... rawObjects) {

@@ -24,10 +24,9 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.config.core;
+package org.ldp4j.application.config.util;
 
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.ldp4j.application.config.Configuration;
 import org.ldp4j.application.config.Setting;
@@ -46,22 +45,6 @@ public final class ConfigurationUtil {
 			rawSettings.put(setting, config.get(setting));
 		}
 		return rawSettings;
-	}
-
-	public static Map<Setting<?>,Object> verify(Map<? extends Setting<?>, ? extends Object> settings) {
-		Map<Setting<?>,Object> invalidSettings=Maps.newLinkedHashMap();
-		for(Entry<? extends Setting<?>, ? extends Object> entry:settings.entrySet()) {
-			Setting<?> setting = entry.getKey();
-			Object value = entry.getValue();
-			if(!isValid(setting,value)) {
-				invalidSettings.put(entry.getKey(), entry.getValue());
-			}
-		}
-		return invalidSettings;
-	}
-
-	private static boolean isValid(Setting<?> key, Object value) {
-		throw new UnsupportedOperationException("Method not implemented yet");
 	}
 
 }

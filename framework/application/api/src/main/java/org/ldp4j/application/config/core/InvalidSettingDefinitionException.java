@@ -44,7 +44,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 
-public class InvalidConfigurableDefinitionException extends RuntimeException {
+public class InvalidSettingDefinitionException extends RuntimeException {
 
 	/**
 	 *
@@ -57,7 +57,7 @@ public class InvalidConfigurableDefinitionException extends RuntimeException {
 	private final String configurationClass;
 	private final Multimap<String, String> configurationFailures;
 
-	public InvalidConfigurableDefinitionException(Map<MetaClass, Multimap<Field, ConfigurationFailure>> failures) {
+	public InvalidSettingDefinitionException(Map<MetaClass, Multimap<Field, ConfigurationFailure>> failures) {
 		this.configurableClass = findClass(failures,Configurable.class);
 		this.configurationClass = findClass(failures,Configuration.class);
 		this.configurableFailures = flattenFailures(failures,Configurable.class);

@@ -27,13 +27,10 @@
 package org.ldp4j.application.config.core;
 
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
-import java.security.PrivilegedActionException;
-import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.List;
 
@@ -41,7 +38,6 @@ import org.ldp4j.application.config.Configurable;
 import org.ldp4j.application.config.Setting;
 import org.ldp4j.application.entity.ObjectUtil;
 import org.ldp4j.application.entity.spi.ObjectFactory;
-import org.ldp4j.application.entity.spi.ObjectTransformationException;
 import org.ldp4j.application.util.MetaClass;
 import org.ldp4j.application.util.TypeVisitor.TypeFunction;
 import org.ldp4j.application.util.Types;
@@ -52,66 +48,26 @@ import com.google.common.collect.Lists;
 
 final class SettingController {
 
-	private static final class EnumObjectFactory<S> implements ObjectFactory<S> {
+	private static final class PluggableObjectFactory<T> implements ObjectFactory<T> {
 
-		private final Method valueOf;
-		private final Class<? extends S> targetClass;
+		private final Class<T> targetClass;
 
-		private EnumObjectFactory(Class<S> targetClass, Method valueOf) {
-			this.valueOf = valueOf;
-			this.targetClass = targetClass;
+		private PluggableObjectFactory(Class<T> t) {
+			this.targetClass = t;
 		}
 
 		@Override
-		public Class<? extends S> targetClass() {
+		public Class<? extends T> targetClass() {
 			return targetClass;
 		}
 
 		@Override
-		public S fromString(final String rawValue) {
-			try {
-				return AccessController.doPrivileged(
-					new PrivilegedExceptionAction<S>() {
-						@Override
-						public S run() throws Exception {
-							Object object = valueOf.invoke(null,rawValue);
-							@SuppressWarnings("unchecked") // Guarded by Enum invariant
-							S result = (S)object;
-							return result;
-						}
-					}
-				);
-			} catch (PrivilegedActionException e) {
-				throw new ObjectTransformationException("Could not parse enum "+Types.toString(targetClass()),e.getCause(),targetClass());
-			}
+		public T fromString(String rawValue) {
+			return ObjectUtil.fromString(this.targetClass, rawValue);
 		}
 
 		@Override
-		public String toString(S value) {
-			return value.toString();
-		}
-	}
-
-	private static final class SystemObjectFactory<S> implements ObjectFactory<S> {
-
-		private final Class<S> t;
-
-		private SystemObjectFactory(Class<S> t) {
-			this.t = t;
-		}
-
-		@Override
-		public Class<? extends S> targetClass() {
-			return t;
-		}
-
-		@Override
-		public S fromString(String rawValue) {
-			return ObjectUtil.fromString(targetClass(), rawValue);
-		}
-
-		@Override
-		public String toString(S value) {
+		public String toString(T value) {
 			return ObjectUtil.toString(value);
 		}
 	}
@@ -124,37 +80,7 @@ final class SettingController {
 		protected <S, E extends Exception> ObjectFactory<?> visitClass(final Class<S> t, E exception) throws E {
 			ObjectFactory<?> result=null;
 			if(ObjectUtil.isSupported(t)) {
-				result=new SettingController.SystemObjectFactory<S>(t);
-			} else if(Enum.class.isAssignableFrom(t)) {
-				result=
-					AccessController.doPrivileged(
-						new PrivilegedAction<ObjectFactory<?>>() {
-							@Override
-							public ObjectFactory<?> run() {
-								try {
-									final Method method = t.getMethod("valueOf",String.class);
-									if(!Modifier.isPublic(method.getModifiers())) {
-										String errorMessage = "Synthetic  "+Types.toString(t)+".valueOf("+Types.toString(String.class)+") could not be found";
-										LOGGER.error(errorMessage);
-										logFailure(errorMessage);
-									} else if (!Modifier.isStatic(method.getModifiers())) {
-										String errorMessage = "Synthetic  "+Types.toString(t)+".valueOf("+Types.toString(String.class)+") could not be found";
-										LOGGER.error(errorMessage);
-										logFailure(errorMessage);
-									} else {
-										return new SettingController.EnumObjectFactory<S>(t, method);
-									}
-								} catch (Exception e) {
-									String errorMessage = "Synthetic  "+Types.toString(t)+".valueOf("+Types.toString(String.class)+") could not be found";
-									LOGGER.error(errorMessage.concat(". Full stacktrace follows"),e);
-									logFailure(errorMessage);
-								}
-								return null;
-							}
-						}
-					);
-			} else {
-				// TODO: What to we do here?
+				result=new PluggableObjectFactory<S>(t);
 			}
 			return result;
 		}
@@ -197,7 +123,7 @@ final class SettingController {
 	private boolean hasValidType() {
 		if(this.validType==null) {
 			this.validType = Setting.class.isAssignableFrom(this.field.getType());
-			if(!validType) {
+			if(!this.validType) {
 				logFailure("Does not implement "+Types.toString(Setting.class)+" ("+Types.toString(this.field.getGenericType())+")");
 			}
 		}

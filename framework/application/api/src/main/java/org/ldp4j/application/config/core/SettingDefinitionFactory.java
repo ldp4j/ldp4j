@@ -37,54 +37,32 @@ import org.ldp4j.application.util.MetaClass;
 final class SettingDefinitionFactory {
 
 	private static final class SimpleSettingDefinitionWrapper<T> extends AbstractSettingDefinition<T, Setting<T>> {
-		/**
-		 *
-		 */
-		private static final long serialVersionUID = 1L;
 
 		private SimpleSettingDefinitionWrapper(Setting<T> setting, Type type) {
 			super(setting, type);
 		}
 
 		@Override
-		public String toString(T value) {
-			// TODO Auto-generated method stub
-			return null;
+		public ObjectFactory<T> factory() {
+			throw new UnsupportedOperationException("Method not supported");
 		}
 
-		@Override
-		public T valueOf(String rawValue) {
-			// TODO Auto-generated method stub
-			return null;
-		}
 	}
 
-	private static final class PersistentSettingDefinitionWrapper<T> extends
-			AbstractSettingDefinition<T, PersistentSetting<T>> {
-		/**
-		 *
-		 */
-		private static final long serialVersionUID = 1L;
+	private static final class PersistentSettingDefinitionWrapper<T> extends AbstractSettingDefinition<T, PersistentSetting<T>> {
 
-		private PersistentSettingDefinitionWrapper(
-				PersistentSetting<T> setting, Type type) {
+		private PersistentSettingDefinitionWrapper(PersistentSetting<T> setting, Type type) {
 			super(setting, type);
 		}
 
 		@Override
-		public String toString(T value) {
-			return nativeSetting().toString(value);
+		public ObjectFactory<T> factory() {
+			return setting();
 		}
 
-		@Override
-		public T valueOf(String rawValue) {
-			return nativeSetting().valueOf(rawValue);
-		}
 	}
 
 	private static abstract class AbstractSettingDefinition<T, E extends Setting<T>> implements SettingDefinition<T> {
-
-		private static final long serialVersionUID = 1L;
 
 		private final E setting;
 		private final Type type;
@@ -98,21 +76,6 @@ final class SettingDefinitionFactory {
 		}
 
 		@Override
-		public String getKey() {
-			return this.setting.getKey();
-		}
-
-		@Override
-		public String getDescription() {
-			return this.setting.getDescription();
-		}
-
-		@Override
-		public T getDefaultValue() {
-			return this.setting.getDefaultValue();
-		}
-
-		@Override
 		public SettingId id() {
 			return this.id;
 		}
@@ -123,7 +86,7 @@ final class SettingDefinitionFactory {
 		}
 
 		@Override
-		public E nativeSetting() {
+		public E setting() {
 			return this.setting;
 		}
 
@@ -133,12 +96,8 @@ final class SettingDefinitionFactory {
 			return (T)object;
 		}
 	}
-	private static final class CustomSettingManager<T> implements SettingDefinition<T> {
 
-		/**
-		 *
-		 */
-		private static final long serialVersionUID = 1L;
+	private static final class CustomSettingManager<T> implements SettingDefinition<T> {
 
 		private final Setting<T> setting;
 		private final Type type;
@@ -153,7 +112,7 @@ final class SettingDefinitionFactory {
 		}
 
 		@Override
-		public Setting<T> nativeSetting() {
+		public Setting<T> setting() {
 			return this.setting;
 		}
 
@@ -167,39 +126,16 @@ final class SettingDefinitionFactory {
 			return this.type;
 		}
 
-
-
-		@Override
-		public String getKey() {
-			return this.setting.getKey();
-		}
-
-		@Override
-		public String getDescription() {
-			return this.setting.getDescription();
-		}
-
-		@Override
-		public T getDefaultValue() {
-			return this.setting.getDefaultValue();
-		}
-
-		@Override
-		public String toString(T value) {
-			return this.factory.toString(value);
-		}
-
-		@Override
-		public T valueOf(String value) {
-			return this.factory.fromString(value);
-		}
-
 		@Override
 		public T tryCast(Object object) throws ClassCastException {
 			checkNotNull(object,"Object cannot be null");
 			throw new UnsupportedOperationException("Method not implemented yet");
 		}
 
+		@Override
+		public ObjectFactory<T> factory() {
+			return this.factory;
+		}
 
 	}
 

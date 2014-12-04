@@ -82,19 +82,19 @@ public final class SettingRegistry {
 			this.definitions.add(definition);
 		}
 
-		Set<Setting<?>> commit(Class<?> clazz) throws InvalidConfigurableDefinitionException {
+		Set<Setting<?>> commit(Class<?> clazz) throws InvalidSettingDefinitionException {
 			Set<SettingId> ids=Sets.newLinkedHashSet();
 			Set<Setting<?>> settings=Sets.newLinkedHashSet();
 			synchronized(SETTING_MANAGERS) {
 				for(SettingDefinition<?> definitions:this.definitions) {
 					ids.add(definitions.id());
-					settings.add(definitions.nativeSetting());
+					settings.add(definitions.setting());
 					SettingRegistry.registerSettingDefinition(definitions);
 				}
 				SettingRegistry.registerClassSettings(clazz, ids);
 			}
 			if(!failures.isEmpty()) {
-				throw new InvalidConfigurableDefinitionException(failures);
+				throw new InvalidSettingDefinitionException(failures);
 			}
 			return settings;
 		}
@@ -111,9 +111,9 @@ public final class SettingRegistry {
 	}
 
 	private static void registerSettingDefinition(SettingDefinition<?> manager) {
-		LOGGER.debug("Registering setting definition identified by {} for setting with hash {}...",manager.id(),Integer.toHexString(manager.nativeSetting().hashCode()));
+		LOGGER.debug("Registering setting definition identified by {} for setting with hash {}...",manager.id(),Integer.toHexString(manager.setting().hashCode()));
 		SETTING_MANAGERS.put(manager.id(), manager);
-		SETTING_IDS.put(manager.nativeSetting(),manager.id());
+		SETTING_IDS.put(manager.setting(),manager.id());
 	}
 
 	private static void registerClassSettings(Class<?> clazz, Set<SettingId> ids) {
@@ -157,14 +157,14 @@ public final class SettingRegistry {
 		}
 	}
 
-	public static <C extends Configuration, T extends Configurable<C>> Set<Setting<?>> getSettings(Class<? extends T> clazz) {
+	public static <C extends Configuration, T extends Configurable<C>> Set<Setting<?>> getSettings(Class<? extends T> clazz) throws InvalidSettingDefinitionException {
 		synchronized(clazz) {
 			Set<SettingId> ids=LOADED_SETTINGS.get(clazz);
 			if(ids!=null) {
 				Builder<Setting<?>> builder = ImmutableSet.builder();
 				synchronized(SETTING_MANAGERS) {
 					for(SettingId id:ids) {
-						builder.add(SETTING_MANAGERS.get(id).nativeSetting());
+						builder.add(SETTING_MANAGERS.get(id).setting());
 					}
 				}
 				return builder.build();

@@ -29,14 +29,17 @@ package org.ldp4j.application.config.core;
 import java.lang.reflect.Type;
 
 import org.ldp4j.application.config.Setting;
+import org.ldp4j.application.entity.spi.ObjectFactory;
 
-interface SettingDefinition<T> extends PersistentSetting<T> {
+public interface SettingDefinition<T> {
 
 	SettingId id();
 
 	Type type();
 
-	Setting<T> nativeSetting();
+	Setting<T> setting();
+
+	ObjectFactory<T> factory();
 
 	T tryCast(Object object) throws ClassCastException;
 

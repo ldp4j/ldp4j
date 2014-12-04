@@ -171,7 +171,8 @@ class CustomizableConfiguration implements Configuration {
 		return properties;
 	}
 
-	private <T> String toString(Setting<T> setting) {
+	private <T> String toString(SettingDefinition<T> definition) {
+		Setting<T> setting=definition.setting();
 		StringBuilder builder=new StringBuilder();
 		builder.append("'").append(setting.getKey()).append("'");
 		if(setting.getDescription()!=null) {
@@ -189,24 +190,24 @@ class CustomizableConfiguration implements Configuration {
 		this.settingConfiguration.clear();
 	}
 
-	private <T> T loadFromProperties(SettingDefinition<T> setting, ConfigurationSource source, Properties properties) {
+	private <T> T loadFromProperties(SettingDefinition<T> definition, ConfigurationSource source, Properties properties) {
 		T loadedValue=null;
-		String property = properties.getProperty(setting.getKey());
+		String property = properties.getProperty(definition.setting().getKey());
 		if(property!=null) {
 			try {
-				loadedValue=SettingRegistry.getSettingDefinition(setting).valueOf(property);
-				updateSetting(setting,source,loadedValue);
+				loadedValue=definition.factory().fromString(property);
+				updateSettingDefinition(definition,loadedValue,source);
 			} catch (ObjectParseException e) {
-				logger.debug(String.format("Could not configure setting %s with value %s defined in source %s. Full stacktrace follows",toString(setting),source),e);
+				logger.debug(String.format("Could not configure setting %s with value %s defined in source %s. Full stacktrace follows",toString(definition),source),e);
 			}
 		} else {
-			logger.debug("Setting {} not defined in source {}",toString(setting),source);
+			logger.debug("Setting {} not defined in source {}",toString(definition),source);
 		}
 		return loadedValue;
 	}
 
 	private <T> T loadFromUserSettings(SettingDefinition<T> definition, ConfigurationSource source) {
-		T loadedValue=this.userSettings.get(definition.nativeSetting());
+		T loadedValue=this.userSettings.get(definition.setting());
 		if(loadedValue==null) {
 			String message =
 				String.format(
@@ -215,7 +216,7 @@ class CustomizableConfiguration implements Configuration {
 				);
 			this.logger.debug(message);
 		} else {
-			updateSetting(definition,source,loadedValue);
+			updateSettingDefinition(definition,loadedValue,source);
 		}
 		return loadedValue;
 	}
@@ -248,18 +249,18 @@ class CustomizableConfiguration implements Configuration {
 		return value;
 	}
 
-	private <T> T loadDefaultSettingConfiguration(SettingDefinition<T> setting) {
-		T loadedValue=setting.getDefaultValue();
-		updateSetting(setting, ConfigurationSource.DEFAULTS, loadedValue);
+	private <T> T loadDefaultSettingConfiguration(SettingDefinition<T> definition) {
+		T loadedValue=definition.setting().getDefaultValue();
+		updateSettingDefinition(definition, loadedValue, ConfigurationSource.DEFAULTS);
 		return loadedValue;
 	}
 
-	private synchronized <T> void updateSetting(SettingDefinition<T> setting, ConfigurationSource source, T value) {
-		SettingId id=setting.id();
+	private synchronized <T> void updateSettingDefinition(SettingDefinition<T> definition, T value, ConfigurationSource source) {
+		SettingId id=definition.id();
 		this.settingConfiguration.put(id,value);
 		this.settingSource.put(id,source);
-		this.settings.put(id,setting.nativeSetting());
-		this.logger.debug("Configured setting {} with value {} from {}",toString(setting.nativeSetting()),value,source);
+		this.settings.put(id,definition.setting());
+		this.logger.debug("Configured setting {} with value {} from {}",toString(definition),value,source);
 	}
 
 	protected synchronized void setSourcePrecedence(Iterable<ConfigurationSource> sourcePrecedence) {
@@ -288,12 +289,12 @@ class CustomizableConfiguration implements Configuration {
 			// ... unless we had to resort to the default value
 			if(source.equals(ConfigurationSource.DEFAULTS)) {
 				if(logger.isDebugEnabled()) {
-					if(!cachedValue.equals(definition.getDefaultValue())) {
-						logger.debug("Overriding default cached value '{}' of setting {} with value '{}'",cachedValue,toString(definition),definition.getDefaultValue());
+					if(!cachedValue.equals(definition.setting().getDefaultValue())) {
+						logger.debug("Overriding default cached value '{}' of setting {} with value '{}'",cachedValue,toString(definition),definition.setting().getDefaultValue());
 					}
 				}
 				// ... in which case we'll use the specific default value
-				cachedValue=definition.getDefaultValue();
+				cachedValue=definition.setting().getDefaultValue();
 			}
 			logger.debug("Found value '{}' for setting {} defined by {}",cachedValue,toString(definition),source);
 			return definition.tryCast(cachedValue);
@@ -308,7 +309,7 @@ class CustomizableConfiguration implements Configuration {
 	}
 
 	protected <T> void update(Setting<? super T> setting, T value) {
-		updateSetting(SettingRegistry.getSettingDefinition(setting),ConfigurationSource.USER_SETTINGS,value);
+		updateSettingDefinition(SettingRegistry.getSettingDefinition(setting),value,ConfigurationSource.USER_SETTINGS);
 	}
 
 	@Override
