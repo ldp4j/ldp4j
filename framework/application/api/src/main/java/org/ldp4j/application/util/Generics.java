@@ -34,20 +34,20 @@ import java.lang.reflect.TypeVariable;
 
 /**
  * Helper methods for class type parameters.
- * 
+ *
  * @see <a
  *      href="http://gafter.blogspot.com/2006/12/super-type-tokens.html">Super
  *      Type Tokens</a>
  */
 public final class Generics {
 
-	private Generics() { 
+	private Generics() {
 		/* singleton */
 	}
 
 	/**
 	 * Finds the type parameter for the given class.
-	 * 
+	 *
 	 * @param klass
 	 *            a parameterized class
 	 * @return the class's type parameter
@@ -59,7 +59,7 @@ public final class Generics {
 	/**
 	 * Finds the type parameter for the given class which is assignable to the
 	 * bound class.
-	 * 
+	 *
 	 * @param clazz
 	 *            a parameterized class
 	 * @param bound
@@ -85,6 +85,11 @@ public final class Generics {
 			for (Type param : ((ParameterizedType) t).getActualTypeArguments()) {
 				if (param instanceof Class<?>) {
 					final Class<T> cls = determineClass(bound, param);
+					if (cls != null) {
+						return cls;
+					}
+				} else if (param instanceof ParameterizedType) {
+					final Class<T> cls = determineClass(bound, ((ParameterizedType) param).getRawType());
 					if (cls != null) {
 						return cls;
 					}

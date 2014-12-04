@@ -31,7 +31,7 @@ import java.util.Set;
 public interface Configuration {
 
 	/**
-	 * Return the settings defined in the configuration.
+	 * Return the settings explicitly defined in the configuration.
 	 *
 	 * @return The settings defined in the configuration.
 	 */

@@ -61,7 +61,7 @@ public final class ConfigurationUtil {
 	}
 
 	private static boolean isValid(Setting<?> key, Object value) {
-		return key.type().isInstance(value);
+		throw new UnsupportedOperationException("Method not implemented yet");
 	}
 
 }

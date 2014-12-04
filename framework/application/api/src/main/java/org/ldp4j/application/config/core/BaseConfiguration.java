@@ -29,7 +29,6 @@ package org.ldp4j.application.config.core;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentMap;
 
@@ -42,6 +41,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 abstract class BaseConfiguration implements Serializable, Configuration {
+
+
 
 	/**
 	 *
@@ -64,28 +65,14 @@ abstract class BaseConfiguration implements Serializable, Configuration {
 		this.logger=LoggerFactory.getLogger(this.getClass());
 	}
 
-	private BaseConfiguration(boolean verified, Map<? extends Setting<?>, ? extends Object> settings) {
-		this();
-		if(!verified) {
-			Map<Setting<?>, Object> invalidSettings = ConfigurationUtil.verify(settings);
-			if(!invalidSettings.isEmpty()) {
-				logger.trace("Could not initialize configuration with invalid settings {}",invalidSettings);
-				throw new IllegalArgumentException("Invalid settings: "+invalidSettings);
-			}
-		}
-		this.settings.putAll(settings);
-	}
-
-	protected BaseConfiguration(Map<? extends Setting<?>, ? extends Object> settings) {
-		this(false,settings);
-	}
-
 	protected BaseConfiguration(BaseConfiguration config) {
-		this(true,config.settings);
+		this();
+		this.settings.putAll(config.settings);
 	}
 
 	protected BaseConfiguration(Configuration config) {
-		this(true,ConfigurationUtil.toMap(config));
+		this();
+		this.settings.putAll(ConfigurationUtil.toMap(config));
 	}
 
 	/**
@@ -98,7 +85,16 @@ abstract class BaseConfiguration implements Serializable, Configuration {
 	 *        The value for the setting, or null to reset the setting to use
 	 *        the default value.
 	 */
-	final <T> void update(Setting<T> setting, T value) {
+	final <T> void update(Setting<? super T> setting, T value) {
+		if(!
+			ScopeController.
+				getInstance().
+				invokedFrom(
+					DefaultMutableConfiguration.class,
+					DefaultImmutableConfiguration.class)) {
+			throw new IllegalStateException("Cannot be invoked outside locally defined classes");
+		}
+
 		if (value == null) {
 			this.settings.remove(setting);
 		} else {
@@ -120,12 +116,13 @@ abstract class BaseConfiguration implements Serializable, Configuration {
 	/**
 	 * {@inheritDoc}
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T> T get(Setting<T> setting) {
 		checkNotNull(setting,"Setting cannot be null");
 		Object result = this.settings.get(setting);
 		if(result!=null) {
-			return setting.type().cast(result);
+			return (T)result;
 		}
 		return setting.getDefaultValue();
 	}

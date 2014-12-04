@@ -24,17 +24,26 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.config.util;
+package org.ldp4j.application.entity.impl;
 
-import org.ldp4j.application.config.Configuration;
-import org.ldp4j.application.config.ConfigurationException;
+import org.ldp4j.application.entity.spi.ObjectFactory;
 
-public interface Configurable<T extends Configuration> {
 
-	Class<? extends T> configType();
+public class BooleanObjectFactory implements ObjectFactory<Boolean> {
 
-	boolean canConfigure();
+	@Override
+	public Class<? extends Boolean> targetClass() {
+		return Boolean.class;
+	}
 
-	void configure(T configuration) throws ConfigurationException;
+	@Override
+	public Boolean fromString(String rawValue) {
+		return Boolean.valueOf(rawValue);
+	}
+
+	@Override
+	public String toString(Boolean value) {
+		return value.toString();
+	}
 
 }

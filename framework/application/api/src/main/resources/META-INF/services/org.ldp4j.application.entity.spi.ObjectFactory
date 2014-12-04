@@ -1,5 +1,13 @@
+org.ldp4j.application.entity.impl.BooleanObjectFactory
+org.ldp4j.application.entity.impl.CharacterObjectFactory
 org.ldp4j.application.entity.impl.StringObjectFactory
-org.ldp4j.application.entity.impl.LongObjectFactory
+org.ldp4j.application.entity.impl.ByteObjectFactory
+org.ldp4j.application.entity.impl.ShortObjectFactory
 org.ldp4j.application.entity.impl.IntegerObjectFactory
+org.ldp4j.application.entity.impl.LongObjectFactory
+org.ldp4j.application.entity.impl.FloatObjectFactory
+org.ldp4j.application.entity.impl.DoubleObjectFactory
 org.ldp4j.application.entity.impl.URIObjectFactory
 org.ldp4j.application.entity.impl.URLObjectFactory
+org.ldp4j.application.entity.impl.QNameObjectFactory
+org.ldp4j.application.entity.impl.UUIDObjectFactory

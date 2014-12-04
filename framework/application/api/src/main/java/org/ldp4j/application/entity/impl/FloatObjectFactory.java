@@ -24,32 +24,31 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.config.core;
+package org.ldp4j.application.entity.impl;
 
-import java.util.Map;
+import org.ldp4j.application.entity.spi.ObjectFactory;
+import org.ldp4j.application.entity.spi.ObjectParseException;
 
-import org.ldp4j.application.config.Configuration;
-import org.ldp4j.application.config.Setting;
 
-public final class DefaultConfiguration extends BaseConfiguration {
+public class FloatObjectFactory implements ObjectFactory<Float> {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 4664675292338246252L;
-
-	/**
-	 * Create a configuration from the configuration.
-	 */
-	public DefaultConfiguration(Configuration config) {
-		super(config);
+	@Override
+	public Class<? extends Float> targetClass() {
+		return Float.class;
 	}
 
-	/**
-	 * Create a configuration from the given collection of settings.
-	 */
-	public DefaultConfiguration(Map<? extends Setting<?>, ? extends Object> settings) {
-		super(settings);
+	@Override
+	public Float fromString(String rawValue) {
+		try {
+			return Float.parseFloat(rawValue);
+		} catch (NumberFormatException e) {
+			throw new ObjectParseException(e,Float.class,rawValue);
+		}
+	}
+
+	@Override
+	public String toString(Float value) {
+		return value.toString();
 	}
 
 }

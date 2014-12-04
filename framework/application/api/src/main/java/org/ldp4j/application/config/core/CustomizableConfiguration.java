@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
@@ -38,7 +37,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import org.ldp4j.application.config.Configuration;
 import org.ldp4j.application.config.ConfigurationException;
 import org.ldp4j.application.config.Setting;
-import org.ldp4j.application.entity.ObjectUtil;
 import org.ldp4j.application.entity.spi.ObjectParseException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,49 +49,6 @@ import com.google.common.collect.Sets;
 
 class CustomizableConfiguration implements Configuration {
 
-	private static final class SettingId {
-
-		private final String typeName;
-		private final String key;
-
-		private SettingId(String typeName, String key) {
-			this.typeName = typeName;
-			this.key = key;
-		}
-
-		@Override
-		public int hashCode() {
-			return Objects.hashCode(this.typeName,this.key);
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			boolean result = false;
-			if(obj instanceof SettingId) {
-				SettingId that=(SettingId)obj;
-				result=
-					Objects.equal(this.typeName,that.typeName) &&
-					Objects.equal(this.key, that.key);
-			}
-			return result;
-		}
-
-		@Override
-		public String toString() {
-			return
-				Objects.
-					toStringHelper(getClass()).
-						add("typeName", this.typeName).
-						add("key",this.key).
-						toString();
-		}
-
-		static SettingId create(Setting<?> setting) {
-			return new SettingId(setting.type().getName(),setting.getKey());
-		}
-
-	}
-
 	private static final class LockManager {
 
 		private final Map<SettingId,ReentrantLock> locks;
@@ -102,10 +57,11 @@ class CustomizableConfiguration implements Configuration {
 			this.locks=Maps.newLinkedHashMap();
 		}
 
-		void lock(Setting<?> setting) {
-			SettingId id=SettingId.create(setting);
+		<T> SettingDefinition<T> lock(Setting<T> setting) {
+			SettingDefinition<T> definition = SettingRegistry.getSettingDefinition(setting);
 			ReentrantLock settingLock = null;
 			synchronized(this) {
+				SettingId id=definition.id();
 				settingLock=this.locks.get(id);
 				if(settingLock==null) {
 					settingLock=new ReentrantLock();
@@ -113,10 +69,11 @@ class CustomizableConfiguration implements Configuration {
 				}
 			}
 			settingLock.lock();
+			return definition;
 		}
 
-		void unlock(Setting<?> setting) {
-			SettingId id=SettingId.create(setting);
+		<T> void unlock(SettingDefinition<T> definition) {
+			SettingId id=definition.id();
 			ReentrantLock settingLock = null;
 			synchronized(this) {
 				settingLock=this.locks.get(id);
@@ -141,13 +98,13 @@ class CustomizableConfiguration implements Configuration {
 
 	}
 
-	private final LockManager manager;
+	private final LockManager settingLockManager;
 	private final Map<SettingId,Setting<?>> settings;
 	private final Map<SettingId,Object> settingConfiguration;
 	private final Map<SettingId,ConfigurationSource> settingSource;
 	private final Logger logger;
 
-	private Map<SettingId, Object> userSettings;
+	private Configuration userSettings;
 	private Properties environmentProperties;
 	private Properties systemProperties;
 	private Properties customProperties;
@@ -156,7 +113,7 @@ class CustomizableConfiguration implements Configuration {
 
 	protected CustomizableConfiguration() {
 		super();
-		this.manager=new LockManager();
+		this.settingLockManager=new LockManager();
 		this.logger=LoggerFactory.getLogger(getClass());
 		this.settings=Maps.newLinkedHashMap();
 		this.settingConfiguration=Maps.newLinkedHashMap();
@@ -168,7 +125,7 @@ class CustomizableConfiguration implements Configuration {
 
 	protected CustomizableConfiguration(CustomizableConfiguration configuration) {
 		super();
-		this.manager=new LockManager();
+		this.settingLockManager=new LockManager();
 		this.logger=LoggerFactory.getLogger(getClass());
 		synchronized(configuration) {
 			this.settings=Maps.newLinkedHashMap(configuration.settings);
@@ -232,12 +189,12 @@ class CustomizableConfiguration implements Configuration {
 		this.settingConfiguration.clear();
 	}
 
-	private <T> T loadFromProperties(Setting<T> setting, ConfigurationSource source, Properties properties) {
+	private <T> T loadFromProperties(SettingDefinition<T> setting, ConfigurationSource source, Properties properties) {
 		T loadedValue=null;
 		String property = properties.getProperty(setting.getKey());
 		if(property!=null) {
 			try {
-				loadedValue=ObjectUtil.fromString(setting.type(),property);
+				loadedValue=SettingRegistry.getSettingDefinition(setting).valueOf(property);
 				updateSetting(setting,source,loadedValue);
 			} catch (ObjectParseException e) {
 				logger.debug(String.format("Could not configure setting %s with value %s defined in source %s. Full stacktrace follows",toString(setting),source),e);
@@ -248,45 +205,39 @@ class CustomizableConfiguration implements Configuration {
 		return loadedValue;
 	}
 
-	private <T> T loadFromUserSettings(Setting<T> setting, ConfigurationSource source) {
-		T loadedValue=null;
-		SettingId id = SettingId.create(setting);
-		Object tmp=this.userSettings.get(id);
-		if(setting.type().isInstance(tmp)) {
-			loadedValue=setting.type().cast(tmp);
-			updateSetting(setting,source,loadedValue);
-		} else {
-			String errorMessage =
+	private <T> T loadFromUserSettings(SettingDefinition<T> definition, ConfigurationSource source) {
+		T loadedValue=this.userSettings.get(definition.nativeSetting());
+		if(loadedValue==null) {
+			String message =
 				String.format(
-					"Invalid user provided value '%s' for setting %s. Expected a instance of type '%s' but got an instance of type ''",
-					tmp,
-					toString(setting),
-					setting.type().getName(),
-					tmp.getClass().getName());
-			this.logger.error(errorMessage);
-			throw new IllegalStateException(errorMessage);
+					"No user provided value for setting %s",
+					toString(definition)
+				);
+			this.logger.debug(message);
+		} else {
+			updateSetting(definition,source,loadedValue);
 		}
 		return loadedValue;
 	}
 
-	private <T> T loadSettingConfiguration(Setting<T> setting) {
+	private <T> T loadSettingConfiguration(SettingDefinition<T> SettingDefinition) {
 		T value=null;
 		for(ConfigurationSource source:this.sourcePrecedence) {
 			switch(source) {
 				case CUSTOM_PROPERTIES:
-					value=loadFromProperties(setting,source,this.customProperties);
+					value=loadFromProperties(SettingDefinition,source,this.customProperties);
 					break;
 				case ENVIRONMENT_PROPERTIES:
-					value=loadFromProperties(setting,source,this.environmentProperties);
+					value=loadFromProperties(SettingDefinition,source,this.environmentProperties);
 					break;
 				case SYSTEM_PROPERTIES:
-					value=loadFromProperties(setting,source,this.systemProperties);
+					value=loadFromProperties(SettingDefinition,source,this.systemProperties);
 					break;
 				case USER_SETTINGS:
-					value=loadFromUserSettings(setting,source);
+					value=loadFromUserSettings(SettingDefinition,source);
 					break;
 				case DEFAULTS:
-					value=loadDefaultSettingConfiguration(setting);
+					value=loadDefaultSettingConfiguration(SettingDefinition);
 				default:
 					throw new IllegalStateException("Unsupported configuration source '"+source+"'");
 			}
@@ -297,18 +248,18 @@ class CustomizableConfiguration implements Configuration {
 		return value;
 	}
 
-	private <T> T loadDefaultSettingConfiguration(Setting<T> setting) {
+	private <T> T loadDefaultSettingConfiguration(SettingDefinition<T> setting) {
 		T loadedValue=setting.getDefaultValue();
 		updateSetting(setting, ConfigurationSource.DEFAULTS, loadedValue);
 		return loadedValue;
 	}
 
-	private synchronized <T> void updateSetting(Setting<T> setting, ConfigurationSource source, T value) {
-		SettingId id=SettingId.create(setting);
+	private synchronized <T> void updateSetting(SettingDefinition<T> setting, ConfigurationSource source, T value) {
+		SettingId id=setting.id();
 		this.settingConfiguration.put(id,value);
 		this.settingSource.put(id,source);
-		this.settings.put(id,setting);
-		logger.debug("Configured setting {} with value {} from source {}",setting,value,source);
+		this.settings.put(id,setting.nativeSetting());
+		this.logger.debug("Configured setting {} with value {} from {}",toString(setting.nativeSetting()),value,source);
 	}
 
 	protected synchronized void setSourcePrecedence(Iterable<ConfigurationSource> sourcePrecedence) {
@@ -322,21 +273,13 @@ class CustomizableConfiguration implements Configuration {
 		clear();
 	}
 
-	protected synchronized void setUserSettings(Map<Setting<?>, Object> userSettings) throws ConfigurationException {
-		this.userSettings=Maps.newLinkedHashMap();
-		for(Entry<Setting<?>, Object> entry:userSettings.entrySet()) {
-			Setting<?> setting = entry.getKey();
-			Object value = entry.getValue();
-			if(!setting.type().isInstance(value)) {
-				throw new ConfigurationException("Invalid value '"+value+"' for setting "+setting.getKey()+" ("+setting.getDescription()+") ");
-			}
-			this.userSettings.put(SettingId.create(setting), value);
-		}
+	protected synchronized void setUserSettings(Configuration userSettings) throws ConfigurationException {
+		this.userSettings=new DefaultImmutableConfiguration(userSettings);
 		clear();
 	}
 
-	protected synchronized <T> T getSettingConfiguration(Setting<T> setting) {
-		SettingId id=SettingId.create(setting);
+	protected synchronized <T> T getSettingConfiguration(SettingDefinition<T> definition) {
+		SettingId id=definition.id();
 		ConfigurationSource source = this.settingSource.get(id);
 		// If the setting has been tried before...
 		if(source!=null) {
@@ -345,26 +288,27 @@ class CustomizableConfiguration implements Configuration {
 			// ... unless we had to resort to the default value
 			if(source.equals(ConfigurationSource.DEFAULTS)) {
 				if(logger.isDebugEnabled()) {
-					if(!cachedValue.equals(setting.getDefaultValue())) {
-						logger.debug("Overriding default cached value '{}' of setting {} with value '{}'",cachedValue,toString(setting),setting.getDefaultValue());
+					if(!cachedValue.equals(definition.getDefaultValue())) {
+						logger.debug("Overriding default cached value '{}' of setting {} with value '{}'",cachedValue,toString(definition),definition.getDefaultValue());
 					}
 				}
 				// ... in which case we'll use the specific default value
-				cachedValue=setting.getDefaultValue();
+				cachedValue=definition.getDefaultValue();
 			}
-			logger.debug("Found value '{}' for setting {} defined by source {}",cachedValue,toString(setting),source);
-			return setting.type().cast(cachedValue);
+			logger.debug("Found value '{}' for setting {} defined by {}",cachedValue,toString(definition),source);
+			return definition.tryCast(cachedValue);
+			// TODO: Check what happens with the silent class cast exception that can be thrown from the tryCast method
 		}
 		// ... otherwise, return null
 		return null;
 	}
 
-	protected synchronized <T> ConfigurationSource getSettingSource(Setting<T> setting) {
-		return this.settingSource.get(SettingId.create(setting));
+	protected synchronized <T> ConfigurationSource getSettingSource(SettingDefinition<T> definition) {
+		return this.settingSource.get(definition.id());
 	}
 
-	protected <T> void update(Setting<T> setting, T value) {
-		updateSetting(setting,ConfigurationSource.USER_SETTINGS,value);
+	protected <T> void update(Setting<? super T> setting, T value) {
+		updateSetting(SettingRegistry.getSettingDefinition(setting),ConfigurationSource.USER_SETTINGS,value);
 	}
 
 	@Override
@@ -376,36 +320,36 @@ class CustomizableConfiguration implements Configuration {
 
 	@Override
 	public <T> T get(Setting<T> setting) {
-		this.manager.lock(setting);
+		SettingDefinition<T> definition = this.settingLockManager.lock(setting);
 		try {
 			// If the setting value is cached...
-			T value=getSettingConfiguration(setting);
+			T value=getSettingConfiguration(definition);
 			if(value==null) {
 				// ... else, try and load it from the configuration specification
-				value=loadSettingConfiguration(setting);
+				value=loadSettingConfiguration(definition);
 				if(value==null) {
 					// ... if no configuration is specified, use the default
-					value=loadDefaultSettingConfiguration(setting);
+					value=loadDefaultSettingConfiguration(definition);
 				}
 			}
 			return value;
 		} finally {
-			this.manager.unlock(setting);
+			this.settingLockManager.unlock(definition);
 		}
 	}
 
 	@Override
 	public <T> boolean isSet(Setting<T> setting) {
 		ConfigurationSource source=null;
-		this.manager.lock(setting);
+		SettingDefinition<T> definition = this.settingLockManager.lock(setting);
 		try {
-			source=getSettingSource(setting);
+			source=getSettingSource(definition);
 			if(source==null) {
-				loadSettingConfiguration(setting);
-				source=getSettingSource(setting);
+				loadSettingConfiguration(definition);
+				source=getSettingSource(definition);
 			}
 		} finally {
-			this.manager.unlock(setting);
+			this.settingLockManager.unlock(definition);
 		}
 		return source!=null && !source.equals(ConfigurationSource.DEFAULTS);
 	}

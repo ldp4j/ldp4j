@@ -26,46 +26,52 @@
  */
 package org.ldp4j.application.config.core;
 
-import org.ldp4j.application.config.Configuration;
-import org.ldp4j.application.config.ImmutableConfiguration;
+import java.lang.reflect.Type;
+
 import org.ldp4j.application.config.Setting;
+import org.ldp4j.application.util.Types;
 
-public class DefaultImmutableConfiguration extends BaseConfiguration implements ImmutableConfiguration {
+import com.google.common.base.Objects;
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1969151343231953574L;
+public final class SettingId {
 
-	protected DefaultImmutableConfiguration(DefaultImmutableConfiguration configuration) {
-		super(configuration);
+	private final String typeName;
+	private final String key;
+
+	private SettingId(String typeName, String key) {
+		this.typeName = typeName;
+		this.key = key;
 	}
 
-	public DefaultImmutableConfiguration(Configuration config) {
-		super(config);
-	}
-
-	public DefaultImmutableConfiguration() {
-		super();
-	}
-
-	/**
-	 * Create a new immutable configuration from the current configuration with
-	 * a new value for the specified {@link Setting}. If the value is null, the
-	 * setting is removed and the default will be used instead.
-	 *
-	 * @param setting
-	 *            The setting to set a new value for.
-	 * @param value
-	 *            The value for the setting, or null to reset the setting to use
-	 *            the default value.
-	 * @return A copy of the configuration with the specified setting updated.
-	 */
 	@Override
-	public <T> ImmutableConfiguration set(Setting<? super T> setting, T value) {
-		DefaultImmutableConfiguration result=new DefaultImmutableConfiguration(this);
-		result.update(setting,value);
+	public int hashCode() {
+		return Objects.hashCode(this.typeName,this.key);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		boolean result = false;
+		if(obj instanceof SettingId) {
+			SettingId that=(SettingId)obj;
+			result=
+				Objects.equal(this.typeName,that.typeName) &&
+				Objects.equal(this.key, that.key);
+		}
 		return result;
+	}
+
+	@Override
+	public String toString() {
+		return
+			Objects.
+				toStringHelper(getClass()).
+					add("typeName", this.typeName).
+					add("key",this.key).
+					toString();
+	}
+
+	static SettingId create(Type type, Setting<?> setting) {
+		return new SettingId(Types.toString(type),setting.getKey());
 	}
 
 }

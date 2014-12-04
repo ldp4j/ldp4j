@@ -41,6 +41,6 @@ public interface ImmutableConfiguration extends Configuration {
 	 *            the default value.
 	 * @return A copy of the configuration with the specified setting updated.
 	 */
-	<T> ImmutableConfiguration set(Setting<T> setting, T value) throws ConfigurationException;
+	<T> ImmutableConfiguration set(Setting<? super T> setting, T value) throws ConfigurationException;
 
 }

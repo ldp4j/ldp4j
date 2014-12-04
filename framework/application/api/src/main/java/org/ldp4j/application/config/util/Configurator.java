@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.config.util;
 
+import org.ldp4j.application.config.Configurable;
 import org.ldp4j.application.config.Configuration;
 import org.ldp4j.application.config.ConfigurationException;
 

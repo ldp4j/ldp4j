@@ -29,19 +29,12 @@ package org.ldp4j.application.config;
 import java.io.Serializable;
 
 /**
- * A configurable setting. Settings are identified by their key and type.
- *
+ * A configurable setting. Settings are identified by their key and default
+ * value.
  * @param <T>
- *            The expected configuration value type for the setting.
+ *            The value type of the setting.
  */
 public interface Setting<T> extends Serializable {
-
-	/**
-	 * The type of the value of the setting.
-	 *
-	 * @return The class of the value of the setting.
-	 */
-	Class<? extends T> type();
 
 	/**
 	 * A unique key for this setting.
@@ -51,7 +44,7 @@ public interface Setting<T> extends Serializable {
 	String getKey();
 
 	/**
-	 * The human readable name for this setting
+	 * The human readable description for this setting
 	 *
 	 * @return The name for this setting.
 	 */

@@ -24,48 +24,31 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.config.core;
+package org.ldp4j.application.entity.impl;
 
-import org.ldp4j.application.config.Configuration;
-import org.ldp4j.application.config.ImmutableConfiguration;
-import org.ldp4j.application.config.Setting;
+import org.ldp4j.application.entity.spi.ObjectFactory;
+import org.ldp4j.application.entity.spi.ObjectParseException;
 
-public class DefaultImmutableConfiguration extends BaseConfiguration implements ImmutableConfiguration {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -1969151343231953574L;
+public class ShortObjectFactory implements ObjectFactory<Short> {
 
-	protected DefaultImmutableConfiguration(DefaultImmutableConfiguration configuration) {
-		super(configuration);
-	}
-
-	public DefaultImmutableConfiguration(Configuration config) {
-		super(config);
-	}
-
-	public DefaultImmutableConfiguration() {
-		super();
-	}
-
-	/**
-	 * Create a new immutable configuration from the current configuration with
-	 * a new value for the specified {@link Setting}. If the value is null, the
-	 * setting is removed and the default will be used instead.
-	 *
-	 * @param setting
-	 *            The setting to set a new value for.
-	 * @param value
-	 *            The value for the setting, or null to reset the setting to use
-	 *            the default value.
-	 * @return A copy of the configuration with the specified setting updated.
-	 */
 	@Override
-	public <T> ImmutableConfiguration set(Setting<? super T> setting, T value) {
-		DefaultImmutableConfiguration result=new DefaultImmutableConfiguration(this);
-		result.update(setting,value);
-		return result;
+	public Class<? extends Short> targetClass() {
+		return Short.class;
+	}
+
+	@Override
+	public Short fromString(String rawValue) {
+		try {
+			return Short.parseShort(rawValue);
+		} catch (NumberFormatException e) {
+			throw new ObjectParseException(e,Short.class,rawValue);
+		}
+	}
+
+	@Override
+	public String toString(Short value) {
+		return value.toString();
 	}
 
 }

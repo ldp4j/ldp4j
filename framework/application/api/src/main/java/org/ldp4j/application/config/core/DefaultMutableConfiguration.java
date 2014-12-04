@@ -32,10 +32,7 @@ import org.ldp4j.application.config.Setting;
 
 public class DefaultMutableConfiguration extends BaseConfiguration implements MutableConfiguration {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -8811212400844264025L;
+	private static final long serialVersionUID = 1L;
 
 	public DefaultMutableConfiguration(Configuration config) {
 		super(config);
@@ -56,7 +53,7 @@ public class DefaultMutableConfiguration extends BaseConfiguration implements Mu
 	 *        the default value.
 	 */
 	@Override
-	public <T> void set(Setting<T> setting, T value) {
+	public <T> void set(Setting<? super T> setting, T value) {
 		super.update(setting, value);
 	}
 

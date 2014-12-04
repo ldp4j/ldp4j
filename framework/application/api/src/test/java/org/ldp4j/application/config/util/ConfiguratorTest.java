@@ -26,9 +26,14 @@
  */
 package org.ldp4j.application.config.util;
 
+import java.util.Set;
+
 import org.junit.Test;
+import org.ldp4j.application.config.Configurable;
 import org.ldp4j.application.config.Configuration;
 import org.ldp4j.application.config.ConfigurationException;
+import org.ldp4j.application.config.Setting;
+import org.ldp4j.application.config.core.SettingRegistry;
 import org.ldp4j.application.config.core.DefaultImmutableConfiguration;
 import org.ldp4j.application.config.core.DefaultMutableConfiguration;
 import org.ldp4j.application.config.util.Configurator;
@@ -72,6 +77,11 @@ public class ConfiguratorTest {
 		@Override
 		public boolean canConfigure() {
 			return this.configurable;
+		}
+
+		@Override
+		public Set<Setting<?>> settings() {
+			return SettingRegistry.getSettings(getClass());
 		}
 
 	}

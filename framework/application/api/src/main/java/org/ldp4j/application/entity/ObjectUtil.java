@@ -26,7 +26,9 @@
  */
 package org.ldp4j.application.entity;
 
+import java.util.Iterator;
 import java.util.Map;
+import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Set;
 
@@ -42,25 +44,25 @@ public final class ObjectUtil {
 
 	private static final class NullObjectFactory<T> implements ObjectFactory<T> {
 
-		private final Class<? extends T> valueClass;
+		private final Class<? extends T> targetClass;
 
 		private NullObjectFactory(Class<? extends T> valueClass) {
-			this.valueClass = valueClass;
+			this.targetClass = valueClass;
 		}
 
 		@Override
 		public Class<? extends T> targetClass() {
-			return this.valueClass;
+			return this.targetClass;
 		}
 
 		@Override
 		public T fromString(String rawValue) {
-			throw new ObjectTransformationException("Unsupported value type '"+targetClass().getName()+"'",null,this.valueClass);
+			throw new ObjectTransformationException("Unsupported value type '"+prettyPrint(this.targetClass)+"'",null,this.targetClass);
 		}
 
 		@Override
 		public String toString(T value) {
-			throw new ObjectTransformationException("Unsupported value type '"+targetClass().getName()+"'",null,this.valueClass);
+			throw new ObjectTransformationException("Unsupported value type '"+prettyPrint(this.targetClass)+"'",null,this.targetClass);
 		}
 
 	}
@@ -77,43 +79,64 @@ public final class ObjectUtil {
 	private static synchronized <T> ObjectFactory<T> findObjectFactory(final Class<? extends T> valueClass) {
 		ObjectFactory<?> rawResult=FACTORY_CACHE.get(valueClass);
 		if(rawResult==null) {
-			for(ObjectFactory candidate:ServiceLoader.load(ObjectFactory.class)) {
-				if(PRELOADED_FACTORIES.contains(candidate.getClass())) {
-					if(LOGGER.isTraceEnabled()) {
-						LOGGER.trace("Discarding cached factory '{}' for value class '{}'",candidate.getClass().getName(),candidate.targetClass().getName());
-					}
-					continue;
-				}
-				if(FACTORY_CACHE.containsKey(candidate.targetClass())) {
-					if(LOGGER.isWarnEnabled()) {
-						LOGGER.warn("Discarding clashing factory '{}' for value class '{}'",candidate.getClass().getName(),candidate.targetClass().getName());
-					}
-					continue;
-				}
-				if(LOGGER.isTraceEnabled()) {
-					LOGGER.trace("Caching factory '{}' for value class '{}'",candidate.getClass().getName(),candidate.targetClass().getName());
-				}
-				FACTORY_CACHE.put(candidate.targetClass(),candidate);
-				PRELOADED_FACTORIES.add(candidate.getClass());
-				if(candidate.targetClass()==valueClass) {
-					rawResult=candidate;
-					if(LOGGER.isDebugEnabled()) {
-						LOGGER.debug("Found factory '{}' for value class '{}'",candidate.getClass().getName(),valueClass.getName());
-					}
-					break;
-				}
-				if(LOGGER.isTraceEnabled()) {
-					LOGGER.trace("Discarding factory '{}': target class '{}' does not match value class '{}'",candidate.getClass().getName(),candidate.targetClass().getName(),valueClass.getName());
-				}
+			if(LOGGER.isDebugEnabled()) {
+				LOGGER.debug("No cached factory found for value class '{}'",prettyPrint(valueClass));
 			}
+			ServiceLoader<ObjectFactory> loader = ServiceLoader.load(ObjectFactory.class);
+			Iterator<ObjectFactory> it = loader.iterator();
+			do {
+				try {
+					ObjectFactory candidate=it.next();
+					Class<? extends ObjectFactory> candidateClass = candidate.getClass();
+					if(PRELOADED_FACTORIES.contains(candidateClass)) {
+						if(LOGGER.isTraceEnabled()) {
+							LOGGER.trace("Discarded cached factory '{}' for value class '{}'",prettyPrint(candidateClass),prettyPrint(valueClass));
+						}
+					} else {
+						Class targetClass = candidate.targetClass();
+						if(FACTORY_CACHE.containsKey(targetClass)) {
+							if(LOGGER.isWarnEnabled()) {
+								LOGGER.warn("Discarded clashing factory '{}' for value class '{}'",prettyPrint(candidateClass),prettyPrint(valueClass));
+							}
+						} else {
+							FACTORY_CACHE.put(targetClass,candidate);
+							PRELOADED_FACTORIES.add(candidateClass);
+							if(LOGGER.isTraceEnabled()) {
+								LOGGER.trace("Cached factory '{}' for value class '{}'",prettyPrint(candidateClass),prettyPrint(targetClass));
+							}
+							if(targetClass==valueClass) {
+								rawResult=candidate;
+								if(LOGGER.isDebugEnabled()) {
+									LOGGER.debug("Found factory '{}' for value class '{}'",prettyPrint(candidateClass),prettyPrint(valueClass));
+								}
+							} else {
+								if(LOGGER.isTraceEnabled()) {
+									LOGGER.trace("Discarded factory '{}': target class '{}' does not match value class '{}'",prettyPrint(candidateClass),prettyPrint(targetClass),prettyPrint(valueClass));
+								}
+							}
+						}
+					}
+				} catch (ServiceConfigurationError e) {
+					LOGGER.error("ObjectFactory configuration failure. Full stacktrace follows",e);
+				}
+			} while(rawResult==null && it.hasNext());
 		}
 		if(rawResult==null) {
 			rawResult=new NullObjectFactory<T>(valueClass);
 			if(LOGGER.isWarnEnabled()) {
-				LOGGER.warn("No factory found for value class '{}'",valueClass.getName());
+				LOGGER.warn("No factory found for value class '{}'",prettyPrint(valueClass));
 			}
 		}
 		return (ObjectFactory<T>)rawResult;
+	}
+
+	private static String prettyPrint(Class<?> clazz) {
+		return clazz.getCanonicalName();
+	}
+
+	public static <T> boolean isSupported(Class<T> clazz) {
+		ObjectFactory<T> valueFactory=ObjectUtil.findObjectFactory(clazz);
+		return !NullObjectFactory.class.isInstance(valueFactory);
 	}
 
 	public static <T> T fromString(Class<T> clazz, String str) {

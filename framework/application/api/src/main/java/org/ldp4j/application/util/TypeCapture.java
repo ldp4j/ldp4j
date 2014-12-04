@@ -24,26 +24,21 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.config.core;
+package org.ldp4j.application.util;
 
-import org.ldp4j.application.config.ImmutableConfiguration;
-import org.ldp4j.application.config.Setting;
+import java.lang.reflect.ParameterizedType;
+import java.lang.reflect.Type;
 
-final class CustomizableImmutableConfiguration extends CustomizableConfiguration implements ImmutableConfiguration {
+public abstract class TypeCapture<T> {
 
-	private CustomizableImmutableConfiguration(CustomizableImmutableConfiguration configuration) {
-		super(configuration);
-	}
-
-	protected CustomizableImmutableConfiguration() {
-		super();
-	}
-
-	@Override
-	public <T> ImmutableConfiguration set(Setting<? super T> setting, T value) {
-		CustomizableImmutableConfiguration result=new CustomizableImmutableConfiguration(this);
-		result.update(setting, value);
-		return result;
+	/** Returns the captured type. */
+	protected final Type capture() {
+		Type superClass = getClass().getGenericSuperclass();
+		if(!(superClass instanceof ParameterizedType)) {
+			throw new AssertionError(String.format("%s isn't parameterized",superClass));
+		}
+		ParameterizedType parameterizedType = (ParameterizedType)superClass;
+		return parameterizedType.getActualTypeArguments()[0];
 	}
 
 }

@@ -36,7 +36,6 @@ import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.ldp4j.application.config.Configuration;
@@ -47,7 +46,6 @@ import org.ldp4j.application.config.Setting;
 import org.ldp4j.application.config.core.CustomizableConfiguration.PropertiesProvider;
 
 import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
 
 public final class ConfigurationBuilder<T extends Configuration> {
 
@@ -70,7 +68,7 @@ public final class ConfigurationBuilder<T extends Configuration> {
 			return this;
 		}
 
-		private Customizer<T> withUserSettings(Map<Setting<?>, Object> userSettings) throws ConfigurationException {
+		private Customizer<T> withUserSettings(Configuration userSettings) throws ConfigurationException {
 			this.config.setUserSettings(userSettings);
 			return this;
 		}
@@ -218,13 +216,13 @@ public final class ConfigurationBuilder<T extends Configuration> {
 	}
 
 	private final List<ConfigurationSource> sourcePrecedence;
-	private final Map<Setting<?>,Object> userSettings;
+	private final MutableConfiguration userSettings;
 	private final List<PropertiesProvider<?>> propertiesProviders;
 	private final Customizer<? extends T> customizer;
 
 	private ConfigurationBuilder(Customizer<? extends T> customizer) {
 		this.customizer = customizer;
-		this.userSettings=Maps.newLinkedHashMap();
+		this.userSettings=new DefaultMutableConfiguration();
 		this.sourcePrecedence=Lists.newArrayList();
 		this.propertiesProviders=Lists.newArrayList();
 	}
@@ -278,17 +276,10 @@ public final class ConfigurationBuilder<T extends Configuration> {
 		return this;
 	}
 
-	public <E> ConfigurationBuilder<T> withUserSetting(Setting<? super E> setting, E value) {
+	public <E> ConfigurationBuilder<T> withUserSetting(Setting<? super E> setting, E value) throws ConfigurationException {
 		checkNotNull(setting,"Setting cannot be null");
 		checkNotNull(value,"Setting value cannot be null");
-		this.userSettings.put(setting, value);
-		addConfigurationSource(ConfigurationSource.USER_SETTINGS);
-		return this;
-	}
-
-	public ConfigurationBuilder<T> withUserSettings(Map<? extends Setting<?>,Object> settings) {
-		checkNotNull(settings,"Settings cannot be null");
-		this.userSettings.putAll(settings);
+		this.userSettings.set(setting, value);
 		addConfigurationSource(ConfigurationSource.USER_SETTINGS);
 		return this;
 	}

@@ -26,35 +26,88 @@
  */
 package org.ldp4j.application.config.core;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 import org.ldp4j.application.config.Setting;
 
 import com.google.common.base.Objects;
-import static com.google.common.base.Preconditions.*;
 
 public final class SettingBuilder<T> {
 
-	private static final class BeanSetting<T> implements Setting<T> {
+	private static final class ImmutableSetting<T> implements Setting<T> {
 
-		/**
-		 *
-		 */
-		private static final long serialVersionUID = 873442054325464078L;
+		private static final long serialVersionUID = 5110195960337804950L;
 
-		private Class<? extends T> type;
-		private String key;
-		private String description;
-		private T defaultValue;
+		private final Setting<T> delegate;
 
-		private BeanSetting(Class<? extends T> type) {
-			this.type = type;
+		private ImmutableSetting(Setting<T> delegate) {
+			this.delegate = delegate;
 		}
 
 		/**
 		 * {@inheritDoc}
 		 */
 		@Override
-		public Class<? extends T> type() {
-			return this.type;
+		public String getKey() {
+			return this.delegate.getKey();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public String getDescription() {
+			return this.delegate.getDescription();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public T getDefaultValue() {
+			return this.delegate.getDefaultValue();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public int hashCode() {
+			return this.delegate.hashCode();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public boolean equals(Object obj) {
+			return this.delegate.equals(obj);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public String toString() {
+			return
+				Objects.
+					toStringHelper(getClass()).
+						add("delegate",this.delegate).
+						toString();
+		}
+
+	}
+
+	private static final class MutableSetting<T> implements Setting<T> {
+
+		private static final long serialVersionUID = 1L;
+
+		private String key;
+		private String description;
+		private T defaultValue;
+
+		private MutableSetting() {
 		}
 
 		/**
@@ -82,7 +135,7 @@ public final class SettingBuilder<T> {
 		}
 
 		protected Setting<T> clone() {
-			BeanSetting<T> beanSetting = new BeanSetting<T>(this.type);
+			MutableSetting<T> beanSetting = new MutableSetting<T>();
 			beanSetting.key=this.key;
 			beanSetting.defaultValue=this.defaultValue;
 			beanSetting.description=this.description;
@@ -94,7 +147,7 @@ public final class SettingBuilder<T> {
 		 */
 		@Override
 		public int hashCode() {
-			return Objects.hashCode(this.type,this.key);
+			return Objects.hashCode(this.key,this.defaultValue);
 		}
 
 		/**
@@ -102,21 +155,23 @@ public final class SettingBuilder<T> {
 		 */
 		@Override
 		public boolean equals(Object obj) {
+			if(obj==this) return true;
+			if(obj==null) return false;
 			if(!(obj instanceof Setting<?>)) {
 				return false;
 			}
 			Setting<?> that=(Setting<?>)obj;
 			return
-				this.type==that.type() &&
-				Objects.equal(this.key, that.getKey());
+				Objects.equal(this.key, that.getKey()) &&
+				Objects.equal(this.defaultValue, that.getDefaultValue());
 		}
 
 	}
 
-	private BeanSetting<T> setting;
+	private MutableSetting<T> setting;
 
-	private SettingBuilder(Class<? extends T> type) {
-		this.setting=new BeanSetting<T>(type);
+	private SettingBuilder() {
+		this.setting=new MutableSetting<T>();
 	}
 
 	public SettingBuilder<T> withKey(String key) {
@@ -137,14 +192,19 @@ public final class SettingBuilder<T> {
 	}
 
 	public Setting<T> build() {
-		checkState(this.setting.defaultValue!=null,"Setting default value not defined");
 		checkState(this.setting.key!=null,"Setting key not defined");
-		return this.setting.clone();
+		checkState(this.setting.defaultValue!=null,"Setting default value not defined");
+		return new ImmutableSetting<T>(this.setting.clone());
 	}
 
 	public static <T> SettingBuilder<T> create(Class<? extends T> type) {
 		checkNotNull(type,"Setting type cannot be null");
-		return new SettingBuilder<T>(type);
+		return new SettingBuilder<T>();
+	}
+
+	public static <T> SettingBuilder<T> create(T value) {
+		SettingBuilder<T> builder = new SettingBuilder<T>();
+		return builder.withDefaultValue(value);
 	}
 
 }

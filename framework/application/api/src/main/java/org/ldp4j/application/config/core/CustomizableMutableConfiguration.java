@@ -36,7 +36,7 @@ final class CustomizableMutableConfiguration extends CustomizableConfiguration i
 	}
 
 	@Override
-	public <T> void set(Setting<T> setting, T value) {
+	public <T> void set(Setting<? super T> setting, T value) {
 		update(setting, value);
 	}
 

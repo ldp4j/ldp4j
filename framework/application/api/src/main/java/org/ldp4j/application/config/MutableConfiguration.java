@@ -39,6 +39,6 @@ public interface MutableConfiguration extends Configuration {
 	 *        The value for the setting, or null to reset the setting to use
 	 *        the default value.
 	 */
-	<T> void set(Setting<T> setting, T value) throws ConfigurationException;
+	<T> void set(Setting<? super T> setting, T value) throws ConfigurationException;
 
 }
