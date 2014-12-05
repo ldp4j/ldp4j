@@ -30,7 +30,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.lang.reflect.Type;
 import java.security.AccessController;
-import java.security.PrivilegedAction;
+import java.security.PrivilegedActionException;
+import java.security.PrivilegedExceptionAction;
 import java.util.Collections;
 import java.util.List;
 
@@ -39,7 +40,6 @@ import org.ldp4j.application.config.Setting;
 import org.ldp4j.application.entity.ObjectUtil;
 import org.ldp4j.application.entity.spi.ObjectFactory;
 import org.ldp4j.application.util.MetaClass;
-import org.ldp4j.application.util.TypeVisitor.TypeFunction;
 import org.ldp4j.application.util.Types;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -70,42 +70,193 @@ final class SettingController {
 		public String toString(T value) {
 			return ObjectUtil.toString(value);
 		}
-	}
 
-	private final class DefaultObjectFactoryFunction extends TypeFunction<ObjectFactory<?>> {
-		private DefaultObjectFactoryFunction() {
-			super(null);
-		}
-		@Override
-		protected <S, E extends Exception> ObjectFactory<?> visitClass(final Class<S> t, E exception) throws E {
-			ObjectFactory<?> result=null;
-			if(ObjectUtil.isSupported(t)) {
-				result=new PluggableObjectFactory<S>(t);
-			}
-			return result;
-		}
-
-		public ObjectFactory<?> create() {
-			return apply(settingType());
+		public static <T> ObjectFactory<T> create(Class<T> settingClass) {
+			return new PluggableObjectFactory<T>(settingClass);
 		}
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(SettingController.class);
 
-	private	final List<ConfigurationFailure> failures;
-	private final MetaClass metaClass;
+	private final List<ConfigurationFailure> failures=Lists.newArrayList();
+	private MetaClass metaClass;
 
 	private Field field;
-	private Boolean validType;
-	private Boolean publicConstant;
+	private boolean _public;
+	private boolean _static;
+	private boolean _final;
+
 	private Type settingType;
-	private SettingDefinition<?> manager;
+	private SettingDefinition<?> definition;
 	private Setting<?> setting;
 
+	private ObjectFactory<?> factory;
+
 	private SettingController(MetaClass metaClass, Field field) {
+		setMetaClass(metaClass);
+		setField(field);
+		setPublic(isPublic(field));
+		setStatic(isStatic(field));
+		setFinal(isFinal(field));
+		setSettingType(getSettingType(field));
+		try {
+			setSetting(isStatic()?getSetting(field):null);
+		} catch (IllegalStateException e) {
+			logFailure(e.getMessage());
+		}
+		try {
+			setObjectFactory(
+				createObjectFactory(
+					field.getAnnotation(Configurable.Option.class).factory(),
+					settingType()));
+		} catch (IllegalArgumentException e) {
+			logFailure(e.getMessage());
+		}
+		if(isPublicConstant() && this.setting!=null && this.factory!=null) {
+			@SuppressWarnings("unchecked")
+			SettingDefinition<Object> definition =
+				SettingDefinitionFactory.
+					create(
+						field.getGenericType(),
+						(Setting<Object>)settingValue(),
+						(ObjectFactory<Object>)objectFactory());
+			setSettingDefinition(definition);
+		}
+	}
+
+	boolean isStatic() {
+		return this._static;
+	}
+
+	private static Type getSettingType(Field field) {
+		MetaClass metaClass=MetaClass.create(field.getType(),field.getGenericType());
+		return metaClass.resolve(Setting.class).typeArguments()[0];
+	}
+
+	private static Setting<?> getSetting(final Field field) {
+		try {
+			return AccessController.doPrivileged(
+				new PrivilegedExceptionAction<Setting<?>>() {
+					@Override
+					public Setting<?> run() throws Exception {
+						field.setAccessible(true);
+						return (Setting<?>)field.get(null);
+					}
+				}
+			);
+		} catch (PrivilegedActionException e) {
+			throw new IllegalStateException("Could not retrieve setting value",e.getCause());
+		}
+	}
+
+	private static boolean isFinal(Field field) {
+		int modifiers=field.getModifiers();
+		boolean value = Modifier.isFinal(modifiers);
+		return value;
+	}
+
+	private static boolean isStatic(Field field) {
+		int modifiers=field.getModifiers();
+		boolean value = Modifier.isStatic(modifiers);
+		return value;
+	}
+
+	private static boolean isPublic(Field field) {
+		int modifiers=field.getModifiers();
+		boolean v = Modifier.isPublic(modifiers);
+		return v;
+	}
+
+	private static ObjectFactory<?> createObjectFactory(final Class<? extends ObjectFactory<?>> factoryClass, Type settingType) {
+		if(factoryClass!=Configurable.DEFAULT_OBJECT_FACTORY) {
+			return SettingController.instantiateProvidedObjectFactory(factoryClass,settingType);
+		} else {
+			return SettingController.instantiateDefaultObjectFactory(settingType);
+		}
+	}
+
+	private static ObjectFactory<?> instantiateDefaultObjectFactory(Type settingType) {
+		if(!(settingType instanceof Class<?>)) {
+			throw new IllegalArgumentException("Generic setting type "+Types.toString(settingType)+" is not supported");
+		}
+		Class<?> settingClass=(Class<?>)settingType;
+		if(!ObjectUtil.isSupported(settingClass)) {
+			throw new IllegalArgumentException("Setting type "+Types.toString(settingType)+" is not supported");
+		}
+		return PluggableObjectFactory.create(settingClass);
+	}
+
+	private static ObjectFactory<?> instantiateProvidedObjectFactory(
+			final Class<? extends ObjectFactory<?>> factoryClass,
+			Type settingType) {
+		MetaClass fType=MetaClass.create(factoryClass);
+		Type factoryType = fType.resolve(ObjectFactory.class).typeArguments()[0];
+		if(!factoryType.equals(settingType)) {
+			throw new IllegalArgumentException("Invalid factory: factory type "+Types.toString(factoryType)+" does not match setting type "+Types.toString(settingType));
+		}
+		try {
+			return
+				AccessController.doPrivileged(
+				new PrivilegedExceptionAction<ObjectFactory<?>>() {
+					@Override
+					public ObjectFactory<?> run() throws Exception {
+						ObjectFactory<?> factory=null;
+							factory=factoryClass.newInstance();
+						return factory;
+					}
+				}
+			);
+		} catch (PrivilegedActionException e) {
+			throw new IllegalArgumentException("Could not instantiate factory '"+Types.toString(factoryClass)+"': "+e.getCause().getMessage(),e.getCause());
+		}
+	}
+
+	private void setMetaClass(MetaClass metaClass) {
 		this.metaClass = metaClass;
-		this.field = field;
-		this.failures=Lists.newArrayList();
+	}
+
+	private void setField(Field field) {
+		this.field=field;
+	}
+
+	private void setPublic(boolean value) {
+		this._public=value;
+		if(!value) {
+			logFailure("is not public");
+		}
+	}
+
+	private void setStatic(boolean value) {
+		this._static=value;
+		if(!value) {
+			logFailure("is not static");
+		}
+	}
+
+	private void setFinal(boolean value) {
+		this._final=value;
+		if(!value) {
+			logFailure("is not final");
+		}
+	}
+
+	private void setSetting(Setting<?> setting) {
+		this.setting=setting;
+	}
+
+	private void setSettingType(Type type) {
+		this.settingType=type;
+	}
+
+	private void setSettingDefinition(SettingDefinition<?> definition) {
+		this.definition=definition;
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Found setting {}",toString());
+		}
+	}
+
+	private void setObjectFactory(ObjectFactory<?> factory) {
+		this.factory=factory;
 	}
 
 	private SettingController logFailure(String errorMessage, Object... args) {
@@ -120,151 +271,46 @@ final class SettingController {
 		return this;
 	}
 
-	private boolean hasValidType() {
-		if(this.validType==null) {
-			this.validType = Setting.class.isAssignableFrom(this.field.getType());
-			if(!this.validType) {
-				logFailure("Does not implement "+Types.toString(Setting.class)+" ("+Types.toString(this.field.getGenericType())+")");
-			}
-		}
-		return this.validType;
+	Field field() {
+		return this.field;
 	}
 
-	private boolean isPublicConstant() {
-		if(this.publicConstant==null) {
-			this.publicConstant=true;
-			int modifiers = this.field.getModifiers();
-			if(!Modifier.isPublic(modifiers)) {
-				logFailure("is not public");
-				this.publicConstant=false;
-			}
-			if(!Modifier.isStatic(modifiers)) {
-				logFailure("is not static");
-				this.publicConstant=false;
-			}
-			if(!Modifier.isFinal(modifiers)) {
-				logFailure("is not final");
-				this.publicConstant=false;
-			}
-		}
-		return this.publicConstant;
+	boolean isPublicConstant() {
+		return this._public && this._static && this._final;
 	}
 
-	private ObjectFactory<?> instantiateCustomObjectFactory(final Class<? extends ObjectFactory<?>> factoryClass) {
-		return AccessController.doPrivileged(
-			new PrivilegedAction<ObjectFactory<?>>() {
-				@Override
-				public ObjectFactory<?> run() {
-					ObjectFactory<?> factory=null;
-					try {
-						factory=factoryClass.newInstance();
-					} catch (InstantiationException e) {
-						logFailure("Could not instantiate factory '"+Types.toString(factoryClass)+"': "+e.getCause().getMessage());
-					} catch (IllegalAccessException e) {
-						logFailure("Could not instantiate factory '"+Types.toString(factoryClass)+"': "+e.getCause().getMessage());
-					}
-					return factory;
-				}
-			}
-		);
-	}
-
-	private Type settingType() {
-		if(this.settingType==null) {
-			MetaClass type=MetaClass.create(field.getType(),field.getGenericType());
-			this.settingType=type.resolve(Setting.class).typeArguments()[0];
-		}
+	Type settingType() {
 		return this.settingType;
 	}
 
-	private ObjectFactory<?> createObjectFactory(Class<? extends ObjectFactory<?>> factoryClass) {
-		ObjectFactory<?> factory=null;
-		if(factoryClass!=Configurable.DEFAULT_OBJECT_FACTORY) {
-			MetaClass fType=MetaClass.create(factoryClass);
-			Type factoryType = fType.resolve(ObjectFactory.class).typeArguments()[0];
-			if(!factoryType.equals(settingType())) {
-				logFailure("Invalid factory: factory type "+Types.toString(factoryType)+" does not match setting type "+Types.toString(settingType()));
-			} else {
-				factory=instantiateCustomObjectFactory(factoryClass);
-			}
-		} else {
-			factory=getDefaultObjectFactory();
-		}
-		return factory;
-	}
-
-	private ObjectFactory<?> getDefaultObjectFactory() {
-		ObjectFactory<?> factory=new DefaultObjectFactoryFunction().create();
-		if(factory==null) {
-			logFailure("Setting type "+Types.toString(settingType())+" is not supported");
-		}
-		return factory;
-	}
-
-	private Setting<?> getSetting() {
-		if(this.setting==null) {
-			this.setting =
-				AccessController.doPrivileged(
-					new PrivilegedAction<Setting<?>>() {
-						@Override
-						public Setting<?> run() {
-							try {
-								return (Setting<?>)field.get(null);
-							} catch (IllegalArgumentException e) {
-								throw new InternalError("Should not fail when retrieving an static field");
-							} catch (IllegalAccessException e) {
-								throw new InternalError("Should not fail when retrieving an public field");
-							}
-						}
-					}
-				);
-		}
+	Setting<?> settingValue() {
 		return this.setting;
 	}
 
+	SettingDefinition<?> settingDefinition() {
+		return this.definition;
+	}
+
+	ObjectFactory<?> objectFactory() {
+		return this.factory;
+	}
+
 	boolean isValid() {
-		return settingDefinition()!=null;
+		return this.definition!=null;
 	}
 
 	List<ConfigurationFailure> configurationFailures() {
 		return Collections.unmodifiableList(this.failures);
 	}
 
-	@SuppressWarnings("unchecked") // Guarded by construction
-	SettingDefinition<?> settingDefinition() {
-		if(this.manager==null && failures.isEmpty()) {
-			if(isPublicConstant()) {
-				ObjectFactory<?> factory=createObjectFactory(this.field.getAnnotation(Configurable.Option.class).factory());
-				if(factory!=null) {
-					this.manager=SettingDefinitionFactory.create(this.field.getGenericType(),(Setting<Object>)getSetting(),(ObjectFactory<Object>)factory);
-				}
-				if(LOGGER.isDebugEnabled()) {
-					if(factory!=null) {
-						LOGGER.debug("Found setting {}",toString());
-					} else {
-						LOGGER.debug("Discarded setting {}: Could not create object factory",toString());
-					}
-				}
-			}
-			if(LOGGER.isDebugEnabled()) {
-				if(!isPublicConstant()) {
-					LOGGER.debug("Discarded setting {}: Not accessible ({})",toString(),Modifier.toString(this.field.getModifiers()));
-				}
-			}
-		}
-		return this.manager;
-	}
-
 	@Override
 	public String toString() {
 		return
 			String.format(
-				hasValidType()?
-					"%s.%s (%s)":
-					"%s.%s",
+				"%s.%s (%s)",
 				Types.toString(this.metaClass.type()),
-				this.field.getName(),
-				Types.toString(this.field.getGenericType()));
+				field().getName(),
+				Types.toString(field().getGenericType()));
 	}
 
 	static SettingController create(MetaClass metaClass, Field field) throws IllegalDeclarationException {

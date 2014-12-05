@@ -67,26 +67,26 @@ public final class ObjectUtil {
 
 	}
 
-	private static final class EnumObjectFactory<S extends Enum<S>> implements ObjectFactory<S> {
+	private static final class EnumObjectFactory<E extends Enum<E>> implements ObjectFactory<E> {
 
-		private final Class<S> targetClass;
+		private final Class<E> targetClass;
 
-		private EnumObjectFactory(Class<S> targetClass) {
+		private EnumObjectFactory(Class<E> targetClass) {
 			this.targetClass = targetClass;
 		}
 
 		@Override
-		public Class<? extends S> targetClass() {
+		public Class<? extends E> targetClass() {
 			return this.targetClass;
 		}
 
 		@Override
-		public S fromString(final String rawValue) {
+		public E fromString(final String rawValue) {
 			return Enum.valueOf(targetClass, rawValue);
 		}
 
 		@Override
-		public String toString(S value) {
+		public String toString(E value) {
 			return value.toString();
 		}
 
