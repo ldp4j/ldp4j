@@ -173,7 +173,6 @@
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-server-impl</artifactId>
 			<type>test-jar</type>
-			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 

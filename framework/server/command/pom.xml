@@ -40,7 +40,7 @@
 		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	
+
 	<artifactId>ldp4j-server-command</artifactId>
 
 	<!-- =================================================================== -->
@@ -141,12 +141,10 @@
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-server-core</artifactId>
-			<version>${project.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-server-core</artifactId>
-			<version>${project.version}</version>
 			<type>test-jar</type>
 		</dependency>
 
@@ -167,17 +165,17 @@
 			<artifactId>xml-apis</artifactId>
 			<version>1.4.01</version>
 		</dependency>
-	
+
 		<dependency>
 			<groupId>javax.xml.bind</groupId>
 			<artifactId>jaxb-api</artifactId>
-			<scope>provided</scope>  
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
-			<groupId>com.sun.xml.bind</groupId>  
-			<artifactId>jaxb-impl</artifactId>  
-			<scope>provided</scope>  
+			<groupId>com.sun.xml.bind</groupId>
+			<artifactId>jaxb-impl</artifactId>
+			<scope>provided</scope>
 		</dependency>
 
 		<dependency>
@@ -208,7 +206,6 @@
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-server-impl</artifactId>
 			<type>test-jar</type>
-			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -291,7 +288,7 @@
 			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
-	
+
 		<!-- ShrinkWrap Resolver -->
 		<dependency>
 			<groupId>org.jboss.shrinkwrap.resolver</groupId>
@@ -299,7 +296,7 @@
 			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
-	
+
 		<!-- ShrinkWrap Descriptors -->
 		<dependency>
 			<groupId>org.jboss.shrinkwrap.descriptors</groupId>
@@ -355,7 +352,7 @@
 		</dependency>
 
 	</dependencies>
-	
+
 	<build>
 		<plugins>
 			<plugin>
@@ -372,12 +369,12 @@
 							<schemaDirectory>${basedir}${file.separator}src${file.separator}main${file.separator}resources</schemaDirectory>
 							<schemaIncludes>
 								<include>**/*.xsd</include>
-							</schemaIncludes>			
+							</schemaIncludes>
 							<bindingDirectory>${basedir}${file.separator}src${file.separator}main${file.separator}xjb</bindingDirectory>
 							<bindingIncludes>
 								<include>*.xjb</include>
 							</bindingIncludes>
-<!-- 
+<!--
 							<catalog>${basedir}${file.separator}src${file.separator}main${file.separator}xjb${file.separator}catalog.cat</catalog>
 							<catalogResolver>org.jvnet.jaxb2.maven2.resolver.tools.ClasspathCatalogResolver</catalogResolver>
  -->
@@ -525,7 +522,7 @@
 					<excludedGroups>${failsafe.test.groups.excludes}</excludedGroups>
 					<testNGArtifactName>none:none</testNGArtifactName>
 				</configuration>
-<!-- 
+<!--
 				<executions>
 					<execution>
 						<id>testng</id>

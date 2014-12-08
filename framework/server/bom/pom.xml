@@ -69,8 +69,20 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ldp4j.framework</groupId>
+				<artifactId>ldp4j-server-impl</artifactId>
+				<version>${project.version}</version>
+				<type>test-jar</type>
+			</dependency>
+			<dependency>
+				<groupId>org.ldp4j.framework</groupId>
 				<artifactId>ldp4j-server-core</artifactId>
 				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ldp4j.framework</groupId>
+				<artifactId>ldp4j-server-core</artifactId>
+				<version>${project.version}</version>
+				<type>test-jar</type>
 			</dependency>
 			<dependency>
 				<groupId>org.ldp4j.framework</groupId>
@@ -84,5 +96,5 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	
+
 </project>
