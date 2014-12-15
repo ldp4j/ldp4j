@@ -41,6 +41,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.ldp4j.reflect.TypeVisitor.TypeFunction;
 
 import com.google.common.base.Objects;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 
@@ -229,6 +230,7 @@ public final class MetaClass {
 	}
 
 	public static MetaClass create(Class<?> rawType) {
+		Preconditions.checkNotNull(rawType,"Raw type cannot be null");
 		return new MetaClass(rawType,rawType,null);
 	}
 
