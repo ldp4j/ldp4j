@@ -178,4 +178,35 @@ public class MetaClassTest {
 		showParameterArguments(parameterArguments);
 	}
 
+	@Test(expected=IllegalArgumentException.class)
+	public void testResolve$notParameterized() {
+		MetaClass metaClass = MetaClass.create(Childclass.class);
+		metaClass.resolve(String.class);
+	}
+
+	@Test
+	public void testResolve$parameterizedUnresolvable() {
+		MetaClass metaClass = MetaClass.create(Childclass.class);
+		MetaClass resolved = metaClass.resolve(List.class);
+		assertThat(resolved,equalTo(MetaClass.create(List.class)));
+	}
+
+	@Test
+	public void testResolve$parameterizedResolvable$simple() {
+		MetaClass metaClass = MetaClass.create(Childclass.class);
+		MetaClass resolved = metaClass.resolve(Superclass.class);
+		assertThat(resolved.typeArguments()[0],equalTo((Type)String.class));
+	}
+
+	@Test
+	public void testResolve$parameterizedResolvable$complex() {
+		MetaClass metaClass = MetaClass.create(Childclass.class);
+		MetaClass resolved = metaClass.resolve(Marker.class);
+		Type argument = resolved.typeArguments()[0];
+		assertThat(argument,instanceOf(ParameterizedType.class));
+		assertThat(((ParameterizedType)argument).getRawType(),equalTo((Type)Superclass.class));
+		assertThat(((ParameterizedType)argument).getActualTypeArguments()[0],equalTo((Type)String.class));
+		showParameterArguments(resolved.parameterArguments());
+	}
+
 }

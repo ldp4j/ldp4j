@@ -61,7 +61,7 @@ public final class MetaClass {
 
 	private MetaClass(Class<?> rawType, Type type, MetaClass context) {
 		this.rawType = rawType;
-		this.type = type;
+		this.type = type!=null?type:rawType;
 		this.context = context;
 	}
 
@@ -185,6 +185,7 @@ public final class MetaClass {
 	}
 
 	public MetaClass resolve(final Class<?> clazz) {
+		Preconditions.checkArgument(clazz.getTypeParameters().length>0,"Class '"+clazz.getName()+"' is not parameterized");
 		final AtomicReference<Type> type=new AtomicReference<Type>();
 		accept(
 			new MetaClassVisitor(){
@@ -199,6 +200,23 @@ public final class MetaClass {
 			}
 		);
 		return create(clazz,resolve(type.get()));
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(this.rawType,this.type,this.context);
+	}
+
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj instanceof MetaClass) {
+			MetaClass that=(MetaClass)obj;
+			result=
+				Objects.equal(this.rawType,that.rawType) &&
+				Objects.equal(this.type,that.type) &&
+				Objects.equal(this.context,that.context);
+		}
+		return result;
 	}
 
 	public void accept(MetaClassVisitor visitor) {
