@@ -28,6 +28,7 @@ package org.ldp4j.reflect.impl;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
+import static org.junit.Assert.fail;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -39,6 +40,13 @@ import org.ldp4j.reflect.model.Invocable;
 import org.ldp4j.reflect.model.Parameter;
 
 public class ImmutableModelFactoryTest {
+
+	public static interface Checker {
+
+		public String array(String[] array);
+
+	}
+
 
 	@Test
 	public void testNewInvocable$method() throws Exception {
@@ -68,6 +76,36 @@ public class ImmutableModelFactoryTest {
 		assertThat(invocable.getPosition(), equalTo(0));
 		assertThat(invocable.getAnnotations(),notNullValue());
 		assertThat(invocable.getAnnotations().length,equalTo(0));
+	}
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testNewParameter$invalidPosition() throws Exception {
+		Constructor<?> constructor = URI.class.getConstructor(String.class);
+		ImmutableModelFactory.getInstance().newParameter(constructor,2,String.class,String.class);
+	}
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testNewParameter$invalidRawType() throws Exception {
+		Constructor<?> constructor = URI.class.getConstructor(String.class);
+		ImmutableModelFactory.getInstance().newParameter(constructor,0,Long.class,Long.class);
+	}
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testNewParameter$incompatibleType$class() throws Exception {
+		Constructor<?> constructor = URI.class.getConstructor(String.class);
+		ImmutableModelFactory.getInstance().newParameter(constructor,0,String.class,Long.class);
+	}
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testNewParameter$incompatibleType$array() throws Exception {
+		Method method = Checker.class.getMethod("array",String[].class);
+		ImmutableModelFactory.getInstance().newParameter(method,0,String[].class,String.class);
+	}
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testNewParameter$incompatibleType$array2() throws Exception {
+		Method method = Checker.class.getMethod("array",String[].class);
+		ImmutableModelFactory.getInstance().newParameter(method,0,String[].class,Long[].class);
 	}
 
 }
