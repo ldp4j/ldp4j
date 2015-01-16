@@ -1,0 +1,111 @@
+/**
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   This file is part of the LDP4j Project:
+ *     http://www.ldp4j.org/
+ *
+ *   Center for Open Middleware
+ *     http://www.centeropenmiddleware.com/
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Copyright (C) 2014 Center for Open Middleware.
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *             http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ *   Artifact    : org.ldp4j.commons:ldp4j-commons-reflection:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-commons-reflection-1.0.0-SNAPSHOT.jar
+ * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+ */
+package org.ldp4j.reflect.impl;
+
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedElement;
+import java.util.List;
+
+import org.ldp4j.reflect.meta.MetaAnnotatedElement;
+
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
+
+abstract class ImmutableMetaAnnotatedElement<T extends AnnotatedElement> implements MetaAnnotatedElement<T> {
+
+	private final T delegate;
+
+	protected ImmutableMetaAnnotatedElement(T annotatedElement) {
+		this.delegate = annotatedElement;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public final T get() {
+		return this.delegate;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public final <A extends Annotation> A getAnnotation(Class<A> annotationClass) {
+		return this.delegate.getAnnotation(annotationClass);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public final List<Annotation> getAnnotations() {
+		return ImmutableList.copyOf(this.delegate.getAnnotations());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public final List<Annotation> getDeclaredAnnotations() {
+		return ImmutableList.copyOf(this.delegate.getDeclaredAnnotations());
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public final boolean isAnnotationPresent(Class<? extends Annotation> annotationClass) {
+		return this.delegate.isAnnotationPresent(annotationClass);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return this.delegate.hashCode();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		if(obj==null) {
+			return false;
+		} else if(obj instanceof ImmutableMetaAnnotatedElement<?>) {
+			ImmutableMetaAnnotatedElement<?> that=(ImmutableMetaAnnotatedElement<?>)obj;
+			return
+				Objects.equal(this.delegate,that.delegate);
+		} else {
+			return false;
+		}
+	}
+
+
+}
