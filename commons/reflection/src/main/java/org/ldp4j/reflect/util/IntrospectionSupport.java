@@ -24,37 +24,14 @@
  *   Bundle      : ldp4j-commons-reflection-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.reflect;
+package org.ldp4j.reflect.util;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import mockit.Expectations;
-import mockit.Mocked;
+import java.util.List;
 
-import org.junit.Test;
-import org.ldp4j.reflect.harness.Childclass;
-import org.ldp4j.reflect.meta.MetaClass;
-import org.ldp4j.reflect.spi.MetaModelFactory;
-import org.ldp4j.reflect.spi.RuntimeDelegate;
+import org.ldp4j.reflect.util.TypeHierarchyTraversal.Relation;
 
-public class ReflectionTest {
+interface IntrospectionSupport<E> {
 
-	@Mocked RuntimeDelegate delegate;
-	@Mocked MetaModelFactory metaModelFactory;
-	@Mocked MetaClass<Childclass> metaClass;
-
-	@Test
-	public void testOf$type() throws Exception {
-		new Expectations() {{
-			RuntimeDelegate.getInstance(); result = delegate;
-			delegate.getMetaModelFactory(); result = metaModelFactory;
-			metaModelFactory.newMetaClass(Childclass.class,Childclass.class); result = metaClass;
-			metaClass.get(); result = Childclass.class;
-		}};
-		MetaClass<Childclass> mc = Reflection.of(Childclass.class);
-		assertThat(mc,notNullValue());
-		assertThat(mc.get(),equalTo(Childclass.class));
-	}
+	List<E> introspect(E element, Relation target);
 
 }

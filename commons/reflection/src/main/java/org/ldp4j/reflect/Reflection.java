@@ -50,15 +50,9 @@ import org.ldp4j.reflect.meta.MetaField;
 import org.ldp4j.reflect.meta.MetaMethod;
 import org.ldp4j.reflect.model.Invocable;
 import org.ldp4j.reflect.model.Parameter;
-import org.ldp4j.reflect.spi.MetaModelFactory;
-import org.ldp4j.reflect.spi.ModelFactory;
 import org.ldp4j.reflect.spi.RuntimeDelegate;
 
 public final class Reflection {
-
-	private static final MetaModelFactory META_MODEL_FACTORY=RuntimeDelegate.getInstance().getMetaModelFactory();
-
-	private static final ModelFactory MODEL_FACTORY=RuntimeDelegate.getInstance().getModelFactory();
 
 	private Reflection() {
 		// Prevent instantiation
@@ -78,27 +72,33 @@ public final class Reflection {
 
 	public static MetaField<?> of(Field field) {
 		return
-			META_MODEL_FACTORY.
-				newMetaField(
-					Reflection.of(field.getDeclaringClass()),
-					field);
+			RuntimeDelegate.
+				getInstance().
+					getMetaModelFactory().
+						newMetaField(
+							Reflection.of(field.getDeclaringClass()),
+							field);
 	}
 
 	public static MetaMethod<?,?> of(Method method) {
 		return
-			META_MODEL_FACTORY.
-				newMetaMethod(
-					Reflection.of(method.getDeclaringClass()),
-					method,
-					Reflection.ofReturnType(method));
+			RuntimeDelegate.
+				getInstance().
+					getMetaModelFactory().
+						newMetaMethod(
+							Reflection.of(method.getDeclaringClass()),
+							method,
+							Reflection.ofReturnType(method));
 	}
 
 	public static <T> MetaConstructor<T> of(Constructor<T> constructor) {
 		return
-			META_MODEL_FACTORY.
-				newMetaConstructor(
-					Reflection.of(constructor.getDeclaringClass()),
-					constructor);
+			RuntimeDelegate.
+				getInstance().
+					getMetaModelFactory().
+						newMetaConstructor(
+							Reflection.of(constructor.getDeclaringClass()),
+							constructor);
 	}
 
 	public static <D extends AccessibleObject & Member & GenericDeclaration> Parameter<Invocable> parameterOf(D invocable, int position) {
@@ -106,9 +106,9 @@ public final class Reflection {
 		checkArgument(0<=position,"Parameter position cannot be null");
 		Invocable declaration=null;
 		if(invocable instanceof Method) {
-			declaration=MODEL_FACTORY.newInvocable((Method)invocable);
+			declaration=RuntimeDelegate.getInstance().getModelFactory().newInvocable((Method)invocable);
 		} else if(invocable instanceof Constructor<?>) {
-			declaration=MODEL_FACTORY.newInvocable((Constructor<?>)invocable);
+			declaration=RuntimeDelegate.getInstance().getModelFactory().newInvocable((Constructor<?>)invocable);
 		} else {
 			checkArgument(false,"Unsupported invocable type %s",Types.toString(invocable.getClass()));
 		}
@@ -118,7 +118,7 @@ public final class Reflection {
 	}
 
 	private static <T> MetaClass<T> newMetaClass(Class<T> rawType, Type type) {
-		return META_MODEL_FACTORY.newMetaClass(rawType,type);
+		return RuntimeDelegate.getInstance().getMetaModelFactory().newMetaClass(rawType,type);
 	}
 
 	public static <D extends AccessibleObject & Member & GenericDeclaration> ParameterBuilder<D> parameterOf(D invocable) {
@@ -165,7 +165,7 @@ public final class Reflection {
 
 		public Parameter<D> build() {
 			return
-				MODEL_FACTORY.newParameter(
+				RuntimeDelegate.getInstance().getModelFactory().newParameter(
 					invocable,
 					checkNotNull(position,"No parameter position specified"),
 					checkNotNull(rawType,"No parameter raw type specified"),

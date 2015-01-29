@@ -24,37 +24,47 @@
  *   Bundle      : ldp4j-commons-reflection-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.reflect;
+package org.ldp4j.reflect.util;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import mockit.Expectations;
-import mockit.Mocked;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.junit.Test;
-import org.ldp4j.reflect.harness.Childclass;
-import org.ldp4j.reflect.meta.MetaClass;
-import org.ldp4j.reflect.spi.MetaModelFactory;
-import org.ldp4j.reflect.spi.RuntimeDelegate;
+public abstract class TypeHierarchyTraversal {
 
-public class ReflectionTest {
+	public enum Relation {
+		EXTENDS,
+		IMPLEMENTS,
+		;
+		static Relation opposite(Relation relation) {
+			checkNotNull(relation);
+			return
+				relation.equals(Relation.IMPLEMENTS) ?
+					Relation.EXTENDS :
+					Relation.IMPLEMENTS;
+		}
+	}
 
-	@Mocked RuntimeDelegate delegate;
-	@Mocked MetaModelFactory metaModelFactory;
-	@Mocked MetaClass<Childclass> metaClass;
+	public enum Entity {
+		CLASS,
+		INTERFACE,
+		;
+		static Entity opposite(Entity entity) {
+			checkNotNull(entity);
+			return
+				entity.equals(Entity.INTERFACE) ?
+					Entity.CLASS :
+					Entity.INTERFACE;
+		}
+	}
 
-	@Test
-	public void testOf$type() throws Exception {
-		new Expectations() {{
-			RuntimeDelegate.getInstance(); result = delegate;
-			delegate.getMetaModelFactory(); result = metaModelFactory;
-			metaModelFactory.newMetaClass(Childclass.class,Childclass.class); result = metaClass;
-			metaClass.get(); result = Childclass.class;
-		}};
-		MetaClass<Childclass> mc = Reflection.of(Childclass.class);
-		assertThat(mc,notNullValue());
-		assertThat(mc.get(),equalTo(Childclass.class));
+	public enum SearchStrategy {
+		IN_ORDER_DEPTH_FIRST,
+		PRE_ORDER_DEPTH_FIRST,
+		POST_ORDER_DEPTH_FIRST,
+		BREADTH_FIRST
+	}
+
+	TypeHierarchyTraversal() {
+		// Restrict instantiation
 	}
 
 }

@@ -24,37 +24,41 @@
  *   Bundle      : ldp4j-commons-reflection-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.reflect;
+package org.ldp4j.reflect.util;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.notNullValue;
-import mockit.Expectations;
-import mockit.Mocked;
+import java.util.Iterator;
 
-import org.junit.Test;
-import org.ldp4j.reflect.harness.Childclass;
 import org.ldp4j.reflect.meta.MetaClass;
-import org.ldp4j.reflect.spi.MetaModelFactory;
-import org.ldp4j.reflect.spi.RuntimeDelegate;
 
-public class ReflectionTest {
+public final class MetaClassTraversalStrategy
+	extends ConfigurableTypeHierarchyTraversalStrategy<MetaClass<?>,MetaClassTraversalStrategy> {
 
-	@Mocked RuntimeDelegate delegate;
-	@Mocked MetaModelFactory metaModelFactory;
-	@Mocked MetaClass<Childclass> metaClass;
+	private MetaClassTraversalStrategy() {
+		super();
+	}
 
-	@Test
-	public void testOf$type() throws Exception {
-		new Expectations() {{
-			RuntimeDelegate.getInstance(); result = delegate;
-			delegate.getMetaModelFactory(); result = metaModelFactory;
-			metaModelFactory.newMetaClass(Childclass.class,Childclass.class); result = metaClass;
-			metaClass.get(); result = Childclass.class;
-		}};
-		MetaClass<Childclass> mc = Reflection.of(Childclass.class);
-		assertThat(mc,notNullValue());
-		assertThat(mc.get(),equalTo(Childclass.class));
+	@Override
+	protected IntrospectionSupport<MetaClass<?>> introspectionSupport() {
+		return IntrospectionSupportFactory.createMetaclassSupport(traversableRelations());
+	}
+
+	@Override
+	protected RetrievalSupport<MetaClass<?>> retrievalSupport() {
+		return RetrievalSupportFactory.createMetaclassSupport(retrievableEntities(),retrieveObject());
+	}
+
+	@Override
+	protected MetaClassTraversalStrategy instance() {
+		return this;
+	}
+
+	@Override
+	public Iterator<MetaClass<?>> traverse(MetaClass<?> target) {
+		return build().traverse(target);
+	}
+
+	public static MetaClassTraversalStrategy create() {
+		return new MetaClassTraversalStrategy();
 	}
 
 }
