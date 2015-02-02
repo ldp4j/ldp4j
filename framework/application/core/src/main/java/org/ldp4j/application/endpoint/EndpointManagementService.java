@@ -50,7 +50,7 @@ import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateManagementService;
 
 public final class EndpointManagementService implements Service {
-	
+
 	private static final class EndpointCreationNotification implements Notification<EndpointLifecycleListener> {
 		private final Endpoint endpoint;
 
@@ -78,27 +78,27 @@ public final class EndpointManagementService implements Service {
 	}
 
 	private static final class EndpointManagementServiceBuilder extends ServiceBuilder<EndpointManagementService> {
-		
+
 		private EndpointManagementServiceBuilder() {
 			super(EndpointManagementService.class);
 		}
 
 		public EndpointManagementService build() {
-			return 
+			return
 				new EndpointManagementService(
-					endpointRepository(), 
+					endpointRepository(),
 					endpointFactoryService(),
 					resourceRepository(),
 					service(TemplateManagementService.class));
 		}
-		
+
 	}
 
 	// TODO: We need to devise a mechanism for persisting the ids of the members
 	private static final class IdGenerator {
-		
-		private final static ConcurrentMap<ResourceId,AtomicLong> CONTAINER_COUNTER=new ConcurrentHashMap<ResourceId, AtomicLong>(); 
-		
+
+		private final static ConcurrentMap<ResourceId,AtomicLong> CONTAINER_COUNTER=new ConcurrentHashMap<ResourceId, AtomicLong>();
+
 		static long nextMemberId(Container container) {
 			AtomicLong counter = CONTAINER_COUNTER.putIfAbsent(container.id(), new AtomicLong(-1));
 			if(counter==null) {
@@ -106,11 +106,11 @@ public final class EndpointManagementService implements Service {
 			}
 			return counter.incrementAndGet();
 		}
-		
+
 	}
-	
+
 		private static final int MAX_ENDPOINT_CREATION_FAILURE = 3;
-	
+
 	private final EndpointRepository endpointRepository;
 	private final EndpointFactoryService factoryService;
 	private final TemplateManagementService templateManagementService;
@@ -133,7 +133,7 @@ public final class EndpointManagementService implements Service {
 		if(parent==null) {
 			throw new IllegalStateException("Could not load resource '"+resource.parentId()+"' from the repository");
 		}
-		
+
 		String result=
 			parent instanceof Container?
 				generatePathForMember(resource,(Container)parent,desiredPath):
@@ -143,7 +143,7 @@ public final class EndpointManagementService implements Service {
 			if(result==null) {
 				throw new IllegalStateException("Could not determine path for resource '"+resource.id()+"' with parent '"+parent.id()+"'");
 			}
-			
+
 		}
 		return result;
 	}
@@ -184,7 +184,7 @@ public final class EndpointManagementService implements Service {
 		return null;
 	}
 
-	protected <T> void addSegment(StringBuilder builder, T segment) {
+	private <T> void addSegment(StringBuilder builder, T segment) {
 		if(segment!=null) {
 			String strSegment=segment.toString();
 			if(strSegment!=null && strSegment.length()>0) {
@@ -194,44 +194,6 @@ public final class EndpointManagementService implements Service {
 				}
 			}
 		}
-	}
-
-	public void registerEndpointLifecycleListener(EndpointLifecycleListener listener) {
-		this.listenerManager.registerListener(listener);
-	}
-	
-	public void deregisterEndpointLifecycleListener(EndpointLifecycleListener listener) {
-		this.listenerManager.deregisterListener(listener);
-	}
-	
-	public Endpoint getResourceEndpoint(ResourceId resourceId) throws EndpointNotFoundException {
-		checkNotNull(resourceId,"Resource identifier cannot be null");
-		Endpoint endpoint = endpointRepository.endpointOfResource(resourceId);
-		if(endpoint==null) {
-			throw new EndpointNotFoundException(resourceId);
-		}
-		return endpoint;
-	}
-	
-	public Endpoint resolveEndpoint(String path) {
-		checkNotNull(path,"Path cannot be null");
-		return this.endpointRepository.endpointOfPath(path);
-	}
-	
-	/**
-	 * TODO: Verify that http://tools.ietf.org/html/rfc7232#section-2.2
-	 * holds: if the clock in the request is ahead of the clock of the origin
-	 * server (i.e., I request from Spain the update of a resource held in USA)
-	 * the last-modified data should be changed to that of the request and not
-	 * a generated date from the origin server
-	 */
-	public Endpoint createEndpointForResource(Resource resource, String relativePath, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
-		checkNotNull(resource,"Resource cannot be null");
-		checkNotNull(entityTag,"Entity tag cannot be null");
-		checkNotNull(lastModified,"Last modified cannot be null");
-		Endpoint newEndpoint = createEndpoint(resource, relativePath, entityTag, lastModified);
-		this.listenerManager.notify(new EndpointCreationNotification(newEndpoint));
-		return newEndpoint;
 	}
 
 	private Endpoint createEndpoint(Resource resource, String relativePath, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
@@ -255,7 +217,45 @@ public final class EndpointManagementService implements Service {
 		}
 		throw new EndpointCreationException("Could not create endpoint for resource '"+resource.id()+"'");
 	}
-	
+
+	public void registerEndpointLifecycleListener(EndpointLifecycleListener listener) {
+		this.listenerManager.registerListener(listener);
+	}
+
+	public void deregisterEndpointLifecycleListener(EndpointLifecycleListener listener) {
+		this.listenerManager.deregisterListener(listener);
+	}
+
+	public Endpoint getResourceEndpoint(ResourceId resourceId) throws EndpointNotFoundException {
+		checkNotNull(resourceId,"Resource identifier cannot be null");
+		Endpoint endpoint = endpointRepository.endpointOfResource(resourceId);
+		if(endpoint==null) {
+			throw new EndpointNotFoundException(resourceId);
+		}
+		return endpoint;
+	}
+
+	public Endpoint resolveEndpoint(String path) {
+		checkNotNull(path,"Path cannot be null");
+		return this.endpointRepository.endpointOfPath(path);
+	}
+
+	/**
+	 * TODO: Verify that http://tools.ietf.org/html/rfc7232#section-2.2
+	 * holds: if the clock in the request is ahead of the clock of the origin
+	 * server (i.e., I request from Spain the update of a resource held in USA)
+	 * the last-modified data should be changed to that of the request and not
+	 * a generated date from the origin server
+	 */
+	public Endpoint createEndpointForResource(Resource resource, String relativePath, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
+		checkNotNull(resource,"Resource cannot be null");
+		checkNotNull(entityTag,"Entity tag cannot be null");
+		checkNotNull(lastModified,"Last modified cannot be null");
+		Endpoint newEndpoint = createEndpoint(resource, relativePath, entityTag, lastModified);
+		this.listenerManager.notify(new EndpointCreationNotification(newEndpoint));
+		return newEndpoint;
+	}
+
 	public Endpoint modifyResourceEndpoint(Resource resource, EntityTag entityTag, Date lastModified) throws EndpointNotFoundException {
 		checkNotNull(resource,"ResourceSnapshot cannot be null");
 		checkNotNull(entityTag,"Entity tag cannot be null");
@@ -278,13 +278,13 @@ public final class EndpointManagementService implements Service {
 		this.listenerManager.notify(new EndpointDeletionNotification(endpoint));
 		return endpoint;
 	}
-	
+
 	public static ServiceBuilder<EndpointManagementService> serviceBuilder() {
 		return new EndpointManagementServiceBuilder();
 	}
-	
+
 	public static EndpointManagementService defaultService() {
 		return serviceBuilder().build();
 	}
-	
+
 }

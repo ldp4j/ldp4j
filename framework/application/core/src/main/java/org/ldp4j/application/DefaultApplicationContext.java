@@ -26,10 +26,10 @@
  */
 package org.ldp4j.application;
 
-import java.io.IOException;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
@@ -38,6 +38,7 @@ import org.ldp4j.application.endpoint.EndpointLifecycleListener;
 import org.ldp4j.application.engine.ApplicationContextCreationException;
 import org.ldp4j.application.engine.context.ApplicationContext;
 import org.ldp4j.application.engine.context.ApplicationContextException;
+import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.Capabilities;
 import org.ldp4j.application.engine.context.ContentPreferences;
@@ -51,11 +52,9 @@ import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Container;
-import org.ldp4j.application.resource.FeatureException;
 import org.ldp4j.application.resource.FeatureExecutionException;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.application.resource.UnsupportedFeatureException;
 import org.ldp4j.application.session.WriteSessionConfiguration;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateIntrospector;
@@ -65,6 +64,78 @@ import org.slf4j.LoggerFactory;
 import com.google.common.collect.Maps;
 
 public final class DefaultApplicationContext implements ApplicationContext {
+
+	private final class DefaultApplicationOperation implements ApplicationContextOperation {
+
+		private DefaultApplicationOperation() {
+			getContext().operationController.beginTransaction();
+		}
+
+		@Override
+		public DefaultApplicationContext getContext() {
+			return DefaultApplicationContext.this;
+		}
+
+		@Override
+		public PublicResource findResource(String path) {
+			return DefaultApplicationContext.this.findResource(path);
+		}
+
+		@Override
+		public PublicResource resolveResource(String path) {
+			return DefaultApplicationContext.this.resolveResource(path);
+		}
+
+		@Override
+		public PublicResource resolveResource(ManagedIndividualId id) {
+			return DefaultApplicationContext.this.resolveResource(id);
+		}
+
+		@Override
+		public void dispose() {
+			getContext().operationController.endTransaction();
+		}
+
+	}
+
+	private static final class ApplicationContextOperationController {
+
+		private final ThreadLocal<AtomicLong> counters;
+
+		private ApplicationContextOperationController() {
+			this.counters=new ThreadLocal<AtomicLong>();
+		}
+
+		public void beginTransaction() {
+			AtomicLong counter = getCounter(false);
+			LOGGER.
+				info("Started transaction {}({}).{},",
+					Thread.currentThread().getName(),
+					Thread.currentThread().getId(),
+					counter.incrementAndGet());
+		}
+
+		private AtomicLong getCounter(boolean required) {
+			AtomicLong counter = this.counters.get();
+			if(counter==null) {
+				if(required) {
+					throw new IllegalStateException("Transaction not initiated for thread "+Thread.currentThread().getName()+"("+Thread.currentThread().getId()+")");
+				}
+				counter=new AtomicLong();
+				this.counters.set(counter);
+			}
+			return counter;
+		}
+
+		public void endTransaction() {
+			LOGGER.
+				info("Completed transaction {}({}).{},",
+					Thread.currentThread().getName(),
+					Thread.currentThread().getId(),
+					getCounter(true));
+		}
+
+	}
 
 	private static final class GonePublicResource implements PublicResource {
 
@@ -150,11 +221,14 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	private final DefaultApplicationEngine engine;
 
+	private final ApplicationContextOperationController operationController;
+
 	DefaultApplicationContext(DefaultApplicationEngine engine) {
 		this.engine = engine;
 		this.factory=DefaultPublicResourceFactory.newInstance(this);
 		this.goneEndpoints=Maps.newLinkedHashMap();
 		this.endpointLifecycleListener = new LocalEndpointLifecycleListener();
+		this.operationController=new ApplicationContextOperationController();
 	}
 
 	private static <T> T checkNotNull(T object, String message) {
@@ -316,6 +390,11 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			}
 		}
 		return resolved;
+	}
+
+	@Override
+	public ApplicationContextOperation createOperation() {
+		return new DefaultApplicationOperation();
 	}
 
 	/**

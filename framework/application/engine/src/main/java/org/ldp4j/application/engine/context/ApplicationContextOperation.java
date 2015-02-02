@@ -27,27 +27,17 @@
 package org.ldp4j.application.engine.context;
 
 import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
 
-public interface ApplicationContext {
+public interface ApplicationContextOperation {
 
-	String applicationName();
+	ApplicationContext getContext();
 
-	String applicationClassName();
-
-	ApplicationContextOperation createOperation();
-
-	@Deprecated
 	PublicResource findResource(String path);
 
-	@Deprecated
 	PublicResource resolveResource(String path);
 
-	@Deprecated
 	PublicResource resolveResource(ManagedIndividualId id);
 
-	void registerApplicationLifecycleListener(ApplicationLifecycleListener listener);
-
-	void deregisterApplicationLifecycleListener(ApplicationLifecycleListener listener);
+	void dispose();
 
 }
