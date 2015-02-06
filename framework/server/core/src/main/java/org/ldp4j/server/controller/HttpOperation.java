@@ -26,7 +26,7 @@
  */
 package org.ldp4j.server.controller;
 
-public enum Operation {
+public enum HttpOperation {
 	OPTIONS,
 	HEAD,
 	GET,

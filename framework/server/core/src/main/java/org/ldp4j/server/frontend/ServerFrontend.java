@@ -51,7 +51,7 @@ import org.ldp4j.application.engine.lifecycle.ApplicationEngineLifecycleListener
 import org.ldp4j.application.engine.lifecycle.ApplicationEngineState;
 import org.ldp4j.server.controller.EndpointController;
 import org.ldp4j.server.controller.EndpointControllerFactory;
-import org.ldp4j.server.controller.Operation;
+import org.ldp4j.server.controller.HttpOperation;
 import org.ldp4j.server.controller.OperationContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -153,7 +153,7 @@ public class ServerFrontend {
 		EndpointController controller = createController(path);
 		OperationContext context =
 			controller.
-				operationContextBuilder(Operation.OPTIONS).
+				operationContextBuilder(HttpOperation.OPTIONS).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -179,7 +179,7 @@ public class ServerFrontend {
 		EndpointController controller = createController(path);
 		OperationContext context =
 			controller.
-				operationContextBuilder(Operation.HEAD).
+				operationContextBuilder(HttpOperation.HEAD).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -216,7 +216,7 @@ public class ServerFrontend {
 		EndpointController controller=createController(path);
 		OperationContext context =
 			controller.
-				operationContextBuilder(Operation.GET).
+				operationContextBuilder(HttpOperation.GET).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -235,7 +235,7 @@ public class ServerFrontend {
 		EndpointController controller = createController(path);
 		OperationContext context =
 			controller.
-				operationContextBuilder(Operation.PUT).
+				operationContextBuilder(HttpOperation.PUT).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -255,7 +255,7 @@ public class ServerFrontend {
 		EndpointController controller = createController(path);
 		OperationContext context =
 			controller.
-				operationContextBuilder(Operation.POST).
+				operationContextBuilder(HttpOperation.POST).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -274,7 +274,7 @@ public class ServerFrontend {
 		EndpointController controller = createController(path);
 		OperationContext context =
 			controller.
-				operationContextBuilder(Operation.DELETE).
+				operationContextBuilder(HttpOperation.DELETE).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).
@@ -293,7 +293,7 @@ public class ServerFrontend {
 		EndpointController controller = createController(path);
 		OperationContext context =
 			controller.
-				operationContextBuilder(Operation.OPTIONS).
+				operationContextBuilder(HttpOperation.OPTIONS).
 					withUriInfo(uriInfo).
 					withHeaders(headers).
 					withRequest(request).

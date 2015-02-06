@@ -33,7 +33,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
-import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.PublicResource;
 
 public abstract class EndpointController {
@@ -41,10 +41,10 @@ public abstract class EndpointController {
 	public static final class OperationContextBuilder {
 
 		// Mandatory
-		private final Operation operation;
+		private final HttpOperation httpOperation;
 		private final PublicResource resource;
 
-		private ApplicationContext applicationContext;
+		private ApplicationContextOperation applicationContextOperation;
 		private UriInfo uriInfo;
 		private Request request;
 		private HttpHeaders headers;
@@ -52,9 +52,9 @@ public abstract class EndpointController {
 		// Optional
 		private String entity;
 
-		protected OperationContextBuilder(Operation operation, ApplicationContext applicationContext, PublicResource resource) {
-			this.operation = operation;
-			this.applicationContext = applicationContext;
+		protected OperationContextBuilder(HttpOperation httpOperation, ApplicationContextOperation applicationContextOperation, PublicResource resource) {
+			this.httpOperation = httpOperation;
+			this.applicationContextOperation = applicationContextOperation;
 			this.resource = resource;
 		}
 
@@ -79,17 +79,17 @@ public abstract class EndpointController {
 		}
 
 		public OperationContext build() {
-			checkNotNull(this.operation,"Operation cannot be null");
-			checkNotNull(this.applicationContext,"Application context cannot be null");
+			checkNotNull(this.httpOperation,"Operation cannot be null");
+			checkNotNull(this.applicationContextOperation,"Application context cannot be null");
 			checkNotNull(this.uriInfo,"Uri info cannot be null");
 			checkNotNull(this.request,"Request cannot be null");
 			checkNotNull(this.headers,"Http headers cannot be null");
-			return new OperationContextImpl(this.applicationContext,this.resource,this.uriInfo,this.headers,this.request,this.entity,this.operation);
+			return new OperationContextImpl(this.applicationContextOperation,this.resource,this.uriInfo,this.headers,this.request,this.entity,this.httpOperation);
 		}
 
 	}
 
-	public abstract OperationContextBuilder operationContextBuilder(Operation operation);
+	public abstract OperationContextBuilder operationContextBuilder(HttpOperation operation);
 
 	public abstract Response options(OperationContext context);
 
