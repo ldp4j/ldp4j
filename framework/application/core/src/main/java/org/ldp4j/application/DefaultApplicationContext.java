@@ -106,20 +106,11 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			this.counters=new ThreadLocal<AtomicLong>();
 		}
 
-		public void beginTransaction() {
-			AtomicLong counter = getCounter(false);
-			LOGGER.
-				info("Started transaction {}({}).{},",
-					Thread.currentThread().getName(),
-					Thread.currentThread().getId(),
-					counter.incrementAndGet());
-		}
-
 		private AtomicLong getCounter(boolean required) {
 			AtomicLong counter = this.counters.get();
 			if(counter==null) {
 				if(required) {
-					throw new IllegalStateException("Transaction not initiated for thread "+Thread.currentThread().getName()+"("+Thread.currentThread().getId()+")");
+					throw new IllegalStateException("Transaction not initiated for thread "+Thread.currentThread().getName());
 				}
 				counter=new AtomicLong();
 				this.counters.set(counter);
@@ -127,11 +118,18 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			return counter;
 		}
 
+		public void beginTransaction() {
+			AtomicLong counter = getCounter(false);
+			LOGGER.
+				info("Started transaction {}.{},",
+					Thread.currentThread().getName(),
+					counter.incrementAndGet());
+		}
+
 		public void endTransaction() {
 			LOGGER.
-				info("Completed transaction {}({}).{},",
+				info("Completed transaction {}.{},",
 					Thread.currentThread().getName(),
-					Thread.currentThread().getId(),
 					getCounter(true));
 		}
 
@@ -376,11 +374,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return this.application.getClass().getName();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public PublicResource findResource(final String path) {
+	private PublicResource findResource(final String path) {
 		checkNotNull(path,"Endpoint path cannot be null");
 		PublicResource resolved = resolveResource(path);
 		if(resolved==null) {
@@ -397,11 +391,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return new DefaultApplicationOperation();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public PublicResource resolveResource(final String path) {
+	private PublicResource resolveResource(final String path) {
 		checkNotNull(path,"Endpoint path cannot be null");
 		PublicResource resolved=null;
 		Endpoint endpoint = this.engine().endpointManagementService().resolveEndpoint(path);
@@ -411,11 +401,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return resolved;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public PublicResource resolveResource(ManagedIndividualId id) {
+	private PublicResource resolveResource(ManagedIndividualId id) {
 		checkNotNull(id,"Individual identifier cannot be null");
 		return this.factory.createResource(ResourceId.createId(id.name(), id.managerId()));
 	}
