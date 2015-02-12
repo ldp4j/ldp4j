@@ -30,6 +30,7 @@ import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 
+@Deprecated
 public interface ResourceRepository {
 
 	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);

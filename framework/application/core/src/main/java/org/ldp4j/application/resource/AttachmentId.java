@@ -30,8 +30,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.base.Objects;
 
+@Deprecated
 final class AttachmentId {
-	
+
 	private final String id;
 	private final ResourceId resourceId;
 
@@ -39,7 +40,7 @@ final class AttachmentId {
 		this.resourceId = resourceId;
 		this.id = id;
 	}
-	
+
 	public ResourceId resourceId() {
 		return resourceId;
 	}
@@ -64,7 +65,7 @@ final class AttachmentId {
 		}
 		return result;
 	}
-	
+
 	@Override
 	public String toString() {
 		return
@@ -74,7 +75,7 @@ final class AttachmentId {
 					add("resourceId", this.resourceId).
 					toString();
 	}
-	
+
 	public static AttachmentId createId(String attachmentId, ResourceId resourceId) {
 		checkNotNull(resourceId,"Resource resourceId cannot be null");
 		checkNotNull(attachmentId,"Template identifier cannot be null");

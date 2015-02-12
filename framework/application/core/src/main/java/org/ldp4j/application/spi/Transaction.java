@@ -26,20 +26,14 @@
  */
 package org.ldp4j.application.spi;
 
-import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.application.resource.ResourceId;
+public interface Transaction {
 
-@Deprecated
-public interface EndpointRepository {
+	PersistencyManager manager();
 
-	Endpoint endpointOfPath(String path);
+	void begin();
 
-	Endpoint endpointOfResource(ResourceId id);
+	void commit();
 
-	void add(Endpoint endpoint);
-
-	void remove(Endpoint endpoint);
-
-	long nextIdentifier();
+	void rollback();
 
 }

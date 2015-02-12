@@ -36,11 +36,9 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.ldp4j.application.endpoint.EndpointFactoryService;
 import org.ldp4j.application.endpoint.EndpointManagementService;
 import org.ldp4j.application.lifecycle.ApplicationLifecycleService;
 import org.ldp4j.application.resource.ResourceControllerService;
-import org.ldp4j.application.resource.ResourceFactoryService;
 import org.ldp4j.application.session.WriteSessionService;
 import org.ldp4j.application.template.TemplateManagementService;
 import org.slf4j.Logger;
@@ -51,7 +49,7 @@ public abstract class RuntimeInstance {
 	private static final String INSTANTIATE_ACTION = "instantiate";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(RuntimeInstance.class);
-	
+
 	public static final String LDP4J_APPLICATION_SPI_RUNTIMEINSTANCE_FINDER = "org.ldp4j.application.spi.runtimeinstance.finder";
 
 	/**
@@ -81,7 +79,7 @@ public abstract class RuntimeInstance {
 	/**
 	 * Obtain a {@code RuntimeInstance} instance using the method described in
 	 * {@link #getInstance}.
-	 * 
+	 *
 	 * @return an instance of {@code RuntimeInstance}.
 	 */
 	private static RuntimeInstance findDelegate() {
@@ -101,7 +99,7 @@ public abstract class RuntimeInstance {
 			if(result==null) {
 				result=new DefaultRuntimeInstance();
 			}
-			
+
 			return result;
 		} catch (Exception ex) {
 			throw new IllegalStateException("Could not find runtime delegate",ex);
@@ -143,7 +141,7 @@ public abstract class RuntimeInstance {
 	 * Get the configuration file for the Runtime Instance: a file named
 	 * {@link RuntimeInstance#LDP4J_APPLICATION_SPI_CFG} in the <code>lib</code> directory of
 	 * current JAVA_HOME.
-	 * 
+	 *
 	 * @return The configuration file for the runtime instance.
 	 */
 	private static File getConfigurationFile() {
@@ -210,7 +208,7 @@ public abstract class RuntimeInstance {
 	 * been created and set via {@link #setInstance(RuntimeInstance)}, the first
 	 * invocation will create an instance which will then be cached for future
 	 * use.
-	 * 
+	 *
 	 * <p>
 	 * The algorithm used to locate the RuntimeInstance subclass to use consists
 	 * of the following steps:
@@ -233,14 +231,14 @@ public abstract class RuntimeInstance {
 	 * <li>
 	 * Finally, a default implementation class name is used.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @return an instance of {@code RuntimeInstance}.
 	 */
 	public static RuntimeInstance getInstance() {
 		RuntimeInstance result = RuntimeInstance.CACHED_DELEGATE.get();
 		if (result != null) {
 			return result;
-		} 
+		}
 		synchronized(RuntimeInstance.CACHED_DELEGATE) {
 			result=RuntimeInstance.CACHED_DELEGATE.get();
 			if(result==null) {
@@ -257,7 +255,7 @@ public abstract class RuntimeInstance {
 	 * Set the runtime delegate that will be used by Client Business Logic API
 	 * classes. If this method is not called prior to {@link #getInstance} then
 	 * an implementation will be sought as described in {@link #getInstance}.
-	 * 
+	 *
 	 * @param delegate
 	 *            the {@code RuntimeInstance} runtime delegate instance.
 	 * @throws SecurityException
@@ -281,37 +279,35 @@ public abstract class RuntimeInstance {
 		private static final String ERROR_MESSAGE = String.format("No implementation for class '%s' could be found",RuntimeInstance.class);
 
 		@Override
-		public RepositoryRegistry getRepositoryRegistry() {
+		public ServiceRegistry getServiceRegistry() {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
 		@Override
-		public ServiceRegistry getServiceRegistry() {
+		public PersistencyManager getPersistencyManager() {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
 	}
 
 	private void initialize() {
+		TemplateManagementService tms =
+			TemplateManagementService.
+				serviceBuilder().
+					setRuntimeInstance(this).
+						build();
+		getPersistencyManager().
+			setTemplateManagementService(tms);
 		getServiceRegistry().
-			registerServiceBuilder(
-				EndpointFactoryService.
-					serviceBuilder().
-						setRuntimeInstance(this)).
-			registerServiceBuilder(
-				ResourceFactoryService.
-					serviceBuilder().
-						setRuntimeInstance(this)).
+			registerService(
+				TemplateManagementService.class,
+				tms).
 			registerServiceBuilder(
 				EndpointManagementService.
 					serviceBuilder().
 						setRuntimeInstance(this)).
 			registerServiceBuilder(
 				WriteSessionService.
-					serviceBuilder().
-						setRuntimeInstance(this)).
-			registerServiceBuilder(
-				TemplateManagementService.
 					serviceBuilder().
 						setRuntimeInstance(this)).
 			registerServiceBuilder(
@@ -323,8 +319,8 @@ public abstract class RuntimeInstance {
 					serviceBuilder().
 						setRuntimeInstance(this));
 	}
-	
-	public abstract RepositoryRegistry getRepositoryRegistry();
+
+	public abstract PersistencyManager getPersistencyManager();
 
 	public abstract ServiceRegistry getServiceRegistry();
 

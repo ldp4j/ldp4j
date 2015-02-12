@@ -51,7 +51,7 @@ import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.session.UnitOfWork.EventHandler;
-import org.ldp4j.application.spi.ResourceRepository;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.template.BasicContainerTemplate;
 import org.ldp4j.application.template.ContainerTemplate;
 import org.ldp4j.application.template.DirectContainerTemplate;
@@ -119,6 +119,7 @@ final class DelegatedWriteSession implements WriteSession {
 		}
 	}
 
+	private static final Logger LOGGER=LoggerFactory.getLogger(DelegatedWriteSession.class);
 	private static final String RESOURCE_NAME_CANNOT_BE_NULL = "Resource snapshot name cannot be null";
 	private static final String RESOURCE_CANNOT_BE_NULL      = "Resource snapshot cannot be null";
 	private static final String WRITE_SESSION_NOT_ACTIVE     = "Write session is not active (%s)";
@@ -127,7 +128,7 @@ final class DelegatedWriteSession implements WriteSession {
 
 	private final WriteSessionConfiguration configuration;
 
-	private final ResourceRepository resourceRepository;
+	private final PersistencyManager resourceRepository;
 	private final WriteSessionService writeSessionService;
 	private final TemplateManagementService templateManagementService;
 
@@ -135,9 +136,9 @@ final class DelegatedWriteSession implements WriteSession {
 
 	private volatile Status status;
 
-	protected DelegatedWriteSession(WriteSessionConfiguration configuration, ResourceRepository resourceRepository, TemplateManagementService templateManagementService, WriteSessionService writeSessionService) {
+	protected DelegatedWriteSession(WriteSessionConfiguration configuration, PersistencyManager persistencyManager, TemplateManagementService templateManagementService, WriteSessionService writeSessionService) {
 		this.configuration = configuration;
-		this.resourceRepository = resourceRepository;
+		this.resourceRepository = persistencyManager;
 		this.templateManagementService = templateManagementService;
 		this.writeSessionService = writeSessionService;
 		UnitOfWork.
@@ -266,8 +267,6 @@ final class DelegatedWriteSession implements WriteSession {
 	DelegatedResourceSnapshot resolveResource(ResourceId resourceId) {
 		return resolveResource(resourceId,loadTemplate(resourceId.templateId()));
 	}
-
-	private static final Logger LOGGER=LoggerFactory.getLogger(DelegatedWriteSession.class);
 
 	String getDesiredPath(DelegatedResourceSnapshot snapshot) {
 		String desiredPath=null;

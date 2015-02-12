@@ -26,11 +26,11 @@
  */
 package org.ldp4j.application.spi;
 
-
+@Deprecated
 public interface RepositoryRegistry {
 
 	ResourceRepository getResourceRepository();
-	
+
 	EndpointRepository getEndpointRepository();
-	
+
 }

@@ -24,22 +24,77 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.impl;
+
+import java.util.Date;
 
 import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.resource.ResourceId;
 
-@Deprecated
-public interface EndpointRepository {
+import com.google.common.base.Objects;
 
-	Endpoint endpointOfPath(String path);
+final class InMemoryEndpoint implements Endpoint {
 
-	Endpoint endpointOfResource(ResourceId id);
+	private final long id;
+	private final ResourceId resourceId;
+	private final String path;
 
-	void add(Endpoint endpoint);
 
-	void remove(Endpoint endpoint);
+	private EntityTag entityTag;
+	private Date lastModified;
 
-	long nextIdentifier();
+	InMemoryEndpoint(long id, String path, ResourceId resourceId, EntityTag entityTag, Date lastModified) {
+		this.id = id;
+		this.path = path;
+		this.resourceId = resourceId;
+		this.entityTag = entityTag;
+		this.lastModified = lastModified;
+	}
+
+	@Override
+	public long id() {
+		return id;
+	}
+
+	@Override
+	public String path() {
+		return path;
+	}
+
+	@Override
+	public EntityTag entityTag() {
+		return entityTag;
+	}
+
+	@Override
+	public Date lastModified() {
+		return lastModified;
+	}
+
+	@Override
+	public ResourceId resourceId() {
+		return resourceId;
+	}
+
+	@Override
+	public void modify(EntityTag newEntityTag, Date newLastModified) {
+		this.entityTag=newEntityTag;
+		this.lastModified=new Date(newLastModified.getTime());
+	}
+
+	@Override
+	public String toString() {
+		return
+			Objects.
+				toStringHelper(getClass()).
+					omitNullValues().
+					add("id",this.id).
+					add("path",this.path).
+					add("resourceId",this.resourceId).
+					add("entityTag",this.entityTag).
+					add("lastModified",this.lastModified.getTime()).
+					toString();
+	}
 
 }

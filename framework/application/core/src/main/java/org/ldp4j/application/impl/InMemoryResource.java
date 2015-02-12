@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.resource;
+package org.ldp4j.application.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -37,6 +37,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.ldp4j.application.resource.Attachment;
+import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.Resource;
+import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.resource.ResourceVisitor;
 import org.ldp4j.application.template.BasicContainerTemplate;
 import org.ldp4j.application.template.ContainerTemplate;
 import org.ldp4j.application.template.DirectContainerTemplate;
@@ -49,8 +54,7 @@ import org.ldp4j.application.template.TemplateVisitor;
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
-@Deprecated
-class ResourceImpl extends AbstractResource implements Resource {
+class InMemoryResource extends AbstractInMemoryResource implements Resource {
 
 	private static final class AttachmentImpl implements Attachment {
 
@@ -96,7 +100,7 @@ class ResourceImpl extends AbstractResource implements Resource {
 	private final ResourceId parentId;
 	private URI indirectId;
 
-	protected ResourceImpl(ResourceId id, ResourceId parentId) {
+	protected InMemoryResource(ResourceId id, ResourceId parentId) {
 		this.id=id;
 		this.parentId = parentId;
 		this.attachments=new LinkedHashMap<AttachmentId, AttachmentImpl>();
@@ -104,19 +108,18 @@ class ResourceImpl extends AbstractResource implements Resource {
 		this.attachmentsByResourceId=new LinkedHashMap<ResourceId,AttachmentId>();
 	}
 
-	protected ResourceImpl(ResourceId id) {
+	protected InMemoryResource(ResourceId id) {
 		this(id,null);
 	}
 
-	protected final ResourceImpl createChild(ResourceId resourceId, ResourceTemplate template) {
-		ResourceImpl newResource=null;
+	protected final InMemoryResource createChild(ResourceId resourceId, ResourceTemplate template) {
+		InMemoryResource newResource=null;
 		if(!TemplateIntrospector.newInstance(template).isContainer()) {
-			newResource=new ResourceImpl(resourceId,this.id);
+			newResource=new InMemoryResource(resourceId,this.id);
 		} else {
-			newResource=new ContainerImpl(resourceId,this.id);
+			newResource=new InMemoryContainer(resourceId,this.id);
 		}
-		newResource.setResourceFactoryService(getResourceFactoryService());
-		newResource.setTemplateManagementService(super.templateManagementService());
+		newResource.setPersistencyManager(getPersistencyManager());
 		return newResource;
 	}
 
@@ -200,7 +203,7 @@ class ResourceImpl extends AbstractResource implements Resource {
 		checkState(!attachmentsByResourceId.containsKey(resourceId),"Resource '%s' is already attached",resourceId);
 		ResourceTemplate attachmentTemplate=super.getTemplate(resourceId);
 		checkState(areCompatible(clazz,attachmentTemplate),"Attachment '%s' is not of type '%s' (%s)",attachmentId,clazz.getCanonicalName(),attachmentTemplate.getClass().getCanonicalName());
-		ResourceImpl newResource=createChild(resourceId,attachmentTemplate);
+		InMemoryResource newResource=createChild(resourceId,attachmentTemplate);
 		AttachmentImpl newAttachment = new AttachmentImpl(aId);
 		attachments.put(newAttachment.attachmentId(),newAttachment);
 		attachmentsById.put(aId.id(),aId);

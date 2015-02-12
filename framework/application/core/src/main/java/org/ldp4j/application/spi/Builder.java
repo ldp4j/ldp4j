@@ -26,13 +26,9 @@
  */
 package org.ldp4j.application.spi;
 
-import org.ldp4j.application.endpoint.EndpointFactoryService;
-import org.ldp4j.application.resource.ResourceFactoryService;
-
 public abstract class Builder<T,B extends Builder<T,B>> {
-	
-	private EndpointRepository endpointRepository;
-	private ResourceRepository resourceRepository;
+
+	private PersistencyManager persistencyManager;
 
 	private RuntimeInstance runtimeInstance;
 
@@ -44,17 +40,11 @@ public abstract class Builder<T,B extends Builder<T,B>> {
 		return builder();
 	}
 
-	public final B withEndpointRepository(EndpointRepository endpointRepository) {
-		this.endpointRepository = endpointRepository;
-		return builder();
-	}
-	
-	public final B withResourceRepository(ResourceRepository resourceRepository) {
-		this.resourceRepository = resourceRepository;
+	public final B withPersistencyManager(PersistencyManager persistencyManager) {
+		this.persistencyManager=persistencyManager;
 		return builder();
 	}
 
-	
 	private final RuntimeInstance runtimeInstance() {
 		if(runtimeInstance!=null) {
 			return runtimeInstance;
@@ -63,34 +53,15 @@ public abstract class Builder<T,B extends Builder<T,B>> {
 		}
 	}
 
-	private final RepositoryRegistry repositoryRegistry() {
-		return runtimeInstance().getRepositoryRegistry();
-	}
-
-	protected final ResourceFactoryService resourceFactoryService() {
-		return service(ResourceFactoryService.class);
-	}
-
-	protected final EndpointFactoryService endpointFactoryService() {
-		return service(EndpointFactoryService.class);
-	}
-
 	protected final <S extends Service> S service(Class<? extends S> serviceClass) {
 		return runtimeInstance().getServiceRegistry().getService(serviceClass);
 	}
 
-	protected final ResourceRepository resourceRepository() {
-		if(this.resourceRepository==null) {
-			this.resourceRepository=repositoryRegistry().getResourceRepository();
+	protected final PersistencyManager persistencyManager() {
+		if(this.persistencyManager==null) {
+			this.persistencyManager=runtimeInstance().getPersistencyManager();
 		}
-		return this.resourceRepository;
-	}
-
-	protected final EndpointRepository endpointRepository() {
-		if(this.endpointRepository==null) {
-			this.endpointRepository=repositoryRegistry().getEndpointRepository();
-		}
-		return this.endpointRepository;
+		return this.persistencyManager;
 	}
 
 	protected abstract B builder();

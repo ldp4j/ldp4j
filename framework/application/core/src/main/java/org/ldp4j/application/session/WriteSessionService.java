@@ -39,7 +39,7 @@ import org.ldp4j.application.endpoint.EndpointNotFoundException;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.spi.ResourceRepository;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.Service;
 import org.ldp4j.application.spi.ServiceBuilder;
 import org.ldp4j.application.template.TemplateManagementService;
@@ -57,7 +57,7 @@ public final class WriteSessionService implements Service {
 		public WriteSessionService build() {
 			return
 				new WriteSessionService(
-					resourceRepository(),
+					persistencyManager(),
 					service(EndpointManagementService.class),
 					service(TemplateManagementService.class));
 		}
@@ -92,12 +92,12 @@ public final class WriteSessionService implements Service {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(WriteSessionService.class);
 
-	private final ResourceRepository resourceRepository;
+	private final PersistencyManager persistencyManager;
 	private final EndpointManagementService endpointManagementService;
 	private final TemplateManagementService templateManagementService;
 
-	private WriteSessionService(ResourceRepository resourceRepository, EndpointManagementService endointManagementService, TemplateManagementService templateManagementService) {
-		this.resourceRepository = resourceRepository;
+	private WriteSessionService(PersistencyManager persistencyManager, EndpointManagementService endointManagementService, TemplateManagementService templateManagementService) {
+		this.persistencyManager = persistencyManager;
 		this.templateManagementService=templateManagementService;
 		this.endpointManagementService = endointManagementService;
 	}
@@ -105,7 +105,7 @@ public final class WriteSessionService implements Service {
 	public WriteSession createSession(WriteSessionConfiguration configuration) {
 		UnitOfWork.newCurrent();
 		logLifecycleMessage("Created write session: %s",configuration);
-		return new DelegatedWriteSession(configuration,this.resourceRepository,this.templateManagementService,this);
+		return new DelegatedWriteSession(configuration,this.persistencyManager,this.templateManagementService,this);
 	}
 
 	public void terminateSession(WriteSession writeSession) {
@@ -162,7 +162,7 @@ public final class WriteSessionService implements Service {
 	private void createResource(Resource resource, Date lastModified, String relativePath, URI indirectId) {
 		try {
 			resource.setIndirectId(indirectId);
-			resourceRepository.add(resource);
+			persistencyManager.add(resource);
 			Endpoint newEndpoint=
 				endpointManagementService.
 					createEndpointForResource(
@@ -181,7 +181,7 @@ public final class WriteSessionService implements Service {
 
 	private void modifyResource(Resource resource, Date lastModified) {
 		try {
-			resourceRepository.add(resource);
+			persistencyManager.add(resource);
 			Endpoint endpoint =
 				endpointManagementService.modifyResourceEndpoint(
 					resource,
@@ -198,7 +198,7 @@ public final class WriteSessionService implements Service {
 
 	private void deleteResource(Resource resource, Date lastModified) {
 		try {
-			resourceRepository.remove(resource);
+			persistencyManager.remove(resource);
 			Endpoint endpoint = endpointManagementService.deleteResourceEndpoint(resource);
 			if(LOGGER.isTraceEnabled()) {
 				LOGGER.trace("Deleted "+resource);

@@ -24,22 +24,63 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.impl;
 
-import org.ldp4j.application.endpoint.Endpoint;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.ldp4j.application.resource.ResourceId;
 
-@Deprecated
-public interface EndpointRepository {
+import com.google.common.base.Objects;
 
-	Endpoint endpointOfPath(String path);
+final class AttachmentId {
 
-	Endpoint endpointOfResource(ResourceId id);
+	private final String id;
+	private final ResourceId resourceId;
 
-	void add(Endpoint endpoint);
+	private AttachmentId(String id, ResourceId resourceId) {
+		this.resourceId = resourceId;
+		this.id = id;
+	}
 
-	void remove(Endpoint endpoint);
+	public ResourceId resourceId() {
+		return resourceId;
+	}
 
-	long nextIdentifier();
+	public String id() {
+		return id;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(this.id,this.resourceId);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj!=null && obj.getClass()==this.getClass()) {
+			AttachmentId that=(AttachmentId)obj;
+			result=
+				Objects.equal(this.id,that.id) &&
+				Objects.equal(this.resourceId,that.resourceId);
+		}
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return
+			Objects.
+				toStringHelper(getClass()).
+					add("id", this.id).
+					add("resourceId", this.resourceId).
+					toString();
+	}
+
+	public static AttachmentId createId(String attachmentId, ResourceId resourceId) {
+		checkNotNull(resourceId,"Resource resourceId cannot be null");
+		checkNotNull(attachmentId,"Template identifier cannot be null");
+		return new AttachmentId(attachmentId,resourceId);
+	}
 
 }

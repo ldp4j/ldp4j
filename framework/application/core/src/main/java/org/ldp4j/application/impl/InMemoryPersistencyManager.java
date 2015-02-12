@@ -24,14 +24,23 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.resource;
+package org.ldp4j.application.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Date;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.ldp4j.application.spi.Service;
-import org.ldp4j.application.spi.ServiceBuilder;
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.lifecycle.LifecycleException;
+import org.ldp4j.application.lifecycle.Managed;
+import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.Resource;
+import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.spi.PersistencyManager;
+import org.ldp4j.application.spi.Transaction;
 import org.ldp4j.application.template.BasicContainerTemplate;
 import org.ldp4j.application.template.ContainerTemplate;
 import org.ldp4j.application.template.DirectContainerTemplate;
@@ -40,33 +49,84 @@ import org.ldp4j.application.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateManagementService;
 import org.ldp4j.application.template.TemplateVisitor;
-import org.ldp4j.application.data.Name;
 
-@Deprecated
-public final class ResourceFactoryService implements Service {
+public class InMemoryPersistencyManager implements PersistencyManager, Managed {
 
-	private static final class ResourceFactoryServiceBuilder extends ServiceBuilder<ResourceFactoryService> {
+	private final InMemoryResourceRepository resourceRepository;
+	private final InMemoryEndpointRepository endpointRepository;
+	private TemplateManagementService templateManagementService;
 
-		private ResourceFactoryServiceBuilder() {
-			super(ResourceFactoryService.class);
-		}
-
-		@Override
-		public ResourceFactoryService build() {
-			return new ResourceFactoryService(service(TemplateManagementService.class));
-		}
-
+	public InMemoryPersistencyManager() {
+		this.resourceRepository=new InMemoryResourceRepository();
+		this.endpointRepository=new InMemoryEndpointRepository();
 	}
 
-	private final TemplateManagementService templateManagerService;
+	@Override
+	public Transaction currentTransaction() {
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
 
-	private ResourceFactoryService(TemplateManagementService templateManagementService) {
-		this.templateManagerService = templateManagementService;
+	@Override
+	public Endpoint endpointOfPath(String path) {
+		return this.endpointRepository.endpointOfPath(path);
+	}
+
+	@Override
+	public Endpoint endpointOfResource(ResourceId id) {
+		return this.endpointRepository.endpointOfResource(id);
+	}
+
+	@Override
+	public void add(Endpoint endpoint) {
+		this.endpointRepository.add(endpoint);
+	}
+
+	@Override
+	public void remove(Endpoint endpoint) {
+		this.endpointRepository.remove(endpoint);
+	}
+
+	@Override
+	public long nextIdentifier() {
+		return this.endpointRepository.nextIdentifier();
+	}
+
+	@Override
+	public <T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass) {
+		return this.resourceRepository.find(id, expectedResourceClass);
+	}
+
+	@Override
+	public Resource resourceOfId(ResourceId id) {
+		return this.resourceRepository.resourceOfId(id);
+	}
+
+	@Override
+	public Container containerOfId(ResourceId id) {
+		return this.resourceRepository.containerOfId(id);
+	}
+
+	@Override
+	public void add(Resource resource) {
+		this.resourceRepository.add(resource);
+	}
+
+	@Override
+	public void remove(Resource resource) {
+		this.resourceRepository.remove(resource);
+	}
+
+	@Override
+	public Endpoint createEndpoint(Resource resource, String path, EntityTag entityTag, Date lastModified) {
+		checkNotNull(resource,"Endpoint's resource cannot be null");
+		checkNotNull(entityTag,"Endpoint's entity tag cannot be null");
+		checkNotNull(lastModified,"Endpoint's Last modified data cannot be null");
+		return new InMemoryEndpoint(nextIdentifier(),path,resource.id(),entityTag,lastModified);
 	}
 
 	private ResourceTemplate findTemplate(String id) {
 		checkNotNull(id,"TemplateId identifier cannot be null");
-		ResourceTemplate result = this.templateManagerService.findTemplateById(id);
+		ResourceTemplate result = this.templateManagementService.findTemplateById(id);
 		if(result==null) {
 			throw new IllegalStateException("Could not find template '"+id+"'");
 		}
@@ -81,21 +141,21 @@ public final class ResourceFactoryService implements Service {
 		return template;
 	}
 
-	private ResourceImpl createResource(ResourceTemplate template, Name<?> resourceId, Resource parent) {
+	private InMemoryResource createResource(ResourceTemplate template, Name<?> resourceId, Resource parent) {
 		checkNotNull(resourceId,"ResourceSnapshot identifier cannot be null");
 		final ResourceId parentId=parent!=null?parent.id():null;
 		final ResourceId id=ResourceId.createId(resourceId, template);
-		final AtomicReference<ResourceImpl> result=new AtomicReference<ResourceImpl>();
+		final AtomicReference<InMemoryResource> result=new AtomicReference<InMemoryResource>();
 		template.
 			accept(
 				new TemplateVisitor() {
 					@Override
 					public void visitResourceTemplate(ResourceTemplate template) {
-						result.set(new ResourceImpl(id,parentId));
+						result.set(new InMemoryResource(id,parentId));
 					}
 					@Override
 					public void visitContainerTemplate(ContainerTemplate template) {
-						result.set(new ContainerImpl(id,parentId));
+						result.set(new InMemoryContainer(id,parentId));
 					}
 					@Override
 					public void visitBasicContainerTemplate(BasicContainerTemplate template) {
@@ -115,9 +175,8 @@ public final class ResourceFactoryService implements Service {
 					}
 				}
 			);
-		ResourceImpl resource = result.get();
-		resource.setResourceFactoryService(this);
-		resource.setTemplateManagementService(templateManagerService);
+		InMemoryResource resource = result.get();
+		resource.setPersistencyManager(this);
 		return resource;
 	}
 
@@ -134,12 +193,26 @@ public final class ResourceFactoryService implements Service {
 		return expectedResourceClass.cast(newResource);
 	}
 
-	public static ServiceBuilder<ResourceFactoryService> serviceBuilder() {
-		return new ResourceFactoryServiceBuilder();
+	@Override
+	public void setTemplateManagementService(TemplateManagementService templateManagementService) {
+		this.templateManagementService = templateManagementService;
 	}
 
-	public static ResourceFactoryService defaultFactory() {
-		return serviceBuilder().build();
+	public ResourceTemplate findTemplateById(String templateId) {
+		return this.templateManagementService.findTemplateById(templateId);
 	}
+
+	@Override
+	public void init() throws LifecycleException {
+		this.resourceRepository.init();
+		this.endpointRepository.init();
+	}
+
+	@Override
+	public void shutdown() throws LifecycleException {
+		this.endpointRepository.shutdown();
+		this.resourceRepository.shutdown();
+	}
+
 
 }

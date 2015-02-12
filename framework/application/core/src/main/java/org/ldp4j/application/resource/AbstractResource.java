@@ -31,7 +31,7 @@ import org.ldp4j.application.template.TemplateManagementService;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
-
+@Deprecated
 abstract class AbstractResource {
 
 	private ResourceFactoryService resourceFactoryService;
@@ -40,18 +40,18 @@ abstract class AbstractResource {
 	final void setResourceFactoryService(ResourceFactoryService factory) {
 		this.resourceFactoryService = factory;
 	}
-	
+
 	final ResourceFactoryService getResourceFactoryService() {
 		if(resourceFactoryService==null) {
 			throw new IllegalArgumentException("Resource factory service not been initialized yet");
 		}
 		return resourceFactoryService;
 	}
-	
+
 	final void setTemplateManagementService(TemplateManagementService templateManager) {
 		this.templateManagerService = templateManager;
 	}
-	
+
 	final TemplateManagementService templateManagementService() {
 		if(this.templateManagerService==null) {
 			throw new IllegalArgumentException("Template manager service has not been initialized yet");
@@ -64,7 +64,7 @@ abstract class AbstractResource {
 	}
 
 	protected ToStringHelper stringHelper() {
-		return 
+		return
 			Objects.
 				toStringHelper(getClass()).
 					omitNullValues();

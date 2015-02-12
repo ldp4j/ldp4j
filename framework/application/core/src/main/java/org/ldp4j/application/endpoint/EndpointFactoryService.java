@@ -32,10 +32,11 @@ import java.util.Date;
 
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.spi.EndpointRepository;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.Service;
 import org.ldp4j.application.spi.ServiceBuilder;
 
+@Deprecated
 public final class EndpointFactoryService implements Service {
 
 	private static final class EndpointFactoryBuilder extends ServiceBuilder<EndpointFactoryService> {
@@ -43,33 +44,33 @@ public final class EndpointFactoryService implements Service {
 		private EndpointFactoryBuilder() {
 			super(EndpointFactoryService.class);
 		}
-		
+
 		@Override
 		public EndpointFactoryService build() {
-			return 
+			return
 				new EndpointFactoryService(
-					endpointRepository());
+					persistencyManager());
 		}
 
 	}
 
-	private final EndpointRepository endpointRepository;
+	private final PersistencyManager persistencyManager;
 
-	private EndpointFactoryService(EndpointRepository endpointRepository) {
-		this.endpointRepository = endpointRepository;
+	private EndpointFactoryService(PersistencyManager persistencyManager) {
+		this.persistencyManager = persistencyManager;
 	}
 
 	public Endpoint createEndpoint(Resource resource, String path, EntityTag entityTag, Date lastModified) {
 		checkNotNull(resource,"Endpoint's resource cannot be null");
 		checkNotNull(entityTag,"Endpoint's entity tag cannot be null");
 		checkNotNull(lastModified,"Endpoint's Last modified data cannot be null");
-		return new EndpointImpl(this.endpointRepository.nextIdentifier(),path,resource.id(),entityTag,lastModified);
+		return new EndpointImpl(this.persistencyManager.nextIdentifier(),path,resource.id(),entityTag,lastModified);
 	}
 
 	public static ServiceBuilder<EndpointFactoryService> serviceBuilder() {
 		return new EndpointFactoryBuilder();
 	}
-	
+
 	public static EndpointFactoryService defaultFactory() {
 		return serviceBuilder().build();
 	}

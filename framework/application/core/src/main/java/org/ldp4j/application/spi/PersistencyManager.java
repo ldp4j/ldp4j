@@ -24,30 +24,47 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.impl;
+package org.ldp4j.application.spi;
 
-import org.ldp4j.application.spi.EndpointRepository;
-import org.ldp4j.application.spi.RepositoryRegistry;
-import org.ldp4j.application.spi.ResourceRepository;
+import java.util.Date;
 
-final class InMemoryRepositoryRegistry implements RepositoryRegistry {
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.Resource;
+import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.template.TemplateManagementService;
 
-	private final ResourceRepository resourceRepository;
-	private final EndpointRepository endpointRepository;
+public interface PersistencyManager {
 
-	InMemoryRepositoryRegistry() {
-		resourceRepository = new InMemoryResourceRepository();
-		endpointRepository = new InMemoryEndpointRepository();
-	}
+	Transaction currentTransaction();
 
-	@Override
-	public ResourceRepository getResourceRepository() {
-		return resourceRepository;
-	}
+	void setTemplateManagementService(TemplateManagementService templateManagementService);
 
-	@Override
-	public EndpointRepository getEndpointRepository() {
-		return endpointRepository;
-	}
+	Endpoint createEndpoint(Resource resource, String path, EntityTag entityTag, Date lastModified);
 
+	Endpoint endpointOfPath(String path);
+
+	Endpoint endpointOfResource(ResourceId id);
+
+	void add(Endpoint endpoint);
+
+	void remove(Endpoint endpoint);
+
+	long nextIdentifier();
+
+	Resource createResource(String templateId, Name<?> resourceId, Resource parent);
+
+	<T extends Resource> T createResource(String templateId, Name<?> resourceId, Resource parent, Class<? extends T> expectedResourceClass);
+
+	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);
+
+	Resource resourceOfId(ResourceId id);
+
+	Container containerOfId(ResourceId id);
+
+	void add(Resource resource);
+
+	void remove(Resource resource);
 }
