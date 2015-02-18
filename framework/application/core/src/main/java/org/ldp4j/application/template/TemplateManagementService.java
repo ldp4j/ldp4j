@@ -39,7 +39,7 @@ import org.ldp4j.application.spi.ServiceBuilder;
 public final class TemplateManagementService implements Service {
 
 	private static class TemplateManagementServiceBuilder extends ServiceBuilder<TemplateManagementService> {
-		
+
 		private TemplateManagementServiceBuilder() {
 			super(TemplateManagementService.class);
 		}
@@ -47,16 +47,16 @@ public final class TemplateManagementService implements Service {
 		public TemplateManagementService build() {
 			return new TemplateManagementService();
 		}
-		
+
 	}
 
 	private final Lock lock=new ReentrantLock();
 
 	private volatile TemplateManager manager=null;
-	
+
 	private TemplateManagementService() {
 	}
-	
+
 	public void setTemplateManager(TemplateManager manager) {
 		if(manager==null) {
 			return;
@@ -91,7 +91,7 @@ public final class TemplateManagementService implements Service {
 		checkState(manager!=null,"Template Management Service has not been initialized yet");
 		return this.manager.getTemplate(handlerClass);
 	}
-	
+
 	public <T extends ResourceHandler> T getHandler(Class<? extends T> handlerClass) {
 		ResourceTemplate template=findTemplateByHandler(handlerClass);
 		return this.manager.getHandler(handlerClass, template);
@@ -100,7 +100,7 @@ public final class TemplateManagementService implements Service {
 	public static ServiceBuilder<TemplateManagementService> serviceBuilder() {
 		return new TemplateManagementServiceBuilder();
 	}
-	
+
 	public static TemplateManagementService defaultService() {
 		return serviceBuilder().build();
 	}

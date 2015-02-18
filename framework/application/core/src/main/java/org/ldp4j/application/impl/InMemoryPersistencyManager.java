@@ -50,78 +50,16 @@ import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateManagementService;
 import org.ldp4j.application.template.TemplateVisitor;
 
-public class InMemoryPersistencyManager implements PersistencyManager, Managed {
+final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 
 	private final InMemoryResourceRepository resourceRepository;
 	private final InMemoryEndpointRepository endpointRepository;
+
 	private TemplateManagementService templateManagementService;
 
-	public InMemoryPersistencyManager() {
+	InMemoryPersistencyManager() {
 		this.resourceRepository=new InMemoryResourceRepository();
 		this.endpointRepository=new InMemoryEndpointRepository();
-	}
-
-	@Override
-	public Transaction currentTransaction() {
-		throw new UnsupportedOperationException("Method not implemented yet");
-	}
-
-	@Override
-	public Endpoint endpointOfPath(String path) {
-		return this.endpointRepository.endpointOfPath(path);
-	}
-
-	@Override
-	public Endpoint endpointOfResource(ResourceId id) {
-		return this.endpointRepository.endpointOfResource(id);
-	}
-
-	@Override
-	public void add(Endpoint endpoint) {
-		this.endpointRepository.add(endpoint);
-	}
-
-	@Override
-	public void remove(Endpoint endpoint) {
-		this.endpointRepository.remove(endpoint);
-	}
-
-	@Override
-	public long nextIdentifier() {
-		return this.endpointRepository.nextIdentifier();
-	}
-
-	@Override
-	public <T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass) {
-		return this.resourceRepository.find(id, expectedResourceClass);
-	}
-
-	@Override
-	public Resource resourceOfId(ResourceId id) {
-		return this.resourceRepository.resourceOfId(id);
-	}
-
-	@Override
-	public Container containerOfId(ResourceId id) {
-		return this.resourceRepository.containerOfId(id);
-	}
-
-	@Override
-	public void add(Resource resource) {
-		this.resourceRepository.add(resource);
-	}
-
-	@Override
-	public void remove(Resource resource) {
-		this.resourceRepository.remove(resource);
-	}
-
-	@Override
-	public Endpoint createEndpoint(Resource resource, String path, EntityTag entityTag, Date lastModified) {
-		checkNotNull(resource,"Endpoint's resource cannot be null");
-		checkNotNull(entityTag,"Endpoint's entity tag cannot be null");
-		checkNotNull(lastModified,"Endpoint's Last modified data cannot be null");
-		return new InMemoryEndpoint(nextIdentifier(),path,resource.id(),entityTag,lastModified);
 	}
 
 	private ResourceTemplate findTemplate(String id) {
@@ -180,6 +118,15 @@ public class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		return resource;
 	}
 
+	ResourceTemplate findTemplateById(String templateId) {
+		return this.templateManagementService.findTemplateById(templateId);
+	}
+
+	@Override
+	public Transaction currentTransaction() {
+		throw new UnsupportedOperationException("Method not implemented yet");
+	}
+
 	public Resource createResource(String templateId, Name<?> resourceId, Resource parent) {
 		return createResource(findTemplate(templateId),resourceId,parent);
 	}
@@ -194,12 +141,61 @@ public class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	}
 
 	@Override
-	public void setTemplateManagementService(TemplateManagementService templateManagementService) {
-		this.templateManagementService = templateManagementService;
+	public Endpoint createEndpoint(Resource resource, String path, EntityTag entityTag, Date lastModified) {
+		checkNotNull(resource,"Endpoint's resource cannot be null");
+		checkNotNull(entityTag,"Endpoint's entity tag cannot be null");
+		checkNotNull(lastModified,"Endpoint's Last modified data cannot be null");
+		return new InMemoryEndpoint(this.endpointRepository.nextIdentifier(),path,resource.id(),entityTag,lastModified);
 	}
 
-	public ResourceTemplate findTemplateById(String templateId) {
-		return this.templateManagementService.findTemplateById(templateId);
+	@Override
+	public <T extends Resource> T resourceOfId(ResourceId id, Class<? extends T> expectedResourceClass) {
+		return this.resourceRepository.resourceById(id, expectedResourceClass);
+	}
+
+	@Override
+	public Resource resourceOfId(ResourceId id) {
+		return this.resourceRepository.resourceOfId(id);
+	}
+
+	@Override
+	public Container containerOfId(ResourceId id) {
+		return this.resourceRepository.containerOfId(id);
+	}
+
+	@Override
+	public Endpoint endpointOfPath(String path) {
+		return this.endpointRepository.endpointOfPath(path);
+	}
+
+	@Override
+	public Endpoint endpointOfResource(ResourceId id) {
+		return this.endpointRepository.endpointOfResource(id);
+	}
+
+	@Override
+	public void add(Resource resource) {
+		this.resourceRepository.add(resource);
+	}
+
+	@Override
+	public void add(Endpoint endpoint) {
+		this.endpointRepository.add(endpoint);
+	}
+
+	@Override
+	public void remove(Resource resource) {
+		this.resourceRepository.remove(resource);
+	}
+
+	@Override
+	public void remove(Endpoint endpoint) {
+		this.endpointRepository.remove(endpoint);
+	}
+
+	@Override
+	public void setTemplateManagementService(TemplateManagementService templateManagementService) {
+		this.templateManagementService = templateManagementService;
 	}
 
 	@Override

@@ -123,7 +123,7 @@ public final class EndpointManagementService implements Service {
 		if(resource.isRoot()) {
 			throw new IllegalStateException("Cannot get path for root resource");
 		}
-		Resource parent=this.persistencyManager.find(resource.parentId(),Resource.class);
+		Resource parent=this.persistencyManager.resourceOfId(resource.parentId(),Resource.class);
 		if(parent==null) {
 			throw new IllegalStateException("Could not load resource '"+resource.parentId()+"' from the repository");
 		}

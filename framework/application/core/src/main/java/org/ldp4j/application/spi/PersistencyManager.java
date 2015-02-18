@@ -52,13 +52,11 @@ public interface PersistencyManager {
 
 	void remove(Endpoint endpoint);
 
-	long nextIdentifier();
-
 	Resource createResource(String templateId, Name<?> resourceId, Resource parent);
 
 	<T extends Resource> T createResource(String templateId, Name<?> resourceId, Resource parent, Class<? extends T> expectedResourceClass);
 
-	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);
+	<T extends Resource> T resourceOfId(ResourceId id, Class<? extends T> expectedResourceClass);
 
 	Resource resourceOfId(ResourceId id);
 

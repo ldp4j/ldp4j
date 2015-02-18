@@ -56,11 +56,11 @@ final class InMemoryEndpointRepository implements Managed {
 		return endpointsById.get(id);
 	}
 
-	public long nextIdentifier() {
+	long nextIdentifier() {
 		return counter.incrementAndGet();
 	}
 
-	public Endpoint endpointOfPath(String path) {
+	Endpoint endpointOfPath(String path) {
 		lock.readLock().lock();
 		try {
 			return endpointOfId(endpointsByPath.get(path));
@@ -69,7 +69,7 @@ final class InMemoryEndpointRepository implements Managed {
 		}
 	}
 
-	public Endpoint endpointOfResource(ResourceId id) {
+	Endpoint endpointOfResource(ResourceId id) {
 		lock.readLock().lock();
 		try {
 			return endpointOfId(endpointsByResourceName.get(id));
@@ -78,7 +78,7 @@ final class InMemoryEndpointRepository implements Managed {
 		}
 	}
 
-	public void remove(Endpoint endpoint) {
+	void remove(Endpoint endpoint) {
 		lock.writeLock().lock();
 		try {
 			endpointsById.remove(endpoint.id());
@@ -89,7 +89,7 @@ final class InMemoryEndpointRepository implements Managed {
 		}
 	}
 
-	public void add(Endpoint endpoint) {
+	void add(Endpoint endpoint) {
 		lock.writeLock().lock();
 		try {
 			if(endpointsById.containsKey(endpoint.id())) {

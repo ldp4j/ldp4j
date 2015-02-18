@@ -246,7 +246,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	DataSet getResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Resource resource = this.engine().persistencyManager().find(resourceId,Resource.class);
+		Resource resource = this.engine().persistencyManager().resourceOfId(resourceId,Resource.class);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
@@ -269,7 +269,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	}
 
 	Resource resolveResource(Endpoint endpoint) {
-		return this.engine().persistencyManager().find(endpoint.resourceId(), Resource.class);
+		return this.engine().persistencyManager().resourceOfId(endpoint.resourceId(), Resource.class);
 	}
 
 	Endpoint resolveResource(ResourceId id) {
@@ -278,7 +278,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	Resource createResource(Endpoint endpoint, DataSet dataSet, String desiredPath) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Container resource = this.engine().persistencyManager().find(resourceId,Container.class);
+		Container resource = this.engine().persistencyManager().resourceOfId(resourceId,Container.class);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find container for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
@@ -294,7 +294,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	void deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Resource resource = this.engine().persistencyManager().find(resourceId,Resource.class);
+		Resource resource = this.engine().persistencyManager().resourceOfId(resourceId,Resource.class);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find container for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
@@ -310,7 +310,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	void modifyResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Resource resource = this.engine().persistencyManager().find(resourceId,Resource.class);
+		Resource resource = this.engine().persistencyManager().resourceOfId(resourceId,Resource.class);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
