@@ -32,6 +32,7 @@ import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.annotations.MembershipRelation;
 
+@Deprecated
 class MutableMembershipAwareContainerTemplate extends MutableContainerTemplate implements MembershipAwareContainerTemplate {
 
 	private static final MembershipRelation DEFAULT_MEMBERSHIP_RELATION = MembershipRelation.HAS_MEMBER;
@@ -76,4 +77,3 @@ class MutableMembershipAwareContainerTemplate extends MutableContainerTemplate i
 	}
 
 }
- 

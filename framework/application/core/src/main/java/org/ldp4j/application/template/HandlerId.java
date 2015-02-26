@@ -33,8 +33,8 @@ import org.ldp4j.application.ext.ResourceHandler;
 
 import com.google.common.base.Objects;
 
-public final class HandlerId {
-	
+final class HandlerId {
+
 	private final String className;
 	private final int systemHashCode;
 	private final boolean container;
@@ -44,7 +44,7 @@ public final class HandlerId {
 		this.systemHashCode = systemHashCode;
 		this.container = container;
 	}
-	
+
 	public String className() {
 		return className;
 	}
@@ -56,10 +56,10 @@ public final class HandlerId {
 	public boolean isContainer() {
 		return container;
 	}
-	
+
 	@Override
 	public int hashCode() {
-		return 
+		return
 			Objects.
 				hashCode(
 					this.className,this.systemHashCode,this.container);
@@ -77,7 +77,7 @@ public final class HandlerId {
 		}
 		return result;
 	}
-	
+
 	@Override
 	public String toString() {
 		return
@@ -91,7 +91,7 @@ public final class HandlerId {
 
 	public static HandlerId createId(Class<? extends ResourceHandler> handlerClass) {
 		checkNotNull(handlerClass,"Resource handler class cannot be null");
-		return 
+		return
 			new HandlerId(
 				handlerClass.getCanonicalName(),
 				System.identityHashCode(handlerClass),

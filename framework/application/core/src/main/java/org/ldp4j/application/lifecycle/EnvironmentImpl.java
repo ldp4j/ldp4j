@@ -101,10 +101,10 @@ final class EnvironmentImpl implements Environment {
 
 	private final TemplateManagementService templateManagementService;
 
-	EnvironmentImpl(PersistencyManager persistencyManager, TemplateManagementService templateManagementService2) {
+	EnvironmentImpl(PersistencyManager persistencyManager, TemplateManagementService templateManagementService) {
 		this.candidates=Lists.newArrayList();
 		this.persistencyManager = persistencyManager;
-		this.templateManagementService = templateManagementService2;
+		this.templateManagementService = templateManagementService;
 	}
 
 	@Override

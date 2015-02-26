@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import org.junit.After;
@@ -48,7 +49,6 @@ import org.ldp4j.application.session.UnitOfWork.Visitor;
 import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.template.TemplateManagementService;
-import org.ldp4j.application.template.TemplateManager;
 import org.ldp4j.example.AddressHandler;
 import org.ldp4j.example.BookContainerHandler;
 import org.ldp4j.example.BookHandler;
@@ -56,6 +56,8 @@ import org.ldp4j.example.PersonHandler;
 import org.ldp4j.example.RelativeContainerHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Lists;
 
 public class WriteSessionTest {
 
@@ -108,16 +110,13 @@ public class WriteSessionTest {
 	@Before
 	public void setUp() throws Exception {
 		RuntimeInstance.setInstance(new InMemoryRuntimeInstance());
-		TemplateManager manager=
-				TemplateManager.
-					builder().
-						withHandlerClasses(PersonHandler.class).
-						build();
 		RuntimeInstance.
 			getInstance().
 				getServiceRegistry().
 					getService(TemplateManagementService.class).
-						setTemplateManager(manager);
+						configure(
+							Lists.<Class<?>>newArrayList(),
+							Arrays.<ResourceHandler>asList(new PersonHandler()));
 		writeSessionService=
 			RuntimeInstance.
 				getInstance().

@@ -34,6 +34,7 @@ import java.util.Collection;
 import java.util.List;
 
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.spi.PersistencyManager;
 
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.ImmutableMap;
@@ -41,7 +42,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MutableClassToInstanceMap;
 
-public final class TemplateManager {
+final class TemplateManager {
 
 	private final TemplateLibrary library;
 	private final ImmutableMap<HandlerId, ResourceHandler> handlers;
@@ -150,6 +151,8 @@ public final class TemplateManager {
 		private final List<Class<?>> handlerClasses;
 		private final ClassToInstanceMap<ResourceHandler> handlers;
 
+		private PersistencyManager persistencyManager;
+
 
 		private TemplateManagerBuilder() {
 			this.handlerClasses=Lists.newArrayList();
@@ -190,15 +193,23 @@ public final class TemplateManager {
 
 		public TemplateManager build() throws InvalidTemplateManagerConfigurationException {
 			try {
-				TemplateLibrary library = new TemplateLibraryLoader().createLibrary(this.handlerClasses);
+				for(Class<?> handlerClass:handlerClasses) {
+					if(!this.persistencyManager.isRegistered(handlerClass)) {
+						this.persistencyManager.register(handlerClass);
+					}
+				}
+				TemplateLibrary library = this.persistencyManager.exportTemplates();
 				Builder<HandlerId, ResourceHandler> builder = ImmutableMap.<HandlerId, ResourceHandler>builder();
 				library.accept(new HandlerMapBuilder(builder,this.handlers));
 				return new TemplateManager(library, builder.build());
 			} catch (ResourceHandlerInstantiationException e) {
 				throw new InvalidTemplateManagerConfigurationException(e);
-			} catch (TemplateLibraryLoadingException e) {
-				throw new InvalidTemplateManagerConfigurationException(e);
 			}
+		}
+
+		public TemplateManagerBuilder withPersistencyManager(PersistencyManager persistencyManager) {
+			this.persistencyManager=persistencyManager;
+			return this;
 		}
 
 	}

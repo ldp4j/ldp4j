@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
 import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import org.junit.AfterClass;
@@ -52,11 +53,12 @@ import org.ldp4j.application.session.WriteSessionConfiguration;
 import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.template.TemplateManagementService;
-import org.ldp4j.application.template.TemplateManager;
 import org.ldp4j.example.BookContainerHandler;
 import org.ldp4j.example.BookHandler;
 import org.ldp4j.example.InMemoryContainerHandler.NameProvider;
 import org.ldp4j.example.PersonHandler;
+
+import com.google.common.collect.Lists;
 
 public class ResourceControllerServiceTest {
 
@@ -120,16 +122,13 @@ public class ResourceControllerServiceTest {
 	public static void setUpBefore() throws Exception {
 		RuntimeInstance.setInstance(new InMemoryRuntimeInstance());
 		PersonHandler personHandler = new PersonHandler();
-		TemplateManager manager=
-			TemplateManager.
-				builder().
-					withHandlers(personHandler).
-					build();
 		RuntimeInstance.
 			getInstance().
 				getServiceRegistry().
 					getService(TemplateManagementService.class).
-						setTemplateManager(manager);
+						configure(
+							Lists.<Class<?>>newArrayList(),
+							Arrays.<ResourceHandler>asList(personHandler));
 	}
 
 	@AfterClass

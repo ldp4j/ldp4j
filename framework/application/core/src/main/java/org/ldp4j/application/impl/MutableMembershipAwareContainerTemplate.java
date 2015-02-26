@@ -24,52 +24,57 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
+import java.net.URI;
+
+import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.ext.annotations.MembershipRelation;
+import org.ldp4j.application.template.MembershipAwareContainerTemplate;
+import org.ldp4j.application.template.TemplateVisitor;
 
-import com.google.common.base.Optional;
+class MutableMembershipAwareContainerTemplate extends MutableContainerTemplate implements MembershipAwareContainerTemplate {
 
-@Deprecated
-public class MutableContainerTemplate extends AbstractMutableTemplate<ContainerHandler> implements ContainerTemplate {
+	private static final MembershipRelation DEFAULT_MEMBERSHIP_RELATION = MembershipRelation.HAS_MEMBER;
+	private static final URI DEFAULT_MEMBERSHIP_PREDICATE = LDP.MEMBER.as(URI.class);
 
-	private ResourceTemplate memberTemplate;
-	private String memberPath;
+	private URI membershipPredicate=DEFAULT_MEMBERSHIP_PREDICATE;
+	private MembershipRelation membershipRelation=DEFAULT_MEMBERSHIP_RELATION;
 
-	public MutableContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
+	MutableMembershipAwareContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
 		super(id, handlerClass);
 	}
 
-	void setMemberTemplate(ResourceTemplate memberTemplate) {
-		this.memberTemplate = memberTemplate;
+	void setMembershipPredicate(URI membershipPredicate) {
+		if(membershipPredicate==null) {
+			this.membershipPredicate=DEFAULT_MEMBERSHIP_PREDICATE;
+		} else {
+			this.membershipPredicate=membershipPredicate;
+		}
 	}
 
-	void setMemberPath(String memberPath) {
-		this.memberPath = memberPath;
+	void setMembershipRelation(MembershipRelation membershipRelation) {
+		if(membershipRelation==null) {
+			this.membershipRelation=DEFAULT_MEMBERSHIP_RELATION;
+		} else {
+			this.membershipRelation=membershipRelation;
+		}
 	}
 
 	@Override
 	public void accept(TemplateVisitor visitor) {
-		visitor.visitContainerTemplate(this);
+		visitor.visitMembershipAwareContainerTemplate(this);
 	}
 
 	@Override
-	public ResourceTemplate memberTemplate() {
-		return this.memberTemplate;
+	public URI membershipPredicate() {
+		return this.membershipPredicate;
 	}
 
 	@Override
-	public Optional<String> memberPath() {
-		return Optional.fromNullable(this.memberPath);
-	}
-
-	@Override
-	public String toString() {
-		return
-			stringHelper().
-				add("memberTemplate.id()",this.memberTemplate.id()).
-				add("memberPath",this.memberPath).
-				toString();
+	public MembershipRelation membershipRelation() {
+		return this.membershipRelation;
 	}
 
 }

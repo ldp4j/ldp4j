@@ -24,20 +24,21 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
-import org.ldp4j.application.ext.ResourceHandler;
+class InvalidAttachmentDefinitionException extends TemplateCreationException {
 
-@Deprecated
-public final class MutableResourceTemplate extends AbstractMutableTemplate<ResourceHandler> {
+	private static final long serialVersionUID = 5228332100267319288L;
 
-	public MutableResourceTemplate(String id, Class<? extends ResourceHandler> handlerClass) {
-		super(id, handlerClass);
+	private final String attachmentId;
+
+	public InvalidAttachmentDefinitionException(String templateId, String attachmentId, String message, Throwable t) {
+		super(templateId,message,t);
+		this.attachmentId = attachmentId;
 	}
 
-	@Override
-	public void accept(TemplateVisitor visitor) {
-		visitor.visitResourceTemplate(this);
+	public String attachmentId() {
+		return attachmentId;
 	}
 
 }

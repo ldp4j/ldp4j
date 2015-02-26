@@ -24,20 +24,26 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
-import org.ldp4j.application.ext.ResourceHandler;
+class TemplateCreationException extends RuntimeException {
 
-@Deprecated
-public final class MutableResourceTemplate extends AbstractMutableTemplate<ResourceHandler> {
+	private static final long serialVersionUID = -5575973583406973695L;
 
-	public MutableResourceTemplate(String id, Class<? extends ResourceHandler> handlerClass) {
-		super(id, handlerClass);
+	private final String templateId;
+
+	public TemplateCreationException(String templateId, String message, Throwable t) {
+		super(message,t);
+		this.templateId = templateId;
 	}
 
-	@Override
-	public void accept(TemplateVisitor visitor) {
-		visitor.visitResourceTemplate(this);
+	public TemplateCreationException(String templateId, String message) {
+		super(message);
+		this.templateId = templateId;
 	}
 
+	public final String templateId() {
+		return templateId;
+	}
+	
 }

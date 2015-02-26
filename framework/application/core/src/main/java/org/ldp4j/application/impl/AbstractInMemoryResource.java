@@ -48,7 +48,7 @@ abstract class AbstractInMemoryResource {
 	}
 
 	final ResourceTemplate getTemplate(ResourceId resourceId) {
-		return getPersistencyManager().findTemplateById(resourceId.templateId());
+		return getPersistencyManager().templateOfId(resourceId.templateId());
 	}
 
 	protected ToStringHelper stringHelper() {

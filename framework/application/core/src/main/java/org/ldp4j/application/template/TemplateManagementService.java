@@ -29,10 +29,12 @@ package org.ldp4j.application.template;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.util.List;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.Service;
 import org.ldp4j.application.spi.ServiceBuilder;
 
@@ -45,19 +47,22 @@ public final class TemplateManagementService implements Service {
 		}
 
 		public TemplateManagementService build() {
-			return new TemplateManagementService();
+			return new TemplateManagementService(persistencyManager());
 		}
 
 	}
+
+	private final PersistencyManager persistencyManager;
 
 	private final Lock lock=new ReentrantLock();
 
 	private volatile TemplateManager manager=null;
 
-	private TemplateManagementService() {
+	private TemplateManagementService(PersistencyManager persistencyManager) {
+		this.persistencyManager = persistencyManager;
 	}
 
-	public void setTemplateManager(TemplateManager manager) {
+	private void setTemplateManager(TemplateManager manager) {
 		if(manager==null) {
 			return;
 		}
@@ -67,6 +72,17 @@ public final class TemplateManagementService implements Service {
 		} finally {
 			lock.unlock();
 		}
+	}
+
+	public void configure(List<Class<?>> handlerClasses, List<ResourceHandler> handlers) throws InvalidTemplateManagerConfigurationException {
+		setTemplateManager(
+			TemplateManager.
+				builder().
+					withPersistencyManager(this.persistencyManager).
+					withHandlerClasses(handlerClasses).
+					withHandlers(handlers).
+					build()
+		);
 	}
 
 	public ResourceTemplate findTemplateById(String templateId) {

@@ -30,6 +30,7 @@ import java.net.URI;
 
 import org.ldp4j.application.ext.ContainerHandler;
 
+@Deprecated
 final class MutableIndirectContainerTemplate extends MutableMembershipAwareContainerTemplate implements IndirectContainerTemplate {
 
 	private final URI insertedContentRelation;
@@ -38,7 +39,7 @@ final class MutableIndirectContainerTemplate extends MutableMembershipAwareConta
 		super(id, handlerClass);
 		this.insertedContentRelation = insertedContentRelation;
 	}
-	
+
 	@Override
 	public void accept(TemplateVisitor visitor) {
 		visitor.visitIndirectContainerTemplate(this);

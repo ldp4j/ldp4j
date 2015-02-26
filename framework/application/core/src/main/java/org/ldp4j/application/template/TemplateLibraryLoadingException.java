@@ -26,10 +26,11 @@
  */
 package org.ldp4j.application.template;
 
+@Deprecated
 public class TemplateLibraryLoadingException extends Exception {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 6814292133932070166L;
 

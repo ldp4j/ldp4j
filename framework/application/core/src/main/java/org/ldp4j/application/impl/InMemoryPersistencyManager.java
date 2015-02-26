@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.impl;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
@@ -34,6 +35,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.lifecycle.LifecycleException;
 import org.ldp4j.application.lifecycle.Managed;
 import org.ldp4j.application.resource.Container;
@@ -47,24 +49,76 @@ import org.ldp4j.application.template.DirectContainerTemplate;
 import org.ldp4j.application.template.IndirectContainerTemplate;
 import org.ldp4j.application.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
-import org.ldp4j.application.template.TemplateManagementService;
+import org.ldp4j.application.template.TemplateLibrary;
 import org.ldp4j.application.template.TemplateVisitor;
+
+import com.google.common.base.Preconditions;
 
 final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 
+	private final class ImmutableTemplateLibrary implements TemplateLibrary {
+
+		@Override
+		public ResourceTemplate findByHandler(Class<? extends ResourceHandler> handlerClass) {
+			return templateOfHandler(handlerClass);
+		}
+
+		@Override
+		public ResourceTemplate findById(String templateId) {
+			return templateOfId(templateId);
+		}
+
+		@Override
+		public boolean contains(ResourceTemplate template) {
+			return InMemoryPersistencyManager.this.templateLibrary.contains(template);
+		}
+
+		@Override
+		public void accept(final TemplateVisitor visitor) {
+			InMemoryPersistencyManager.this.templateLibrary.accept(
+				new TemplateVisitor() {
+					@Override
+					public void visitResourceTemplate(ResourceTemplate template) {
+						ImmutableTemplateFactory.newImmutable(template).accept(visitor);
+					}
+					@Override
+					public void visitContainerTemplate(ContainerTemplate template) {
+						ImmutableTemplateFactory.newImmutable(template).accept(visitor);
+					}
+					@Override
+					public void visitBasicContainerTemplate(BasicContainerTemplate template) {
+						ImmutableTemplateFactory.newImmutable(template).accept(visitor);
+					}
+					@Override
+					public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
+						ImmutableTemplateFactory.newImmutable(template).accept(visitor);
+					}
+					@Override
+					public void visitDirectContainerTemplate(DirectContainerTemplate template) {
+						ImmutableTemplateFactory.newImmutable(template).accept(visitor);
+					}
+					@Override
+					public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
+						ImmutableTemplateFactory.newImmutable(template).accept(visitor);
+					}
+				}
+			);
+		}
+	}
+
 	private final InMemoryResourceRepository resourceRepository;
 	private final InMemoryEndpointRepository endpointRepository;
-
-	private TemplateManagementService templateManagementService;
+	private final InMemoryTemplateLibrary templateLibrary;
 
 	InMemoryPersistencyManager() {
 		this.resourceRepository=new InMemoryResourceRepository();
 		this.endpointRepository=new InMemoryEndpointRepository();
+		this.templateLibrary=new InMemoryTemplateLibrary();
 	}
 
 	private ResourceTemplate findTemplate(String id) {
 		checkNotNull(id,"TemplateId identifier cannot be null");
-		ResourceTemplate result = this.templateManagementService.findTemplateById(id);
+		ResourceTemplate result = this.templateOfId(id);
 		if(result==null) {
 			throw new IllegalStateException("Could not find template '"+id+"'");
 		}
@@ -116,10 +170,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		InMemoryResource resource = result.get();
 		resource.setPersistencyManager(this);
 		return resource;
-	}
-
-	ResourceTemplate findTemplateById(String templateId) {
-		return this.templateManagementService.findTemplateById(templateId);
 	}
 
 	@Override
@@ -194,11 +244,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	}
 
 	@Override
-	public void setTemplateManagementService(TemplateManagementService templateManagementService) {
-		this.templateManagementService = templateManagementService;
-	}
-
-	@Override
 	public void init() throws LifecycleException {
 		this.resourceRepository.init();
 		this.endpointRepository.init();
@@ -210,5 +255,34 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		this.resourceRepository.shutdown();
 	}
 
+	@Override
+	public ResourceTemplate register(Class<?> targetClass) {
+		return ImmutableTemplateFactory.newImmutable(this.templateLibrary.registerHandler(targetClass));
+	}
+
+	@Override
+	public boolean isRegistered(Class<?> handlerClass) {
+		return this.templateLibrary.findByHandler(toResourceHandlerClass(handlerClass))!=null;
+	}
+
+	private Class<? extends ResourceHandler> toResourceHandlerClass(Class<?> targetClass) {
+		checkArgument(ResourceHandler.class.isAssignableFrom(targetClass),"Class '%s' does not implement '%s'",targetClass.getCanonicalName(),ResourceHandler.class.getCanonicalName());
+		return targetClass.asSubclass(ResourceHandler.class);
+	}
+
+	@Override
+	public TemplateLibrary exportTemplates() {
+		return new ImmutableTemplateLibrary();
+	}
+
+	@Override
+	public ResourceTemplate templateOfHandler(Class<? extends ResourceHandler> handlerClass) {
+		return ImmutableTemplateFactory.newImmutable(this.templateLibrary.findByHandler(handlerClass));
+	}
+
+	@Override
+	public ResourceTemplate templateOfId(String templateId) {
+		return ImmutableTemplateFactory.newImmutable(this.templateLibrary.findById(templateId));
+	}
 
 }

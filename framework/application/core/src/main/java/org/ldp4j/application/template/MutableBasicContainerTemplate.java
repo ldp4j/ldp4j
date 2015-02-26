@@ -28,12 +28,13 @@ package org.ldp4j.application.template;
 
 import org.ldp4j.application.ext.ContainerHandler;
 
+@Deprecated
 final class MutableBasicContainerTemplate extends MutableContainerTemplate implements BasicContainerTemplate {
 
 	MutableBasicContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
 		super(id, handlerClass);
 	}
-	
+
 	@Override
 	public void accept(TemplateVisitor visitor) {
 		visitor.visitBasicContainerTemplate(this);

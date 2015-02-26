@@ -291,17 +291,11 @@ public abstract class RuntimeInstance {
 	}
 
 	private void initialize() {
-		TemplateManagementService tms =
-			TemplateManagementService.
-				serviceBuilder().
-					setRuntimeInstance(this).
-						build();
-		getPersistencyManager().
-			setTemplateManagementService(tms);
 		getServiceRegistry().
-			registerService(
-				TemplateManagementService.class,
-				tms).
+			registerServiceBuilder(
+				TemplateManagementService.
+					serviceBuilder().
+						setRuntimeInstance(this)).
 			registerServiceBuilder(
 				EndpointManagementService.
 					serviceBuilder().

@@ -24,20 +24,54 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
-import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.template.ContainerTemplate;
+import org.ldp4j.application.template.ResourceTemplate;
+import org.ldp4j.application.template.TemplateVisitor;
 
-@Deprecated
-public final class MutableResourceTemplate extends AbstractMutableTemplate<ResourceHandler> {
+import com.google.common.base.Optional;
 
-	public MutableResourceTemplate(String id, Class<? extends ResourceHandler> handlerClass) {
+public class MutableContainerTemplate extends AbstractMutableTemplate<ContainerHandler> implements ContainerTemplate {
+
+	private ResourceTemplate memberTemplate;
+	private String memberPath;
+
+	public MutableContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
 		super(id, handlerClass);
+	}
+
+	void setMemberTemplate(ResourceTemplate memberTemplate) {
+		this.memberTemplate = memberTemplate;
+	}
+
+	void setMemberPath(String memberPath) {
+		this.memberPath = memberPath;
 	}
 
 	@Override
 	public void accept(TemplateVisitor visitor) {
-		visitor.visitResourceTemplate(this);
+		visitor.visitContainerTemplate(this);
+	}
+
+	@Override
+	public ResourceTemplate memberTemplate() {
+		return this.memberTemplate;
+	}
+
+	@Override
+	public Optional<String> memberPath() {
+		return Optional.fromNullable(this.memberPath);
+	}
+
+	@Override
+	public String toString() {
+		return
+			stringHelper().
+				add("memberTemplate.id()",this.memberTemplate.id()).
+				add("memberPath",this.memberPath).
+				toString();
 	}
 
 }

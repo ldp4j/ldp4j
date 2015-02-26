@@ -24,15 +24,16 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
 import java.net.URI;
 
+import org.ldp4j.application.template.AttachedTemplate;
+import org.ldp4j.application.template.ResourceTemplate;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
-@Deprecated
 final class MutableAttachedTemplate implements AttachedTemplate {
 
 	private final String id;

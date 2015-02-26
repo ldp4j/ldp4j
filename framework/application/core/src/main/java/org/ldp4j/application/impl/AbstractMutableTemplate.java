@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -37,12 +37,13 @@ import java.util.Map;
 import java.util.Set;
 
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.template.AttachedTemplate;
+import org.ldp4j.application.template.ResourceTemplate;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Optional;
 
-@Deprecated
 public abstract class AbstractMutableTemplate<T extends ResourceHandler> implements ResourceTemplate {
 
 	private final String id;

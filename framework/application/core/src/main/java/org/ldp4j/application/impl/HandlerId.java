@@ -24,68 +24,56 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
-import java.net.URI;
+import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.ext.ResourceHandler;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
 
-@Deprecated
-final class MutableAttachedTemplate implements AttachedTemplate {
+final class HandlerId {
 
-	private final String id;
-	private final String path;
-	private final ResourceTemplate template;
-	private URI predicate;
+	private final String className;
+	private final int systemHashCode;
+	private final boolean container;
 
-	MutableAttachedTemplate(String id, ResourceTemplate attachment, String path) {
-		this.id = id;
-		this.template = attachment;
-		this.path = path;
+	private HandlerId(String className, int systemHashCode, boolean container) {
+		this.className = className;
+		this.systemHashCode = systemHashCode;
+		this.container = container;
 	}
 
-	void setPredicate(URI predicate) {
-		this.predicate=predicate;
+	public String className() {
+		return className;
 	}
 
-	@Override
-	public String id() {
-		return id;
+	public int systemHashCode() {
+		return systemHashCode;
 	}
 
-	@Override
-	public String path() {
-		return this.path;
-	}
-
-	@Override
-	public ResourceTemplate template() {
-		return this.template;
-	}
-
-	@Override
-	public Optional<URI> predicate() {
-		return Optional.fromNullable(this.predicate);
+	public boolean isContainer() {
+		return container;
 	}
 
 	@Override
 	public int hashCode() {
 		return
-			Objects.hashCode(id,path)+
-			System.identityHashCode(template);
+			Objects.
+				hashCode(
+					this.className,this.systemHashCode,this.container);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		boolean result=false;
 		if(obj!=null && obj.getClass()==this.getClass()) {
-			MutableAttachedTemplate that = (MutableAttachedTemplate) obj;
+			HandlerId that=(HandlerId)obj;
 			result=
-				Objects.equal(this.id, that.id) &&
-				Objects.equal(this.path, that.path) &&
-				this.template==that.template;
+				Objects.equal(this.className,that.className) &&
+				Objects.equal(this.systemHashCode,that.systemHashCode) &&
+				Objects.equal(this.container,that.container);
 		}
 		return result;
 	}
@@ -95,12 +83,19 @@ final class MutableAttachedTemplate implements AttachedTemplate {
 		return
 			Objects.
 				toStringHelper(getClass()).
-					omitNullValues().
-					add("id", this.id).
-					add("path", this.path).
-					add("template.id()", this.template.id()).
-					add("predicate", predicate).
+					add("className", this.className).
+					add("systemHashCode", this.systemHashCode).
+					add("container", this.container).
 					toString();
+	}
+
+	public static HandlerId createId(Class<? extends ResourceHandler> handlerClass) {
+		checkNotNull(handlerClass,"Resource handler class cannot be null");
+		return
+			new HandlerId(
+				handlerClass.getCanonicalName(),
+				System.identityHashCode(handlerClass),
+				ContainerHandler.class.isAssignableFrom(handlerClass));
 	}
 
 }
