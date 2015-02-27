@@ -26,6 +26,8 @@
  */
 package org.ldp4j.application.impl;
 
+import org.ldp4j.application.spi.TemplateCreationException;
+
 class InvalidAttachmentDefinitionException extends TemplateCreationException {
 
 	private static final long serialVersionUID = 5228332100267319288L;

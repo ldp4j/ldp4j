@@ -42,9 +42,9 @@ public interface PersistencyManager {
 
 	Transaction currentTransaction();
 
-	ResourceTemplate register(Class<?> clazz);
+	ResourceTemplate registerHandler(Class<?> clazz) throws TemplateCreationException;
 
-	boolean isRegistered(Class<?> handlerClass);
+	boolean isHandlerRegistered(Class<?> handlerClass);
 
 	TemplateLibrary exportTemplates();
 

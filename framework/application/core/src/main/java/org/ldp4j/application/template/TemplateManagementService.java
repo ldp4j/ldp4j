@@ -74,7 +74,7 @@ public final class TemplateManagementService implements Service {
 		}
 	}
 
-	public void configure(List<Class<?>> handlerClasses, List<ResourceHandler> handlers) throws InvalidTemplateManagerConfigurationException {
+	public void configure(List<Class<?>> handlerClasses, List<ResourceHandler> handlers) throws TemplateManagementServiceConfigurationException {
 		setTemplateManager(
 			TemplateManager.
 				builder().
@@ -88,7 +88,7 @@ public final class TemplateManagementService implements Service {
 	public ResourceTemplate findTemplateById(String templateId) {
 		checkNotNull(templateId,"Template identifier cannot be null");
 		checkState(manager!=null,"Template Management Service has not been initialized yet");
-		return this.manager.getTemplate(templateId);
+		return this.persistencyManager.templateOfId(templateId);
 	}
 
 	public <T extends ResourceTemplate> T findTemplateById(String templateId, Class<? extends T> templateClass) {
@@ -105,7 +105,7 @@ public final class TemplateManagementService implements Service {
 	public ResourceTemplate findTemplateByHandler(Class<? extends ResourceHandler> handlerClass) {
 		checkNotNull(handlerClass,"Resource handler cannot be null");
 		checkState(manager!=null,"Template Management Service has not been initialized yet");
-		return this.manager.getTemplate(handlerClass);
+		return this.persistencyManager.templateOfHandler(handlerClass);
 	}
 
 	public <T extends ResourceHandler> T getHandler(Class<? extends T> handlerClass) {

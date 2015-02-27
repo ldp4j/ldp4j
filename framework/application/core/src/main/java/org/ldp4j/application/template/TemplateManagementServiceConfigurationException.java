@@ -26,50 +26,28 @@
  */
 package org.ldp4j.application.template;
 
-import org.ldp4j.application.ext.ContainerHandler;
+public class TemplateManagementServiceConfigurationException extends Exception {
 
-import com.google.common.base.Optional;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3232432603895128046L;
 
-@Deprecated
-public class MutableContainerTemplate extends AbstractMutableTemplate<ContainerHandler> implements ContainerTemplate {
-
-	private ResourceTemplate memberTemplate;
-	private String memberPath;
-
-	public MutableContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
-		super(id, handlerClass);
+	public TemplateManagementServiceConfigurationException() {
+		super();
 	}
 
-	void setMemberTemplate(ResourceTemplate memberTemplate) {
-		this.memberTemplate = memberTemplate;
+	public TemplateManagementServiceConfigurationException(String message,
+			Throwable cause) {
+		super(message, cause);
 	}
 
-	void setMemberPath(String memberPath) {
-		this.memberPath = memberPath;
+	public TemplateManagementServiceConfigurationException(String message) {
+		super(message);
 	}
 
-	@Override
-	public void accept(TemplateVisitor visitor) {
-		visitor.visitContainerTemplate(this);
-	}
-
-	@Override
-	public ResourceTemplate memberTemplate() {
-		return this.memberTemplate;
-	}
-
-	@Override
-	public Optional<String> memberPath() {
-		return Optional.fromNullable(this.memberPath);
-	}
-
-	@Override
-	public String toString() {
-		return
-			stringHelper().
-				add("memberTemplate.id()",this.memberTemplate.id()).
-				add("memberPath",this.memberPath).
-				toString();
+	public TemplateManagementServiceConfigurationException(Throwable cause) {
+		super(cause);
 	}
 
 }

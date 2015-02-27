@@ -46,6 +46,7 @@ import org.ldp4j.application.ext.annotations.DirectContainer;
 import org.ldp4j.application.ext.annotations.IndirectContainer;
 import org.ldp4j.application.ext.annotations.MembershipRelation;
 import org.ldp4j.application.ext.annotations.Resource;
+import org.ldp4j.application.spi.TemplateCreationException;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateLibrary;
 import org.ldp4j.application.template.TemplateVisitor;

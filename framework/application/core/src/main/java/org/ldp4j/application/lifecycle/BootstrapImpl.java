@@ -34,7 +34,7 @@ import org.ldp4j.application.engine.ApplicationConfigurationException;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.setup.Bootstrap;
-import org.ldp4j.application.template.InvalidTemplateManagerConfigurationException;
+import org.ldp4j.application.template.TemplateManagementServiceConfigurationException;
 import org.ldp4j.application.template.TemplateManagementService;
 
 import com.google.common.collect.Lists;
@@ -73,7 +73,7 @@ final class BootstrapImpl<T extends Configuration> implements Bootstrap<T> {
 	void configureTemplates() throws ApplicationConfigurationException {
 		try {
 			this.templateManagementService.configure(this.handlerClasses, this.handlers);
-		} catch (InvalidTemplateManagerConfigurationException e) {
+		} catch (TemplateManagementServiceConfigurationException e) {
 			throw new ApplicationConfigurationException("Invalid application resource handler configuration",e);
 		}
 	}

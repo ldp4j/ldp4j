@@ -52,8 +52,6 @@ import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateLibrary;
 import org.ldp4j.application.template.TemplateVisitor;
 
-import com.google.common.base.Preconditions;
-
 final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 
 	private final class ImmutableTemplateLibrary implements TemplateLibrary {
@@ -114,6 +112,11 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		this.resourceRepository=new InMemoryResourceRepository();
 		this.endpointRepository=new InMemoryEndpointRepository();
 		this.templateLibrary=new InMemoryTemplateLibrary();
+	}
+
+	private Class<? extends ResourceHandler> toResourceHandlerClass(Class<?> targetClass) {
+		checkArgument(ResourceHandler.class.isAssignableFrom(targetClass),"Class '%s' does not implement '%s'",targetClass.getCanonicalName(),ResourceHandler.class.getCanonicalName());
+		return targetClass.asSubclass(ResourceHandler.class);
 	}
 
 	private ResourceTemplate findTemplate(String id) {
@@ -256,18 +259,13 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	}
 
 	@Override
-	public ResourceTemplate register(Class<?> targetClass) {
+	public ResourceTemplate registerHandler(Class<?> targetClass) {
 		return ImmutableTemplateFactory.newImmutable(this.templateLibrary.registerHandler(targetClass));
 	}
 
 	@Override
-	public boolean isRegistered(Class<?> handlerClass) {
+	public boolean isHandlerRegistered(Class<?> handlerClass) {
 		return this.templateLibrary.findByHandler(toResourceHandlerClass(handlerClass))!=null;
-	}
-
-	private Class<? extends ResourceHandler> toResourceHandlerClass(Class<?> targetClass) {
-		checkArgument(ResourceHandler.class.isAssignableFrom(targetClass),"Class '%s' does not implement '%s'",targetClass.getCanonicalName(),ResourceHandler.class.getCanonicalName());
-		return targetClass.asSubclass(ResourceHandler.class);
 	}
 
 	@Override
