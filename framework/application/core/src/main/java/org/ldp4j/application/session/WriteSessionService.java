@@ -42,7 +42,6 @@ import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.Service;
 import org.ldp4j.application.spi.ServiceBuilder;
-import org.ldp4j.application.template.TemplateManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -58,8 +57,7 @@ public final class WriteSessionService implements Service {
 			return
 				new WriteSessionService(
 					persistencyManager(),
-					service(EndpointManagementService.class),
-					service(TemplateManagementService.class));
+					service(EndpointManagementService.class));
 		}
 
 	}
@@ -94,18 +92,16 @@ public final class WriteSessionService implements Service {
 
 	private final PersistencyManager persistencyManager;
 	private final EndpointManagementService endpointManagementService;
-	private final TemplateManagementService templateManagementService;
 
-	private WriteSessionService(PersistencyManager persistencyManager, EndpointManagementService endointManagementService, TemplateManagementService templateManagementService) {
+	private WriteSessionService(PersistencyManager persistencyManager, EndpointManagementService endointManagementService) {
 		this.persistencyManager = persistencyManager;
-		this.templateManagementService=templateManagementService;
 		this.endpointManagementService = endointManagementService;
 	}
 
 	public WriteSession createSession(WriteSessionConfiguration configuration) {
 		UnitOfWork.newCurrent();
 		logLifecycleMessage("Created write session: %s",configuration);
-		return new DelegatedWriteSession(configuration,this.persistencyManager,this.templateManagementService,this);
+		return new DelegatedWriteSession(configuration,this.persistencyManager,this);
 	}
 
 	public void terminateSession(WriteSession writeSession) {

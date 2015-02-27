@@ -46,7 +46,6 @@ import org.ldp4j.application.spi.ServiceBuilder;
 import org.ldp4j.application.template.AttachedTemplate;
 import org.ldp4j.application.template.ContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
-import org.ldp4j.application.template.TemplateManagementService;
 
 public final class EndpointManagementService implements Service {
 
@@ -83,10 +82,7 @@ public final class EndpointManagementService implements Service {
 		}
 
 		public EndpointManagementService build() {
-			return
-				new EndpointManagementService(
-					persistencyManager(),
-					service(TemplateManagementService.class));
+			return new EndpointManagementService(persistencyManager());
 		}
 
 	}
@@ -109,13 +105,11 @@ public final class EndpointManagementService implements Service {
 		private static final int MAX_ENDPOINT_CREATION_FAILURE = 3;
 
 	private final PersistencyManager persistencyManager;
-	private final TemplateManagementService templateManagementService;
 	private final ListenerManager<EndpointLifecycleListener> listenerManager;
 
 
-	private EndpointManagementService(PersistencyManager persistencyManager, TemplateManagementService templateManagementService) {
+	private EndpointManagementService(PersistencyManager persistencyManager) {
 		this.persistencyManager = persistencyManager;
-		this.templateManagementService = templateManagementService;
 		this.listenerManager=ListenerManager.<EndpointLifecycleListener>newInstance();
 	}
 
@@ -148,7 +142,7 @@ public final class EndpointManagementService implements Service {
 			return null;
 		}
 		Endpoint endpoint=getResourceEndpoint(parent.id());
-		ResourceTemplate parentTemplate=this.templateManagementService.findTemplateById(parent.id().templateId());
+		ResourceTemplate parentTemplate=this.persistencyManager.templateOfId(parent.id().templateId());
 		AttachedTemplate attachedTemplate = parentTemplate.attachedTemplate(attachment.id());
 		StringBuilder builder=new StringBuilder();
 		addSegment(builder,endpoint.path());
@@ -159,7 +153,7 @@ public final class EndpointManagementService implements Service {
 	private String generatePathForMember(Resource child, Container parent, String desiredPath) throws EndpointNotFoundException {
 		if(parent.hasMember(child.id())) {
 			Endpoint endpoint=getResourceEndpoint(parent.id());
-			ContainerTemplate parentTemplate = templateManagementService.findTemplateById(parent.id().templateId(),ContainerTemplate.class);
+			ContainerTemplate parentTemplate=this.persistencyManager.templateOfId(parent.id().templateId(),ContainerTemplate.class);
 			if(parentTemplate==null) {
 				throw new IllegalStateException("Could not find template resource '"+parent+"'");
 			}

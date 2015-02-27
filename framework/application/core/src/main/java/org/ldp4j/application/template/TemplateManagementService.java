@@ -26,12 +26,10 @@
  */
 package org.ldp4j.application.template;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.List;
 import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.locks.ReadWriteLock;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.spi.PersistencyManager;
@@ -54,63 +52,41 @@ public final class TemplateManagementService implements Service {
 
 	private final PersistencyManager persistencyManager;
 
-	private final Lock lock=new ReentrantLock();
+	private final Lock read;
+	private final Lock write;
 
-	private volatile TemplateManager manager=null;
+	private TemplateManager manager=null;
 
 	private TemplateManagementService(PersistencyManager persistencyManager) {
 		this.persistencyManager = persistencyManager;
-	}
-
-	private void setTemplateManager(TemplateManager manager) {
-		if(manager==null) {
-			return;
-		}
-		lock.lock();
-		try {
-			this.manager=manager;
-		} finally {
-			lock.unlock();
-		}
+		ReadWriteLock lock=new ReentrantReadWriteLock();
+		this.read=lock.readLock();
+		this.write=lock.writeLock();
 	}
 
 	public void configure(List<Class<?>> handlerClasses, List<ResourceHandler> handlers) throws TemplateManagementServiceConfigurationException {
-		setTemplateManager(
-			TemplateManager.
-				builder().
-					withPersistencyManager(this.persistencyManager).
-					withHandlerClasses(handlerClasses).
-					withHandlers(handlers).
-					build()
-		);
-	}
-
-	public ResourceTemplate findTemplateById(String templateId) {
-		checkNotNull(templateId,"Template identifier cannot be null");
-		checkState(manager!=null,"Template Management Service has not been initialized yet");
-		return this.persistencyManager.templateOfId(templateId);
-	}
-
-	public <T extends ResourceTemplate> T findTemplateById(String templateId, Class<? extends T> templateClass) {
-		ResourceTemplate found = findTemplateById(templateId);
-		if(found==null) {
-			return null;
-		} else if(!templateClass.isInstance(found)) {
-			// TODO: Define a specialized runtime exception
-			throw new IllegalArgumentException("Cannot cast template '"+templateId+"' to '"+templateClass.getCanonicalName()+"' ("+found.getClass().getCanonicalName()+")");
+		write.lock();
+		try {
+			this.manager=
+				TemplateManager.
+						builder().
+							withPersistencyManager(this.persistencyManager).
+							withHandlerClasses(handlerClasses).
+							withHandlers(handlers).
+							build();
+		} finally {
+			write.unlock();
 		}
-		return templateClass.cast(found);
-	}
-
-	public ResourceTemplate findTemplateByHandler(Class<? extends ResourceHandler> handlerClass) {
-		checkNotNull(handlerClass,"Resource handler cannot be null");
-		checkState(manager!=null,"Template Management Service has not been initialized yet");
-		return this.persistencyManager.templateOfHandler(handlerClass);
 	}
 
 	public <T extends ResourceHandler> T getHandler(Class<? extends T> handlerClass) {
-		ResourceTemplate template=findTemplateByHandler(handlerClass);
-		return this.manager.getHandler(handlerClass, template);
+		read.lock();
+		try {
+			ResourceTemplate template=this.persistencyManager.templateOfHandler(handlerClass);
+			return this.manager.getHandler(handlerClass, template);
+		} finally {
+			read.unlock();
+		}
 	}
 
 	public static ServiceBuilder<TemplateManagementService> serviceBuilder() {

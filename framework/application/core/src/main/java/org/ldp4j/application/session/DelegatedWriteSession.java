@@ -59,7 +59,6 @@ import org.ldp4j.application.template.IndirectContainerTemplate;
 import org.ldp4j.application.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateIntrospector;
-import org.ldp4j.application.template.TemplateManagementService;
 import org.ldp4j.application.template.TemplateVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,31 +127,29 @@ final class DelegatedWriteSession implements WriteSession {
 
 	private final WriteSessionConfiguration configuration;
 
-	private final PersistencyManager resourceRepository;
+	private final PersistencyManager persistencyManager;
 	private final WriteSessionService writeSessionService;
-	private final TemplateManagementService templateManagementService;
 
 	private final SnapshotFactory snapshotFactory;
 
 	private volatile Status status;
 
-	protected DelegatedWriteSession(WriteSessionConfiguration configuration, PersistencyManager persistencyManager, TemplateManagementService templateManagementService, WriteSessionService writeSessionService) {
+	protected DelegatedWriteSession(WriteSessionConfiguration configuration, PersistencyManager persistencyManager, WriteSessionService writeSessionService) {
 		this.configuration = configuration;
-		this.resourceRepository = persistencyManager;
-		this.templateManagementService = templateManagementService;
+		this.persistencyManager = persistencyManager;
 		this.writeSessionService = writeSessionService;
 		UnitOfWork.
 			getCurrent().
 				setEventHandler(new MembershipAwareContainerTargetCollector());
 		this.status=Status.ACTIVE;
 		this.resourceCache=new LinkedHashMap<ResourceId,DelegatedResourceSnapshot>();
-		this.snapshotFactory=SnapshotFactory.newInstance(this.templateManagementService, this);
+		this.snapshotFactory=SnapshotFactory.newInstance(this.persistencyManager, this);
 	}
 
 	private DelegatedResourceSnapshot resolveResource(ResourceId resourceId, ResourceTemplate template) {
 		DelegatedResourceSnapshot resource=this.resourceCache.get(resourceId);
 		if(resource==null) {
-			Resource delegate=this.resourceRepository.resourceOfId(resourceId, Resource.class);
+			Resource delegate=this.persistencyManager.resourceOfId(resourceId, Resource.class);
 			if(delegate!=null) {
 				resource=snapshotFactory.newPersistent(delegate,template);
 				resource.setSession(this);
@@ -165,7 +162,7 @@ final class DelegatedWriteSession implements WriteSession {
 	private <S extends ResourceSnapshot> S find(
 			Class<? extends S> snapshotClass,
 			ResourceId resourceId) {
-		ResourceTemplate template=DelegatedWriteSession.this.templateManagementService.findTemplateById(resourceId.templateId());
+		ResourceTemplate template=DelegatedWriteSession.this.persistencyManager.templateOfId(resourceId.templateId());
 		checkArgument(template!=null,"Unknown template '%s' ",resourceId.templateId());
 		checkArgument(areCompatible(snapshotClass,template),"Cannot wrap an object managed by '%s' with an snapshot of type '%s'",resourceId.templateId(),snapshotClass.getCanonicalName());
 		DelegatedResourceSnapshot resource = resolveResource(resourceId, template);
@@ -257,11 +254,11 @@ final class DelegatedWriteSession implements WriteSession {
 	}
 
 	ResourceTemplate loadTemplate(String templateId) {
-		return this.templateManagementService.findTemplateById(templateId);
+		return this.persistencyManager.templateOfId(templateId);
 	}
 
 	Resource loadResource(ResourceId resourceId) {
-		return this.resourceRepository.resourceOfId(resourceId,Resource.class);
+		return this.persistencyManager.resourceOfId(resourceId,Resource.class);
 	}
 
 	DelegatedResourceSnapshot resolveResource(ResourceId resourceId) {
@@ -323,7 +320,7 @@ final class DelegatedWriteSession implements WriteSession {
 		checkNotNull(name,RESOURCE_NAME_CANNOT_BE_NULL);
 		checkNotNull(handlerClass,"Resource handler class cannot be null");
 		checkArgument(!ContainerSnapshot.class.isAssignableFrom(snapshotClass) || ContainerHandler.class.isAssignableFrom(handlerClass),"Incompatible snapshot and handler classes ('%s' instances are not handled by '%s')",snapshotClass.getCanonicalName(),handlerClass.getCanonicalName());
-		ResourceTemplate template=this.templateManagementService.findTemplateByHandler(handlerClass);
+		ResourceTemplate template=this.persistencyManager.templateOfHandler(handlerClass);
 		checkArgument(template!=null,"Handler class '%s' is not associated to any existing template",handlerClass.getCanonicalName());
 		checkArgument(areCompatible(snapshotClass,template),"Cannot wrap an object managed by '%s' with an snapshot of type '%s'",handlerClass.getCanonicalName(),snapshotClass.getCanonicalName());
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,this.status);

@@ -76,4 +76,6 @@ public interface PersistencyManager {
 
 	ResourceTemplate templateOfId(String templateId);
 
+	<T extends ResourceTemplate> T templateOfId(String templateId, Class<? extends T> templateClass);
+
 }

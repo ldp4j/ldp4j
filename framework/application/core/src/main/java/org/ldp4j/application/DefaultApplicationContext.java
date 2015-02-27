@@ -244,6 +244,41 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return this.application;
 	}
 
+	private ApplicationExecutionException createException(String errorMessage, Exception e) {
+		LOGGER.error(errorMessage,e);
+		if(e instanceof FeatureExecutionException) {
+			return new ApplicationExecutionException(errorMessage,e.getCause());
+		}
+		throw new ApplicationContextException(errorMessage,e);
+	}
+
+	private PublicResource findResource(final String path) {
+		checkNotNull(path,"Endpoint path cannot be null");
+		PublicResource resolved = resolveResource(path);
+		if(resolved==null) {
+			Endpoint endpoint=this.goneEndpoints.get(path);
+			if(endpoint!=null) {
+				resolved=new GonePublicResource(endpoint);
+			}
+		}
+		return resolved;
+	}
+
+	private PublicResource resolveResource(final String path) {
+		checkNotNull(path,"Endpoint path cannot be null");
+		PublicResource resolved=null;
+		Endpoint endpoint = this.engine().endpointManagementService().resolveEndpoint(path);
+		if(endpoint!=null) {
+			resolved = this.factory.createResource(endpoint);
+		}
+		return resolved;
+	}
+
+	private PublicResource resolveResource(ManagedIndividualId id) {
+		checkNotNull(id,"Individual identifier cannot be null");
+		return this.factory.createResource(ResourceId.createId(id.name(), id.managerId()));
+	}
+
 	DataSet getResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = this.engine().persistencyManager().resourceOfId(resourceId,Resource.class);
@@ -258,14 +293,6 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			String errorMessage = applicationFailureMessage("Resource '%s' retrieval failed ",endpoint);
 			throw createException(errorMessage,e);
 		}
-	}
-
-	private ApplicationExecutionException createException(String errorMessage, Exception e) {
-		LOGGER.error(errorMessage,e);
-		if(e instanceof FeatureExecutionException) {
-			return new ApplicationExecutionException(errorMessage,e.getCause());
-		}
-		throw new ApplicationContextException(errorMessage,e);
 	}
 
 	Resource resolveResource(Endpoint endpoint) {
@@ -339,10 +366,10 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	}
 
 	ResourceTemplate resourceTemplate(Resource resource) {
-		return this.engine().templateManagementService().findTemplateById(resource.id().templateId());
+		return this.engine().persistencyManager().templateOfId(resource.id().templateId());
 	}
 
-	public void initialize(String applicationClassName) throws ApplicationContextCreationException {
+	void initialize(String applicationClassName) throws ApplicationContextCreationException {
 		try {
 			this.engine().endpointManagementService().registerEndpointLifecycleListener(this.endpointLifecycleListener);
 			this.application = this.engine().applicationLifecycleService().initialize(applicationClassName);
@@ -353,9 +380,13 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 	}
 
-	public boolean shutdown() {
+	boolean shutdown() {
 		this.engine().endpointManagementService().deregisterEndpointLifecycleListener(this.endpointLifecycleListener);
 		return true;
+	}
+
+	DefaultApplicationEngine engine() {
+		return this.engine;
 	}
 
 	/**
@@ -374,36 +405,12 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return this.application.getClass().getName();
 	}
 
-	private PublicResource findResource(final String path) {
-		checkNotNull(path,"Endpoint path cannot be null");
-		PublicResource resolved = resolveResource(path);
-		if(resolved==null) {
-			Endpoint endpoint=this.goneEndpoints.get(path);
-			if(endpoint!=null) {
-				resolved=new GonePublicResource(endpoint);
-			}
-		}
-		return resolved;
-	}
-
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ApplicationContextOperation createOperation() {
 		return new DefaultApplicationOperation();
-	}
-
-	private PublicResource resolveResource(final String path) {
-		checkNotNull(path,"Endpoint path cannot be null");
-		PublicResource resolved=null;
-		Endpoint endpoint = this.engine().endpointManagementService().resolveEndpoint(path);
-		if(endpoint!=null) {
-			resolved = this.factory.createResource(endpoint);
-		}
-		return resolved;
-	}
-
-	private PublicResource resolveResource(ManagedIndividualId id) {
-		checkNotNull(id,"Individual identifier cannot be null");
-		return this.factory.createResource(ResourceId.createId(id.name(), id.managerId()));
 	}
 
 	/**
@@ -422,10 +429,6 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	public void deregisterApplicationLifecycleListener(ApplicationLifecycleListener listener) {
 		checkNotNull(listener,"Application lifecycle listener cannot be null");
 		this.engine().applicationLifecycleService().deregisterApplicationLifecycleListener(listener);
-	}
-
-	public DefaultApplicationEngine engine() {
-		return this.engine;
 	}
 
 }

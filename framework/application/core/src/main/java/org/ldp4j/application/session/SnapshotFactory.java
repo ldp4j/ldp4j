@@ -36,23 +36,23 @@ import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.resource.ResourceVisitor;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateIntrospector;
-import org.ldp4j.application.template.TemplateManagementService;
 
 final class SnapshotFactory {
 
-	private final TemplateManagementService service;
 	private final DelegatedWriteSession session;
-	
-	private SnapshotFactory(TemplateManagementService service, DelegatedWriteSession session) {
-		this.service = service;
+	private final PersistencyManager persistencyManager;
+
+	private SnapshotFactory(PersistencyManager persistencyManager, DelegatedWriteSession session) {
+		this.persistencyManager = persistencyManager;
 		this.session = session;
 	}
 
 	private ResourceTemplate getTemplate(ResourceId resourceId) {
 		checkNotNull(resourceId,"Resource identifier cannot be null");
-		ResourceTemplate template = this.service.findTemplateById(resourceId.templateId());
+		ResourceTemplate template = this.persistencyManager.templateOfId(resourceId.templateId());
 		checkArgument(template!=null,"Could not find template for resource '%s'",resourceId);
 		return template;
 	}
@@ -113,9 +113,9 @@ final class SnapshotFactory {
 		checkState(!snapshotClass.isInstance(tmp),"Cannot create snapshot of type '"+snapshotClass.getCanonicalName()+"' from template '"+resourceId.templateId()+"'");
 		return snapshotClass.cast(tmp);
 	}
-	
-	static SnapshotFactory newInstance(TemplateManagementService service, DelegatedWriteSession session) {
-		return new SnapshotFactory(service,session);
+
+	static SnapshotFactory newInstance(PersistencyManager persistencyManager, DelegatedWriteSession session) {
+		return new SnapshotFactory(persistencyManager,session);
 	}
 
 

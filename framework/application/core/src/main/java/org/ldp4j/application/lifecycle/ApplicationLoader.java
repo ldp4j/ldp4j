@@ -114,8 +114,7 @@ final class ApplicationLoader<T extends Configuration> {
 		BootstrapImpl<T> bootstrap=new BootstrapImpl<T>(configuration,templateManagementService());
 		EnvironmentImpl environment=
 			new EnvironmentImpl(
-				persistencyManager(),
-				templateManagementService()
+				persistencyManager()
 			);
 		try {
 			application.setup(environment,bootstrap);
