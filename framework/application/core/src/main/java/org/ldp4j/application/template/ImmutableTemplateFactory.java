@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.impl;
+package org.ldp4j.application.template;
 
 import java.net.URI;
 import java.util.Iterator;
@@ -33,18 +33,10 @@ import java.util.Set;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.ext.annotations.MembershipRelation;
-import org.ldp4j.application.template.AttachedTemplate;
-import org.ldp4j.application.template.BasicContainerTemplate;
-import org.ldp4j.application.template.ContainerTemplate;
-import org.ldp4j.application.template.DirectContainerTemplate;
-import org.ldp4j.application.template.IndirectContainerTemplate;
-import org.ldp4j.application.template.MembershipAwareContainerTemplate;
-import org.ldp4j.application.template.ResourceTemplate;
-import org.ldp4j.application.template.TemplateVisitor;
 
 import com.google.common.base.Optional;
 
-final class ImmutableTemplateFactory {
+public final class ImmutableTemplateFactory {
 
 	private static class ResourceTemplateWrapper<T extends ResourceTemplate> implements ResourceTemplate {
 
@@ -242,7 +234,7 @@ final class ImmutableTemplateFactory {
 	private ImmutableTemplateFactory() {
 	}
 
-	static ResourceTemplate newImmutable(ResourceTemplate template) {
+	public static <T extends ResourceTemplate> ResourceTemplate newImmutable(ResourceTemplate template) {
 		TemplateCreator creator = new TemplateCreator();
 		template.accept(creator);
 		return creator.getCreatedTemplate();

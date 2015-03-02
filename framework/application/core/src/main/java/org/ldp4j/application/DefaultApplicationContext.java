@@ -29,7 +29,6 @@ package org.ldp4j.application;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
@@ -56,6 +55,7 @@ import org.ldp4j.application.resource.FeatureExecutionException;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.session.WriteSessionConfiguration;
+import org.ldp4j.application.spi.Transaction;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateIntrospector;
 import org.slf4j.Logger;
@@ -98,39 +98,33 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	}
 
-	private static final class ApplicationContextOperationController {
-
-		private final ThreadLocal<AtomicLong> counters;
+	private final class ApplicationContextOperationController {
 
 		private ApplicationContextOperationController() {
-			this.counters=new ThreadLocal<AtomicLong>();
 		}
 
-		private AtomicLong getCounter(boolean required) {
-			AtomicLong counter = this.counters.get();
-			if(counter==null) {
-				if(required) {
-					throw new IllegalStateException("Transaction not initiated for thread "+Thread.currentThread().getName());
-				}
-				counter=new AtomicLong();
-				this.counters.set(counter);
-			}
-			return counter;
+		private Transaction currentTransaction() {
+			return engine().persistencyManager().currentTransaction();
 		}
 
 		public void beginTransaction() {
-			AtomicLong counter = getCounter(false);
+			Transaction transaction = currentTransaction();
+			transaction.begin();
 			LOGGER.
 				info("Started transaction {}.{},",
 					Thread.currentThread().getName(),
-					counter.incrementAndGet());
+					transaction);
 		}
 
 		public void endTransaction() {
+			Transaction transaction = currentTransaction();
+			if(!transaction.isCompleted() && transaction.isStarted()) {
+				transaction.rollback();
+			}
 			LOGGER.
 				info("Completed transaction {}.{},",
 					Thread.currentThread().getName(),
-					getCounter(true));
+					transaction);
 		}
 
 	}

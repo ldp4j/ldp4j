@@ -36,4 +36,8 @@ public interface Transaction {
 
 	void rollback();
 
+	boolean isStarted();
+
+	boolean isCompleted();
+
 }

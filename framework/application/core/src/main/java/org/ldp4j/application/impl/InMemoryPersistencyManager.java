@@ -30,6 +30,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.data.Name;
@@ -46,6 +47,7 @@ import org.ldp4j.application.spi.Transaction;
 import org.ldp4j.application.template.BasicContainerTemplate;
 import org.ldp4j.application.template.ContainerTemplate;
 import org.ldp4j.application.template.DirectContainerTemplate;
+import org.ldp4j.application.template.ImmutableTemplateFactory;
 import org.ldp4j.application.template.IndirectContainerTemplate;
 import org.ldp4j.application.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
@@ -108,10 +110,15 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	private final InMemoryEndpointRepository endpointRepository;
 	private final InMemoryTemplateLibrary templateLibrary;
 
+	private final ThreadLocal<InMemoryTransaction> currentTransaction;
+	private final AtomicLong transactionCounter;
+
 	InMemoryPersistencyManager() {
 		this.resourceRepository=new InMemoryResourceRepository();
 		this.endpointRepository=new InMemoryEndpointRepository();
 		this.templateLibrary=new InMemoryTemplateLibrary();
+		this.currentTransaction=new ThreadLocal<InMemoryTransaction>();
+		this.transactionCounter=new AtomicLong();
 	}
 
 	private Class<? extends ResourceHandler> toResourceHandlerClass(Class<?> targetClass) {
@@ -175,9 +182,33 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		return resource;
 	}
 
+	void disposeTransaction(InMemoryTransaction transaction) {
+		this.currentTransaction.set(null);
+	}
+
 	@Override
 	public Transaction currentTransaction() {
-		throw new UnsupportedOperationException("Method not implemented yet");
+		InMemoryTransaction transaction=this.currentTransaction.get();
+		if(transaction==null) {
+			transaction=new InMemoryTransaction(this.transactionCounter.getAndIncrement(),this);
+			this.currentTransaction.set(transaction);
+		}
+		return transaction;
+	}
+
+	@Override
+	public ResourceTemplate registerHandler(Class<?> targetClass) {
+		return ImmutableTemplateFactory.newImmutable(this.templateLibrary.registerHandler(targetClass));
+	}
+
+	@Override
+	public boolean isHandlerRegistered(Class<?> handlerClass) {
+		return this.templateLibrary.findByHandler(toResourceHandlerClass(handlerClass))!=null;
+	}
+
+	@Override
+	public TemplateLibrary exportTemplates() {
+		return new ImmutableTemplateLibrary();
 	}
 
 	public Resource createResource(String templateId, Name<?> resourceId, Resource parent) {
@@ -256,21 +287,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	public void shutdown() throws LifecycleException {
 		this.endpointRepository.shutdown();
 		this.resourceRepository.shutdown();
-	}
-
-	@Override
-	public ResourceTemplate registerHandler(Class<?> targetClass) {
-		return ImmutableTemplateFactory.newImmutable(this.templateLibrary.registerHandler(targetClass));
-	}
-
-	@Override
-	public boolean isHandlerRegistered(Class<?> handlerClass) {
-		return this.templateLibrary.findByHandler(toResourceHandlerClass(handlerClass))!=null;
-	}
-
-	@Override
-	public TemplateLibrary exportTemplates() {
-		return new ImmutableTemplateLibrary();
 	}
 
 	@Override

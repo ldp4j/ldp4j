@@ -37,53 +37,100 @@ final class AutoclosingEndointController extends AbstractEndpointController {
 		this.delegate = delegate;
 	}
 
-	@Override
-	public Response options(OperationContext context) {
-		Response response=this.delegate.options(context);
-		this.delegate.getApplicationOperationContext().dispose();
-		return response;
+	private interface Operation {
+		Response execute(AbstractEndpointController delegate);
+	}
+
+	private Response safe(Operation operation) {
+		try {
+			return operation.execute(this.delegate);
+		} finally {
+			this.delegate.getApplicationOperationContext().dispose();
+		}
 	}
 
 	@Override
-	public Response head(OperationContext context) {
-		Response response=this.delegate.head(context);
-		this.delegate.getApplicationOperationContext().dispose();
-		return response;
+	public Response options(final OperationContext context) {
+		return safe(
+			new Operation() {
+				@Override
+				public Response execute(AbstractEndpointController delegate) {
+					return delegate.options(context);
+				}
+			}
+		);
 	}
 
 	@Override
-	public Response createResource(OperationContext context) {
-		Response response=this.delegate.createResource(context);
-		this.delegate.getApplicationOperationContext().dispose();
-		return response;
+	public Response head(final OperationContext context) {
+		return safe(
+			new Operation() {
+				@Override
+				public Response execute(AbstractEndpointController delegate) {
+					return delegate.head(context);
+				}
+			}
+		);
 	}
 
 	@Override
-	public Response getResource(OperationContext context) {
-		Response response=this.delegate.getResource(context);
-		this.delegate.getApplicationOperationContext().dispose();
-		return response;
+	public Response createResource(final OperationContext context) {
+		return safe(
+			new Operation() {
+				@Override
+				public Response execute(AbstractEndpointController delegate) {
+					return delegate.createResource(context);
+				}
+			}
+		);
 	}
 
 	@Override
-	public Response modifyResource(OperationContext context) {
-		Response response=this.delegate.modifyResource(context);
-		this.delegate.getApplicationOperationContext().dispose();
-		return response;
+	public Response getResource(final OperationContext context) {
+		return safe(
+			new Operation() {
+				@Override
+				public Response execute(AbstractEndpointController delegate) {
+					return delegate.getResource(context);
+				}
+			}
+		);
 	}
 
 	@Override
-	public Response deleteResource(OperationContext context) {
-		Response response=delegate.deleteResource(context);
-		this.delegate.getApplicationOperationContext().dispose();
-		return response;
+	public Response modifyResource(final OperationContext context) {
+		return safe(
+			new Operation() {
+				@Override
+				public Response execute(AbstractEndpointController delegate) {
+					return delegate.modifyResource(context);
+				}
+			}
+		);
 	}
 
 	@Override
-	public Response patchResource(OperationContext context) {
-		Response response=this.delegate.patchResource(context);
-		this.delegate.getApplicationOperationContext().dispose();
-		return response;
+	public Response deleteResource(final OperationContext context) {
+		return safe(
+			new Operation() {
+				@Override
+				public Response execute(AbstractEndpointController delegate) {
+					return delegate.deleteResource(context);
+				}
+			}
+		);
+	}
+
+	@Override
+	public Response patchResource(final OperationContext context) {
+		return safe(
+			new Operation() {
+				@Override
+				public Response execute(AbstractEndpointController delegate) {
+					return delegate.patchResource(context);
+				}
+			}
+		);
 	}
 
 }
