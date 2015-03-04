@@ -26,19 +26,26 @@
  */
 package org.ldp4j.application.vocabulary;
 
+import java.io.Serializable;
+
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.application.vocabulary.Vocabulary;
 
 /**
  * A term implementation that enforces the creation of immutable terms defined
  * for an {@code AbstractImmutableVocabulary}, which behave as {@code Enum} constants.
- * 
+ *
  * @version 1.0
  * @since 1.0.0
  * @author Miguel Esteban Guti&eacute;rrez
  * @see AbstractImmutableVocabulary
  */
-public class ImmutableTerm implements Term {
+public class ImmutableTerm implements Term, Serializable {
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 6842492155071877731L;
 
 	private static final int HASH_CODE_SALT = 19;
 	private final int ordinal;
@@ -111,7 +118,7 @@ public class ImmutableTerm implements Term {
 
 	/**
 	 * Returns true if the specified object is equal to this term constant.
-	 * 
+	 *
 	 * @param other
 	 *            the object to be compared for equality with this object.
 	 * @return true if the specified object is equal to this term constant.
@@ -123,7 +130,7 @@ public class ImmutableTerm implements Term {
 
 	/**
 	 * Returns a hash code for this term constant.
-	 * 
+	 *
 	 * @return a hash code for this term constant.
 	 */
 	@Override
@@ -134,7 +141,7 @@ public class ImmutableTerm implements Term {
 	/**
 	 * Throws CloneNotSupportedException. This guarantees that terms are never
 	 * cloned, which is necessary to preserve their "singleton" status.
-	 * 
+	 *
 	 * @return (never returns)
 	 */
 	@Override
@@ -148,7 +155,7 @@ public class ImmutableTerm implements Term {
 	 * This method may be overridden, though it typically isn't necessary or
 	 * desirable. An term type should override this method when a more
 	 * "programmer-friendly" string form exists.
-	 * 
+	 *
 	 * @return the name of this term constant
 	 */
 	@Override
@@ -160,7 +167,7 @@ public class ImmutableTerm implements Term {
 	 * Compares this term with the specified object for order. Returns a
 	 * negative integer, zero, or a positive integer as this object is less
 	 * than, equal to, or greater than the specified object.
-	 * 
+	 *
 	 * Term constants are only comparable to other term constants of the same
 	 * vocabulary. The natural order implemented by this method is the order in
 	 * which the constants are declared.

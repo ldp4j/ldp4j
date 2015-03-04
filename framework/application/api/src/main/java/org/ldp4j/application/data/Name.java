@@ -26,7 +26,9 @@
  */
 package org.ldp4j.application.data;
 
-public interface Name<T> {
+import java.io.Serializable;
+
+public interface Name<T extends Serializable> {
 
 	T id();
 
