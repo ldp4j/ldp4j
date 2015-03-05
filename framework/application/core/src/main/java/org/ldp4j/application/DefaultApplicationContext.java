@@ -26,12 +26,20 @@
  */
 package org.ldp4j.application;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.ExternalIndividual;
+import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.data.validation.ValidationReport;
+import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.domain.RDFS;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.endpoint.EndpointLifecycleListener;
 import org.ldp4j.application.engine.ApplicationContextCreationException;
@@ -348,6 +356,32 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			String errorMessage = applicationFailureMessage("Resource modification failed at '%s'",endpoint);
 			throw createException(errorMessage,e);
 		}
+	}
+
+	DataSet getValidationReport(Endpoint endpoint, String failureId) throws ApplicationExecutionException {
+		ResourceId resourceId=endpoint.resourceId();
+		Resource resource = this.engine().persistencyManager().resourceOfId(resourceId,Resource.class);
+		if(resource==null) {
+			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
+			LOGGER.error(errorMessage);
+			throw new ApplicationExecutionException(errorMessage);
+		}
+		ValidationReport report=this.engine().persistencyManager().failureOfResource(resource,failureId);
+		if(report==null) {
+			return null;
+		}
+		// TODO: Update with real data transformation
+		ManagedIndividualId rid = ManagedIndividualId.createId(resource.id().name(), resource.id().templateId());
+		ManagedIndividualId fId = ManagedIndividualId.createId(URI.create("?failureId="+failureId), rid);
+		DataSet formatedReport=DataSetFactory.createDataSet(fId.name());
+		ExternalIndividual targetIndividual = formatedReport.individual(URI.create("http://www.ldp4j.org/vocab#ConstraintViolationReport"), ExternalIndividual.class);
+		ManagedIndividual failureIndividual = formatedReport.individual(fId, ManagedIndividual.class);
+		ManagedIndividual about = formatedReport.individual(rid, ManagedIndividual.class);
+		failureIndividual.addValue(RDF.TYPE.as(URI.class), targetIndividual);
+		failureIndividual.addValue(URI.create("http://www.ldp4j.org/vocab#about"), about);
+		failureIndividual.addValue(URI.create("http://www.ldp4j.org/vocab#failureId"), DataSetUtils.newLiteral(failureId));
+		failureIndividual.addValue(RDFS.COMMENT.as(URI.class), DataSetUtils.newLiteral("To be filled in"));
+		return formatedReport;
 	}
 
 	Capabilities endpointCapabilities(Endpoint endpoint) {

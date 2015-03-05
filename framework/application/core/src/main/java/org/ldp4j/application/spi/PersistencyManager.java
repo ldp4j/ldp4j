@@ -29,6 +29,7 @@ package org.ldp4j.application.spi;
 import java.util.Date;
 
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.validation.ValidationReport;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -77,5 +78,10 @@ public interface PersistencyManager {
 	ResourceTemplate templateOfId(String templateId);
 
 	<T extends ResourceTemplate> T templateOfId(String templateId, Class<? extends T> templateClass);
+
+	void add(Resource resource, ValidationReport report);
+
+	ValidationReport failureOfResource(Resource resource, String failureId);
+
 
 }

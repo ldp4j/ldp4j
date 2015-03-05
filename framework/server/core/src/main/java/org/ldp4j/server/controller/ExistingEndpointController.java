@@ -279,8 +279,18 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			}
 
 			DataSet report=resource.getValidationReport(failureId);
+			if(report==null) {
+				ResponseBuilder builder=
+					Response.
+						status(Status.BAD_REQUEST).
+						type(MediaType.TEXT_PLAIN).
+						language(Locale.ENGLISH).
+						entity("Unknown failure '"+failureId+"'");
+				addRequiredHeaders(context, builder);
+				return builder.build();
+			}
 
-			LOGGER.trace("Data set to serialize: \n {}",report);
+			LOGGER.trace("Validation report to serialize: \n {}",report);
 
 			String body=context.serialize(report,variant.getMediaType());
 
@@ -293,6 +303,8 @@ final class ExistingEndpointController extends AbstractEndpointController {
 				builder.entity(body);
 			}
 			return builder.build();
+		} catch (ApplicationExecutionException e) {
+			return processExecutionException(context, e);
 		} catch (ApplicationContextException e) {
 			return processRuntimeException(context, e);
 		}
