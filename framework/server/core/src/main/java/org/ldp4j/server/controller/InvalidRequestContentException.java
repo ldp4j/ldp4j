@@ -26,52 +26,17 @@
  */
 package org.ldp4j.server.controller;
 
-import java.net.URI;
-import java.util.List;
-
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Variant;
-
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.engine.context.ContentPreferences;
-import org.ldp4j.application.engine.context.CreationPreferences;
-import org.ldp4j.application.engine.context.PublicContainer;
 import org.ldp4j.application.engine.context.PublicResource;
 
-public interface OperationContext {
+public class InvalidRequestContentException extends ContentProcessingException {
 
-	URI base();
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -4256791645702385728L;
 
-	String path();
-
-	DataSet dataSet();
-
-	Variant expectedVariant();
-
-	ContentPreferences contentPreferences();
-
-	CreationPreferences creationPreferences();
-
-	OperationContext checkContents();
-
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	PublicResource resource();
-
-	PublicContainer container();
-
-	URI resolve(PublicResource newResource);
-
-	String serialize(DataSet entity, MediaType mediaType);
-
-	boolean isQuery();
-
-	boolean hasQueryParameter(String string);
-
-	List<String> getQueryParameters();
-
-	List<String> getQueryParameterValues(String parameter);
+	public InvalidRequestContentException(String message, PublicResource resource, OperationContext context) {
+		super(message, resource, context);
+	}
 
 }

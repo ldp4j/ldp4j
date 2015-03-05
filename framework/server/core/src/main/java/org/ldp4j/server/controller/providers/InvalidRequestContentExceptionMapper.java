@@ -24,54 +24,26 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.controller.providers;
 
-import java.net.URI;
-import java.util.List;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Variant;
+import org.ldp4j.server.controller.InvalidRequestContentException;
 
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.engine.context.ContentPreferences;
-import org.ldp4j.application.engine.context.CreationPreferences;
-import org.ldp4j.application.engine.context.PublicContainer;
-import org.ldp4j.application.engine.context.PublicResource;
+@Provider
+public class InvalidRequestContentExceptionMapper implements ExceptionMapper<InvalidRequestContentException> {
 
-public interface OperationContext {
-
-	URI base();
-
-	String path();
-
-	DataSet dataSet();
-
-	Variant expectedVariant();
-
-	ContentPreferences contentPreferences();
-
-	CreationPreferences creationPreferences();
-
-	OperationContext checkContents();
-
-	OperationContext checkPreconditions();
-
-	OperationContext checkOperationSupport();
-
-	PublicResource resource();
-
-	PublicContainer container();
-
-	URI resolve(PublicResource newResource);
-
-	String serialize(DataSet entity, MediaType mediaType);
-
-	boolean isQuery();
-
-	boolean hasQueryParameter(String string);
-
-	List<String> getQueryParameters();
-
-	List<String> getQueryParameterValues(String parameter);
+	@Override
+	public Response toResponse(InvalidRequestContentException throwable) {
+		return
+				ContentProcessingExceptionSupport.
+					getFailureResponse(
+						Status.BAD_REQUEST,
+						throwable.getMessage()+". Required content matching ",
+						throwable);
+	}
 
 }

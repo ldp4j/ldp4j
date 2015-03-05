@@ -57,6 +57,10 @@ import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
+
 final class OperationContextImpl implements OperationContext {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(OperationContextImpl.class);
@@ -192,6 +196,30 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	@Override
+	public boolean isQuery() {
+		return !this.uriInfo.getQueryParameters().isEmpty();
+	}
+
+	@Override
+	public boolean hasQueryParameter(String parameter) {
+		return this.uriInfo.getQueryParameters().get(parameter)!=null;
+	}
+
+	@Override
+	public List<String> getQueryParameters() {
+		return ImmutableList.copyOf(this.uriInfo.getQueryParameters().keySet());
+	}
+
+	@Override
+	public List<String> getQueryParameterValues(String parameter) {
+		List<String> result = this.uriInfo.getQueryParameters().get(parameter);
+		if(result==null) {
+			result=Lists.newArrayList();
+		}
+		return ImmutableList.copyOf(result);
+	}
+
+	@Override
 	public OperationContext checkContents() {
 		List<Variant> supportedVariants=VariantUtils.defaultVariants();
 		if(entity()==null || entity().isEmpty()) {
@@ -281,7 +309,7 @@ final class OperationContextImpl implements OperationContext {
 			} catch(UnsupportedMediaTypeException e) {
 				throw new UnsupportedContentException(this.resource,this,contentVariant());
 			} catch(IOException e) {
-				throw new ContentProcessingException("Entity cannot be parsed as '"+mediaType+"' ",this.resource,this);
+				throw new InvalidRequestContentException("Entity cannot be parsed as '"+mediaType+"' ("+Throwables.getRootCause(e).getMessage()+")",this.resource,this);
 			}
 		}
 		return this.dataSet;

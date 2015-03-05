@@ -43,14 +43,14 @@
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
 	<bean
-		id="logInInterceptor" 
+		id="logInInterceptor"
 		class="org.apache.cxf.interceptor.LoggingInInterceptor" />
-		
+
 	<bean
-		id="logOutInterceptor" 
+		id="logOutInterceptor"
 		class="org.apache.cxf.interceptor.LoggingOutInterceptor" />
 
-	<bean 
+	<bean
 		id="frontend"
 		scope="singleton"
 		class="org.ldp4j.server.frontend.ServerFrontend">
@@ -74,7 +74,8 @@
 			<bean id="mcteMapper" class="org.ldp4j.server.controller.providers.MissingContentTypeExceptionMapper"/>
 			<bean id="mnaMapper"  class="org.ldp4j.server.controller.providers.MethodNotAllowedExceptionMapper"/>
 			<bean id="preMapper"  class="org.ldp4j.server.controller.providers.PreconditionRequiredExceptionMapper"/>
+			<bean id="iceMapper"  class="org.ldp4j.server.controller.providers.InvalidRequestContentExceptionMapper"/>
 		</jaxrs:providers>
-	</jaxrs:server> 
+	</jaxrs:server>
 
 </beans>

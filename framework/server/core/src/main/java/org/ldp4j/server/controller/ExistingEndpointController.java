@@ -38,7 +38,14 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.ExternalIndividual;
+import org.ldp4j.application.data.ManagedIndividual;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.domain.RDFS;
 import org.ldp4j.application.engine.context.ApplicationContextException;
 import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
@@ -64,6 +71,8 @@ import com.google.common.base.Throwables;
 
 final class ExistingEndpointController extends AbstractEndpointController {
 
+
+	private static final String FAILURE_QUERY_PARAMETER = "failureId";
 
 	private static final String ACCEPT_POST_HEADER = "Accept-Post";
 
@@ -138,6 +147,11 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			checkOperationSupport().
 			checkPreconditions();
 
+		Response response=tryQuery(context,includeEntity,variant);
+		if(response!=null) {
+			return response;
+		}
+
 		try {
 			PublicResource resource=context.resource();
 			ContentPreferences preferences=
@@ -178,6 +192,127 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			return processRuntimeException(context, e);
 		}
 
+	}
+
+	private Response tryQuery(OperationContext context, boolean includeEntity, Variant variant) {
+		if(!context.isQuery()) {
+			return null;
+		}
+		List<String> allParameters = context.getQueryParameters();
+		if(allParameters.contains(FAILURE_QUERY_PARAMETER)) {
+			if(allParameters.size()==1) {
+				List<String> failureIds=context.getQueryParameterValues(FAILURE_QUERY_PARAMETER);
+				if(failureIds.size()==1) {
+					return processFailure(context,includeEntity,variant,failureIds.get(0));
+				} else {
+					ResponseBuilder builder=
+						Response.
+							status(Status.BAD_REQUEST).
+							type(MediaType.TEXT_PLAIN).
+							language(Locale.ENGLISH).
+							entity("Only one failure id allowed");
+					addRequiredHeaders(context, builder);
+					return builder.build();
+				}
+			} else {
+				ResponseBuilder builder=
+						Response.
+							status(Status.BAD_REQUEST).
+							type(MediaType.TEXT_PLAIN).
+							language(Locale.ENGLISH).
+							entity("Mixed queries not allowed");
+				addRequiredHeaders(context, builder);
+				return builder.build();
+			}
+		} else {
+			return processQuery(context,includeEntity,variant);
+		}
+	}
+
+	private Response processQuery(OperationContext context, boolean includeEntity, Variant variant) {
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Executing query: ");
+			for(String parameter:context.getQueryParameters()) {
+				LOGGER.debug("  - {} : {}",parameter,context.getQueryParameterValues(parameter));
+			}
+		}
+		try {
+			PublicResource resource=context.resource();
+			ContentPreferences preferences=
+					context.contentPreferences();
+			boolean hasPreferences=preferences!=null;
+			if(!hasPreferences) {
+				preferences=ContentPreferences.defaultPreferences();
+			}
+			if(LOGGER.isDebugEnabled()) {
+				if(hasPreferences) {
+					LOGGER.debug("Using preferences: {}",preferences);
+				} else {
+					LOGGER.debug("No preferences specified");
+				}
+			}
+			// TODO: Update with actual query functionality when available
+			DataSet entity=resource.entity(preferences);
+
+			LOGGER.trace("Data set to serialize: \n {}",entity);
+
+			String body=context.serialize(entity,variant.getMediaType());
+
+			ResponseBuilder builder=Response.serverError();
+			builder.variant(variant);
+			if(hasPreferences) {
+				builder.header(ContentPreferencesUtils.PREFERENCE_APPLIED_HEADER,ContentPreferencesUtils.asPreferenceAppliedHeader(preferences));
+			}
+			addOptionsMandatoryHeaders(context, builder);
+			builder.
+				status(Status.OK.getStatusCode()).
+				header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
+			if(includeEntity) {
+				builder.entity(body);
+			}
+			return builder.build();
+		} catch (ApplicationExecutionException e) {
+			return processExecutionException(context, e);
+		} catch (ApplicationContextException e) {
+			return processRuntimeException(context, e);
+		}
+	}
+
+	private Response processFailure(OperationContext context, boolean includeEntity, Variant variant, String failureId) {
+		try {
+			PublicResource resource=context.resource();
+			if(LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Retrieving failure: "+failureId);
+			}
+
+			// TODO: Update with non-mocked data
+			ManagedIndividualId rid = resource.individualId();
+			ManagedIndividualId fId = ManagedIndividualId.createId(URI.create("?ldpConstraints="+failureId), rid);
+			DataSet entity=DataSetFactory.createDataSet(fId.name());
+			ExternalIndividual report = entity.individual(URI.create("http://www.ldp4j.org/vocab#ConstraintViolationReport"), ExternalIndividual.class);
+			ManagedIndividual individual = entity.individual(fId, ManagedIndividual.class);
+			ManagedIndividual about = entity.individual(rid, ManagedIndividual.class);
+			individual.addValue(RDF.TYPE.as(URI.class), report);
+			individual.addValue(URI.create("http://www.ldp4j.org/vocab#about"), about);
+			individual.addValue(URI.create("http://www.ldp4j.org/vocab#failureId"), DataSetUtils.newLiteral(failureId));
+			individual.addValue(RDFS.COMMENT.as(URI.class), DataSetUtils.newLiteral("To be filled in"));
+
+			LOGGER.trace("Data set to serialize: \n {}",entity);
+
+			String body=context.serialize(entity,variant.getMediaType());
+
+			ResponseBuilder builder=Response.serverError();
+			builder.variant(variant);
+			builder.
+				status(Status.OK.getStatusCode()).
+				header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
+			if(includeEntity) {
+				builder.entity(body);
+			}
+			return builder.build();
+		} catch (ApplicationContextException e) {
+			return processRuntimeException(context, e);
+		}
 	}
 
 	private Response processRuntimeException(OperationContext context, ApplicationContextException exception) {
