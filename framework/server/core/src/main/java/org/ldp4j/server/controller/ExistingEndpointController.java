@@ -38,14 +38,7 @@ import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
-import org.ldp4j.application.data.DataSetUtils;
-import org.ldp4j.application.data.ExternalIndividual;
-import org.ldp4j.application.data.ManagedIndividual;
-import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
-import org.ldp4j.application.domain.RDFS;
 import org.ldp4j.application.engine.context.ApplicationContextException;
 import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
@@ -285,21 +278,11 @@ final class ExistingEndpointController extends AbstractEndpointController {
 				LOGGER.debug("Retrieving failure: "+failureId);
 			}
 
-			// TODO: Update with non-mocked data
-			ManagedIndividualId rid = resource.individualId();
-			ManagedIndividualId fId = ManagedIndividualId.createId(URI.create("?ldpConstraints="+failureId), rid);
-			DataSet entity=DataSetFactory.createDataSet(fId.name());
-			ExternalIndividual report = entity.individual(URI.create("http://www.ldp4j.org/vocab#ConstraintViolationReport"), ExternalIndividual.class);
-			ManagedIndividual individual = entity.individual(fId, ManagedIndividual.class);
-			ManagedIndividual about = entity.individual(rid, ManagedIndividual.class);
-			individual.addValue(RDF.TYPE.as(URI.class), report);
-			individual.addValue(URI.create("http://www.ldp4j.org/vocab#about"), about);
-			individual.addValue(URI.create("http://www.ldp4j.org/vocab#failureId"), DataSetUtils.newLiteral(failureId));
-			individual.addValue(RDFS.COMMENT.as(URI.class), DataSetUtils.newLiteral("To be filled in"));
+			DataSet report=resource.getValidationReport(failureId);
 
-			LOGGER.trace("Data set to serialize: \n {}",entity);
+			LOGGER.trace("Data set to serialize: \n {}",report);
 
-			String body=context.serialize(entity,variant.getMediaType());
+			String body=context.serialize(report,variant.getMediaType());
 
 			ResponseBuilder builder=Response.serverError();
 			builder.variant(variant);

@@ -191,6 +191,11 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		public void modify(DataSet dataSet) throws ApplicationExecutionException {
 			throw new UnsupportedOperationException("The endpoint is gone");
 		}
+
+		@Override
+		public DataSet getValidationReport(String failureId) {
+			throw new UnsupportedOperationException("The endpoint is gone");
+		}
 	}
 
 	private final class LocalEndpointLifecycleListener implements EndpointLifecycleListener {

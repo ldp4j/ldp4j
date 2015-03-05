@@ -45,4 +45,6 @@ public interface PublicResource extends PublicEndpoint {
 
 	<T> T accept(PublicResourceVisitor<T> visitor);
 
+	DataSet getValidationReport(String failureId);
+
 }

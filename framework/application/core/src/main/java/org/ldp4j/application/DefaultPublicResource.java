@@ -49,6 +49,7 @@ import org.ldp4j.application.data.validation.Validator;
 import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.domain.RDFS;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.ContentPreferences;
@@ -317,5 +318,23 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 		}
 		return result;
 	}
+
+	// TODO: Update with non-mocked data
+	@Override
+	public DataSet getValidationReport(String failureId) {
+		ManagedIndividualId rid = individualId();
+		ManagedIndividualId fId = ManagedIndividualId.createId(URI.create("?failureId="+failureId), rid);
+		DataSet entity=DataSetFactory.createDataSet(fId.name());
+		ExternalIndividual report = entity.individual(URI.create("http://www.ldp4j.org/vocab#ConstraintViolationReport"), ExternalIndividual.class);
+		ManagedIndividual individual = entity.individual(fId, ManagedIndividual.class);
+		ManagedIndividual about = entity.individual(rid, ManagedIndividual.class);
+		individual.addValue(RDF.TYPE.as(URI.class), report);
+		individual.addValue(URI.create("http://www.ldp4j.org/vocab#about"), about);
+		individual.addValue(URI.create("http://www.ldp4j.org/vocab#failureId"), DataSetUtils.newLiteral(failureId));
+		individual.addValue(RDFS.COMMENT.as(URI.class), DataSetUtils.newLiteral("To be filled in"));
+		return entity;
+	}
+
+
 
 }
