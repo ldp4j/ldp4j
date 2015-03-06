@@ -33,7 +33,6 @@ import org.ldp4j.application.ConstraintReportId;
 import org.ldp4j.application.HttpRequest;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.constraints.Constraints;
-import org.ldp4j.application.data.validation.ValidationReport;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -82,12 +81,6 @@ public interface PersistencyManager {
 	ResourceTemplate templateOfId(String templateId);
 
 	<T extends ResourceTemplate> T templateOfId(String templateId, Class<? extends T> templateClass);
-
-	@Deprecated
-	String add(Resource resource, ValidationReport report);
-
-	@Deprecated
-	ValidationReport failureOfResource(Resource resource, String failureId);
 
 	ConstraintReport createConstraintReport(Resource resource, Constraints constraints, Date date, HttpRequest request);
 

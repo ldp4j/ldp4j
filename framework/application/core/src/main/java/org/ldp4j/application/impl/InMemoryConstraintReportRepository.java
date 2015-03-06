@@ -37,6 +37,7 @@ import org.ldp4j.application.ConstraintReport;
 import org.ldp4j.application.ConstraintReportId;
 import org.ldp4j.application.lifecycle.LifecycleException;
 import org.ldp4j.application.lifecycle.Managed;
+import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 
 import com.google.common.collect.LinkedHashMultimap;
@@ -106,6 +107,20 @@ final class InMemoryConstraintReportRepository implements Managed {
 		this.lock.writeLock().lock();
 		try {
 			this.reports.clear();
+		} finally {
+			this.lock.writeLock().unlock();
+		}
+	}
+
+	public void removeByResource(Resource resource) {
+		checkNotNull(resource,"Resource cannot be null");
+		this.lock.writeLock().lock();
+		try {
+			ResourceId resourceId = resource.id();
+			for(String constraintsId:this.constraintIds.get(resourceId)) {
+				this.reports.remove(ConstraintReportId.create(resourceId, constraintsId));
+			}
+			this.constraintIds.removeAll(resourceId);
 		} finally {
 			this.lock.writeLock().unlock();
 		}

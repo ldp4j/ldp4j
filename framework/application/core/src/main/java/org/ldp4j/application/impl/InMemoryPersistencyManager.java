@@ -38,7 +38,6 @@ import org.ldp4j.application.ConstraintReportId;
 import org.ldp4j.application.HttpRequest;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.constraints.Constraints;
-import org.ldp4j.application.data.validation.ValidationReport;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -115,8 +114,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	private final InMemoryEndpointRepository endpointRepository;
 	private final InMemoryTemplateLibrary templateLibrary;
 	private final InMemoryConstraintReportRepository constraintReportRepository;
-	@Deprecated
-	private final InMemoryFailureRepository failureRepository;
 
 	private final ThreadLocal<InMemoryTransaction> currentTransaction;
 	private final AtomicLong transactionCounter;
@@ -125,7 +122,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		this.resourceRepository=new InMemoryResourceRepository();
 		this.endpointRepository=new InMemoryEndpointRepository();
 		this.constraintReportRepository=new InMemoryConstraintReportRepository();
-		this.failureRepository=new InMemoryFailureRepository();
 		this.templateLibrary=new InMemoryTemplateLibrary();
 		this.currentTransaction=new ThreadLocal<InMemoryTransaction>();
 		this.transactionCounter=new AtomicLong();
@@ -280,7 +276,7 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	@Override
 	public void remove(Resource resource) {
 		this.resourceRepository.remove(resource);
-		this.failureRepository.removeAll(resource);
+		this.constraintReportRepository.removeByResource(resource);
 	}
 
 	@Override
@@ -323,18 +319,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 			throw new IllegalArgumentException("Cannot cast template '"+templateId+"' to '"+templateClass.getCanonicalName()+"' ("+found.getClass().getCanonicalName()+")");
 		}
 		return templateClass.cast(found);
-	}
-
-	@Deprecated
-	@Override
-	public String add(Resource resource, ValidationReport report) {
-		return this.failureRepository.add(resource, report);
-	}
-
-	@Deprecated
-	@Override
-	public ValidationReport failureOfResource(Resource resource, String failureId) {
-		return this.failureRepository.validationReport(resource, failureId);
 	}
 
 	@Override
