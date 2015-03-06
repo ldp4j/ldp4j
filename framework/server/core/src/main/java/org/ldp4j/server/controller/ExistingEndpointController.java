@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -340,6 +341,10 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			} else {
 				statusCode=Status.BAD_REQUEST.getStatusCode();
 				body=Throwables.getStackTraceAsString(rootCause);
+			}
+			if(ice.getConstraintsId()==null) {
+				LOGGER.error("No constraints identifier defined. Full stacktrace follows",exception);
+				throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR.getStatusCode());
 			}
 			builder.header("Link",EndpointControllerUtils.createLink(context.base()+context.path()+"?ldp:constrainedBy="+ice.getConstraintsId(), LDP.CONSTRAINED_BY.qualifiedEntityName()));
 		} else if (rootCause instanceof UnknownResourceException) {

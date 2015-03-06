@@ -187,22 +187,6 @@ public class ServerFrontend {
 		return controller.head(context);
 	}
 
-	// TODO: Add a proper failure mechanism
-	@GET
-	@Path("/")
-	public Response get(
-		@Context UriInfo uriInfo,
-		@Context HttpHeaders headers,
-		@Context Request request) {
-		return
-			Response.
-				ok().
-				entity("Constraint validation failure").
-				language(Locale.ENGLISH).
-				type(MediaType.TEXT_PLAIN).
-				build();
-	}
-
 	@GET
 	@Path(ENDPOINT_PATH)
 	public Response get(
@@ -210,9 +194,6 @@ public class ServerFrontend {
 		@PathParam(ENDPOINT_PATH_PARAM) String path,
 		@Context HttpHeaders headers,
 		@Context Request request) {
-		if(path.equals("") || path.equals("/")) {
-			return get(uriInfo,headers,request);
-		}
 		EndpointController controller=createController(path);
 		OperationContext context =
 			controller.
