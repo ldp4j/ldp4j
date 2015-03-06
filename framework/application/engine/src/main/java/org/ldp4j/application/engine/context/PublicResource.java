@@ -43,8 +43,8 @@ public interface PublicResource extends PublicEndpoint {
 
 	void delete() throws ApplicationExecutionException;
 
-	<T> T accept(PublicResourceVisitor<T> visitor);
+	DataSet getConstraintReport(String constraintsId) throws ApplicationExecutionException;
 
-	DataSet getValidationReport(String failureId) throws ApplicationExecutionException;
+	<T> T accept(PublicResourceVisitor<T> visitor);
 
 }

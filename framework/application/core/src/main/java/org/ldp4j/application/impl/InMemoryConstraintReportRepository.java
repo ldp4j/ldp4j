@@ -29,103 +29,68 @@ package org.ldp4j.application.impl;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.ldp4j.application.data.validation.ValidationReport;
+import org.ldp4j.application.ConstraintReport;
+import org.ldp4j.application.ConstraintReportId;
 import org.ldp4j.application.lifecycle.LifecycleException;
 import org.ldp4j.application.lifecycle.Managed;
-import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 
+import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Multimap;
 
-@Deprecated
-final class InMemoryFailureRepository implements Managed {
+final class InMemoryConstraintReportRepository implements Managed {
 
 	private final ReadWriteLock lock=new ReentrantReadWriteLock();
-	private final Map<ResourceId,Map<String,ValidationReport>> reports;
+	private final Multimap<ResourceId, String> constraintIds;
+	private final Map<ConstraintReportId,ConstraintReport> reports;
 
-	InMemoryFailureRepository() {
+	InMemoryConstraintReportRepository() {
 		this.reports=Maps.newLinkedHashMap();
+		this.constraintIds=LinkedHashMultimap.create();
 	}
 
-	private String nextFailureId(Map<String, ValidationReport> reports) {
-		String failureId=null;
+	private String nextConstraintsId(ResourceId resourceId) {
+		String constraintId=null;
 		do {
-			failureId=UUID.randomUUID().toString();
-		} while(!reports.containsKey(failureId));
-		return failureId;
+			constraintId=UUID.randomUUID().toString();
+		} while(this.constraintIds.get(resourceId).contains(constraintId));
+		this.constraintIds.put(resourceId, constraintId);
+		return constraintId;
 	}
 
-	ValidationReport validationReport(Resource resource, String failureId) {
-		checkNotNull(resource,"Resource cannot be null");
+	ConstraintReport constraintReportOfId(ConstraintReportId id) {
+		checkNotNull(id,"Constraint report identifier cannot be null");
 		lock.readLock().lock();
 		try {
-			ValidationReport result=null;
-			Map<String, ValidationReport> map = reports.get(resource.id());
-			if(map!=null) {
-				result=map.get(failureId);
-			}
-			return result;
+			return this.reports.get(id);
 		} finally {
 			lock.readLock().unlock();
 		}
 	}
 
-	Set<String> failuresOfResource(Resource resource, String failureId) {
-		checkNotNull(resource,"Resource cannot be null");
-		lock.readLock().lock();
-		try {
-			Set<String> result=Sets.newLinkedHashSet();
-			Map<String, ValidationReport> reports = this.reports.get(resource.id());
-			if(reports!=null) {
-				result.addAll(reports.keySet());
-			}
-			return result;
-		} finally {
-			lock.readLock().unlock();
-		}
-	}
-
-	String add(Resource resource, ValidationReport report) {
-		checkNotNull(resource,"Resource cannot be null");
-		lock.writeLock().lock();
-		try {
-			Map<String, ValidationReport> reports = this.reports.get(resource.id());
-			if(reports!=null) {
-				reports=Maps.newLinkedHashMap();
-				this.reports.put(resource.id(), reports);
-			}
-			String failureId = nextFailureId(reports);
-			reports.put(failureId, report);
-			return failureId;
-		} finally {
-			lock.writeLock().unlock();
-		}
-	}
-
-	void remove(Resource resource, String failureId) {
-		checkNotNull(resource,"Resource cannot be null");
+	void add(InMemoryConstraintReport report) {
+		checkNotNull(report,"Constraint report cannot be null");
 		this.lock.writeLock().lock();
 		try {
-			Map<String, ValidationReport> reports = this.reports.get(resource.id());
-			if(reports!=null) {
-				reports.remove(failureId);
-			}
+			report.setConstraintsId(nextConstraintsId(report.resourceId()));
+			this.reports.put(report.id(),report);
 		} finally {
 			this.lock.writeLock().unlock();
 		}
 	}
 
-	void removeAll(Resource resource) {
-		checkNotNull(resource,"Resource cannot be null");
+	void remove(ConstraintReport report) {
+		checkNotNull(report,"Constraint report cannot be null");
 		this.lock.writeLock().lock();
 		try {
-			this.reports.remove(resource.id());
+			ConstraintReportId reportId = report.id();
+			this.constraintIds.remove(reportId.resourceId(),reportId.constraintsId());
+			this.reports.remove(reportId);
 		} finally {
 			this.lock.writeLock().unlock();
 		}
@@ -145,4 +110,5 @@ final class InMemoryFailureRepository implements Managed {
 			this.lock.writeLock().unlock();
 		}
 	}
+
 }

@@ -44,6 +44,7 @@ import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.ValueVisitor;
+import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.slf4j.Logger;
@@ -103,32 +104,32 @@ final class TCKFHelper {
 		}
 		if(stateProperty==null && inProperty!=null) {
 			LOGGER.error("Property '{}' is not defined in the current state but it is defined in the new state",READ_ONLY_PROPERTY);
-			throw new InconsistentContentException("Added values to property '"+READ_ONLY_PROPERTY+"'");
+			throw new InconsistentContentException("Added values to property '"+READ_ONLY_PROPERTY+"'",new Constraints());
 		}
 		if(stateProperty!=null && inProperty==null) {
 			LOGGER.error("Property '{}' is defined in the current state but it is not defined in the new state",READ_ONLY_PROPERTY);
-			throw new InconsistentContentException("Removed all values from property '"+READ_ONLY_PROPERTY+"'");
+			throw new InconsistentContentException("Removed all values from property '"+READ_ONLY_PROPERTY+"'",new Constraints());
 		}
 
 		for(Value value:inProperty) {
 			LOGGER.debug("Verifing property '{}' input value {}...",READ_ONLY_PROPERTY,format(value));
 			if(!DataSetUtils.hasValue(value,stateProperty)) {
 				LOGGER.error("New value {} has been added to property '{}'",format(value),READ_ONLY_PROPERTY);
-				throw new InconsistentContentException("New value '"+format(value)+"' for property '"+READ_ONLY_PROPERTY+"' has been added");
+				throw new InconsistentContentException("New value '"+format(value)+"' for property '"+READ_ONLY_PROPERTY+"' has been added",new Constraints());
 			}
 		}
 		for(Value value:stateProperty) {
 			LOGGER.debug("Verifing property '{}' existing value {}...",READ_ONLY_PROPERTY,format(value));
 			if(!DataSetUtils.hasValue(value,inProperty)) {
 				LOGGER.error("Value {} has been removed from property '{}'",format(value),READ_ONLY_PROPERTY);
-				throw new InconsistentContentException("Value '"+value+"' has been removed from property '"+READ_ONLY_PROPERTY+"'");
+				throw new InconsistentContentException("Value '"+value+"' has been removed from property '"+READ_ONLY_PROPERTY+"'",new Constraints());
 			}
 		}
 
 		LOGGER.debug("Verifing absence of unknown properties...");
 		if(inIndividual.property(UNKNOWN_PROPERTY)!=null) {
 			LOGGER.error("Unknown property '{}' specified",UNKNOWN_PROPERTY);
-			throw new UnsupportedContentException("Unknown property '"+UNKNOWN_PROPERTY+"' specified");
+			throw new UnsupportedContentException("Unknown property '"+UNKNOWN_PROPERTY+"' specified",new Constraints());
 		}
 
 	}

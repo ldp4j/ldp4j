@@ -20,28 +20,27 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-core:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.ext;
+package org.ldp4j.application;
 
-import org.ldp4j.application.data.constraints.Constraints;
+import java.net.URI;
 
-public class UnsupportedContentException extends InvalidContentException {
+import org.junit.Test;
 
-	private static final long serialVersionUID = -9204136391485005628L;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
-	public UnsupportedContentException(String message, Throwable cause, Constraints constraints) {
-		super(message, cause, constraints);
-	}
+public class URLTest {
 
-	public UnsupportedContentException(String message, Constraints constraints) {
-		super(message,constraints);
-	}
-
-	public UnsupportedContentException(Throwable cause, Constraints constraints) {
-		super(cause,constraints);
+	@Test
+	public void testEncoding() {
+		String query = "ldp:constrainedBy=123213123";
+		URI create=URI.create("http://www.host.org/api/res/0/?"+query);
+		assertThat(create.getQuery(),equalTo(query));
+		assertThat(create.getRawQuery(),equalTo(query));
 	}
 
 }

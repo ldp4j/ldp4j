@@ -35,6 +35,7 @@ import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.application.ext.Modifiable;
@@ -86,7 +87,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 					TCKFHelper.READ_ONLY_PROPERTY,
 					DataSetUtils.newLiteral(new Date().toString()));
 		} catch (DataSetModificationException e) {
-			throw new UnsupportedContentException("Could not process request", e);
+			throw new UnsupportedContentException("Could not process request", e, new Constraints());
 		}
 
 		try {

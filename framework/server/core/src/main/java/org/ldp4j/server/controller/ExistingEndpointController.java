@@ -278,7 +278,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 				LOGGER.debug("Retrieving failure: "+failureId);
 			}
 
-			DataSet report=resource.getValidationReport(failureId);
+			DataSet report=resource.getConstraintReport(failureId);
 			if(report==null) {
 				ResponseBuilder builder=
 					Response.
@@ -330,9 +330,10 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		String body=null;
 		Throwable rootCause = exception.getCause();
 		if(rootCause instanceof InvalidContentException) {
+			InvalidContentException ice=(InvalidContentException)rootCause;
 			if(rootCause instanceof InconsistentContentException) {
 				statusCode=Status.CONFLICT.getStatusCode();
-				body="Specified values for application-managed properties are not consistent with the actual resource state"+rootCause.getMessage();
+				body="Specified values for application-managed properties are not consistent with the actual resource state "+rootCause.getMessage();
 			} else if(rootCause instanceof UnsupportedContentException) {
 				statusCode=UNPROCESSABLE_ENTITY_STATUS_CODE;
 				body="Could not understand content: "+rootCause.getMessage();
@@ -340,7 +341,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 				statusCode=Status.BAD_REQUEST.getStatusCode();
 				body=Throwables.getStackTraceAsString(rootCause);
 			}
-			builder.header("Link",EndpointControllerUtils.createLink(context.base(), LDP.CONSTRAINED_BY.qualifiedEntityName()));
+			builder.header("Link",EndpointControllerUtils.createLink(context.base()+context.path()+"?ldp:constrainedBy="+ice.getConstraintsId(), LDP.CONSTRAINED_BY.qualifiedEntityName()));
 		} else if (rootCause instanceof UnknownResourceException) {
 			statusCode=Status.NOT_FOUND.getStatusCode();
 			body="Resource not found";

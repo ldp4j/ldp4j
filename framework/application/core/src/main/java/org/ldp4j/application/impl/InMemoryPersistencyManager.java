@@ -33,7 +33,11 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.ldp4j.application.ConstraintReport;
+import org.ldp4j.application.ConstraintReportId;
+import org.ldp4j.application.HttpRequest;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.data.validation.ValidationReport;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.EntityTag;
@@ -110,14 +114,17 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	private final InMemoryResourceRepository resourceRepository;
 	private final InMemoryEndpointRepository endpointRepository;
 	private final InMemoryTemplateLibrary templateLibrary;
+	private final InMemoryConstraintReportRepository constraintReportRepository;
+	@Deprecated
+	private final InMemoryFailureRepository failureRepository;
 
 	private final ThreadLocal<InMemoryTransaction> currentTransaction;
 	private final AtomicLong transactionCounter;
-	private final InMemoryFailureRepository failureRepository;
 
 	InMemoryPersistencyManager() {
 		this.resourceRepository=new InMemoryResourceRepository();
 		this.endpointRepository=new InMemoryEndpointRepository();
+		this.constraintReportRepository=new InMemoryConstraintReportRepository();
 		this.failureRepository=new InMemoryFailureRepository();
 		this.templateLibrary=new InMemoryTemplateLibrary();
 		this.currentTransaction=new ThreadLocal<InMemoryTransaction>();
@@ -318,14 +325,32 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		return templateClass.cast(found);
 	}
 
+	@Deprecated
 	@Override
-	public void add(Resource resource, ValidationReport report) {
-		this.failureRepository.add(resource, report);
+	public String add(Resource resource, ValidationReport report) {
+		return this.failureRepository.add(resource, report);
 	}
 
+	@Deprecated
 	@Override
 	public ValidationReport failureOfResource(Resource resource, String failureId) {
 		return this.failureRepository.validationReport(resource, failureId);
+	}
+
+	@Override
+	public ConstraintReport createConstraintReport(final Resource resource, final Constraints constraints, final Date date, final HttpRequest request) {
+		return new InMemoryConstraintReport(resource.id(), date, request, constraints);
+	}
+
+	@Override
+	public void add(ConstraintReport report) {
+		checkArgument(report instanceof InMemoryConstraintReport);
+		this.constraintReportRepository.add((InMemoryConstraintReport)report);
+	}
+
+	@Override
+	public ConstraintReport constraintReportOfId(ConstraintReportId id) {
+		return this.constraintReportRepository.constraintReportOfId(id);
 	}
 
 }

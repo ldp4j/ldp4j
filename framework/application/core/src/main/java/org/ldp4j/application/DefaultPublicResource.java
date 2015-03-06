@@ -43,6 +43,7 @@ import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.Value;
+import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.ValidationReport;
 import org.ldp4j.application.data.validation.Validator;
@@ -184,8 +185,8 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 	}
 
 	@Override
-	public DataSet getValidationReport(String failureId) throws ApplicationExecutionException {
-		return applicationContext().getValidationReport(endpoint(),failureId);
+	public DataSet getConstraintReport(String constraintsId) throws ApplicationExecutionException {
+		return applicationContext().getConstraintReport(endpoint(),constraintsId);
 	}
 
 	protected DataSet metadata() {
@@ -309,7 +310,9 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 
 		ValidationReport report = validator.validate(dataSet);
 		if(!report.isValid()) {
-			InvalidContentException error = new InconsistentContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures());
+			// TODO: Add validation constraints
+			Constraints constraints = new Constraints();
+			InvalidContentException error = new InconsistentContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures(),constraints);
 			throw new ApplicationExecutionException("Protocol/framework managed metadata validation failure",error);
 		}
 	}

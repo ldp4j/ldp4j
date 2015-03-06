@@ -37,7 +37,6 @@ import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.data.validation.ValidationReport;
 import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.domain.RDFS;
 import org.ldp4j.application.endpoint.Endpoint;
@@ -56,6 +55,7 @@ import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.ext.Deletable;
+import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Container;
@@ -201,7 +201,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 
 		@Override
-		public DataSet getValidationReport(String failureId) {
+		public DataSet getConstraintReport(String failureId) {
 			throw new UnsupportedOperationException("The endpoint is gone");
 		}
 	}
@@ -320,6 +320,10 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 		try {
 			return this.engine().resourceControllerService().createResource(resource,dataSet,desiredPath);
+		} catch (FeatureExecutionException e) {
+			processConstraintValidationFailure(resource, e);
+			String errorMessage = applicationFailureMessage("Resource create failed at '%s'",endpoint);
+			throw createException(errorMessage,e);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource create failed at '%s'",endpoint);
 			throw createException(errorMessage,e);
@@ -352,13 +356,28 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 		try {
 			this.engine().resourceControllerService().updateResource(resource,dataSet, WriteSessionConfiguration.builder().build());
+		} catch (FeatureExecutionException e) {
+			processConstraintValidationFailure(resource, e);
+			String errorMessage = applicationFailureMessage("Resource modification failed at '%s'",endpoint);
+			throw createException(errorMessage,e);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource modification failed at '%s'",endpoint);
 			throw createException(errorMessage,e);
 		}
 	}
 
-	DataSet getValidationReport(Endpoint endpoint, String failureId) throws ApplicationExecutionException {
+	private void processConstraintValidationFailure(Resource resource, FeatureExecutionException e) {
+		if(e.getCause() instanceof InvalidContentException) {
+			InvalidContentException cause=(InvalidContentException)e.getCause();
+			HttpRequest request=null;
+			ConstraintReport report=this.engine().persistencyManager().createConstraintReport(resource, cause.getConstraints(), new Date(), request);
+			this.engine().persistencyManager().add(report);
+			LOGGER.debug("Constraint validation failed. Registered constraint report {}",report.id());
+			cause.setConstraintsId(report.id().constraintsId());
+		}
+	}
+
+	DataSet getConstraintReport(Endpoint endpoint, String constraintsId) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = this.engine().persistencyManager().resourceOfId(resourceId,Resource.class);
 		if(resource==null) {
@@ -366,20 +385,20 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			LOGGER.error(errorMessage);
 			throw new ApplicationExecutionException(errorMessage);
 		}
-		ValidationReport report=this.engine().persistencyManager().failureOfResource(resource,failureId);
+		ConstraintReport report=this.engine().persistencyManager().constraintReportOfId(ConstraintReportId.create(resource.id(),constraintsId));
 		if(report==null) {
 			return null;
 		}
 		// TODO: Update with real data transformation
 		ManagedIndividualId rid = ManagedIndividualId.createId(resource.id().name(), resource.id().templateId());
-		ManagedIndividualId fId = ManagedIndividualId.createId(URI.create("?failureId="+failureId), rid);
+		ManagedIndividualId fId = ManagedIndividualId.createId(URI.create("?ldp:constrainedBy="+constraintsId), rid);
 		DataSet formatedReport=DataSetFactory.createDataSet(fId.name());
 		ExternalIndividual targetIndividual = formatedReport.individual(URI.create("http://www.ldp4j.org/vocab#ConstraintViolationReport"), ExternalIndividual.class);
 		ManagedIndividual failureIndividual = formatedReport.individual(fId, ManagedIndividual.class);
 		ManagedIndividual about = formatedReport.individual(rid, ManagedIndividual.class);
 		failureIndividual.addValue(RDF.TYPE.as(URI.class), targetIndividual);
 		failureIndividual.addValue(URI.create("http://www.ldp4j.org/vocab#about"), about);
-		failureIndividual.addValue(URI.create("http://www.ldp4j.org/vocab#failureId"), DataSetUtils.newLiteral(failureId));
+		failureIndividual.addValue(URI.create("http://www.ldp4j.org/vocab#failureId"), DataSetUtils.newLiteral(constraintsId));
 		failureIndividual.addValue(RDFS.COMMENT.as(URI.class), DataSetUtils.newLiteral("To be filled in"));
 		return formatedReport;
 	}
