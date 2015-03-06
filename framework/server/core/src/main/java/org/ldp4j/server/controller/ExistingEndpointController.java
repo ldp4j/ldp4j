@@ -65,7 +65,7 @@ import com.google.common.base.Throwables;
 final class ExistingEndpointController extends AbstractEndpointController {
 
 
-	private static final String FAILURE_QUERY_PARAMETER = "failureId";
+	private static final String CONSTRAINT_QUERY_PARAMETER = "ldp:constrainedBy";
 
 	private static final String ACCEPT_POST_HEADER = "Accept-Post";
 
@@ -192,18 +192,18 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			return null;
 		}
 		List<String> allParameters = context.getQueryParameters();
-		if(allParameters.contains(FAILURE_QUERY_PARAMETER)) {
+		if(allParameters.contains(CONSTRAINT_QUERY_PARAMETER)) {
 			if(allParameters.size()==1) {
-				List<String> failureIds=context.getQueryParameterValues(FAILURE_QUERY_PARAMETER);
-				if(failureIds.size()==1) {
-					return processFailure(context,includeEntity,variant,failureIds.get(0));
+				List<String> constraintIds=context.getQueryParameterValues(CONSTRAINT_QUERY_PARAMETER);
+				if(constraintIds.size()==1) {
+					return processConstraintReportRetrieval(context,includeEntity,variant,constraintIds.get(0));
 				} else {
 					ResponseBuilder builder=
 						Response.
 							status(Status.BAD_REQUEST).
 							type(MediaType.TEXT_PLAIN).
 							language(Locale.ENGLISH).
-							entity("Only one failure id allowed");
+							entity("Only one constraint identifier allowed");
 					addRequiredHeaders(context, builder);
 					return builder.build();
 				}
@@ -271,26 +271,26 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		}
 	}
 
-	private Response processFailure(OperationContext context, boolean includeEntity, Variant variant, String failureId) {
+	private Response processConstraintReportRetrieval(OperationContext context, boolean includeEntity, Variant variant, String constraintReportId) {
 		try {
 			PublicResource resource=context.resource();
 			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug("Retrieving failure: "+failureId);
+				LOGGER.debug("Retrieving constraints: "+constraintReportId);
 			}
 
-			DataSet report=resource.getConstraintReport(failureId);
+			DataSet report=resource.getConstraintReport(constraintReportId);
 			if(report==null) {
 				ResponseBuilder builder=
 					Response.
 						status(Status.BAD_REQUEST).
 						type(MediaType.TEXT_PLAIN).
 						language(Locale.ENGLISH).
-						entity("Unknown failure '"+failureId+"'");
+						entity("Unknown constraints '"+constraintReportId+"'");
 				addRequiredHeaders(context, builder);
 				return builder.build();
 			}
 
-			LOGGER.trace("Validation report to serialize: \n {}",report);
+			LOGGER.trace("Constraints to serialize: \n {}",report);
 
 			String body=context.serialize(report,variant.getMediaType());
 
