@@ -200,14 +200,14 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public URI base() {
-		String path = uriInfo.getPath();
-		String prefix = "/"+path.substring(0,path.indexOf('/')+1);
-		return URI.create(uriInfo.getBaseUri().toString().concat(prefix));
+		String path=this.uriInfo.getPath();
+		String prefix="/"+path.substring(0,path.indexOf('/')+1);
+		return URI.create(this.uriInfo.getBaseUri().toString().concat(prefix));
 	}
 
 	@Override
 	public String path() {
-		String path = uriInfo.getPath();
+		String path=this.uriInfo.getPath();
 		return path.substring(path.indexOf('/')+1);
 	}
 
@@ -387,16 +387,14 @@ final class OperationContextImpl implements OperationContext {
 	@Override
 	public PublicContainer container() {
 		PublicResource tmp = resource();
-		if(!(tmp instanceof PublicContainer)) {
-			throw new IllegalStateException("Expected an instance of class "+PublicContainer.class.getName()+" but got an instance of class "+tmp.getClass().getCanonicalName());
-		}
+		checkState(tmp instanceof PublicContainer,"Expected an instance of class %s but got an instance of class %s",PublicContainer.class.getCanonicalName(),tmp.getClass().getCanonicalName());
 		return (PublicContainer)tmp;
 	}
 
 	@Override
 	public ContentPreferences contentPreferences() {
 		ContentPreferences result = null;
-		List<String> requestHeader = headers.getRequestHeader(ContentPreferencesUtils.PREFER_HEADER);
+		List<String> requestHeader = this.headers.getRequestHeader(ContentPreferencesUtils.PREFER_HEADER);
 		for(Iterator<String> it=requestHeader.iterator();it.hasNext() && result==null;) {
 			try {
 				String header = it.next();
@@ -410,7 +408,15 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public void startOperation() {
-		this.applicationContextOperation=this.applicationContext.createOperation(null);
+		this.applicationContextOperation=
+			this.applicationContext.
+					createOperation(
+						DefaultHttpRequest.
+							create(
+								this.method,
+								this.uriInfo,
+								this.headers,
+								this.entity));
 	}
 
 	@Override

@@ -492,6 +492,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	 */
 	@Override
 	public ApplicationContextOperation createOperation(HttpRequest request) {
+		checkNotNull(request,"Http request cannot be null");
 		DefaultApplicationOperation operation=this.currentOperation.get();
 		checkState(operation==null,"An operation is ongoing on the current thread");
 		operation=new DefaultApplicationOperation(request);
