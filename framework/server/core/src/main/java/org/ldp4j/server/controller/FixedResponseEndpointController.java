@@ -28,12 +28,9 @@ package org.ldp4j.server.controller;
 
 import javax.ws.rs.core.Response;
 
-import org.ldp4j.application.engine.context.ApplicationContextOperation;
+abstract class FixedResponseEndpointController extends EndpointController {
 
-abstract class FixedResponseEndpointController extends AbstractEndpointController {
-
-	FixedResponseEndpointController(ApplicationContextOperation applicationContext) {
-		super(applicationContext,null);
+	FixedResponseEndpointController() {
 	}
 
 	protected abstract Response defaultResponse(OperationContext context);

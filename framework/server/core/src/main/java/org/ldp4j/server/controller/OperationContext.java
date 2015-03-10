@@ -74,4 +74,7 @@ public interface OperationContext {
 
 	List<String> getQueryParameterValues(String parameter);
 
+	void startOperation();
+
+	void completeOperation();
 }

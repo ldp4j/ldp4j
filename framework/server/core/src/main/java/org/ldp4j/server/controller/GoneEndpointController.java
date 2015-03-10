@@ -32,15 +32,13 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.PublicResource;
 
 final class GoneEndpointController extends FixedResponseEndpointController {
 
 	private final PublicResource resource;
 
-	GoneEndpointController(ApplicationContextOperation operation, PublicResource resource) {
-		super(operation);
+	GoneEndpointController(PublicResource resource) {
 		this.resource = resource;
 	}
 
@@ -50,7 +48,7 @@ final class GoneEndpointController extends FixedResponseEndpointController {
 				status(Status.GONE).
 				type(MediaType.TEXT_PLAIN).
 				language(Locale.ENGLISH).
-				entity("Endpoint at "+context.base().resolve(context.path())+" is gone. Last actitity on "+this.resource.lastModified()).
+				entity("Endpoint at "+context.base().resolve(context.path())+" is gone. Last activity on "+this.resource.lastModified()).
 				build();
 	}
 

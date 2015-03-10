@@ -24,11 +24,12 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application;
+package org.ldp4j.application.constraints;
 
 import java.util.Date;
 
 import org.ldp4j.application.data.constraints.Constraints;
+import org.ldp4j.application.engine.context.HttpRequest;
 
 public interface ConstraintReport {
 

@@ -33,8 +33,8 @@ import java.util.UUID;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.ldp4j.application.ConstraintReport;
-import org.ldp4j.application.ConstraintReportId;
+import org.ldp4j.application.constraints.ConstraintReport;
+import org.ldp4j.application.constraints.ConstraintReportId;
 import org.ldp4j.application.lifecycle.LifecycleException;
 import org.ldp4j.application.lifecycle.Managed;
 import org.ldp4j.application.resource.Resource;

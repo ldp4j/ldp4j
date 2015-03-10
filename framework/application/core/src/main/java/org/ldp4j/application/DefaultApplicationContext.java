@@ -31,6 +31,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
+import org.ldp4j.application.constraints.ConstraintReport;
+import org.ldp4j.application.constraints.ConstraintReportId;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
@@ -49,6 +51,7 @@ import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.Capabilities;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
@@ -69,14 +72,22 @@ import org.ldp4j.application.template.TemplateIntrospector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkState;
 import com.google.common.collect.Maps;
 
 public final class DefaultApplicationContext implements ApplicationContext {
 
 	private final class DefaultApplicationOperation implements ApplicationContextOperation {
 
-		private DefaultApplicationOperation() {
+		private final HttpRequest request;
+
+		private DefaultApplicationOperation(HttpRequest request) {
+			this.request = request;
 			getContext().operationController.beginTransaction();
+		}
+
+		HttpRequest getRequest() {
+			return this.request;
 		}
 
 		@Override
@@ -101,7 +112,11 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 		@Override
 		public void dispose() {
-			getContext().operationController.endTransaction();
+			try {
+				getContext().operationController.endTransaction();
+			} finally {
+				getContext().currentOperation.remove();
+			}
 		}
 
 	}
@@ -228,12 +243,15 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	private final ApplicationContextOperationController operationController;
 
+	private final ThreadLocal<DefaultApplicationOperation> currentOperation;
+
 	DefaultApplicationContext(DefaultApplicationEngine engine) {
 		this.engine = engine;
 		this.factory=DefaultPublicResourceFactory.newInstance(this);
 		this.goneEndpoints=Maps.newLinkedHashMap();
 		this.endpointLifecycleListener = new LocalEndpointLifecycleListener();
 		this.operationController=new ApplicationContextOperationController();
+		this.currentOperation=new ThreadLocal<DefaultApplicationOperation>();
 	}
 
 	private static <T> T checkNotNull(T object, String message) {
@@ -284,6 +302,29 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	private PublicResource resolveResource(ManagedIndividualId id) {
 		checkNotNull(id,"Individual identifier cannot be null");
 		return this.factory.createResource(ResourceId.createId(id.name(), id.managerId()));
+	}
+
+	private void processConstraintValidationFailure(Resource resource, FeatureExecutionException e) {
+		if(e.getCause() instanceof InvalidContentException) {
+			InvalidContentException cause=(InvalidContentException)e.getCause();
+			ConstraintReport report=
+					this.engine().
+						persistencyManager().
+							createConstraintReport(
+								resource,
+								cause.getConstraints(),
+								new Date(),
+								currentRequest());
+			this.engine().persistencyManager().add(report);
+			LOGGER.debug("Constraint validation failed. Registered constraint report {}",report.id());
+			cause.setConstraintsId(report.id().constraintsId());
+		}
+	}
+
+	private HttpRequest currentRequest() {
+		DefaultApplicationOperation result = this.currentOperation.get();
+		checkState(result!=null,"No in-flight operation");
+		return result.getRequest();
 	}
 
 	DataSet getResource(Endpoint endpoint) throws ApplicationExecutionException {
@@ -363,17 +404,6 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource modification failed at '%s'",endpoint);
 			throw createException(errorMessage,e);
-		}
-	}
-
-	private void processConstraintValidationFailure(Resource resource, FeatureExecutionException e) {
-		if(e.getCause() instanceof InvalidContentException) {
-			InvalidContentException cause=(InvalidContentException)e.getCause();
-			HttpRequest request=null;
-			ConstraintReport report=this.engine().persistencyManager().createConstraintReport(resource, cause.getConstraints(), new Date(), request);
-			this.engine().persistencyManager().add(report);
-			LOGGER.debug("Constraint validation failed. Registered constraint report {}",report.id());
-			cause.setConstraintsId(report.id().constraintsId());
 		}
 	}
 
@@ -461,8 +491,12 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ApplicationContextOperation createOperation() {
-		return new DefaultApplicationOperation();
+	public ApplicationContextOperation createOperation(HttpRequest request) {
+		DefaultApplicationOperation operation=this.currentOperation.get();
+		checkState(operation==null,"An operation is ongoing on the current thread");
+		operation=new DefaultApplicationOperation(request);
+		this.currentOperation.set(operation);
+		return operation;
 	}
 
 	/**

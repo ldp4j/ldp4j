@@ -41,7 +41,6 @@ import javax.ws.rs.core.Variant;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.engine.context.ApplicationContextException;
-import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.PublicBasicContainer;
@@ -63,7 +62,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
 
-final class ExistingEndpointController extends AbstractEndpointController {
+final class ExistingEndpointController extends EndpointController {
 
 
 	private static final String CONSTRAINT_QUERY_PARAMETER = "ldp:constrainedBy";
@@ -84,8 +83,8 @@ final class ExistingEndpointController extends AbstractEndpointController {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
 
-	ExistingEndpointController(ApplicationContextOperation applicationContextOperation, PublicResource resource) {
-		super(applicationContextOperation,resource);
+	ExistingEndpointController() {
+
 	}
 
 	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {
@@ -165,7 +164,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 
 			LOGGER.trace("Data set to serialize: \n {}",entity);
 
-			String body=context.serialize(entity,variant.getMediaType());
+			String body=serialize(context, variant, entity);
 
 			ResponseBuilder builder=Response.serverError();
 			builder.variant(variant);
@@ -186,6 +185,10 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			return processRuntimeException(context, e);
 		}
 
+	}
+
+	private String serialize(OperationContext context, Variant variant, DataSet entity) {
+		return context.serialize(entity,variant.getMediaType());
 	}
 
 	private Response tryQuery(OperationContext context, boolean includeEntity, Variant variant) {
@@ -250,7 +253,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 
 			LOGGER.trace("Data set to serialize: \n {}",entity);
 
-			String body=context.serialize(entity,variant.getMediaType());
+			String body=serialize(context, variant, entity);
 
 			ResponseBuilder builder=Response.serverError();
 			builder.variant(variant);
@@ -293,7 +296,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 
 			LOGGER.trace("Constraints to serialize: \n {}",report);
 
-			String body=context.serialize(report,variant.getMediaType());
+			String body=serialize(context, variant, report);
 
 			ResponseBuilder builder=Response.serverError();
 			builder.variant(variant);

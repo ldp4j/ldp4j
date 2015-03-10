@@ -39,11 +39,6 @@ abstract class AbstractEndpointController extends EndpointController {
 		this.resource = resource;
 	}
 
-	@Override
-	public final OperationContextBuilder operationContextBuilder(HttpOperation operation) {
-		return new OperationContextBuilder(operation, getApplicationOperationContext(), getPublicResource());
-	}
-
 	protected final ApplicationContextOperation getApplicationOperationContext() {
 		return this.operation;
 	}

@@ -42,6 +42,7 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.engine.context.ApplicationContext;
 import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.CreationPreferences;
@@ -57,6 +58,7 @@ import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.*;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -94,26 +96,28 @@ final class OperationContextImpl implements OperationContext {
 
 	}
 
+	private final ApplicationContext applicationContext;
+	private final String endpointPath;
 	private final HttpOperation          operation;
 	private final UriInfo            uriInfo;
 	private final HttpHeaders        headers;
 	private final Request            request;
-	private final ApplicationContextOperation applicationContextOperation;
-	private final PublicResource resource;
+	private ApplicationContextOperation applicationContextOperation;
+	private PublicResource resource;
 
 	private String  entity;
 	private DataSet dataSet;
 
 	OperationContextImpl(
-		ApplicationContextOperation applicationContextOperation,
-		PublicResource resource,
+		ApplicationContext applicationContext,
+		String endpointPath,
 		UriInfo uriInfo,
 		HttpHeaders headers,
 		Request request,
 		String entity,
 		HttpOperation operation) {
-		this.applicationContextOperation = applicationContextOperation;
-		this.resource = resource;
+		this.applicationContext = applicationContext;
+		this.endpointPath = endpointPath;
 		this.operation = operation;
 		this.uriInfo=uriInfo;
 		this.headers=headers;
@@ -164,6 +168,16 @@ final class OperationContextImpl implements OperationContext {
 
 	private URI endpoint() {
 		return URI.create(path());
+	}
+
+	private String normalizePath(String path) {
+		String tPath=path;
+		if(tPath==null) {
+			tPath="";
+		} else {
+			tPath = tPath.trim();
+		}
+		return tPath;
 	}
 
 	UriInfo uriInfo() {
@@ -359,6 +373,12 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public PublicResource resource() {
+		if(this.resource==null) {
+			this.resource=
+				this.applicationContextOperation.
+					findResource(
+						normalizePath(this.endpointPath));
+		}
 		return this.resource;
 	}
 
@@ -384,6 +404,17 @@ final class OperationContextImpl implements OperationContext {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public void startOperation() {
+		this.applicationContextOperation=this.applicationContext.createOperation(null);
+	}
+
+	@Override
+	public void completeOperation() {
+		checkState(this.applicationContextOperation!=null,"Operation not started");
+		this.applicationContextOperation.dispose();
 	}
 
 }

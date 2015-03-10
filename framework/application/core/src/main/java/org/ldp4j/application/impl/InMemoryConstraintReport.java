@@ -28,10 +28,10 @@ package org.ldp4j.application.impl;
 
 import java.util.Date;
 
-import org.ldp4j.application.ConstraintReport;
-import org.ldp4j.application.ConstraintReportId;
-import org.ldp4j.application.HttpRequest;
+import org.ldp4j.application.constraints.ConstraintReport;
+import org.ldp4j.application.constraints.ConstraintReportId;
 import org.ldp4j.application.data.constraints.Constraints;
+import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.resource.ResourceId;
 
 import static com.google.common.base.Preconditions.*;

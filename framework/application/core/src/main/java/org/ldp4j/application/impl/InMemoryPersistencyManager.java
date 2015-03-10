@@ -33,13 +33,13 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.ldp4j.application.ConstraintReport;
-import org.ldp4j.application.ConstraintReportId;
-import org.ldp4j.application.HttpRequest;
+import org.ldp4j.application.constraints.ConstraintReport;
+import org.ldp4j.application.constraints.ConstraintReportId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.lifecycle.LifecycleException;
 import org.ldp4j.application.lifecycle.Managed;

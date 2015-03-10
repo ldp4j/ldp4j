@@ -35,7 +35,6 @@ import javax.ws.rs.core.Response.Status;
 final class InternalFailureEndpointController extends FixedResponseEndpointController {
 
 	InternalFailureEndpointController() {
-		super(null);
 	}
 
 	protected Response defaultResponse(OperationContext context) {
