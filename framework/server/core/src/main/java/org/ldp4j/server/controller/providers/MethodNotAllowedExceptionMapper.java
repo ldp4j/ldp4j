@@ -48,7 +48,7 @@ public class MethodNotAllowedExceptionMapper implements ExceptionMapper<MethodNo
 
 	@Override
 	public Response toResponse(MethodNotAllowedException throwable) {
-		String message = String.format("Endpoint '%s' does not support %s. It only supports: %s",throwable.resourceLocation(),throwable.getOperation(),toHttpMethods(throwable.getResource().capabilities()));
+		String message = String.format("Endpoint '%s' does not support %s. It only supports: %s",throwable.resourceLocation(),throwable.getMethod(),toHttpMethods(throwable.getResource().capabilities()));
 		ResponseBuilder builder=
 			Response.
 				status(Status.METHOD_NOT_ALLOWED).

@@ -33,13 +33,14 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
 
 import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;;
 
 public final class OperationContextBuilder {
 
 	// Mandatory
 	private ApplicationContext applicationContext;
 	private String endpointPath;
-	private HttpOperation httpOperation;
+	private HttpMethod method;
 	private UriInfo uriInfo;
 	private Request request;
 	private HttpHeaders headers;
@@ -60,8 +61,8 @@ public final class OperationContextBuilder {
 		return this;
 	}
 
-	public OperationContextBuilder withOperation(HttpOperation httpOperation) {
-		this.httpOperation=httpOperation;
+	public OperationContextBuilder withOperation(HttpMethod method) {
+		this.method=method;
 		return this;
 	}
 
@@ -88,11 +89,11 @@ public final class OperationContextBuilder {
 	public OperationContext build() {
 		checkNotNull(this.applicationContext,"Application context cannot be null");
 		checkNotNull(this.endpointPath,"Endpoint path cannot be null");
-		checkNotNull(this.httpOperation,"Operation cannot be null");
+		checkNotNull(this.method,"Method cannot be null");
 		checkNotNull(this.uriInfo,"Uri info cannot be null");
 		checkNotNull(this.request,"Request cannot be null");
-		checkNotNull(this.headers,"Http headers cannot be null");
-		return new OperationContextImpl(this.applicationContext,this.endpointPath,this.uriInfo,this.headers,this.request,this.entity,this.httpOperation);
+		checkNotNull(this.headers,"Headers cannot be null");
+		return new OperationContextImpl(this.applicationContext,this.endpointPath,this.uriInfo,this.headers,this.request,this.entity,this.method);
 	}
 
 }

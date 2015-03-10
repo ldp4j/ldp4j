@@ -47,10 +47,10 @@ import javax.ws.rs.core.UriInfo;
 
 import org.ldp4j.application.engine.ApplicationEngine;
 import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
 import org.ldp4j.application.engine.lifecycle.ApplicationEngineLifecycleListener;
 import org.ldp4j.application.engine.lifecycle.ApplicationEngineState;
 import org.ldp4j.server.controller.EndpointControllerFactory;
-import org.ldp4j.server.controller.HttpOperation;
 import org.ldp4j.server.controller.OperationContext;
 import org.ldp4j.server.controller.OperationContextBuilder;
 import org.slf4j.Logger;
@@ -115,7 +115,7 @@ public final class ServerFrontend {
 		return (ApplicationContext)this.context.getAttribute(LDP4J_APPLICATION_CONTEXT);
 	}
 
-	private OperationContextBuilder newOperationBuilder(HttpOperation operation) {
+	private OperationContextBuilder newOperationBuilder(HttpMethod operation) {
 		checkApplicationEngineAvailable();
 		return
 			new OperationContextBuilder().
@@ -148,7 +148,7 @@ public final class ServerFrontend {
 		@Context HttpHeaders headers,
 		@Context Request request) {
 		OperationContext context =
-			newOperationBuilder(HttpOperation.OPTIONS).
+			newOperationBuilder(HttpMethod.OPTIONS).
 				withEndpointPath(path).
 				withEndpointPath(path).
 				withUriInfo(uriInfo).
@@ -177,7 +177,7 @@ public final class ServerFrontend {
 		@Context HttpHeaders headers,
 		@Context Request request) {
 		OperationContext context =
-			newOperationBuilder(HttpOperation.HEAD).
+			newOperationBuilder(HttpMethod.HEAD).
 				withEndpointPath(path).
 				withUriInfo(uriInfo).
 				withHeaders(headers).
@@ -197,7 +197,7 @@ public final class ServerFrontend {
 		@Context HttpHeaders headers,
 		@Context Request request) {
 		OperationContext context =
-			newOperationBuilder(HttpOperation.GET).
+			newOperationBuilder(HttpMethod.GET).
 				withEndpointPath(path).
 				withUriInfo(uriInfo).
 				withHeaders(headers).
@@ -218,7 +218,7 @@ public final class ServerFrontend {
 		@Context Request request,
 		String entity) {
 		OperationContext context =
-			newOperationBuilder(HttpOperation.PUT).
+			newOperationBuilder(HttpMethod.PUT).
 				withEndpointPath(path).
 				withUriInfo(uriInfo).
 				withHeaders(headers).
@@ -240,7 +240,7 @@ public final class ServerFrontend {
 		@Context Request request,
 		String entity) {
 		OperationContext context =
-			newOperationBuilder(HttpOperation.POST).
+			newOperationBuilder(HttpMethod.POST).
 				withEndpointPath(path).
 				withUriInfo(uriInfo).
 				withHeaders(headers).
@@ -261,7 +261,7 @@ public final class ServerFrontend {
 		@Context HttpHeaders headers,
 		@Context Request request) {
 		OperationContext context =
-			newOperationBuilder(HttpOperation.DELETE).
+			newOperationBuilder(HttpMethod.DELETE).
 				withEndpointPath(path).
 				withUriInfo(uriInfo).
 				withHeaders(headers).
@@ -282,7 +282,7 @@ public final class ServerFrontend {
 		@Context Request request,
 		String entity) {
 		OperationContext context =
-			newOperationBuilder(HttpOperation.PATCH).
+			newOperationBuilder(HttpMethod.PATCH).
 				withEndpointPath(path).
 				withUriInfo(uriInfo).
 				withHeaders(headers).

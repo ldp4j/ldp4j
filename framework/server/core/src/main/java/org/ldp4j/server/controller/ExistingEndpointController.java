@@ -62,7 +62,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
 
-final class ExistingEndpointController extends EndpointController {
+final class ExistingEndpointController implements EndpointController {
 
 
 	private static final String CONSTRAINT_QUERY_PARAMETER = "ldp:constrainedBy";

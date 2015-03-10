@@ -28,20 +28,20 @@ package org.ldp4j.server.controller;
 
 import javax.ws.rs.core.Response;
 
-public abstract class EndpointController {
+public interface EndpointController {
 
-	public abstract Response options(OperationContext context);
+	Response options(OperationContext context);
 
-	public abstract Response head(OperationContext context);
+	Response head(OperationContext context);
 
-	public abstract Response createResource(OperationContext context);
+	Response createResource(OperationContext context);
 
-	public abstract Response getResource(OperationContext context);
+	Response getResource(OperationContext context);
 
-	public abstract Response modifyResource(OperationContext context);
+	Response modifyResource(OperationContext context);
 
-	public abstract Response deleteResource(OperationContext context);
+	Response deleteResource(OperationContext context);
 
-	public abstract Response patchResource(OperationContext context);
+	Response patchResource(OperationContext context);
 
 }

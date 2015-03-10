@@ -26,6 +26,8 @@
  */
 package org.ldp4j.server.controller;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
@@ -48,6 +50,7 @@ import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.CreationPreferences;
 import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
 import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
 import org.ldp4j.application.engine.context.PublicContainer;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.server.data.DataTransformator;
@@ -58,7 +61,6 @@ import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.google.common.base.Preconditions.*;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
@@ -97,16 +99,16 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	private final ApplicationContext applicationContext;
-	private final String endpointPath;
-	private final HttpOperation          operation;
+	private final String             endpointPath;
+	private final HttpMethod         method;
 	private final UriInfo            uriInfo;
 	private final HttpHeaders        headers;
 	private final Request            request;
-	private ApplicationContextOperation applicationContextOperation;
-	private PublicResource resource;
+	private final String             entity;
 
-	private String  entity;
-	private DataSet dataSet;
+	private ApplicationContextOperation applicationContextOperation;
+	private PublicResource              resource;
+	private DataSet                     dataSet;
 
 	OperationContextImpl(
 		ApplicationContext applicationContext,
@@ -115,10 +117,10 @@ final class OperationContextImpl implements OperationContext {
 		HttpHeaders headers,
 		Request request,
 		String entity,
-		HttpOperation operation) {
+		HttpMethod method) {
 		this.applicationContext = applicationContext;
 		this.endpointPath = endpointPath;
-		this.operation = operation;
+		this.method = method;
 		this.uriInfo=uriInfo;
 		this.headers=headers;
 		this.request=request;
@@ -254,7 +256,7 @@ final class OperationContextImpl implements OperationContext {
 	public OperationContext checkPreconditions() {
 		EntityTag entityTag=this.resource.entityTag();
 		Date lastModified=this.resource.lastModified();
-		if(HttpOperation.PUT.equals(this.operation)) {
+		if(HttpMethod.PUT.equals(this.method)) {
 			List<String> requestHeader = this.headers.getRequestHeader(HttpHeaders.IF_MATCH);
 			if((requestHeader==null || requestHeader.isEmpty())) {
 				throw new PreconditionRequiredException(this.resource);
@@ -275,7 +277,7 @@ final class OperationContextImpl implements OperationContext {
 	@Override
 	public OperationContext checkOperationSupport() {
 		boolean allowed=false;
-		switch(operation) {
+		switch(method) {
 		case GET:
 			allowed=true;
 			break;
@@ -299,7 +301,7 @@ final class OperationContextImpl implements OperationContext {
 			break;
 		}
 		if(!allowed) {
-			throw new MethodNotAllowedException(this,this.resource,this.operation);
+			throw new MethodNotAllowedException(this,this.resource,this.method);
 		}
 		return this;
 	}
@@ -314,7 +316,7 @@ final class OperationContextImpl implements OperationContext {
 						create(base()).
 						enableResolution(resourceResolver()).
 						mediaType(mediaType);
-				if(this.operation.equals(HttpOperation.POST)) {
+				if(this.method.equals(HttpMethod.POST)) {
 					transformator=transformator.surrogateEndpoint(endpoint());
 				} else {
 					transformator=transformator.permanentEndpoint(endpoint());

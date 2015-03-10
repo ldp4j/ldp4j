@@ -30,7 +30,7 @@ import javax.ws.rs.core.Response;
 
 import org.ldp4j.application.engine.context.PublicResource;
 
-final class DefaultEndpointController extends EndpointController {
+final class DefaultEndpointController implements EndpointController {
 
 	DefaultEndpointController() {
 	}

@@ -28,7 +28,7 @@ package org.ldp4j.server.controller;
 
 import javax.ws.rs.core.Response;
 
-abstract class FixedResponseEndpointController extends EndpointController {
+abstract class FixedResponseEndpointController implements EndpointController {
 
 	FixedResponseEndpointController() {
 	}
