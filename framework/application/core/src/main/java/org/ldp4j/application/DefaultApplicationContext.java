@@ -414,6 +414,41 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 	}
 
+	final static class ConstraintReportDataSet {
+
+		private final DataSet dataset;
+		private final Individual<?,?> targetResource;
+		private final Individual<?,?> constraintReport;
+		private final Individual<?,?> failedRequest;
+
+		@SuppressWarnings("rawtypes")
+		private ConstraintReportDataSet(Resource resource, ConstraintReport report) {
+			ManagedIndividualId tId = ManagedIndividualId.createId(resource.id().name(), resource.id().templateId());
+			ManagedIndividualId rId = ManagedIndividualId.createId(URI.create("?ldp:constrainedBy="+report.id().constraintsId()), tId);
+			this.dataset=DataSetFactory.createDataSet(rId.name());
+			this.constraintReport= dataset.individual(rId, ManagedIndividual.class);
+			this.targetResource = dataset.individual(tId, ManagedIndividual.class);
+			this.failedRequest=dataset.individual((Name)NamingScheme.getDefault().name("request"), LocalIndividual.class);
+		}
+
+		Individual<?,?> resourceInd() {
+			return this.targetResource;
+		}
+
+		Individual<?,?> reportInd() {
+			return this.constraintReport;
+		}
+
+		Individual<?,?> requestInd() {
+			return this.failedRequest;
+		}
+
+		DataSet dataSet() {
+			return this.dataset;
+		}
+
+	}
+
 	DataSet getConstraintReport(Endpoint endpoint, String constraintsId) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = this.engine().persistencyManager().resourceOfId(resourceId,Resource.class);
@@ -428,26 +463,22 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 
 		// TODO: Update with real data transformation
-		ManagedIndividualId rid = ManagedIndividualId.createId(resource.id().name(), resource.id().templateId());
-		ManagedIndividualId fId = ManagedIndividualId.createId(URI.create("?ldp:constrainedBy="+constraintsId), rid);
-		DataSet formatedReport=DataSetFactory.createDataSet(fId.name());
-		ExternalIndividual targetIndividual = formatedReport.individual(URI.create("http://www.ldp4j.org/vocab#ConstraintReport"), ExternalIndividual.class);
-		ManagedIndividual failureIndividual = formatedReport.individual(fId, ManagedIndividual.class);
-		ManagedIndividual about = formatedReport.individual(rid, ManagedIndividual.class);
-		failureIndividual.addValue(RDF.TYPE.as(URI.class), targetIndividual);
-		failureIndividual.addValue(URI.create("http://www.ldp4j.org/vocab#about"), about);
-		failureIndividual.addValue(URI.create("http://www.ldp4j.org/vocab#failureId"), DataSetUtils.newLiteral(constraintsId));
-		failureIndividual.addValue(URI.create("http://www.ldp4j.org/vocab#failureId"), DataSetUtils.newLiteral(constraintsId));
-		populateHttpRequest(failureIndividual,report.getRequest(),formatedReport);
-		return formatedReport;
+		ConstraintReportDataSet crDataSet=new ConstraintReportDataSet(resource, report);
+		crDataSet.resourceInd().addValue(URI.create("http://www.ldp4j.org/vocab#entityTag"), DataSetUtils.newLiteral(endpoint.entityTag()));
+		crDataSet.resourceInd().addValue(URI.create("http://www.ldp4j.org/vocab#lastModified"), DataSetUtils.newLiteral(endpoint.lastModified()));
+		crDataSet.resourceInd().addValue(URI.create("http://www.w3.org/ns/ldp#constrainedBy"), crDataSet.reportInd());
+		populateHttpRequest(crDataSet.reportInd(),report,crDataSet.dataSet());
+		return crDataSet.dataSet();
 	}
 
-	private void populateHttpRequest(Individual<?,?> failureInd, HttpRequest request, DataSet dataset) {
+	private void populateHttpRequest(Individual<?,?> reportInd, ConstraintReport report, DataSet dataset) {
+		HttpRequest request=report.getRequest();
 		LOGGER.debug("Populating request: {}",request);
-		failureInd.addValue(URI.create("http://www.ldp4j.org/vocab#serverDate"), DataSetUtils.newLiteral(request.serverDate()));
-
 		LocalIndividual requestInd=localIndividual(dataset, "request");
-		failureInd.addValue(URI.create("http://www.ldp4j.org/vocab#request"), requestInd);
+		reportInd.addValue(RDF.TYPE.as(URI.class), dataset.individual(URI.create("http://www.ldp4j.org/vocab#ConstraintReport"), ExternalIndividual.class));
+		reportInd.addValue(URI.create("http://www.ldp4j.org/vocab#failureId"), DataSetUtils.newLiteral(report.id().constraintsId()));
+		reportInd.addValue(URI.create("http://www.ldp4j.org/vocab#failureDate"), DataSetUtils.newLiteral(request.serverDate()));
+		reportInd.addValue(URI.create("http://www.ldp4j.org/vocab#failureRequest"), requestInd);
 		requestInd.addValue(RDF.TYPE.as(URI.class), externalIndividual(dataset, httpTerm("Request")));
 		requestInd.addValue(httpTerm("methodName"),DataSetUtils.newLiteral(request.method().toString()));
 		requestInd.addValue(httpTerm("mthd"),externalIndividual(dataset,methodsTerm(request.method().toString())));
