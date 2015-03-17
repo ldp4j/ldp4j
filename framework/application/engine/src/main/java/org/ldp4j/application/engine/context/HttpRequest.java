@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.engine.context;
 
+import java.util.Date;
 import java.util.List;
 
 public interface HttpRequest {
@@ -48,27 +49,27 @@ public interface HttpRequest {
 	interface Header {
 
 		interface Element {
-			
+
 			interface Parameter {
-				
+
 				String name();
-				
+
 				String value();
-				
+
 			}
-			
+
 			String name();
-			
+
 			List<Parameter> parameters();
-			
+
 		}
-		
+
 		String name();
 
 		String rawValue();
 
 		List<Element> elements();
-		
+
 	}
 
 	HttpMethod method();
@@ -82,5 +83,9 @@ public interface HttpRequest {
 	List<Header> headers();
 
 	String body();
+
+	Date serverDate();
+
+	Date clientDate();
 
 }

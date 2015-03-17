@@ -27,6 +27,7 @@
 package org.ldp4j.server.controller;
 
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -46,9 +47,9 @@ final class DefaultHttpRequest implements HttpRequest {
 		private final String rawValue;
 		private final String name;
 
-		private HeaderImpl(String rawValue, String name) {
-			this.rawValue = rawValue;
+		private HeaderImpl(String name, String rawValue) {
 			this.name = name;
+			this.rawValue = rawValue;
 		}
 
 		@Override
@@ -83,13 +84,17 @@ final class DefaultHttpRequest implements HttpRequest {
 	private final HttpMethod method;
 	private final String absolutePath;
 	private final String host;
+	private final Date serverDate;
+	private final Date clientDate;
 
-	private DefaultHttpRequest(HttpMethod method, String absolutePath, String host, List<Header> headers, String entity) {
+	private DefaultHttpRequest(HttpMethod method, String absolutePath, String host, List<Header> headers, String entity, Date serverDate, Date clientaDate) {
 		this.method=method;
 		this.absolutePath = absolutePath;
 		this.host = host;
 		this.headers = headers;
 		this.entity = entity;
+		this.serverDate = serverDate;
+		this.clientDate = clientaDate;
 	}
 
 	@Override
@@ -123,6 +128,16 @@ final class DefaultHttpRequest implements HttpRequest {
 	}
 
 	@Override
+	public Date serverDate() {
+		return this.serverDate;
+	}
+
+	@Override
+	public Date clientDate() {
+		return this.clientDate;
+	}
+
+	@Override
 	public String toString() {
 		return
 			Objects.
@@ -132,20 +147,24 @@ final class DefaultHttpRequest implements HttpRequest {
 					add("absolutePath",this.absolutePath).
 					add("host",this.host).
 					add("version",version()).
+					add("serverDate",this.serverDate).
+					add("clientDate",this.clientDate).
 					add("headers",this.headers).
 					add("entity",this.entity).
 					toString();
 	}
 
-	static final HttpRequest create(HttpMethod method, UriInfo uriInfo, HttpHeaders headers, String entity) {
-		return new DefaultHttpRequest(method,uriInfo.getPath(false),uriInfo.getAbsolutePath().getAuthority(),transformHeaders(headers),entity);
+	static final HttpRequest create(HttpMethod method, UriInfo uriInfo, HttpHeaders headers, String entity, Date serverDate, Date clientDate) {
+		return new DefaultHttpRequest(method,uriInfo.getAbsolutePath().getPath(),uriInfo.getAbsolutePath().getAuthority(),transformHeaders(headers),entity,serverDate,clientDate);
 	}
 
 	private static List<Header> transformHeaders(HttpHeaders headers) {
 		List<Header> result=Lists.newArrayList();
-		for(Entry<String, List<String>> header:headers.getRequestHeaders().entrySet()) {
-			for(String value:header.getValue()) {
-				result.add(new HeaderImpl(value, header.getKey()));
+		for(Entry<String, List<String>> entry:headers.getRequestHeaders().entrySet()) {
+			for(String rawValue:entry.getValue()) {
+				if(rawValue!=null) {
+					result.add(new HeaderImpl(entry.getKey(), rawValue));
+				}
 			}
 		}
 		return ImmutableList.copyOf(result);

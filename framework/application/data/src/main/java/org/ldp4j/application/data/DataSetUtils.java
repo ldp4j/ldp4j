@@ -31,6 +31,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import com.google.common.base.Preconditions;
+
 public final class DataSetUtils {
 
 	private static final class IndividualFinder implements IndividualVisitor {
@@ -209,6 +211,7 @@ public final class DataSetUtils {
 	}
 
 	public static <T> Literal<T> newLiteral(T value) {
+		Preconditions.checkNotNull(value,"Literal value cannot be null");
 		return new ImmutableLiteral<T>(value);
 	}
 

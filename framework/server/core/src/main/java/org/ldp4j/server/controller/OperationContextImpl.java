@@ -416,7 +416,9 @@ final class OperationContextImpl implements OperationContext {
 								this.method,
 								this.uriInfo,
 								this.headers,
-								this.entity));
+								this.entity,
+								new Date(),
+								this.headers.getDate()));
 	}
 
 	@Override
