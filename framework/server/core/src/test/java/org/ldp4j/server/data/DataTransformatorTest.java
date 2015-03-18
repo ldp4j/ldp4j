@@ -99,7 +99,8 @@ public class DataTransformatorTest {
 		assertThat(dataSet.numberOfIndividuals(),greaterThan(2));
 		assertThat(dataSet.individualOfId(NANDANA_ID),notNullValue());
 		assertThat(dataSet.individualOfId(NANDANA_ME_ID),notNullValue());
-		sut.marshall(dataSet);
+		String data=sut.marshall(dataSet);
+		assertThat(data,notNullValue());
 	}
 
 }

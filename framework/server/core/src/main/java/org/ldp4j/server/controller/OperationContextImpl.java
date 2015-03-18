@@ -53,6 +53,7 @@ import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
 import org.ldp4j.application.engine.context.PublicContainer;
 import org.ldp4j.application.engine.context.PublicResource;
+import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.server.data.DataTransformator;
 import org.ldp4j.server.data.ResourceResolver;
 import org.ldp4j.server.data.UnsupportedMediaTypeException;
@@ -357,13 +358,14 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	@Override
-	public String serialize(DataSet representation, MediaType mediaType) {
+	public String serialize(DataSet representation, Namespaces namespaces, MediaType mediaType) {
 		try {
 			DataTransformator transformator =
 				DataTransformator.
 					create(base()).
 					enableResolution(resourceResolver()).
 					mediaType(mediaType).
+					namespaces(namespaces).
 					permanentEndpoint(endpoint());
 			return transformator.marshall(representation);
 		} catch(UnsupportedMediaTypeException e) {

@@ -40,6 +40,8 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.domain.RDFS;
 import org.ldp4j.application.engine.context.ApplicationContextException;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.ContentPreferences;
@@ -56,6 +58,7 @@ import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
+import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -85,6 +88,17 @@ final class ExistingEndpointController implements EndpointController {
 
 	ExistingEndpointController() {
 
+	}
+
+	private Namespaces defaultNamespaces() {
+		Namespaces namespaces=
+			new Namespaces().
+				addPrefix("rdf", RDF.NAMESPACE).
+				addPrefix("rdfs", RDFS.NAMESPACE).
+				addPrefix("xsd", "http://www.w3.org/2001/XMLSchema#").
+				addPrefix("ldp", LDP.NAMESPACE);
+
+		return namespaces;
 	}
 
 	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {
@@ -164,7 +178,7 @@ final class ExistingEndpointController implements EndpointController {
 
 			LOGGER.trace("Data set to serialize: \n {}",entity);
 
-			String body=serialize(context, variant, entity);
+			String body=serialize(context, variant, entity, defaultNamespaces());
 
 			ResponseBuilder builder=Response.serverError();
 			builder.variant(variant);
@@ -187,8 +201,8 @@ final class ExistingEndpointController implements EndpointController {
 
 	}
 
-	private String serialize(OperationContext context, Variant variant, DataSet entity) {
-		return context.serialize(entity,variant.getMediaType());
+	private String serialize(OperationContext context, Variant variant, DataSet entity, Namespaces namespaces) {
+		return context.serialize(entity,namespaces,variant.getMediaType());
 	}
 
 	private Response tryQuery(OperationContext context, boolean includeEntity, Variant variant) {
@@ -253,7 +267,7 @@ final class ExistingEndpointController implements EndpointController {
 
 			LOGGER.trace("Data set to serialize: \n {}",entity);
 
-			String body=serialize(context, variant, entity);
+			String body=serialize(context, variant, entity, defaultNamespaces());
 
 			ResponseBuilder builder=Response.serverError();
 			builder.variant(variant);
@@ -296,7 +310,16 @@ final class ExistingEndpointController implements EndpointController {
 
 			LOGGER.trace("Constraints to serialize: \n {}",report);
 
-			String body=serialize(context, variant, report);
+			Namespaces namespaces=
+				defaultNamespaces().
+					addPrefix("ldp4j", "http://www.ldp4j.org/vocab#").
+					addPrefix("dct", "http://purl.org/dc/terms/").
+					addPrefix("http", "http://www.w3.org/2011/http#").
+					addPrefix("cnt", "http://www.w3.org/2011/content#").
+					addPrefix("http-methods", "http://www.w3.org/2011/http-methods#").
+					addPrefix("http-headers", "http://www.w3.org/2011/http-headers#");
+
+			String body=serialize(context, variant, report, namespaces);
 
 			ResponseBuilder builder=Response.serverError();
 			builder.variant(variant);
