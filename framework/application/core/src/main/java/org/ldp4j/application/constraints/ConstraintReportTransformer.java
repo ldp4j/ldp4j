@@ -2,6 +2,7 @@ package org.ldp4j.application.constraints;
 
 import java.net.URI;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import org.ldp4j.application.data.DataSet;
@@ -88,15 +89,28 @@ public final class ConstraintReportTransformer {
 			requestInd().addValue(dctTerm("date"),DataSetUtils.newLiteral(clientDate));
 		}
 
-		List<Header> headers = request.headers();
-		for(int i=0;i<headers.size();i++) {
-			Header header=headers.get(i);
-			LocalIndividual headerInd=localIndividual("header"+i);
-			requestInd().addValue(httpTerm("headers"), headerInd);
-			headerInd.addValue(RDF.TYPE.as(URI.class),headerType(header));
-			headerInd.addValue(httpTerm("fieldName"),DataSetUtils.newLiteral(header.name()));
-			headerInd.addValue(httpTerm("fieldValue"),DataSetUtils.newLiteral(header.rawValue()));
-			headerInd.addValue(httpTerm("hdrName"),externalIndividual(headersTerm(header.name())));
+		Iterator<Header> headers = request.headers().iterator();
+		if(headers.hasNext()) {
+			int i=0;
+			Individual<?,?> current=localIndividual("n"+i);
+			requestInd().addValue(httpTerm("headers"), current);
+			while(headers.hasNext()) {
+				Header header=headers.next();
+				LocalIndividual headerInd=localIndividual("header"+i);
+				current.addValue(RDF.FIRST.as(URI.class),headerInd);
+				headerInd.addValue(RDF.TYPE.as(URI.class),headerType(header));
+				headerInd.addValue(httpTerm("fieldName"),DataSetUtils.newLiteral(header.name()));
+				headerInd.addValue(httpTerm("fieldValue"),DataSetUtils.newLiteral(header.rawValue()));
+				headerInd.addValue(httpTerm("hdrName"),externalIndividual(headersTerm(header.name())));
+				i++;
+				if(headers.hasNext()) {
+					Individual<?,?> last=current;
+					current=localIndividual("n"+i);
+					last.addValue(RDF.REST.as(URI.class),current);
+				} else {
+					current.addValue(RDF.REST.as(URI.class),externalIndividual(RDF.NIL.as(URI.class)));
+				}
+			}
 		}
 
 		String body = request.body();
