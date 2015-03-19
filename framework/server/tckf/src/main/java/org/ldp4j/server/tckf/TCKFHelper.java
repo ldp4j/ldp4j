@@ -27,6 +27,7 @@
 package org.ldp4j.server.tckf;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.Locale;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -45,6 +46,9 @@ import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.application.data.constraints.Constraints;
+import org.ldp4j.application.data.constraints.Constraints.Cardinality;
+import org.ldp4j.application.data.constraints.Constraints.PropertyConstraint;
+import org.ldp4j.application.data.constraints.Constraints.Shape;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.slf4j.Logger;
@@ -102,34 +106,66 @@ final class TCKFHelper {
 			LOGGER.debug("Property '{}' is not defined in the current state nor in the new state",READ_ONLY_PROPERTY);
 			return;
 		}
+
+		Shape shape=
+			Constraints.
+				shape().
+					withLabel("shape").
+					withComment("An example data shape");
+
+		PropertyConstraint pc=
+			Constraints.
+				propertyConstraint(READ_ONLY_PROPERTY).
+					withLabel("ReadOnlyProperty").
+					withComment("An example read-only-property");
+
+		if(stateProperty!=null && stateProperty.hasValues()) {
+			Collection<? extends Value> values = stateProperty.values();
+			pc.withCardinality(Constraints.Cardinality.create(values.size(), values.size()));
+			pc.withValue(values.toArray(new Value[]{}));
+		} else {
+			pc.withCardinality(Constraints.Cardinality.create(0, 0));
+		}
+		shape.
+			withPropertyConstraint(pc).
+			withPropertyConstraint(
+				Constraints.
+					propertyConstraint(UNKNOWN_PROPERTY).
+						withCardinality(Cardinality.create(0, 0)));
+
+		Constraints constraints =
+			Constraints.
+				constraints().
+					withNodeShape(inIndividual, shape);
+
 		if(stateProperty==null && inProperty!=null) {
 			LOGGER.error("Property '{}' is not defined in the current state but it is defined in the new state",READ_ONLY_PROPERTY);
-			throw new InconsistentContentException("Added values to property '"+READ_ONLY_PROPERTY+"'",new Constraints());
+			throw new InconsistentContentException("Added values to property '"+READ_ONLY_PROPERTY+"'",constraints);
 		}
 		if(stateProperty!=null && inProperty==null) {
 			LOGGER.error("Property '{}' is defined in the current state but it is not defined in the new state",READ_ONLY_PROPERTY);
-			throw new InconsistentContentException("Removed all values from property '"+READ_ONLY_PROPERTY+"'",new Constraints());
+			throw new InconsistentContentException("Removed all values from property '"+READ_ONLY_PROPERTY+"'",constraints);
 		}
 
 		for(Value value:inProperty) {
 			LOGGER.debug("Verifing property '{}' input value {}...",READ_ONLY_PROPERTY,format(value));
 			if(!DataSetUtils.hasValue(value,stateProperty)) {
 				LOGGER.error("New value {} has been added to property '{}'",format(value),READ_ONLY_PROPERTY);
-				throw new InconsistentContentException("New value '"+format(value)+"' for property '"+READ_ONLY_PROPERTY+"' has been added",new Constraints());
+				throw new InconsistentContentException("New value '"+format(value)+"' for property '"+READ_ONLY_PROPERTY+"' has been added",constraints);
 			}
 		}
 		for(Value value:stateProperty) {
 			LOGGER.debug("Verifing property '{}' existing value {}...",READ_ONLY_PROPERTY,format(value));
 			if(!DataSetUtils.hasValue(value,inProperty)) {
 				LOGGER.error("Value {} has been removed from property '{}'",format(value),READ_ONLY_PROPERTY);
-				throw new InconsistentContentException("Value '"+value+"' has been removed from property '"+READ_ONLY_PROPERTY+"'",new Constraints());
+				throw new InconsistentContentException("Value '"+value+"' has been removed from property '"+READ_ONLY_PROPERTY+"'",constraints);
 			}
 		}
 
 		LOGGER.debug("Verifing absence of unknown properties...");
 		if(inIndividual.property(UNKNOWN_PROPERTY)!=null) {
 			LOGGER.error("Unknown property '{}' specified",UNKNOWN_PROPERTY);
-			throw new UnsupportedContentException("Unknown property '"+UNKNOWN_PROPERTY+"' specified",new Constraints());
+			throw new UnsupportedContentException("Unknown property '"+UNKNOWN_PROPERTY+"' specified",constraints);
 		}
 
 	}

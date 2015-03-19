@@ -2,6 +2,7 @@ package org.ldp4j.application.constraints;
 
 import java.net.URI;
 import java.util.Date;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 
@@ -10,20 +11,79 @@ import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.IndividualVisitor;
+import org.ldp4j.application.data.Literal;
 import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.data.NewIndividual;
+import org.ldp4j.application.data.RelativeIndividual;
+import org.ldp4j.application.data.Value;
+import org.ldp4j.application.data.ValueVisitor;
+import org.ldp4j.application.data.constraints.Constraints;
+import org.ldp4j.application.data.constraints.Constraints.Cardinality;
+import org.ldp4j.application.data.constraints.Constraints.InversePropertyConstraint;
+import org.ldp4j.application.data.constraints.Constraints.PropertyConstraint;
+import org.ldp4j.application.data.constraints.Constraints.Shape;
 import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.domain.RDFS;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.context.HttpRequest.Header;
 import org.ldp4j.application.resource.Resource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
 
 public final class ConstraintReportTransformer {
+
+	private final class IndividualTranslator implements IndividualVisitor {
+		private final IdentityHashMap<Individual<?, ?>, Individual<?, ?>> individualCache;
+
+		private IndividualTranslator() {
+			this.individualCache=Maps.newIdentityHashMap();
+		}
+
+		@Override
+		public void visitRelativeIndividual(RelativeIndividual individual) {
+			individualCache.put(individual, dataset.individual(individual.id(),RelativeIndividual.class));
+		}
+
+		@Override
+		public void visitNewIndividual(NewIndividual individual) {
+			individualCache.put(individual,dataset.individual(individual.id(), NewIndividual.class));
+		}
+
+		@Override
+		public void visitManagedIndividual(ManagedIndividual individual) {
+			individualCache.put(individual, dataset.individual(individual.id(),ManagedIndividual.class));
+		}
+
+		@Override
+		public void visitLocalIndividual(LocalIndividual individual) {
+			individualCache.put(individual, dataset.individual(individual.id(),LocalIndividual.class));
+		}
+
+		@Override
+		public void visitExternalIndividual(ExternalIndividual individual) {
+			individualCache.put(individual, externalIndividual(individual.id()));
+		}
+
+		Individual<?,?> translate(Individual<?,?> individual) {
+			Individual<?, ?> aNodeInd = this.individualCache.get(individual);
+			if(aNodeInd==null) {
+				individual.accept(this);
+				aNodeInd=this.individualCache.get(individual);
+			}
+			return aNodeInd;
+		}
+	}
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(ConstraintReportTransformer.class);
 
 	private final ConstraintReport report;
 
@@ -125,11 +185,153 @@ public final class ConstraintReportTransformer {
 	}
 
 	private void populateConstraintReportIndividual() {
+		Constraints constraints = this.report.getConstraints();
+		LOGGER.debug("Populating constraints: {}",constraints);
 		reportInd().addValue(RDF.TYPE.as(URI.class), dataset.individual(URI.create("http://www.ldp4j.org/vocab#ConstraintReport"), ExternalIndividual.class));
 		reportInd().addValue(URI.create("http://www.ldp4j.org/vocab#failureId"), DataSetUtils.newLiteral(this.report.id().constraintsId()));
 		reportInd().addValue(URI.create("http://www.ldp4j.org/vocab#failureDate"), DataSetUtils.newLiteral(this.report.getDate()));
 		reportInd().addValue(URI.create("http://www.ldp4j.org/vocab#failureRequest"), requestInd());
-		// TODO: Add constraint transformations when content is clear
+
+		List<Shape> shapes = constraints.shapes();
+		if(!shapes.isEmpty()) {
+			final IndividualTranslator translator = new IndividualTranslator();
+			IdentityHashMap<Shape,LocalIndividual> shapeIndCache=Maps.newIdentityHashMap();
+			for(int i=0;i<shapes.size();i++) {
+				Shape shape=shapes.get(i);
+				LocalIndividual shapeInd = localIndividual("s"+i);
+				shapeIndCache.put(shape, shapeInd);
+				reportInd().addValue(URI.create("http://www.ldp4j.org/vocab#hasShape"), shapeInd);
+				shapeInd.addValue(RDF.TYPE.as(URI.class), externalIndividual(shaclTerm("Shape")));
+				if(shape.label()!=null) {
+					shapeInd.addValue(RDFS.LABEL.as(URI.class),DataSetUtils.newLiteral(shape.label()));
+				}
+				if(shape.comment()!=null) {
+					shapeInd.addValue(RDFS.COMMENT.as(URI.class),DataSetUtils.newLiteral(shape.comment()));
+				}
+				List<PropertyConstraint> pcs = shape.propertyConstraints();
+				for(int j=0;j<pcs.size();j++) {
+					PropertyConstraint pc = pcs.get(j);
+					final LocalIndividual pcInd = localIndividual("s"+i+"_pc"+j);
+					shapeInd.addValue(shaclTerm("property"), pcInd);
+					pcInd.addValue(RDF.TYPE.as(URI.class), externalIndividual(shaclTerm("PropertyConstraint")));
+					if(pc.label()!=null) {
+						pcInd.addValue(RDFS.LABEL.as(URI.class),DataSetUtils.newLiteral(pc.label()));
+					}
+					if(pc.comment()!=null) {
+						pcInd.addValue(RDFS.COMMENT.as(URI.class),DataSetUtils.newLiteral(pc.comment()));
+					}
+					pcInd.addValue(shaclTerm("predicate"), externalIndividual(pc.predicate()));
+
+					Cardinality cardinality = pc.cardinality();
+					if(cardinality.min()>0) {
+						pcInd.addValue(shaclTerm("minCard"), DataSetUtils.newLiteral(cardinality.min()));
+					}
+					if(cardinality.max()>=0) {
+						pcInd.addValue(shaclTerm("maxCard"), DataSetUtils.newLiteral(cardinality.max()));
+					}
+
+					String nodeKind=null;
+					switch(pc.nodeKind()) {
+					case BLANK_NODE:
+						nodeKind="BlankNode";
+						break;
+					case BLANK_NODE_OR_IRI:
+						nodeKind="BlankNodeOrIRI";
+						break;
+					case BLANK_NODE_OR_LITERAL:
+						nodeKind="BlankNodeOrLiteral";
+						break;
+					case IRI:
+						nodeKind="IRI";
+						break;
+					case LITERAL:
+						nodeKind="Literal";
+						break;
+					case LITERAL_OR_IRI:
+						nodeKind="LiteralOrIRI";
+						break;
+					case NODE:
+						nodeKind="Node";
+						break;
+					default:
+						throw new IllegalStateException("Unknown node kind "+pc.nodeKind());
+					}
+					pcInd.addValue(shaclTerm("nodeKind"), externalIndividual(shaclTerm(nodeKind)));
+					for(Value value:pc.values()) {
+						value.accept(
+							new ValueVisitor() {
+								@Override
+								public void visitLiteral(Literal<?> value) {
+									pcInd.addValue(shaclTerm("hasValue"),value);
+								}
+								@Override
+								public void visitIndividual(Individual<?, ?> value) {
+									Individual<?, ?> individual = translator.translate(value);
+									pcInd.addValue(shaclTerm("hasValue"),individual);
+								}
+							}
+						);
+					}
+				}
+				List<InversePropertyConstraint> ipcs = shape.inversePropertyConstraints();
+				for(int j=0;j<ipcs.size();j++) {
+					InversePropertyConstraint ipc = ipcs.get(j);
+					LocalIndividual ipcInd = localIndividual("s"+i+"_ipc"+j);
+					shapeInd.addValue(shaclTerm("property"), ipcInd);
+					ipcInd.addValue(RDF.TYPE.as(URI.class), externalIndividual(shaclTerm("InversePropertyConstraint")));
+					if(ipc.label()!=null) {
+						ipcInd.addValue(RDFS.LABEL.as(URI.class),DataSetUtils.newLiteral(ipc.label()));
+					}
+					if(ipc.comment()!=null) {
+						ipcInd.addValue(RDFS.COMMENT.as(URI.class),DataSetUtils.newLiteral(ipc.comment()));
+					}
+					ipcInd.addValue(shaclTerm("predicate"), externalIndividual(ipc.predicate()));
+					Cardinality cardinality = ipc.cardinality();
+					if(cardinality.min()>0) {
+						ipcInd.addValue(shaclTerm("minCard"), DataSetUtils.newLiteral(cardinality.min()));
+					}
+					if(cardinality.max()>=0) {
+						ipcInd.addValue(shaclTerm("maxCard"), DataSetUtils.newLiteral(cardinality.max()));
+					}
+
+					String nodeKind=null;
+					switch(ipc.nodeKind()) {
+					case BLANK_NODE:
+						nodeKind="BlankNode";
+						break;
+					case BLANK_NODE_OR_IRI:
+						nodeKind="BlankNodeOrIRI";
+						break;
+					case BLANK_NODE_OR_LITERAL:
+						nodeKind="BlankNodeOrLiteral";
+						break;
+					case IRI:
+						nodeKind="IRI";
+						break;
+					case LITERAL:
+						nodeKind="Literal";
+						break;
+					case LITERAL_OR_IRI:
+						nodeKind="LiteralOrIRI";
+						break;
+					case NODE:
+						nodeKind="Node";
+						break;
+					default:
+						throw new IllegalStateException("Unknown node kind "+ipc.nodeKind());
+					}
+					ipcInd.addValue(shaclTerm("nodeKind"), externalIndividual(shaclTerm(nodeKind)));
+				}
+			}
+			for(URI type:constraints.types()) {
+				Individual<?,?> typeInd=externalIndividual(type);
+				typeInd.addValue(shaclTerm("typeShape"), shapeIndCache.get(constraints.typeShape(type)));
+			}
+			for(Individual<?, ?> node:constraints.nodes()) {
+				Individual<?, ?> individual = translator.translate(node);
+				individual.addValue(shaclTerm("nodeShape"), shapeIndCache.get(constraints.nodeShape(node)));
+			}
+		}
 	}
 
 	@SuppressWarnings("rawtypes")
@@ -143,6 +345,10 @@ public final class ConstraintReportTransformer {
 
 	private URI methodsTerm(String term) {
 		return URI.create("http://www.w3.org/2011/http-methods#"+term);
+	}
+
+	private URI shaclTerm(String term) {
+		return URI.create("http://www.w3.org/ns/shacl#"+term);
 	}
 
 	private static final ImmutableList<String> GENERAL_HEADERS=

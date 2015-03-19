@@ -87,7 +87,9 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 					TCKFHelper.READ_ONLY_PROPERTY,
 					DataSetUtils.newLiteral(new Date().toString()));
 		} catch (DataSetModificationException e) {
-			throw new UnsupportedContentException("Could not process request", e, new Constraints());
+			// TODO: Verify this weird error
+			Constraints constraints = Constraints.constraints();
+			throw new UnsupportedContentException("Could not process request", e, constraints);
 		}
 
 		try {

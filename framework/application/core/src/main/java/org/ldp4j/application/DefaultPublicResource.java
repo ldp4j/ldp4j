@@ -311,7 +311,7 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 		ValidationReport report = validator.validate(dataSet);
 		if(!report.isValid()) {
 			// TODO: Add validation constraints
-			Constraints constraints = new Constraints();
+			Constraints constraints = Constraints.constraints();
 			InvalidContentException error = new InconsistentContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures(),constraints);
 			throw new ApplicationExecutionException("Protocol/framework managed metadata validation failure",error);
 		}

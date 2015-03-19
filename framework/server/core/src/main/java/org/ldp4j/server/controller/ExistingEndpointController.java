@@ -317,7 +317,8 @@ final class ExistingEndpointController implements EndpointController {
 					addPrefix("http", "http://www.w3.org/2011/http#").
 					addPrefix("cnt", "http://www.w3.org/2011/content#").
 					addPrefix("http-methods", "http://www.w3.org/2011/http-methods#").
-					addPrefix("http-headers", "http://www.w3.org/2011/http-headers#");
+					addPrefix("http-headers", "http://www.w3.org/2011/http-headers#").
+					addPrefix("sh", "http://www.w3.org/ns/shacl#");
 
 			String body=serialize(context, variant, report, namespaces);
 

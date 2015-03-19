@@ -410,13 +410,21 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			LOGGER.error(errorMessage);
 			throw new ApplicationExecutionException(errorMessage);
 		}
-		ConstraintReport report=this.engine().persistencyManager().constraintReportOfId(ConstraintReportId.create(resource.id(),constraintsId));
+
+		ConstraintReport report=
+			this.engine().
+				persistencyManager().
+					constraintReportOfId(
+						ConstraintReportId.
+							create(resource.id(),constraintsId));
 		if(report==null) {
 			return null;
 		}
 
-		ConstraintReportTransformer crDataSet=ConstraintReportTransformer.create(resource, report);
-		return crDataSet.transform(endpoint);
+		return
+			ConstraintReportTransformer.
+				create(resource, report).
+					transform(endpoint);
 	}
 
 

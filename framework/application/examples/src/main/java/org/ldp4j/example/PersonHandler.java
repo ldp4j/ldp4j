@@ -150,7 +150,7 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 
 		ValidationReport report = helper.validate(content);
 		if(!report.isValid()) {
-			InconsistentContentException error = new InconsistentContentException("Validation failed: "+report.validationFailures(), new Constraints());
+			InconsistentContentException error = new InconsistentContentException("Validation failed: "+report.validationFailures(), Constraints.constraints());
 			logError(resource,error,"Something went wrong when validating %n%s",content);
 			throw error;
 		}
