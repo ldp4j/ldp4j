@@ -48,13 +48,30 @@ import com.google.common.collect.Sets;
 public final class Constraints {
 
 	public enum NodeKind {
-		NODE,
-		BLANK_NODE_OR_IRI,
-		BLANK_NODE_OR_LITERAL,
-		LITERAL_OR_IRI,
-		BLANK_NODE,
-		IRI,
-		LITERAL
+		NODE("Node"),
+		BLANK_NODE_OR_IRI("BlankNodeOrIRI"),
+		BLANK_NODE_OR_LITERAL("BlankNodeOrLiteral"),
+		LITERAL_OR_IRI("LiteralOrIRI"),
+		BLANK_NODE("BlankNode"),
+		IRI("IRI"),
+		LITERAL("Literal")
+		;
+
+		private final String localName;
+
+		private NodeKind(String localName) {
+			this.localName = localName;
+		}
+
+		public String localName() {
+			return localName;
+		}
+	}
+
+	public interface Describable {
+
+		String label();
+		String comment();
 	}
 
 	public static final class Cardinality {
@@ -214,11 +231,7 @@ public final class Constraints {
 		}
 
 		public NodeKind nodeKind() {
-			NodeKind result = this.nodeKind;
-			if(result==null) {
-				result=NodeKind.NODE;
-			}
-			return result;
+			return this.nodeKind;
 		}
 
 		public T withValueShape(Shape valueShape) {
@@ -260,7 +273,7 @@ public final class Constraints {
 
 	}
 
-	public static final class PropertyConstraint extends AbstractPropertyConstraint<PropertyConstraint> {
+	public static final class PropertyConstraint extends AbstractPropertyConstraint<PropertyConstraint> implements Describable {
 
 		private PropertyConstraint(URI predicate) {
 			super(predicate);
@@ -273,7 +286,7 @@ public final class Constraints {
 
 	}
 
-	public static final class InversePropertyConstraint extends AbstractPropertyConstraint<InversePropertyConstraint> {
+	public static final class InversePropertyConstraint extends AbstractPropertyConstraint<InversePropertyConstraint> implements Describable {
 
 		private InversePropertyConstraint(URI predicate) {
 			super(predicate);
@@ -286,7 +299,7 @@ public final class Constraints {
 
 	}
 
-	public static final class Shape {
+	public static final class Shape implements Describable {
 
 		private Map<URI,AbstractPropertyConstraint<?>> constraints;
 		private String label;
@@ -301,6 +314,7 @@ public final class Constraints {
 			return this;
 		}
 
+		@Override
 		public String label() {
 			return this.label;
 		}
@@ -310,6 +324,7 @@ public final class Constraints {
 			return this;
 		}
 
+		@Override
 		public String comment() {
 			return this.comment;
 		}
