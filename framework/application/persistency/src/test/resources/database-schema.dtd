@@ -1,0 +1,147 @@
+<!--
+
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      This file is part of the LDP4j Project:
+        http://www.ldp4j.org/
+
+      Center for Open Middleware
+        http://www.centeropenmiddleware.com/
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Copyright (C) 2014 Center for Open Middleware.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+                http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Artifact    : org.ldp4j.framework:ldp4j-application-persistency:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-application-persistency-1.0.0-SNAPSHOT.jar
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+
+-->
+<!ELEMENT dataset ((Application*, Endpoint*, Template* , TemplateAttachment* , RDFSourceTemplate* , BasicContainerTemplate*, DirectContainerTemplate* , IndirectContainerTemplate* , Resource* , ResourceAttachment* , RDFSource* , Container*, MembershipAwareContainer* , Slug* , Failure*))>
+<!ELEMENT Application EMPTY>
+<!ATTLIST Application
+	path CDATA #REQUIRED
+	name CDATA #REQUIRED
+	description CDATA #IMPLIED
+>
+
+<!ELEMENT Template EMPTY>
+<!ATTLIST Template
+	template_id CDATA #REQUIRED
+	handlerClassName CDATA #REQUIRED
+	name CDATA #REQUIRED
+	description CDATA #IMPLIED
+	app_path CDATA #REQUIRED
+>
+
+<!ELEMENT TemplateAttachment EMPTY>
+<!ATTLIST TemplateAttachment
+	attachment_id CDATA #REQUIRED
+	name CDATA #REQUIRED
+	description CDATA #IMPLIED
+	predicate CDATA #IMPLIED
+	path CDATA #REQUIRED
+	owner_template_id CDATA #REQUIRED
+	attached_template_id CDATA #REQUIRED
+>
+
+<!ELEMENT RDFSourceTemplate EMPTY>
+<!ATTLIST RDFSourceTemplate
+	template_id CDATA #REQUIRED
+>
+
+<!ELEMENT BasicContainerTemplate EMPTY>
+<!ATTLIST BasicContainerTemplate
+	template_id CDATA #REQUIRED
+	member_template_id CDATA #REQUIRED
+>
+
+<!ELEMENT DirectContainerTemplate EMPTY>
+<!ATTLIST DirectContainerTemplate
+	template_id CDATA #REQUIRED
+	member_template_id CDATA #REQUIRED
+	membershipPredicate CDATA #REQUIRED
+	membershipRelation CDATA #REQUIRED
+>
+
+<!ELEMENT IndirectContainerTemplate EMPTY>
+<!ATTLIST IndirectContainerTemplate
+	template_id CDATA #REQUIRED
+	member_template_id CDATA #REQUIRED
+	membershipPredicate CDATA #REQUIRED
+	membershipRelation CDATA #REQUIRED
+	insertedContentRelation CDATA #REQUIRED
+>
+
+<!ELEMENT Resource EMPTY>
+<!ATTLIST Resource
+	resource_id CDATA #REQUIRED
+	businessKey CDATA #REQUIRED
+	indirect_id CDATA #IMPLIED
+	template_id CDATA #REQUIRED
+	endpoint_id CDATA #REQUIRED
+	container_id CDATA #IMPLIED
+>
+
+<!ELEMENT ResourceAttachment EMPTY>
+<!ATTLIST ResourceAttachment
+	attachment_id CDATA #REQUIRED
+	template_attachment_id CDATA #REQUIRED
+	owner_resource_id CDATA #REQUIRED
+	attached_resource_id CDATA #REQUIRED
+	version CDATA #REQUIRED
+>
+
+<!ELEMENT RDFSource EMPTY>
+<!ATTLIST RDFSource
+	resource_id CDATA #REQUIRED
+>
+
+<!ELEMENT Container EMPTY>
+<!ATTLIST Container
+	resource_id CDATA #REQUIRED
+	memberCount CDATA #REQUIRED
+>
+
+<!ELEMENT MembershipAwareContainer EMPTY>
+<!ATTLIST MembershipAwareContainer
+	resource_id CDATA #REQUIRED
+	target_resource_id CDATA #REQUIRED
+	memberCount CDATA #REQUIRED
+>
+
+<!ELEMENT Slug EMPTY>
+<!ATTLIST Slug
+	resource_id CDATA #REQUIRED
+	path CDATA #REQUIRED
+	version CDATA #REQUIRED
+>
+
+<!ELEMENT Endpoint EMPTY>
+<!ATTLIST Endpoint
+	endpoint_id CDATA #REQUIRED
+	path CDATA #REQUIRED
+	created CDATA #REQUIRED
+	deleted CDATA #IMPLIED
+	entityTag CDATA #REQUIRED
+	modified CDATA #REQUIRED
+	app_path CDATA #REQUIRED
+>
+
+<!ELEMENT Failure EMPTY>
+<!ATTLIST Failure
+	failure_id CDATA #REQUIRED
+	message CDATA #REQUIRED
+	ocurredOn CDATA #REQUIRED
+	request CDATA #REQUIRED
+	endpoint_id CDATA #REQUIRED
+>

@@ -1,0 +1,86 @@
+<!--
+
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      This file is part of the LDP4j Project:
+        http://www.ldp4j.org/
+
+      Center for Open Middleware
+        http://www.centeropenmiddleware.com/
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Copyright (C) 2014 Center for Open Middleware.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+                http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Artifact    : org.ldp4j.framework:ldp4j-application-persistency:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-application-persistency-1.0.0-SNAPSHOT.jar
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+
+-->
+<!DOCTYPE dataset SYSTEM "database-schema.dtd">
+<dataset>
+
+	<Application path="path" name="My Application"/>
+
+	<!-- Templates without attachments -->
+	<Template template_id="1" handlerClassName="org.ldp4j.application.MyRDFSourceTemplate" name="MyRDFSourceTemplate" description="A RDF source template" app_path="path"/>
+	<Template template_id="2" handlerClassName="org.ldp4j.application.MyBasicContainerTemplate" name="MyBasicContainerTemplate" description="A Basic Container Template" app_path="path"/>
+	<Template template_id="3" handlerClassName="org.ldp4j.application.MyDirectContainerTemplate" name="MyDirectContainerTemplate" description="A Direct Container Template" app_path="path"/>
+	<Template template_id="4" handlerClassName="org.ldp4j.application.MyIndirectContainerTemplate" name="MyIndirectContainerTemplate" description="An Indirect Container Template" app_path="path"/>
+
+	<!-- Templates with attachments -->
+	<Template template_id="51" handlerClassName="org.ldp4j.application.MyAttachingRDFSourceTemplate" name="MyAttachingRDFSourceTemplate" description="An RDF source template with Attachments" app_path="path"/>
+	<Template template_id="52" handlerClassName="org.ldp4j.application.MyAttachingBasicContainerTemplate" name="MyAttachingBasicContainerTemplate" description="A Basic Container Template with Attachments" app_path="path"/>
+	<Template template_id="53" handlerClassName="org.ldp4j.application.MyAttachingDirectContainerTemplate" name="MyAttachingDirectContainerTemplate" description="A Direct Container Template with Attachments" app_path="path"/>
+	<Template template_id="54" handlerClassName="org.ldp4j.application.MyAttachingIndirectContainerTemplate" name="MyAttachingIndirectContainerTemplate" description="An Indirect Container Template with Attachments" app_path="path"/>
+
+	<!-- Basic container templates -->
+	<Template template_id="31" handlerClassName="org.ldp4j.application.bc.RDFSources" name="bc.RDFSources" description="Basic container of RDF sources" app_path="path"/>
+	<Template template_id="32" handlerClassName="org.ldp4j.application.bc.BasicContainers" name="bc.BasicContainers" description="Basic container of Basic containers" app_path="path"/>
+	<Template template_id="33" handlerClassName="org.ldp4j.application.bc.DirectContainers" name="bc.DirectContainers" description="Basic container of Direct containers" app_path="path"/>
+	<Template template_id="34" handlerClassName="org.ldp4j.application.bc.IndirectContainers" name="bc.IndirectContainers" description="Basic container of Indirect containers" app_path="path"/>
+
+	<TemplateAttachment attachment_id="1" name="RDFSource" path="rdf_source" owner_template_id="51" attached_template_id="1" />
+	<TemplateAttachment attachment_id="2" name="BasicContainer" path="basic_container" owner_template_id="51" attached_template_id="2"/>
+	<TemplateAttachment attachment_id="3" name="DirectContainer" path="direct_container" owner_template_id="51" attached_template_id="3"/>
+	<TemplateAttachment attachment_id="4" name="IndirectContainer" path="indirect_container" owner_template_id="51" attached_template_id="4"/>
+
+	<RDFSourceTemplate template_id="1" />
+	<RDFSourceTemplate template_id="2" />
+	<RDFSourceTemplate template_id="3" />
+	<RDFSourceTemplate template_id="4" />
+
+	<RDFSourceTemplate template_id="51" />
+	<RDFSourceTemplate template_id="52" />
+	<RDFSourceTemplate template_id="53" />
+	<RDFSourceTemplate template_id="54" />
+
+	<RDFSourceTemplate template_id="31" />
+	<RDFSourceTemplate template_id="32" />
+	<RDFSourceTemplate template_id="33" />
+	<RDFSourceTemplate template_id="34" />
+
+	<BasicContainerTemplate template_id="2" member_template_id="1" />
+	<BasicContainerTemplate template_id="52" member_template_id="51" />
+
+	<BasicContainerTemplate template_id="31" member_template_id="1" />
+	<BasicContainerTemplate template_id="32" member_template_id="2" />
+	<BasicContainerTemplate template_id="33" member_template_id="3" />
+	<BasicContainerTemplate template_id="34" member_template_id="4" />
+
+	<DirectContainerTemplate template_id="3" member_template_id="1"  membershipPredicate="http://www.ldp4j.org/vocab#hasMember" membershipRelation="HAS_MEMBER"/>
+	<DirectContainerTemplate template_id="53" member_template_id="51"  membershipPredicate="http://www.ldp4j.org/vocab#hasMember" membershipRelation="HAS_MEMBER"/>
+
+	<IndirectContainerTemplate template_id="4" member_template_id="1"  membershipPredicate="http://www.ldp4j.org/vocab#isMemberOf" membershipRelation="IS_MEMBER_OF" insertedContentRelation="http://www.ldp4j.org/vocab#id"/>
+	<IndirectContainerTemplate template_id="54" member_template_id="51"  membershipPredicate="http://www.ldp4j.org/vocab#isMemberOf" membershipRelation="IS_MEMBER_OF" insertedContentRelation="http://www.ldp4j.org/vocab#id"/>
+
+</dataset>

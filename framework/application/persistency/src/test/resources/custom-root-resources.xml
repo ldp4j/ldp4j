@@ -1,0 +1,61 @@
+<!--
+
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      This file is part of the LDP4j Project:
+        http://www.ldp4j.org/
+
+      Center for Open Middleware
+        http://www.centeropenmiddleware.com/
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Copyright (C) 2014 Center for Open Middleware.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+                http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Artifact    : org.ldp4j.framework:ldp4j-application-persistency:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-application-persistency-1.0.0-SNAPSHOT.jar
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+
+-->
+<!DOCTYPE dataset SYSTEM "database-schema.dtd">
+<dataset>
+	<Endpoint endpoint_id="2" path="/container/" created="2012-03-14" entityTag="etag" modified="2012-03-14" app_path="path"/>
+
+	<Endpoint endpoint_id="31" path="/basic_container/rdf_source/" created="2012-03-14" entityTag="etag" modified="2012-03-14" app_path="path"/>
+	<Endpoint endpoint_id="32" path="/basic_container/basic_container/" created="2012-03-14" entityTag="etag" modified="2012-03-14" app_path="path"/>
+	<Endpoint endpoint_id="33" path="/basic_container/direct_container/" created="2012-03-14" entityTag="etag" modified="2012-03-14" app_path="path"/>
+	<Endpoint endpoint_id="34" path="/basic_container/indirect_container/" created="2012-03-14" entityTag="etag" modified="2012-03-14" app_path="path"/>
+
+	<Resource resource_id="2" businessKey="containerKey" template_id="2" endpoint_id="2"/>
+
+	<Resource resource_id="31" businessKey="bcRSKey" template_id="31" endpoint_id="31"/>
+	<Resource resource_id="32" businessKey="bcBCKey" template_id="32" endpoint_id="32"/>
+	<Resource resource_id="33" businessKey="bcDCKey" template_id="33" endpoint_id="33"/>
+	<Resource resource_id="34" businessKey="bcICKey" template_id="34" endpoint_id="34"/>
+
+	<RDFSource resource_id="2"/>
+
+	<RDFSource resource_id="31"/>
+	<RDFSource resource_id="32"/>
+	<RDFSource resource_id="33"/>
+	<RDFSource resource_id="34"/>
+
+	<Container resource_id="2" memberCount="0"/>
+
+	<Container resource_id="31" memberCount="0"/>
+	<Container resource_id="32" memberCount="0"/>
+	<Container resource_id="33" memberCount="0"/>
+	<Container resource_id="34" memberCount="0"/>
+
+	<Slug resource_id="2" path="slug" version="23"/>
+	<Slug resource_id="2" path="slug_23" version="24"/>
+</dataset>

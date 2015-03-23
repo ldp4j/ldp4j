@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 152
+/seals-dev/!svn/ver/2824/res/trunk/res-utils/res-utils-storage/res-utils-storage-testing/src/main/java/eu/sealsproject/platform/res/storage/testing/impl
+END
+DataSourceDbUnitUtils.java
+K 25
+svn:wc:ra_dav:version-url
+V 179
+/seals-dev/!svn/ver/2824/res/trunk/res-utils/res-utils-storage/res-utils-storage-testing/src/main/java/eu/sealsproject/platform/res/storage/testing/impl/DataSourceDbUnitUtils.java
+END
+ParameterizedDbUnitUtils.java
+K 25
+svn:wc:ra_dav:version-url
+V 182
+/seals-dev/!svn/ver/2824/res/trunk/res-utils/res-utils-storage/res-utils-storage-testing/src/main/java/eu/sealsproject/platform/res/storage/testing/impl/ParameterizedDbUnitUtils.java
+END
+AbstractDbUnitUtils.java
+K 25
+svn:wc:ra_dav:version-url
+V 177
+/seals-dev/!svn/ver/2824/res/trunk/res-utils/res-utils-storage/res-utils-storage-testing/src/main/java/eu/sealsproject/platform/res/storage/testing/impl/AbstractDbUnitUtils.java
+END
