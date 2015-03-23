@@ -103,6 +103,7 @@ public final class WriteSessionService implements Service {
 	}
 
 	public WriteSession createSession(WriteSessionConfiguration configuration) {
+		// TODO: We should start the transaction here
 		UnitOfWork.newCurrent();
 		logLifecycleMessage("Created write session: %s",configuration);
 		return new DelegatedWriteSession(configuration,this.resourceRepository,this.templateManagementService,this);
@@ -116,10 +117,12 @@ public final class WriteSessionService implements Service {
 				case ACTIVE:
 					logLifecycleMessage("Force termination of active session...");
 					session.discardChanges();
+					// TODO: We should abort the transaction here
 					break;
 				case ABORTED:
 					logLifecycleMessage("Force termination of aborted session...");
 					session.discardChanges();
+					// TODO: We should abort the transaction here
 					break;
 				case COMPLETED:
 					// Nothing to do
@@ -147,6 +150,7 @@ public final class WriteSessionService implements Service {
 	void commitSession(DelegatedWriteSession session) {
 		logLifecycleMessage("Commiting session...");
 		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date(),session));
+		// TODO: We should commit the transaction here
 	}
 
 	private void logLifecycleMessage(String msg, Object... args) {

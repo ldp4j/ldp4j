@@ -67,6 +67,10 @@
 		</dependencies>
 	</dependencyManagement>
 
+	<properties>
+		<jee.version>1.6</jee.version>
+	</properties>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
@@ -83,6 +87,11 @@
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-core</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-persistency</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 	</dependencies>

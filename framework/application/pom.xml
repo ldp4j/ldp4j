@@ -66,6 +66,7 @@
 		<module>examples</module>
 		<module>core</module>
 		<module>depchain</module>
+		<module>ldp4j-application-persistency</module>
 	</modules>
 
 	<dependencies>

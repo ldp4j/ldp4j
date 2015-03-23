@@ -84,6 +84,11 @@
 			</dependency>
 			<dependency>
 				<groupId>org.ldp4j.framework</groupId>
+				<artifactId>ldp4j-application-persistency</artifactId>
+				<version>${project.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.ldp4j.framework</groupId>
 				<artifactId>ldp4j-application-depchain</artifactId>
 				<type>pom</type>
 				<version>${project.version}</version>
