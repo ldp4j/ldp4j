@@ -64,9 +64,9 @@
 		<module>engine</module>
 		<module>data</module>
 		<module>examples</module>
+		<module>persistency</module>
 		<module>core</module>
 		<module>depchain</module>
-		<module>ldp4j-application-persistency</module>
 	</modules>
 
 	<dependencies>
