@@ -64,6 +64,7 @@
 		<module>core</module>
 		<module>testing</module>
 		<module>rmf</module>
+		<module>reflection</module>
 	</modules>
 
 	<dependencyManagement>
