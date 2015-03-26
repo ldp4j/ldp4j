@@ -26,20 +26,56 @@
  */
 package org.ldp4j.application.spi;
 
+import java.util.Date;
+
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.endpoint.Endpoint;
+import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.template.ResourceTemplate;
+import org.ldp4j.application.template.TemplateLibrary;
 
-public interface ResourceRepository {
+public interface PersistencyManager {
 
-	<T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass);
+	Transaction currentTransaction();
+
+	ResourceTemplate registerHandler(Class<?> clazz) throws TemplateCreationException;
+
+	boolean isHandlerRegistered(Class<?> handlerClass);
+
+	TemplateLibrary exportTemplates();
+
+	Endpoint createEndpoint(Resource resource, String path, EntityTag entityTag, Date lastModified);
+
+	Resource createResource(String templateId, Name<?> resourceId, Resource parent);
+
+	<T extends Resource> T createResource(String templateId, Name<?> resourceId, Resource parent, Class<? extends T> expectedResourceClass);
+
+	void add(Endpoint endpoint);
+
+	void add(Resource resource);
+
+	void remove(Endpoint endpoint);
+
+	void remove(Resource resource);
+
+	Endpoint endpointOfPath(String path);
+
+	Endpoint endpointOfResource(ResourceId id);
+
+	<T extends Resource> T resourceOfId(ResourceId id, Class<? extends T> expectedResourceClass);
 
 	Resource resourceOfId(ResourceId id);
 
 	Container containerOfId(ResourceId id);
 
-	void add(Resource resource);
+	ResourceTemplate templateOfHandler(Class<? extends ResourceHandler> handlerClass);
 
-	void remove(Resource resource);
+	ResourceTemplate templateOfId(String templateId);
+
+	<T extends ResourceTemplate> T templateOfId(String templateId, Class<? extends T> templateClass);
 
 }

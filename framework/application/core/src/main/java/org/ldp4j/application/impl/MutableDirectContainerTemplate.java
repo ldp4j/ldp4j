@@ -26,28 +26,19 @@
  */
 package org.ldp4j.application.impl;
 
-import org.ldp4j.application.spi.EndpointRepository;
-import org.ldp4j.application.spi.RepositoryRegistry;
-import org.ldp4j.application.spi.ResourceRepository;
+import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.template.DirectContainerTemplate;
+import org.ldp4j.application.template.TemplateVisitor;
 
-final class InMemoryRepositoryRegistry implements RepositoryRegistry {
+final class MutableDirectContainerTemplate extends MutableMembershipAwareContainerTemplate implements DirectContainerTemplate {
 
-	private final ResourceRepository resourceRepository;
-	private final EndpointRepository endpointRepository;
-
-	InMemoryRepositoryRegistry() {
-		resourceRepository = new InMemoryResourceRepository();
-		endpointRepository = new InMemoryEndpointRepository();
+	MutableDirectContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
+		super(id, handlerClass);
 	}
 
 	@Override
-	public ResourceRepository getResourceRepository() {
-		return resourceRepository;
-	}
-
-	@Override
-	public EndpointRepository getEndpointRepository() {
-		return endpointRepository;
+	public void accept(TemplateVisitor visitor) {
+		visitor.visitDirectContainerTemplate(this);
 	}
 
 }

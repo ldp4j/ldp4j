@@ -26,20 +26,16 @@
  */
 package org.ldp4j.application.lifecycle;
 
-import org.ldp4j.application.endpoint.EndpointFactoryService;
-import org.ldp4j.application.engine.ApplicationContextBootstrapException;
 import org.ldp4j.application.engine.ApplicationConfigurationException;
+import org.ldp4j.application.engine.ApplicationContextBootstrapException;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.ApplicationInitializationException;
 import org.ldp4j.application.ext.ApplicationSetupException;
 import org.ldp4j.application.ext.Configuration;
-import org.ldp4j.application.resource.ResourceFactoryService;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionConfiguration;
 import org.ldp4j.application.session.WriteSessionService;
-import org.ldp4j.application.spi.EndpointRepository;
-import org.ldp4j.application.spi.RepositoryRegistry;
-import org.ldp4j.application.spi.ResourceRepository;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.spi.ServiceRegistry;
 import org.ldp4j.application.template.TemplateManagementService;
@@ -50,59 +46,33 @@ final class ApplicationLoader<T extends Configuration> {
 	private final Class<? extends Application<T>> appClass;
 	private WriteSessionService writeSessionService;
 	private TemplateManagementService templateManagementService;
-	private EndpointFactoryService endpointFactoryService;
-	private ResourceFactoryService resourceFactoryService;
-	private EndpointRepository endpointRepository;
-	private ResourceRepository resourceRepository;
+	private PersistencyManager persistencyManager;
 
 	private ApplicationLoader(Class<? extends Application<T>> appClass) {
-		this.appClass = appClass;
+		this.appClass=appClass;
 
-		RepositoryRegistry repositoryRegistry = RuntimeInstance.getInstance().getRepositoryRegistry();
-		this.endpointRepository=repositoryRegistry.getEndpointRepository();
-		this.resourceRepository=repositoryRegistry.getResourceRepository();
+		this.persistencyManager=RuntimeInstance.getInstance().getPersistencyManager();
 
 		ServiceRegistry serviceRegistry = RuntimeInstance.getInstance().getServiceRegistry();
 		this.writeSessionService=serviceRegistry.getService(WriteSessionService.class);
 		this.templateManagementService=serviceRegistry.getService(TemplateManagementService.class);
-		this.endpointFactoryService=serviceRegistry.getService(EndpointFactoryService.class);
-		this.resourceFactoryService=serviceRegistry.getService(ResourceFactoryService.class);
+	}
+
+	private PersistencyManager persistencyManager() {
+		return this.persistencyManager;
 	}
 
 	private WriteSessionService writeSessionService() {
 		return this.writeSessionService;
 	}
 
-	private EndpointFactoryService endpointFactoryService() {
-		return this.endpointFactoryService;
-	}
-
-	private ResourceFactoryService resourceFactoryService() {
-		return this.resourceFactoryService;
-	}
-
-	private EndpointRepository endpointRepository() {
-		return this.endpointRepository;
-	}
-
-	private ResourceRepository resourceRepository() {
-		return this.resourceRepository;
-	}
-
 	private TemplateManagementService templateManagementService() {
 		return this.templateManagementService;
 	}
 
-	ApplicationLoader<T> withEndpointRepository(EndpointRepository endpointRepository) {
-		if(endpointRepository!=null) {
-			this.endpointRepository = endpointRepository;
-		}
-		return this;
-	}
-
-	ApplicationLoader<T> withResourceRepository(ResourceRepository resourceRepository) {
-		if(resourceRepository!=null) {
-			this.resourceRepository = resourceRepository;
+	ApplicationLoader<T> withPersistencyManager(PersistencyManager persistencyManager) {
+		if(persistencyManager!=null) {
+			this.persistencyManager=persistencyManager;
 		}
 		return this;
 	}
@@ -110,20 +80,6 @@ final class ApplicationLoader<T extends Configuration> {
 	ApplicationLoader<T> withWriteSessionService(WriteSessionService writeSessionService) {
 		if(writeSessionService!=null) {
 			this.writeSessionService = writeSessionService;
-		}
-		return this;
-	}
-
-	ApplicationLoader<T> withEndpointFactoryService(EndpointFactoryService endpointFactoryService) {
-		if(endpointFactoryService!=null) {
-			this.endpointFactoryService = endpointFactoryService;
-		}
-		return this;
-	}
-
-	ApplicationLoader<T> withResourceFactoryService(ResourceFactoryService resourceFactoryService) {
-		if(resourceFactoryService!=null) {
-			this.resourceFactoryService = resourceFactoryService;
 		}
 		return this;
 	}
@@ -158,11 +114,7 @@ final class ApplicationLoader<T extends Configuration> {
 		BootstrapImpl<T> bootstrap=new BootstrapImpl<T>(configuration,templateManagementService());
 		EnvironmentImpl environment=
 			new EnvironmentImpl(
-				templateManagementService(),
-				resourceFactoryService(),
-				endpointFactoryService(),
-				resourceRepository(),
-				endpointRepository()
+				persistencyManager()
 			);
 		try {
 			application.setup(environment,bootstrap);

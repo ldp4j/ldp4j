@@ -31,6 +31,7 @@ import java.util.List;
 
 import org.ldp4j.application.session.WriteSessionConfiguration;
 import org.ldp4j.application.session.WriteSessionService;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.Service;
 import org.ldp4j.application.spi.ServiceBuilder;
 import org.ldp4j.application.template.ResourceTemplate;
@@ -65,6 +66,7 @@ public class ResourceControllerService implements Service {
 		public ResourceControllerService build() {
 			return
 				new ResourceControllerService(
+					persistencyManager(),
 					service(WriteSessionService.class),
 					service(TemplateManagementService.class));
 		}
@@ -73,14 +75,16 @@ public class ResourceControllerService implements Service {
 
 	private final WriteSessionService writeSessionService;
 	private final TemplateManagementService templateManagementService;
+	private final PersistencyManager persistencyManager;
 
-	private ResourceControllerService(WriteSessionService writeSessionService, TemplateManagementService templateManagementService) {
+	private ResourceControllerService(PersistencyManager persistencyManager, WriteSessionService writeSessionService, TemplateManagementService templateManagementService) {
+		this.persistencyManager = persistencyManager;
 		this.writeSessionService=writeSessionService;
 		this.templateManagementService = templateManagementService;
 	}
 
 	private <T extends Resource> Adapter adapter(T resource, WriteSessionConfiguration configuration) {
-		ResourceTemplate template=this.templateManagementService.findTemplateById(resource.id().templateId());
+		ResourceTemplate template=this.persistencyManager.templateOfId(resource.id().templateId());
 		Class<? extends ResourceHandler> handlerClass = template.handlerClass();
 		ResourceHandler delegate=this.templateManagementService.getHandler(handlerClass);
 		return AdapterFactory.newAdapter(resource,delegate,this.writeSessionService,configuration);
@@ -112,8 +116,8 @@ public class ResourceControllerService implements Service {
 		TemplateIntrospector introspector=
 				TemplateIntrospector.
 					newInstance(
-						this.templateManagementService.
-							findTemplateById(container.id().templateId()));
+						this.persistencyManager.
+							templateOfId(container.id().templateId()));
 		if(!introspector.isIndirectContainer()) {
 			return null;
 		}

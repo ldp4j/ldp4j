@@ -24,61 +24,78 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.resource;
+package org.ldp4j.application.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.ext.ResourceHandler;
+
 import com.google.common.base.Objects;
 
-final class AttachmentId {
-	
-	private final String id;
-	private final ResourceId resourceId;
+final class HandlerId {
 
-	private AttachmentId(String id, ResourceId resourceId) {
-		this.resourceId = resourceId;
-		this.id = id;
-	}
-	
-	public ResourceId resourceId() {
-		return resourceId;
+	private final String className;
+	private final int systemHashCode;
+	private final boolean container;
+
+	private HandlerId(String className, int systemHashCode, boolean container) {
+		this.className = className;
+		this.systemHashCode = systemHashCode;
+		this.container = container;
 	}
 
-	public String id() {
-		return id;
+	public String className() {
+		return className;
+	}
+
+	public int systemHashCode() {
+		return systemHashCode;
+	}
+
+	public boolean isContainer() {
+		return container;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(this.id,this.resourceId);
+		return
+			Objects.
+				hashCode(
+					this.className,this.systemHashCode,this.container);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
 		boolean result=false;
 		if(obj!=null && obj.getClass()==this.getClass()) {
-			AttachmentId that=(AttachmentId)obj;
+			HandlerId that=(HandlerId)obj;
 			result=
-				Objects.equal(this.id,that.id) &&
-				Objects.equal(this.resourceId,that.resourceId);
+				Objects.equal(this.className,that.className) &&
+				Objects.equal(this.systemHashCode,that.systemHashCode) &&
+				Objects.equal(this.container,that.container);
 		}
 		return result;
 	}
-	
+
 	@Override
 	public String toString() {
 		return
 			Objects.
 				toStringHelper(getClass()).
-					add("id", this.id).
-					add("resourceId", this.resourceId).
+					add("className", this.className).
+					add("systemHashCode", this.systemHashCode).
+					add("container", this.container).
 					toString();
 	}
-	
-	public static AttachmentId createId(String attachmentId, ResourceId resourceId) {
-		checkNotNull(resourceId,"Resource resourceId cannot be null");
-		checkNotNull(attachmentId,"Template identifier cannot be null");
-		return new AttachmentId(attachmentId,resourceId);
+
+	public static HandlerId createId(Class<? extends ResourceHandler> handlerClass) {
+		checkNotNull(handlerClass,"Resource handler class cannot be null");
+		return
+			new HandlerId(
+				handlerClass.getCanonicalName(),
+				System.identityHashCode(handlerClass),
+				ContainerHandler.class.isAssignableFrom(handlerClass));
 	}
 
 }

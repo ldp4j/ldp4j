@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.resource;
+package org.ldp4j.application.impl;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
@@ -33,18 +33,22 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
+import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.Resource;
+import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.resource.ResourceVisitor;
 import org.ldp4j.application.template.ContainerTemplate;
 
-final class ContainerImpl extends ResourceImpl implements Container {
+final class InMemoryContainer extends InMemoryResource implements Container {
 
 	private final Set<ResourceId> members;
 
-	protected ContainerImpl(ResourceId id, ResourceId parentId) {
+	protected InMemoryContainer(ResourceId id, ResourceId parentId) {
 		super(id,parentId);
 		this.members=new LinkedHashSet<ResourceId>();
 	}
-	
-	protected ContainerImpl(ResourceId id) {
+
+	protected InMemoryContainer(ResourceId id) {
 		this(id,null);
 	}
 
@@ -66,7 +70,7 @@ final class ContainerImpl extends ResourceImpl implements Container {
 	public Resource addMember(ResourceId resourceName) {
 		checkNotNull(resourceName,"Member resource name cannot be null");
 		checkState(!this.members.contains(resourceName),"A resource with id '%s' is already a member of the container",resourceName);
-		ResourceImpl newResource=createChild(resourceName,template().memberTemplate());
+		InMemoryResource newResource=createChild(resourceName,template().memberTemplate());
 		this.members.add(newResource.id());
 		return newResource;
 	}
@@ -83,7 +87,7 @@ final class ContainerImpl extends ResourceImpl implements Container {
 
 	@Override
 	public String toString() {
-		return 
+		return
 			stringHelper().
 				add("members", memberIds()).
 				toString();

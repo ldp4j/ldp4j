@@ -32,12 +32,12 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.application.engine.context.ApplicationContextOperation;
 
 final class NotFoundEndpointController extends FixedResponseEndpointController {
 
-	NotFoundEndpointController(ApplicationContext applicationContext) {
-		super(applicationContext);
+	NotFoundEndpointController(ApplicationContextOperation applicationContextOperation) {
+		super(applicationContextOperation);
 	}
 
 	protected Response defaultResponse(OperationContext context) {

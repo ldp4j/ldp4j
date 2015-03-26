@@ -24,30 +24,54 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
-public class InvalidTemplateManagerConfigurationException extends Exception {
+import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.template.ContainerTemplate;
+import org.ldp4j.application.template.ResourceTemplate;
+import org.ldp4j.application.template.TemplateVisitor;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = -3232432603895128046L;
+import com.google.common.base.Optional;
 
-	public InvalidTemplateManagerConfigurationException() {
-		super();
+public class MutableContainerTemplate extends AbstractMutableTemplate<ContainerHandler> implements ContainerTemplate {
+
+	private ResourceTemplate memberTemplate;
+	private String memberPath;
+
+	public MutableContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
+		super(id, handlerClass);
 	}
 
-	public InvalidTemplateManagerConfigurationException(String message,
-			Throwable cause) {
-		super(message, cause);
+	void setMemberTemplate(ResourceTemplate memberTemplate) {
+		this.memberTemplate = memberTemplate;
 	}
 
-	public InvalidTemplateManagerConfigurationException(String message) {
-		super(message);
+	void setMemberPath(String memberPath) {
+		this.memberPath = memberPath;
 	}
 
-	public InvalidTemplateManagerConfigurationException(Throwable cause) {
-		super(cause);
+	@Override
+	public void accept(TemplateVisitor visitor) {
+		visitor.visitContainerTemplate(this);
+	}
+
+	@Override
+	public ResourceTemplate memberTemplate() {
+		return this.memberTemplate;
+	}
+
+	@Override
+	public Optional<String> memberPath() {
+		return Optional.fromNullable(this.memberPath);
+	}
+
+	@Override
+	public String toString() {
+		return
+			stringHelper().
+				add("memberTemplate.id()",this.memberTemplate.id()).
+				add("memberPath",this.memberPath).
+				toString();
 	}
 
 }

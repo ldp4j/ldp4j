@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
 import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import org.junit.AfterClass;
@@ -45,18 +46,19 @@ import org.ldp4j.application.data.IndividualReference;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.application.endpoint.EndpointFactoryService;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.impl.InMemoryRuntimeInstance;
 import org.ldp4j.application.session.WriteSessionConfiguration;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.template.TemplateManagementService;
-import org.ldp4j.application.template.TemplateManager;
 import org.ldp4j.example.BookContainerHandler;
 import org.ldp4j.example.BookHandler;
-import org.ldp4j.example.PersonHandler;
 import org.ldp4j.example.InMemoryContainerHandler.NameProvider;
+import org.ldp4j.example.PersonHandler;
+
+import com.google.common.collect.Lists;
 
 public class ResourceControllerServiceTest {
 
@@ -64,19 +66,11 @@ public class ResourceControllerServiceTest {
 	private TemplateManagementService tms;
 
 	private <T extends Resource> T publishResource(Class<? extends T> clazz, String templateId, Name<?> resourceName, String path) {
-		T resource=ResourceFactoryService.defaultFactory().createResource(templateId,resourceName,null,clazz);
-		RuntimeInstance.
-			getInstance().
-				getRepositoryRegistry().
-					getResourceRepository().
-						add(resource);
-	
-		Endpoint endpoint=EndpointFactoryService.defaultFactory().createEndpoint(resource,path,new EntityTag(path),new Date());
-		RuntimeInstance.
-			getInstance().
-				getRepositoryRegistry().
-					getEndpointRepository().
-						add(endpoint);
+		PersistencyManager persistencyManager = RuntimeInstance.getInstance().getPersistencyManager();
+		T resource=persistencyManager.createResource(templateId,resourceName,null,clazz);
+		persistencyManager.add(resource);
+		Endpoint endpoint=persistencyManager.createEndpoint(resource,path,new EntityTag(path),new Date());
+		persistencyManager.add(endpoint);
 		return resource;
 	}
 
@@ -128,16 +122,13 @@ public class ResourceControllerServiceTest {
 	public static void setUpBefore() throws Exception {
 		RuntimeInstance.setInstance(new InMemoryRuntimeInstance());
 		PersonHandler personHandler = new PersonHandler();
-		TemplateManager manager=
-			TemplateManager.
-				builder().
-					withHandlers(personHandler).
-					build();
 		RuntimeInstance.
 			getInstance().
 				getServiceRegistry().
 					getService(TemplateManagementService.class).
-						setTemplateManager(manager);
+						configure(
+							Lists.<Class<?>>newArrayList(),
+							Arrays.<ResourceHandler>asList(personHandler));
 	}
 
 	@AfterClass
@@ -147,7 +138,7 @@ public class ResourceControllerServiceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		sut = 
+		sut =
 			RuntimeInstance.
 				getInstance().
 					getServiceRegistry().
@@ -225,7 +216,7 @@ public class ResourceControllerServiceTest {
 
 		// BEGIN initialization
 		Container resource = publishResource(Container.class,BookContainerHandler.ID, resourceName, resourcePath);
-		
+
 		NameProvider nameProvider = NameProvider.create(resourceName);
 		Name<String> id = NamingScheme.getDefault().name("book1");
 		nameProvider.addMemberName(id);

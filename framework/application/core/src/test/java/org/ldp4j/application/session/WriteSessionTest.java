@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import org.junit.After;
@@ -40,16 +41,14 @@ import org.junit.Test;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.application.endpoint.EndpointFactoryService;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.impl.InMemoryRuntimeInstance;
-import org.ldp4j.application.resource.ResourceFactoryService;
 import org.ldp4j.application.session.UnitOfWork.Visitor;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.template.TemplateManagementService;
-import org.ldp4j.application.template.TemplateManager;
 import org.ldp4j.example.AddressHandler;
 import org.ldp4j.example.BookContainerHandler;
 import org.ldp4j.example.BookHandler;
@@ -58,10 +57,12 @@ import org.ldp4j.example.RelativeContainerHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 public class WriteSessionTest {
 
 	private static Logger LOGGER=LoggerFactory.getLogger(WriteSessionTest.class);
-	
+
 	private final class UnitOfWorkInspector implements Visitor {
 
 		@Override
@@ -77,7 +78,7 @@ public class WriteSessionTest {
 		@Override
 		public void visitDeleted(DelegatedResourceSnapshot obj) {
 			LOGGER.debug("Pending deletion: "+obj);
-			
+
 		}
 	}
 
@@ -87,11 +88,11 @@ public class WriteSessionTest {
 		HANDLING("Handling action"),
 		;
 		private final String prefix;
-	
+
 		Stage(String prefix) {
 			this.prefix = prefix;
 		}
-		
+
 	}
 
 	private enum Action {
@@ -105,27 +106,24 @@ public class WriteSessionTest {
 
 	private UnitOfWork uow;
 	private WriteSession sut;
-	
+
 	@Before
 	public void setUp() throws Exception {
 		RuntimeInstance.setInstance(new InMemoryRuntimeInstance());
-		TemplateManager manager=
-				TemplateManager.
-					builder().
-						withHandlerClasses(PersonHandler.class).
-						build();
 		RuntimeInstance.
 			getInstance().
 				getServiceRegistry().
 					getService(TemplateManagementService.class).
-						setTemplateManager(manager);
+						configure(
+							Lists.<Class<?>>newArrayList(),
+							Arrays.<ResourceHandler>asList(new PersonHandler()));
 		writeSessionService=
 			RuntimeInstance.
 				getInstance().
 					getServiceRegistry().
 					getService(WriteSessionService.class);
 	}
-	
+
 	@After
 	public void tearDown() throws Exception {
 		RuntimeInstance.setInstance(null);
@@ -135,56 +133,50 @@ public class WriteSessionTest {
 	public void testSession() throws WriteSessionException {
 		// BEGIN initialization
 		uow = UnitOfWork.newCurrent();
-		org.ldp4j.application.resource.Resource rootResource=ResourceFactoryService.defaultFactory().createResource("personTemplate",name("me"),null);
-		Endpoint rootEndpoint=EndpointFactoryService.defaultFactory().createEndpoint(rootResource,"root",new EntityTag("root"),new Date());
-		RuntimeInstance.
-			getInstance().
-				getRepositoryRegistry().
-					getResourceRepository().
-						add(rootResource);
-		RuntimeInstance.
-			getInstance().
-				getRepositoryRegistry().
-					getEndpointRepository().
-						add(rootEndpoint);
+		PersistencyManager persistencyManager = RuntimeInstance.getInstance().getPersistencyManager();
+
+		org.ldp4j.application.resource.Resource rootResource=persistencyManager.createResource("personTemplate",name("me"),null);
+		Endpoint rootEndpoint=persistencyManager.createEndpoint(rootResource,"root",new EntityTag("root"),new Date());
+		persistencyManager.add(rootResource);
+		persistencyManager.add(rootEndpoint);
 		UnitOfWork.setCurrent(null);
 		// END Initialization
-	
+
 		// BEGIN First interaction
 		prepareSession(Action.PUT, rootResource);
 		handleAction(Action.PUT,rootResource);
-	
+
 		ResourceSnapshot me = sut.find(ResourceSnapshot.class,rootResource.id().name(),PersonHandler.class);
 		ResourceSnapshot myRelatives = attachResource(me,"personRelatives","myRelatives",RelativeContainerHandler.class);
 		ResourceSnapshot address = attachResource(me,"address","myAddress",AddressHandler.class);
 		ContainerSnapshot books = attachContainer(me,"books","myBooks",BookContainerHandler.class);
 		ResourceSnapshot firstBook = addMember(books,"book1");
 		ResourceSnapshot secondBook = addMember(books,"book2");
-	
+
 		terminateSession(Action.PUT, me);
 		// END First interaction
-	
+
 		// BEGIN Second interaction
 		prepareSession(Action.POST, myRelatives);
-	
+
 		assertAvailable(me, ResourceSnapshot.class, PersonHandler.class);
 		assertAvailable(myRelatives, ResourceSnapshot.class, RelativeContainerHandler.class);
 		assertAvailable(address, ResourceSnapshot.class, AddressHandler.class);
 		assertAvailable(books, ContainerSnapshot.class, BookContainerHandler.class);
 		assertAvailable(firstBook, ResourceSnapshot.class, BookHandler.class);
 		assertAvailable(secondBook, ResourceSnapshot.class, BookHandler.class);
-	
+
 		handleAction(Action.POST, myRelatives);
-	
+
 		ContainerSnapshot otherRelatives = sut.find(ContainerSnapshot.class,myRelatives.name(),RelativeContainerHandler.class);
 		ResourceSnapshot myWife = addMember(otherRelatives,"myWife");
-		
+
 		terminateSession(Action.POST, myRelatives);
 		// END Second interaction
-		
+
 		// BEGIN Third interaction
 		prepareSession(Action.DELETE, myWife);
-	
+
 		assertAvailable(me, ResourceSnapshot.class, PersonHandler.class);
 		assertAvailable(myRelatives, ResourceSnapshot.class, RelativeContainerHandler.class);
 		assertAvailable(address, ResourceSnapshot.class, AddressHandler.class);
@@ -192,19 +184,19 @@ public class WriteSessionTest {
 		assertAvailable(firstBook, ResourceSnapshot.class, BookHandler.class);
 		assertAvailable(secondBook, ResourceSnapshot.class, BookHandler.class);
 		assertAvailable(myWife, ResourceSnapshot.class,PersonHandler.class);
-	
+
 		handleAction(Action.DELETE, myWife);
-	
+
 		ResourceSnapshot foundRelative = assertAvailable(myWife,ResourceSnapshot.class,PersonHandler.class);
-		
+
 		deleteResource(foundRelative);
-	
+
 		terminateSession(Action.DELETE, myWife);
 		// END Third interaction
-		
+
 		// BEGIN Fourth interaction
 		prepareSession(Action.DELETE, me);
-	
+
 		ResourceSnapshot otherMe=assertAvailable(me,ResourceSnapshot.class,PersonHandler.class);
 		assertAvailable(myRelatives, ResourceSnapshot.class, RelativeContainerHandler.class);
 		assertAvailable(address, ResourceSnapshot.class, AddressHandler.class);
@@ -212,17 +204,17 @@ public class WriteSessionTest {
 		assertAvailable(firstBook, ResourceSnapshot.class, BookHandler.class);
 		assertAvailable(secondBook, ResourceSnapshot.class, BookHandler.class);
 		assertUnavailable(myWife, ResourceSnapshot.class,PersonHandler.class);
-		
+
 		handleAction(Action.DELETE, me);
-	
+
 		deleteResource(otherMe);
-	
+
 		terminateSession(Action.DELETE, me);
 		// END Fourth interaction
-		
+
 		// BEGIN Final interaction
 		prepareSession(Action.CHECK, me);
-	
+
 		assertUnavailable(myRelatives, ResourceSnapshot.class, RelativeContainerHandler.class);
 		assertUnavailable(address, ResourceSnapshot.class, AddressHandler.class);
 		assertUnavailable(books, ContainerSnapshot.class, BookContainerHandler.class);
@@ -234,7 +226,7 @@ public class WriteSessionTest {
 	private Name<?> name(String id) {
 		return NamingScheme.getDefault().name(id);
 	}
-	
+
 	private void logAction(Stage stage, Action action, ResourceSnapshot object) {
 		LOGGER.debug(String.format(">> %s %s(%s)",stage.prefix,action,object.name()));
 	}

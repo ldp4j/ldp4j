@@ -39,9 +39,8 @@ import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.resource.ResourceVisitor;
-import org.ldp4j.application.spi.ResourceRepository;
 
-final class InMemoryResourceRepository implements ResourceRepository, Managed {
+final class InMemoryResourceRepository implements Managed {
 
 	private final ReadWriteLock lock=new ReentrantReadWriteLock();
 	private final Map<ResourceId,Resource> resources=new LinkedHashMap<ResourceId,Resource>();
@@ -63,8 +62,7 @@ final class InMemoryResourceRepository implements ResourceRepository, Managed {
 		}
 	}
 
-	@Override
-	public <T extends Resource> T find(ResourceId id, Class<? extends T> expectedResourceClass) {
+	<T extends Resource> T resourceById(ResourceId id, Class<? extends T> expectedResourceClass) {
 		checkNotNull(expectedResourceClass,"Expected resource class cannot be null");
 		Resource found=find(id);
 		if(expectedResourceClass.isInstance(found)) {
@@ -73,8 +71,7 @@ final class InMemoryResourceRepository implements ResourceRepository, Managed {
 		return null;
 	}
 
-	@Override
-	public Resource resourceOfId(ResourceId id) {
+	Resource resourceOfId(ResourceId id) {
 		lock.readLock().lock();
 		try {
 			return resources.get(id);
@@ -83,8 +80,7 @@ final class InMemoryResourceRepository implements ResourceRepository, Managed {
 		}
 	}
 
-	@Override
-	public Container containerOfId(ResourceId id) {
+	Container containerOfId(ResourceId id) {
 		lock.readLock().lock();
 		try {
 			return containers.get(id);
@@ -93,8 +89,7 @@ final class InMemoryResourceRepository implements ResourceRepository, Managed {
 		}
 	}
 
-	@Override
-	public void add(Resource resource) {
+	void add(Resource resource) {
 		checkNotNull(resource,"Resource cannot be null");
 		lock.writeLock().lock();
 		try {
@@ -115,8 +110,7 @@ final class InMemoryResourceRepository implements ResourceRepository, Managed {
 		}
 	}
 
-	@Override
-	public void remove(Resource resource) {
+	void remove(Resource resource) {
 		checkNotNull(resource,"Resource cannot be null");
 		lock.writeLock().lock();
 		try {

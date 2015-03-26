@@ -24,10 +24,12 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
 import java.net.URI;
 
+import org.ldp4j.application.template.AttachedTemplate;
+import org.ldp4j.application.template.ResourceTemplate;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
@@ -44,7 +46,7 @@ final class MutableAttachedTemplate implements AttachedTemplate {
 		this.template = attachment;
 		this.path = path;
 	}
-	
+
 	void setPredicate(URI predicate) {
 		this.predicate=predicate;
 	}
@@ -68,10 +70,10 @@ final class MutableAttachedTemplate implements AttachedTemplate {
 	public Optional<URI> predicate() {
 		return Optional.fromNullable(this.predicate);
 	}
-	
+
 	@Override
 	public int hashCode() {
-		return 
+		return
 			Objects.hashCode(id,path)+
 			System.identityHashCode(template);
 	}
@@ -82,16 +84,16 @@ final class MutableAttachedTemplate implements AttachedTemplate {
 		if(obj!=null && obj.getClass()==this.getClass()) {
 			MutableAttachedTemplate that = (MutableAttachedTemplate) obj;
 			result=
-				Objects.equal(this.id, that.id) && 
-				Objects.equal(this.path, that.path) && 
-				this.template==that.template; 
+				Objects.equal(this.id, that.id) &&
+				Objects.equal(this.path, that.path) &&
+				this.template==that.template;
 		}
 		return result;
 	}
-	
+
 	@Override
 	public String toString() {
-		return 
+		return
 			Objects.
 				toStringHelper(getClass()).
 					omitNullValues().

@@ -40,17 +40,15 @@ import org.ldp4j.application.resource.Attachment;
 import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.application.spi.EndpointRepository;
-import org.ldp4j.application.spi.ResourceRepository;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.Service;
 import org.ldp4j.application.spi.ServiceBuilder;
 import org.ldp4j.application.template.AttachedTemplate;
 import org.ldp4j.application.template.ContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
-import org.ldp4j.application.template.TemplateManagementService;
 
 public final class EndpointManagementService implements Service {
-	
+
 	private static final class EndpointCreationNotification implements Notification<EndpointLifecycleListener> {
 		private final Endpoint endpoint;
 
@@ -78,27 +76,22 @@ public final class EndpointManagementService implements Service {
 	}
 
 	private static final class EndpointManagementServiceBuilder extends ServiceBuilder<EndpointManagementService> {
-		
+
 		private EndpointManagementServiceBuilder() {
 			super(EndpointManagementService.class);
 		}
 
 		public EndpointManagementService build() {
-			return 
-				new EndpointManagementService(
-					endpointRepository(), 
-					endpointFactoryService(),
-					resourceRepository(),
-					service(TemplateManagementService.class));
+			return new EndpointManagementService(persistencyManager());
 		}
-		
+
 	}
 
 	// TODO: We need to devise a mechanism for persisting the ids of the members
 	private static final class IdGenerator {
-		
-		private final static ConcurrentMap<ResourceId,AtomicLong> CONTAINER_COUNTER=new ConcurrentHashMap<ResourceId, AtomicLong>(); 
-		
+
+		private final static ConcurrentMap<ResourceId,AtomicLong> CONTAINER_COUNTER=new ConcurrentHashMap<ResourceId, AtomicLong>();
+
 		static long nextMemberId(Container container) {
 			AtomicLong counter = CONTAINER_COUNTER.putIfAbsent(container.id(), new AtomicLong(-1));
 			if(counter==null) {
@@ -106,22 +99,17 @@ public final class EndpointManagementService implements Service {
 			}
 			return counter.incrementAndGet();
 		}
-		
+
 	}
-	
+
 		private static final int MAX_ENDPOINT_CREATION_FAILURE = 3;
-	
-	private final EndpointRepository endpointRepository;
-	private final EndpointFactoryService factoryService;
-	private final TemplateManagementService templateManagementService;
-	private final ResourceRepository resourceRepository;
+
+	private final PersistencyManager persistencyManager;
 	private final ListenerManager<EndpointLifecycleListener> listenerManager;
 
-	private EndpointManagementService(EndpointRepository endpointRepository, EndpointFactoryService endpointFactoryService, ResourceRepository resourceRepository, TemplateManagementService templateManagementService) {
-		this.endpointRepository = endpointRepository;
-		this.factoryService = endpointFactoryService;
-		this.resourceRepository = resourceRepository;
-		this.templateManagementService = templateManagementService;
+
+	private EndpointManagementService(PersistencyManager persistencyManager) {
+		this.persistencyManager = persistencyManager;
 		this.listenerManager=ListenerManager.<EndpointLifecycleListener>newInstance();
 	}
 
@@ -129,11 +117,11 @@ public final class EndpointManagementService implements Service {
 		if(resource.isRoot()) {
 			throw new IllegalStateException("Cannot get path for root resource");
 		}
-		Resource parent=this.resourceRepository.find(resource.parentId(),Resource.class);
+		Resource parent=this.persistencyManager.resourceOfId(resource.parentId(),Resource.class);
 		if(parent==null) {
 			throw new IllegalStateException("Could not load resource '"+resource.parentId()+"' from the repository");
 		}
-		
+
 		String result=
 			parent instanceof Container?
 				generatePathForMember(resource,(Container)parent,desiredPath):
@@ -143,7 +131,7 @@ public final class EndpointManagementService implements Service {
 			if(result==null) {
 				throw new IllegalStateException("Could not determine path for resource '"+resource.id()+"' with parent '"+parent.id()+"'");
 			}
-			
+
 		}
 		return result;
 	}
@@ -154,7 +142,7 @@ public final class EndpointManagementService implements Service {
 			return null;
 		}
 		Endpoint endpoint=getResourceEndpoint(parent.id());
-		ResourceTemplate parentTemplate=this.templateManagementService.findTemplateById(parent.id().templateId());
+		ResourceTemplate parentTemplate=this.persistencyManager.templateOfId(parent.id().templateId());
 		AttachedTemplate attachedTemplate = parentTemplate.attachedTemplate(attachment.id());
 		StringBuilder builder=new StringBuilder();
 		addSegment(builder,endpoint.path());
@@ -165,7 +153,7 @@ public final class EndpointManagementService implements Service {
 	private String generatePathForMember(Resource child, Container parent, String desiredPath) throws EndpointNotFoundException {
 		if(parent.hasMember(child.id())) {
 			Endpoint endpoint=getResourceEndpoint(parent.id());
-			ContainerTemplate parentTemplate = templateManagementService.findTemplateById(parent.id().templateId(),ContainerTemplate.class);
+			ContainerTemplate parentTemplate=this.persistencyManager.templateOfId(parent.id().templateId(),ContainerTemplate.class);
 			if(parentTemplate==null) {
 				throw new IllegalStateException("Could not find template resource '"+parent+"'");
 			}
@@ -184,7 +172,7 @@ public final class EndpointManagementService implements Service {
 		return null;
 	}
 
-	protected <T> void addSegment(StringBuilder builder, T segment) {
+	private <T> void addSegment(StringBuilder builder, T segment) {
 		if(segment!=null) {
 			String strSegment=segment.toString();
 			if(strSegment!=null && strSegment.length()>0) {
@@ -196,28 +184,50 @@ public final class EndpointManagementService implements Service {
 		}
 	}
 
+	private Endpoint createEndpoint(Resource resource, String relativePath, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
+		String candidatePath=relativePath;
+		int repetitions=0;
+		while(repetitions<MAX_ENDPOINT_CREATION_FAILURE) {
+			try {
+				String resourcePath = calculateResourcePath(resource,candidatePath);
+				Endpoint newEndpoint = this.persistencyManager.createEndpoint(resource,resourcePath,entityTag,lastModified);
+				this.persistencyManager.add(newEndpoint);
+				return newEndpoint;
+			} catch (EndpointNotFoundException e) {
+				throw new EndpointCreationException("Could not calculate path for resource '"+resource.id()+"'",e);
+			} catch (IllegalArgumentException e) {
+				// TODO: Define a proper exception
+				if(candidatePath!=null) {
+					repetitions++;
+				}
+				candidatePath=null;
+			}
+		}
+		throw new EndpointCreationException("Could not create endpoint for resource '"+resource.id()+"'");
+	}
+
 	public void registerEndpointLifecycleListener(EndpointLifecycleListener listener) {
 		this.listenerManager.registerListener(listener);
 	}
-	
+
 	public void deregisterEndpointLifecycleListener(EndpointLifecycleListener listener) {
 		this.listenerManager.deregisterListener(listener);
 	}
-	
+
 	public Endpoint getResourceEndpoint(ResourceId resourceId) throws EndpointNotFoundException {
 		checkNotNull(resourceId,"Resource identifier cannot be null");
-		Endpoint endpoint = endpointRepository.endpointOfResource(resourceId);
+		Endpoint endpoint = this.persistencyManager.endpointOfResource(resourceId);
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resourceId);
 		}
 		return endpoint;
 	}
-	
+
 	public Endpoint resolveEndpoint(String path) {
 		checkNotNull(path,"Path cannot be null");
-		return this.endpointRepository.endpointOfPath(path);
+		return this.persistencyManager.endpointOfPath(path);
 	}
-	
+
 	/**
 	 * TODO: Verify that http://tools.ietf.org/html/rfc7232#section-2.2
 	 * holds: if the clock in the request is ahead of the clock of the origin
@@ -234,33 +244,11 @@ public final class EndpointManagementService implements Service {
 		return newEndpoint;
 	}
 
-	private Endpoint createEndpoint(Resource resource, String relativePath, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
-		String candidatePath=relativePath;
-		int repetitions=0;
-		while(repetitions<MAX_ENDPOINT_CREATION_FAILURE) {
-			try {
-				String resourcePath = calculateResourcePath(resource,candidatePath);
-				Endpoint newEndpoint = this.factoryService.createEndpoint(resource,resourcePath,entityTag,lastModified);
-				this.endpointRepository.add(newEndpoint);
-				return newEndpoint;
-			} catch (EndpointNotFoundException e) {
-				throw new EndpointCreationException("Could not calculate path for resource '"+resource.id()+"'",e);
-			} catch (IllegalArgumentException e) {
-				// TODO: Define a proper exception
-				if(candidatePath!=null) {
-					repetitions++;
-				}
-				candidatePath=null;
-			}
-		}
-		throw new EndpointCreationException("Could not create endpoint for resource '"+resource.id()+"'");
-	}
-	
 	public Endpoint modifyResourceEndpoint(Resource resource, EntityTag entityTag, Date lastModified) throws EndpointNotFoundException {
 		checkNotNull(resource,"ResourceSnapshot cannot be null");
 		checkNotNull(entityTag,"Entity tag cannot be null");
 		checkNotNull(lastModified,"Last modified cannot be null");
-		Endpoint endpoint = endpointRepository.endpointOfResource(resource.id());
+		Endpoint endpoint = this.persistencyManager.endpointOfResource(resource.id());
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resource.id());
 		}
@@ -270,21 +258,21 @@ public final class EndpointManagementService implements Service {
 
 	public Endpoint deleteResourceEndpoint(Resource resource) throws EndpointNotFoundException {
 		checkNotNull(resource,"ResourceSnapshot cannot be null");
-		Endpoint endpoint = this.endpointRepository.endpointOfResource(resource.id());
+		Endpoint endpoint = this.persistencyManager.endpointOfResource(resource.id());
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resource.id());
 		}
-		this.endpointRepository.remove(endpoint);
+		this.persistencyManager.remove(endpoint);
 		this.listenerManager.notify(new EndpointDeletionNotification(endpoint));
 		return endpoint;
 	}
-	
+
 	public static ServiceBuilder<EndpointManagementService> serviceBuilder() {
 		return new EndpointManagementServiceBuilder();
 	}
-	
+
 	public static EndpointManagementService defaultService() {
 		return serviceBuilder().build();
 	}
-	
+
 }

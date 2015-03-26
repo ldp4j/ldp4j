@@ -30,21 +30,19 @@ import java.util.List;
 import java.util.Stack;
 
 import org.ldp4j.application.endpoint.EndpointManagementService;
+import org.ldp4j.application.engine.ApplicationContextCreationException;
 import org.ldp4j.application.engine.ApplicationContextTerminationException;
 import org.ldp4j.application.engine.ApplicationEngine;
 import org.ldp4j.application.engine.ApplicationEngineInitializationException;
 import org.ldp4j.application.engine.ApplicationEngineRuntimeException;
 import org.ldp4j.application.engine.ApplicationEngineTerminationException;
-import org.ldp4j.application.engine.ApplicationContextCreationException;
 import org.ldp4j.application.ext.ApplicationShutdownException;
 import org.ldp4j.application.lifecycle.ApplicationLifecycleService;
 import org.ldp4j.application.lifecycle.LifecycleException;
 import org.ldp4j.application.lifecycle.LifecycleManager;
 import org.ldp4j.application.resource.ResourceControllerService;
 import org.ldp4j.application.session.WriteSessionService;
-import org.ldp4j.application.spi.EndpointRepository;
-import org.ldp4j.application.spi.RepositoryRegistry;
-import org.ldp4j.application.spi.ResourceRepository;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.spi.ServiceRegistry;
 import org.ldp4j.application.template.TemplateManagementService;
@@ -57,13 +55,13 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(DefaultApplicationEngine.class);
 
+	private PersistencyManager persistencyManager;
+
 	private WriteSessionService writeSessionService;
 	private EndpointManagementService endpointManagementService;
 	private ApplicationLifecycleService applicationLifecycleService;
 	private TemplateManagementService templateManagementService;
 	private ResourceControllerService resourceControllerService;
-	private ResourceRepository resourceRepository;
-	private EndpointRepository endpointRepository;
 
 	public DefaultApplicationEngine() {
 	}
@@ -78,9 +76,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 	private void initialize() {
 		RuntimeInstance instance = RuntimeInstance.getInstance();
 
-		RepositoryRegistry repositoryRegistry = instance.getRepositoryRegistry();
-		setEndpointRepository(repositoryRegistry.getEndpointRepository());
-		setResourceRepository(repositoryRegistry.getResourceRepository());
+		setPersistencyManager(instance.getPersistencyManager());
 
 		ServiceRegistry serviceRegistry = instance.getServiceRegistry();
 		setApplicationLifecycleService(serviceRegistry.getService(ApplicationLifecycleService.class));
@@ -88,6 +84,10 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		setEndpointManagementService(serviceRegistry.getService(EndpointManagementService.class));
 		setWriteSessionService(serviceRegistry.getService(WriteSessionService.class));
 		setResourceControllerService(serviceRegistry.getService(ResourceControllerService.class));
+	}
+
+	private void setPersistencyManager(PersistencyManager persistencyManager) {
+		this.persistencyManager=checkNotNull(persistencyManager,"Persistency manager cannot be null");
 	}
 
 	private void setWriteSessionService(WriteSessionService service) {
@@ -108,14 +108,6 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 
 	private void setResourceControllerService(ResourceControllerService service) {
 		this.resourceControllerService = checkNotNull(service,"Resource controller service cannot be null");
-	}
-
-	private void setResourceRepository(ResourceRepository resourceRepository) {
-		this.resourceRepository=checkNotNull(resourceRepository,"Resource repository cannot be null");
-	}
-
-	private void setEndpointRepository(EndpointRepository endpointRepository) {
-		this.endpointRepository=checkNotNull(endpointRepository,"Endpoint repository cannot be null");
 	}
 
 	private <T> void shutdownComponent(T object, List<? super LifecycleException> failures) {
@@ -144,32 +136,28 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		}
 	}
 
+	PersistencyManager persistencyManager() {
+		return this.persistencyManager;
+	}
+
 	WriteSessionService writeSessionService() {
-		return writeSessionService;
+		return this.writeSessionService;
 	}
 
 	EndpointManagementService endpointManagementService() {
-		return endpointManagementService;
+		return this.endpointManagementService;
 	}
 
 	ApplicationLifecycleService applicationLifecycleService() {
-		return applicationLifecycleService;
+		return this.applicationLifecycleService;
 	}
 
 	TemplateManagementService templateManagementService() {
-		return templateManagementService;
+		return this.templateManagementService;
 	}
 
 	ResourceControllerService resourceControllerService() {
-		return resourceControllerService;
-	}
-
-	ResourceRepository resourceRepository() {
-		return resourceRepository;
-	}
-
-	EndpointRepository endpointRepository() {
-		return endpointRepository;
+		return this.resourceControllerService;
 	}
 
 	private static final class DefaultApplicationContextManager extends ApplicationContextManager<DefaultApplicationContext> {
@@ -212,7 +200,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		}
 		Stack<Object> initializedComponents=new Stack<Object>();
 		try {
-			initializeComponent(this.endpointRepository,initializedComponents);
+			initializeComponent(this.persistencyManager,initializedComponents);
 			initializeComponent(this.endpointManagementService,initializedComponents);
 			initializeComponent(this.resourceControllerService,initializedComponents);
 			initializeComponent(this.templateManagementService,initializedComponents);
@@ -232,8 +220,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		shutdownComponent(this.resourceControllerService,failures);
 		shutdownComponent(this.templateManagementService,failures);
 		shutdownComponent(this.writeSessionService,failures);
-		shutdownComponent(this.endpointRepository,failures);
-		shutdownComponent(this.resourceRepository,failures);
+		shutdownComponent(this.persistencyManager,failures);
 		if(!failures.isEmpty()) {
 			throw new ApplicationEngineTerminationException("Could not shutdown engine components");
 		}

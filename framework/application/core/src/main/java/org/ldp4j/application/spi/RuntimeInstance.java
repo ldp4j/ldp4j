@@ -36,11 +36,9 @@ import java.util.Properties;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.ldp4j.application.endpoint.EndpointFactoryService;
 import org.ldp4j.application.endpoint.EndpointManagementService;
 import org.ldp4j.application.lifecycle.ApplicationLifecycleService;
 import org.ldp4j.application.resource.ResourceControllerService;
-import org.ldp4j.application.resource.ResourceFactoryService;
 import org.ldp4j.application.session.WriteSessionService;
 import org.ldp4j.application.template.TemplateManagementService;
 import org.slf4j.Logger;
@@ -281,12 +279,12 @@ public abstract class RuntimeInstance {
 		private static final String ERROR_MESSAGE = String.format("No implementation for class '%s' could be found",RuntimeInstance.class);
 
 		@Override
-		public RepositoryRegistry getRepositoryRegistry() {
+		public ServiceRegistry getServiceRegistry() {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
 		@Override
-		public ServiceRegistry getServiceRegistry() {
+		public PersistencyManager getPersistencyManager() {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
@@ -295,11 +293,7 @@ public abstract class RuntimeInstance {
 	private void initialize() {
 		getServiceRegistry().
 			registerServiceBuilder(
-				EndpointFactoryService.
-					serviceBuilder().
-						setRuntimeInstance(this)).
-			registerServiceBuilder(
-				ResourceFactoryService.
+				TemplateManagementService.
 					serviceBuilder().
 						setRuntimeInstance(this)).
 			registerServiceBuilder(
@@ -308,10 +302,6 @@ public abstract class RuntimeInstance {
 						setRuntimeInstance(this)).
 			registerServiceBuilder(
 				WriteSessionService.
-					serviceBuilder().
-						setRuntimeInstance(this)).
-			registerServiceBuilder(
-				TemplateManagementService.
 					serviceBuilder().
 						setRuntimeInstance(this)).
 			registerServiceBuilder(
@@ -324,7 +314,7 @@ public abstract class RuntimeInstance {
 						setRuntimeInstance(this));
 	}
 
-	public abstract RepositoryRegistry getRepositoryRegistry();
+	public abstract PersistencyManager getPersistencyManager();
 
 	public abstract ServiceRegistry getServiceRegistry();
 

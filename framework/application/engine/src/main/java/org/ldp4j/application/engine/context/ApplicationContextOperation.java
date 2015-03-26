@@ -20,21 +20,24 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-core:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-engine:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-engine-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.engine.context;
 
-public class TemplateLibraryLoadingException extends Exception {
+import org.ldp4j.application.data.ManagedIndividualId;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6814292133932070166L;
+public interface ApplicationContextOperation {
 
-	public TemplateLibraryLoadingException(Throwable t) {
-		super("Could not load library",t);
-	}
+	ApplicationContext getContext();
+
+	PublicResource findResource(String path);
+
+	PublicResource resolveResource(String path);
+
+	PublicResource resolveResource(ManagedIndividualId id);
+
+	void dispose();
 
 }

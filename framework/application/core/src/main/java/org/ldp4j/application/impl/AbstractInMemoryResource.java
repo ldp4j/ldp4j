@@ -24,13 +24,38 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.impl;
 
+import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.template.ResourceTemplate;
 
-public interface RepositoryRegistry {
+import com.google.common.base.Objects;
+import com.google.common.base.Objects.ToStringHelper;
 
-	ResourceRepository getResourceRepository();
-	
-	EndpointRepository getEndpointRepository();
-	
+abstract class AbstractInMemoryResource {
+
+	private InMemoryPersistencyManager persistencyManager;
+
+	final void setPersistencyManager(InMemoryPersistencyManager persistencyManager) {
+		this.persistencyManager=persistencyManager;
+	}
+
+	final InMemoryPersistencyManager getPersistencyManager() {
+		if(persistencyManager==null) {
+			throw new IllegalStateException("Resource factory service not been initialized yet");
+		}
+		return persistencyManager;
+	}
+
+	final ResourceTemplate getTemplate(ResourceId resourceId) {
+		return getPersistencyManager().templateOfId(resourceId.templateId());
+	}
+
+	protected ToStringHelper stringHelper() {
+		return
+			Objects.
+				toStringHelper(getClass()).
+					omitNullValues();
+	}
+
 }

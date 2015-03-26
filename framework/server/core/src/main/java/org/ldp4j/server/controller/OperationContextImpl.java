@@ -42,13 +42,13 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.CreationPreferences;
+import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.context.PublicContainer;
 import org.ldp4j.application.engine.context.PublicResource;
-import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
 import org.ldp4j.server.data.DataTransformator;
 import org.ldp4j.server.data.ResourceResolver;
 import org.ldp4j.server.data.UnsupportedMediaTypeException;
@@ -66,7 +66,7 @@ final class OperationContextImpl implements OperationContext {
 		@Override
 		public URI resolveResource(ManagedIndividualId id) {
 			URI result=null;
-			PublicResource resource=applicationContext.resolveResource(id);
+			PublicResource resource=applicationContextOperation.resolveResource(id);
 			if(resource!=null) {
 				result=base().resolve(resource.path());
 				LOGGER.trace("Resolved resource {} URI to '{}'",id,result);
@@ -77,7 +77,7 @@ final class OperationContextImpl implements OperationContext {
 		@Override
 		public ManagedIndividualId resolveLocation(URI path) {
 			PublicResource resource =
-				applicationContext.
+				applicationContextOperation.
 					resolveResource(base().relativize(path).toString());
 
 			ManagedIndividualId result = null;
@@ -90,25 +90,25 @@ final class OperationContextImpl implements OperationContext {
 
 	}
 
-	private final Operation          operation;
+	private final HttpOperation          operation;
 	private final UriInfo            uriInfo;
 	private final HttpHeaders        headers;
 	private final Request            request;
-	private final ApplicationContext applicationContext;
+	private final ApplicationContextOperation applicationContextOperation;
 	private final PublicResource resource;
 
 	private String  entity;
 	private DataSet dataSet;
 
 	OperationContextImpl(
-		ApplicationContext applicationContext,
+		ApplicationContextOperation applicationContextOperation,
 		PublicResource resource,
 		UriInfo uriInfo,
 		HttpHeaders headers,
 		Request request,
 		String entity,
-		Operation operation) {
-		this.applicationContext = applicationContext;
+		HttpOperation operation) {
+		this.applicationContextOperation = applicationContextOperation;
 		this.resource = resource;
 		this.operation = operation;
 		this.uriInfo=uriInfo;
@@ -212,7 +212,7 @@ final class OperationContextImpl implements OperationContext {
 	public OperationContext checkPreconditions() {
 		EntityTag entityTag=this.resource.entityTag();
 		Date lastModified=this.resource.lastModified();
-		if(Operation.PUT.equals(this.operation)) {
+		if(HttpOperation.PUT.equals(this.operation)) {
 			List<String> requestHeader = this.headers.getRequestHeader(HttpHeaders.IF_MATCH);
 			if((requestHeader==null || requestHeader.isEmpty())) {
 				throw new PreconditionRequiredException(this.resource);
@@ -272,7 +272,7 @@ final class OperationContextImpl implements OperationContext {
 						create(base()).
 						enableResolution(resourceResolver()).
 						mediaType(mediaType);
-				if(this.operation.equals(Operation.POST)) {
+				if(this.operation.equals(HttpOperation.POST)) {
 					transformator=transformator.surrogateEndpoint(endpoint());
 				} else {
 					transformator=transformator.permanentEndpoint(endpoint());

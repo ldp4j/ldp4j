@@ -24,21 +24,31 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.spi;
+package org.ldp4j.application.impl;
 
-import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.application.resource.ResourceId;
+import java.net.URI;
 
-public interface EndpointRepository {
+import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.template.IndirectContainerTemplate;
+import org.ldp4j.application.template.TemplateVisitor;
 
-	Endpoint endpointOfPath(String path);
+final class MutableIndirectContainerTemplate extends MutableMembershipAwareContainerTemplate implements IndirectContainerTemplate {
 
-	Endpoint endpointOfResource(ResourceId id);
+	private final URI insertedContentRelation;
 
-	void add(Endpoint endpoint);
+	MutableIndirectContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass, URI insertedContentRelation) {
+		super(id, handlerClass);
+		this.insertedContentRelation = insertedContentRelation;
+	}
 
-	void remove(Endpoint endpoint);
+	@Override
+	public void accept(TemplateVisitor visitor) {
+		visitor.visitIndirectContainerTemplate(this);
+	}
 
-	long nextIdentifier();
+	@Override
+	public URI insertedContentRelation() {
+		return this.insertedContentRelation;
+	}
 
 }

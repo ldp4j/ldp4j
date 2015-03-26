@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +38,7 @@ import org.ldp4j.application.vocabulary.Term;
 import com.google.common.collect.ImmutableMap;
 
 public final class NamingScheme {
-	
+
 	public enum NameType {
 		TERM(Term.class),
 		URI(URI.class),
@@ -45,13 +46,13 @@ public final class NamingScheme {
 		STRING(String.class),
 		NUMBER(Number.class),
 		;
-		
+
 		private final Class<?> clazz;
 
 		private NameType(Class<?> clazz) {
 			this.clazz = clazz;
 		}
-		
+
 		private static NameType valueOf(Object t) {
 			for(NameType candidate:values()) {
 				if(candidate.clazz.isInstance(t)) {
@@ -60,75 +61,75 @@ public final class NamingScheme {
 			}
 			throw new IllegalArgumentException("Invalid name type '"+t.getClass().getCanonicalName()+"'");
 		}
-		
+
 		@Override
 		public String toString() {
 			return clazz.getCanonicalName();
 		}
-		
+
 	}
-	
+
 	private enum NamingStrategy {
 		LOCAL,
 		GLOBAL,
 		;
 	}
-	
+
 	private interface NameFactory {
-		
-		<T> Name<T> create(T id);
-		
+
+		<T extends Serializable> Name<T> create(T id);
+
 	}
-	
+
 	private static final class GlobalNameFactory implements NameFactory {
 
 		@Override
-		public <T> Name<T> create(T id) {
+		public <T extends Serializable> Name<T> create(T id) {
 			return ImmutableName.newGlobalName(id);
 		}
-		
+
 	}
 
 	private static final class LocalNameFactory implements NameFactory {
 
 		@Override
-		public <T> Name<T> create(T id) {
+		public <T extends Serializable> Name<T> create(T id) {
 			return ImmutableName.newLocalName(id);
 		}
-		
+
 	}
-	
+
 	public static final class NamingSchemeBuilder {
-		
+
 		private Map<NameType, NamingStrategy> configuration=new HashMap<NameType, NamingStrategy>();
 		private String base;
-		
+
 		private void addMappings(NamingStrategy strategy, NameType type, NameType... rest) {
 			this.configuration.put(type, strategy);
 			for(NameType r:rest) {
 				this.configuration.put(r, strategy);
 			}
 		}
-	
+
 		public NamingSchemeBuilder withLocal(NameType type, NameType... rest) {
 			addMappings(NamingStrategy.LOCAL, type, rest);
 			return this;
 		}
-	
+
 		public NamingSchemeBuilder withGlobal(NameType type, NameType... rest) {
 			addMappings(NamingStrategy.GLOBAL, type, rest);
 			return this;
 		}
-		
+
 		public NamingSchemeBuilder withBase(String base) {
 			this.base = base;
 			return this;
 		}
-		
+
 		public NamingScheme build() {
 			return new NamingScheme(this.configuration,this.base);
 		}
-		
+
 	}
 
 	private static final Map<NamingStrategy,NameFactory> FACTORIES=
@@ -137,7 +138,7 @@ public final class NamingScheme {
 				put(NamingStrategy.GLOBAL, new GlobalNameFactory()).
 				put(NamingStrategy.LOCAL, new LocalNameFactory()).
 				build();
-	
+
 	private final Map<NameType, NamingStrategy> configuration;
 
 	@SuppressWarnings("unused")
@@ -147,7 +148,7 @@ public final class NamingScheme {
 		this.configuration = configuration;
 		this.base = base;
 	}
-		
+
 	private NameFactory getFactory(NameType type) {
 		NamingStrategy namingStrategy = configuration.get(type);
 		if(namingStrategy==null) {
@@ -155,8 +156,8 @@ public final class NamingScheme {
 		}
 		return FACTORIES.get(namingStrategy);
 	}
-	
-	
+
+
 	private static void append(StringBuilder builder, String part) {
 		if (part != null && !part.isEmpty()) {
 			if (builder.length() > 0) {
@@ -177,7 +178,7 @@ public final class NamingScheme {
 		return builder.toString();
 	}
 
-	private <T> Name<T> createName(T id) {
+	private <T extends Serializable> Name<T> createName(T id) {
 		return getFactory(NameType.valueOf(id)).create(id);
 	}
 
@@ -196,7 +197,7 @@ public final class NamingScheme {
 	/**
 	 * Concatenates elements to form a dotted name, discarding null values
 	 * and empty strings.
-	 * 
+	 *
 	 * @param name
 	 *            the first element of the name
 	 * @param names
@@ -206,11 +207,11 @@ public final class NamingScheme {
 	public Name<String> name(String name, String... names) {
 		return createName(assemble(name, names));
 	}
-	
+
 	/**
 	 * Concatenates a canonical class name and elements to form a dotted name, discarding any null values or empty strings
 	 * any null values or empty strings.
-	 * 
+	 *
 	 * @param clazz
 	 *            the first element of the name
 	 * @param names
@@ -228,7 +229,7 @@ public final class NamingScheme {
 	public static NamingSchemeBuilder builder() {
 		return new NamingSchemeBuilder();
 	}
-	
+
 	public static NamingScheme getDefault() {
 		return builder().build();
 	}

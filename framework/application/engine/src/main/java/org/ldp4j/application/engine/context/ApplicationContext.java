@@ -26,7 +26,6 @@
  */
 package org.ldp4j.application.engine.context;
 
-import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
 
 public interface ApplicationContext {
@@ -35,11 +34,7 @@ public interface ApplicationContext {
 
 	String applicationClassName();
 
-	PublicResource findResource(String path);
-
-	PublicResource resolveResource(String path);
-
-	PublicResource resolveResource(ManagedIndividualId id);
+	ApplicationContextOperation createOperation();
 
 	void registerApplicationLifecycleListener(ApplicationLifecycleListener listener);
 

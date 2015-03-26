@@ -27,6 +27,7 @@
 package org.ldp4j.server.controller;
 
 import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.PublicResource;
 
 public class EndpointControllerFactory {
@@ -49,20 +50,21 @@ public class EndpointControllerFactory {
 		if(applicationContext==null) {
 			result=new InternalFailureEndpointController();
 		} else {
-			PublicResource resource=applicationContext.findResource(normalizePath(path));
+			ApplicationContextOperation operation = applicationContext.createOperation();
+			PublicResource resource=operation.findResource(normalizePath(path));
 			if(resource!=null) {
 				switch(resource.status()) {
 					case GONE:
-						result=new GoneEndpointController(applicationContext,resource);
+						result=new AutoclosingEndointController(new GoneEndpointController(operation,resource));
 						break;
 					case PUBLISHED:
-						result=new ExistingEndpointController(applicationContext,resource);
+						result=new AutoclosingEndointController(new ExistingEndpointController(operation,resource));
 						break;
 					default:
 						throw new IllegalStateException("Unsupported status "+resource.status());
 				}
 			} else {
-				result=new NotFoundEndpointController(applicationContext);
+				result=new AutoclosingEndointController(new NotFoundEndpointController(operation));
 			}
 		}
 		return result;

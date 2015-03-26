@@ -36,9 +36,8 @@ import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.lifecycle.LifecycleException;
 import org.ldp4j.application.lifecycle.Managed;
 import org.ldp4j.application.resource.ResourceId;
-import org.ldp4j.application.spi.EndpointRepository;
 
-final class InMemoryEndpointRepository implements EndpointRepository, Managed {
+final class InMemoryEndpointRepository implements Managed {
 
 	private final AtomicLong counter=new AtomicLong();
 
@@ -46,7 +45,7 @@ final class InMemoryEndpointRepository implements EndpointRepository, Managed {
 	private final Map<Long,Endpoint> endpointsById=new HashMap<Long,Endpoint>();
 	private final Map<String,Long> endpointsByPath=new HashMap<String,Long>();
 	private final Map<ResourceId,Long> endpointsByResourceName=new HashMap<ResourceId,Long>();
-	
+
 	InMemoryEndpointRepository() {
 	}
 
@@ -57,13 +56,11 @@ final class InMemoryEndpointRepository implements EndpointRepository, Managed {
 		return endpointsById.get(id);
 	}
 
-	@Override
-	public long nextIdentifier() {
+	long nextIdentifier() {
 		return counter.incrementAndGet();
 	}
 
-	@Override
-	public Endpoint endpointOfPath(String path) {
+	Endpoint endpointOfPath(String path) {
 		lock.readLock().lock();
 		try {
 			return endpointOfId(endpointsByPath.get(path));
@@ -72,8 +69,7 @@ final class InMemoryEndpointRepository implements EndpointRepository, Managed {
 		}
 	}
 
-	@Override
-	public Endpoint endpointOfResource(ResourceId id) {
+	Endpoint endpointOfResource(ResourceId id) {
 		lock.readLock().lock();
 		try {
 			return endpointOfId(endpointsByResourceName.get(id));
@@ -82,8 +78,7 @@ final class InMemoryEndpointRepository implements EndpointRepository, Managed {
 		}
 	}
 
-	@Override
-	public void remove(Endpoint endpoint) {
+	void remove(Endpoint endpoint) {
 		lock.writeLock().lock();
 		try {
 			endpointsById.remove(endpoint.id());
@@ -94,8 +89,7 @@ final class InMemoryEndpointRepository implements EndpointRepository, Managed {
 		}
 	}
 
-	@Override
-	public void add(Endpoint endpoint) {
+	void add(Endpoint endpoint) {
 		lock.writeLock().lock();
 		try {
 			if(endpointsById.containsKey(endpoint.id())) {
@@ -131,5 +125,5 @@ final class InMemoryEndpointRepository implements EndpointRepository, Managed {
 			lock.writeLock().unlock();
 		}
 	}
-	
+
 }

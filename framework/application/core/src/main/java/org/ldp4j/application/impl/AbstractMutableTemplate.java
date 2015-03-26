@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -37,6 +37,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.template.AttachedTemplate;
+import org.ldp4j.application.template.ResourceTemplate;
 
 import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
@@ -99,7 +101,7 @@ public abstract class AbstractMutableTemplate<T extends ResourceHandler> impleme
 	public Optional<String> description() {
 		return Optional.fromNullable(description);
 	}
-	
+
 	@Override
 	public Set<? extends AttachedTemplate> attachedTemplates() {
 		return Collections.unmodifiableSet(new LinkedHashSet<AttachedTemplate>(attachments.values()));
@@ -110,7 +112,7 @@ public abstract class AbstractMutableTemplate<T extends ResourceHandler> impleme
 		checkNotNull(attachmentId, "AttachmentSnapshot identifier cannot be null");
 		return attachments.get(attachmentId);
 	}
-	
+
 	@Override
 	public Iterator<AttachedTemplate> iterator() {
 		return Collections.unmodifiableCollection(attachments.values()).iterator();
@@ -123,7 +125,7 @@ public abstract class AbstractMutableTemplate<T extends ResourceHandler> impleme
 
 	@Override
 	public int hashCode() {
-		return 
+		return
 			Objects.
 				hashCode(id,handlerClass);
 	}
@@ -134,21 +136,21 @@ public abstract class AbstractMutableTemplate<T extends ResourceHandler> impleme
 		if(obj!=null && this.getClass()==obj.getClass()) {
 			AbstractMutableTemplate<?> that = (AbstractMutableTemplate<?>) obj;
 			result=
-				Objects.equal(this.id, that.id) && 
+				Objects.equal(this.id, that.id) &&
 				Objects.equal(this.handlerClass, that.handlerClass);
 		}
 		return result;
 	}
-	
+
 	@Override
 	public String toString() {
-		return 
+		return
 			stringHelper().
 				toString();
 	}
-	
+
 	protected ToStringHelper stringHelper() {
-		return 
+		return
 			Objects.
 				toStringHelper(getClass()).
 					omitNullValues().

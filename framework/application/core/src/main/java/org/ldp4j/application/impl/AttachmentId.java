@@ -24,19 +24,63 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
-import org.ldp4j.application.ext.ContainerHandler;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-final class MutableDirectContainerTemplate extends MutableMembershipAwareContainerTemplate implements DirectContainerTemplate {
+import org.ldp4j.application.resource.ResourceId;
 
-	MutableDirectContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
-		super(id, handlerClass);
+import com.google.common.base.Objects;
+
+final class AttachmentId {
+
+	private final String id;
+	private final ResourceId resourceId;
+
+	private AttachmentId(String id, ResourceId resourceId) {
+		this.resourceId = resourceId;
+		this.id = id;
 	}
-	
+
+	public ResourceId resourceId() {
+		return resourceId;
+	}
+
+	public String id() {
+		return id;
+	}
+
 	@Override
-	public void accept(TemplateVisitor visitor) {
-		visitor.visitDirectContainerTemplate(this);
+	public int hashCode() {
+		return Objects.hashCode(this.id,this.resourceId);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj!=null && obj.getClass()==this.getClass()) {
+			AttachmentId that=(AttachmentId)obj;
+			result=
+				Objects.equal(this.id,that.id) &&
+				Objects.equal(this.resourceId,that.resourceId);
+		}
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return
+			Objects.
+				toStringHelper(getClass()).
+					add("id", this.id).
+					add("resourceId", this.resourceId).
+					toString();
+	}
+
+	public static AttachmentId createId(String attachmentId, ResourceId resourceId) {
+		checkNotNull(resourceId,"Resource resourceId cannot be null");
+		checkNotNull(attachmentId,"Template identifier cannot be null");
+		return new AttachmentId(attachmentId,resourceId);
 	}
 
 }

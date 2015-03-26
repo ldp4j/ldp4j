@@ -34,6 +34,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.spi.PersistencyManager;
+import org.ldp4j.application.spi.TemplateCreationException;
 
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.ImmutableMap;
@@ -41,7 +43,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Lists;
 import com.google.common.collect.MutableClassToInstanceMap;
 
-public final class TemplateManager {
+final class TemplateManager {
 
 	private final TemplateLibrary library;
 	private final ImmutableMap<HandlerId, ResourceHandler> handlers;
@@ -51,35 +53,6 @@ public final class TemplateManager {
 		this.handlers = handlers;
 	}
 
-	private <T extends ResourceTemplate> T castTemplate(Class<? extends T> templateClass, ResourceTemplate template) throws InvalidTemplateClassException {
-		if(template!=null && !templateClass.isInstance(template)) {
-			throw new InvalidTemplateClassException(templateClass,template);
-		}
-		return templateClass.cast(template);
-	}
-
-	public ResourceTemplate getTemplate(String templateId) {
-		checkNotNull(templateId,"Template identifier cannot be null");
-		return this.library.findById(templateId);
-
-	}
-	public ResourceTemplate getTemplate(Class<? extends ResourceHandler> handlerClass) {
-		checkNotNull(handlerClass,"Handler class cannot be null");
-		return this.library.findByHandler(handlerClass);
-	}
-
-	public <T extends ResourceTemplate> T getTemplate(Class<? extends T> templateClass, String templateId) throws InvalidTemplateClassException {
-		checkNotNull(templateClass,"Template handler class cannot be null");
-		checkNotNull(templateId,"Template identifier cannot be null");
-		return castTemplate(templateClass, library.findById(templateId));
-	}
-
-	public <T extends ResourceTemplate> T getTemplate(Class<? extends T> templateClass, Class<? extends ResourceHandler> handlerClass) throws InvalidTemplateClassException {
-		checkNotNull(templateClass,"Template handler class cannot be null");
-		checkNotNull(handlerClass,"Handler class cannot be null");
-		return castTemplate(templateClass, library.findByHandler(handlerClass));
-	}
-
 	public <T extends ResourceHandler> T getHandler(Class<? extends T> handlerClass, ResourceTemplate template) {
 		checkNotNull(handlerClass,"Handler class cannot be null");
 		checkNotNull(template,"Template cannot be null");
@@ -87,7 +60,6 @@ public final class TemplateManager {
 		checkArgument(handlerClass.isAssignableFrom(template.handlerClass()));
 		return handlerClass.cast(this.handlers.get(HandlerId.createId(template.handlerClass())));
 	}
-
 
 	public static TemplateManagerBuilder builder() {
 		return new TemplateManagerBuilder();
@@ -150,6 +122,8 @@ public final class TemplateManager {
 		private final List<Class<?>> handlerClasses;
 		private final ClassToInstanceMap<ResourceHandler> handlers;
 
+		private PersistencyManager persistencyManager;
+
 
 		private TemplateManagerBuilder() {
 			this.handlerClasses=Lists.newArrayList();
@@ -188,17 +162,27 @@ public final class TemplateManager {
 			return this;
 		}
 
-		public TemplateManager build() throws InvalidTemplateManagerConfigurationException {
+		public TemplateManager build() throws TemplateManagementServiceConfigurationException {
 			try {
-				TemplateLibrary library = new TemplateLibraryLoader().createLibrary(this.handlerClasses);
+				for(Class<?> handlerClass:handlerClasses) {
+					if(!this.persistencyManager.isHandlerRegistered(handlerClass)) {
+						this.persistencyManager.registerHandler(handlerClass);
+					}
+				}
+				TemplateLibrary library = this.persistencyManager.exportTemplates();
 				Builder<HandlerId, ResourceHandler> builder = ImmutableMap.<HandlerId, ResourceHandler>builder();
 				library.accept(new HandlerMapBuilder(builder,this.handlers));
 				return new TemplateManager(library, builder.build());
+			} catch (TemplateCreationException e) {
+				throw new TemplateManagementServiceConfigurationException(e);
 			} catch (ResourceHandlerInstantiationException e) {
-				throw new InvalidTemplateManagerConfigurationException(e);
-			} catch (TemplateLibraryLoadingException e) {
-				throw new InvalidTemplateManagerConfigurationException(e);
+				throw new TemplateManagementServiceConfigurationException(e);
 			}
+		}
+
+		public TemplateManagerBuilder withPersistencyManager(PersistencyManager persistencyManager) {
+			this.persistencyManager=persistencyManager;
+			return this;
 		}
 
 	}

@@ -31,7 +31,7 @@ import org.ldp4j.application.ext.ResourceHandler;
 public class ResourceHandlerInstantiationException extends RuntimeException {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 8196721343454749249L;
 

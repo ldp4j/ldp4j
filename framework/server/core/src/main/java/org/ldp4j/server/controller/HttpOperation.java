@@ -20,18 +20,18 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-core:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.server.controller;
 
-public class TemplateRegistrationException extends Exception {
-
-	private static final long serialVersionUID = 651930170553774666L;
-
-	public TemplateRegistrationException(Throwable t) {
-		super(t);
-	}
-
+public enum HttpOperation {
+	OPTIONS,
+	HEAD,
+	GET,
+	PUT,
+	DELETE,
+	POST,
+	PATCH
 }

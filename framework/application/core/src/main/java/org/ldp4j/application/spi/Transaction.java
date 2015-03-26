@@ -24,19 +24,20 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.spi;
 
-import org.ldp4j.application.ext.ContainerHandler;
+public interface Transaction {
 
-final class MutableBasicContainerTemplate extends MutableContainerTemplate implements BasicContainerTemplate {
+	PersistencyManager manager();
 
-	MutableBasicContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
-		super(id, handlerClass);
-	}
-	
-	@Override
-	public void accept(TemplateVisitor visitor) {
-		visitor.visitBasicContainerTemplate(this);
-	}
+	void begin();
+
+	void commit();
+
+	void rollback();
+
+	boolean isStarted();
+
+	boolean isCompleted();
 
 }

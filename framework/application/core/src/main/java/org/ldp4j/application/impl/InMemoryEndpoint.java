@@ -24,26 +24,27 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.endpoint;
+package org.ldp4j.application.impl;
 
 import java.util.Date;
 
+import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.resource.ResourceId;
 
 import com.google.common.base.Objects;
 
-final class EndpointImpl implements Endpoint {
+final class InMemoryEndpoint implements Endpoint {
 
 	private final long id;
 	private final ResourceId resourceId;
 	private final String path;
 
-	
+
 	private EntityTag entityTag;
 	private Date lastModified;
 
-	EndpointImpl(long id, String path, ResourceId resourceId, EntityTag entityTag, Date lastModified) {
+	InMemoryEndpoint(long id, String path, ResourceId resourceId, EntityTag entityTag, Date lastModified) {
 		this.id = id;
 		this.path = path;
 		this.resourceId = resourceId;
@@ -60,7 +61,7 @@ final class EndpointImpl implements Endpoint {
 	public String path() {
 		return path;
 	}
-	
+
 	@Override
 	public EntityTag entityTag() {
 		return entityTag;
@@ -84,7 +85,7 @@ final class EndpointImpl implements Endpoint {
 
 	@Override
 	public String toString() {
-		return 
+		return
 			Objects.
 				toStringHelper(getClass()).
 					omitNullValues().

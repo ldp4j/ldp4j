@@ -20,18 +20,25 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-core:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.application.impl;
 
-public enum Operation {
-	OPTIONS,
-	HEAD,
-	GET,
-	PUT,
-	DELETE,
-	POST,
-	PATCH
+import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.template.BasicContainerTemplate;
+import org.ldp4j.application.template.TemplateVisitor;
+
+final class MutableBasicContainerTemplate extends MutableContainerTemplate implements BasicContainerTemplate {
+
+	MutableBasicContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
+		super(id, handlerClass);
+	}
+
+	@Override
+	public void accept(TemplateVisitor visitor) {
+		visitor.visitBasicContainerTemplate(this);
+	}
+
 }

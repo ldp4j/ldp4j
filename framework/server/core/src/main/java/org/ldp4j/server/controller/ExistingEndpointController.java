@@ -39,8 +39,8 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.engine.context.ApplicationContext;
 import org.ldp4j.application.engine.context.ApplicationContextException;
+import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.PublicBasicContainer;
@@ -81,8 +81,8 @@ final class ExistingEndpointController extends AbstractEndpointController {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
 
-	ExistingEndpointController(ApplicationContext applicationContext, PublicResource resource) {
-		super(applicationContext,resource);
+	ExistingEndpointController(ApplicationContextOperation applicationContextOperation, PublicResource resource) {
+		super(applicationContextOperation,resource);
 	}
 
 	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {

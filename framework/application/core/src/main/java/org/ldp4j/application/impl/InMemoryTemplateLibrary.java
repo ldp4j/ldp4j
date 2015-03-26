@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -37,7 +37,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -47,48 +46,52 @@ import org.ldp4j.application.ext.annotations.DirectContainer;
 import org.ldp4j.application.ext.annotations.IndirectContainer;
 import org.ldp4j.application.ext.annotations.MembershipRelation;
 import org.ldp4j.application.ext.annotations.Resource;
+import org.ldp4j.application.spi.TemplateCreationException;
+import org.ldp4j.application.template.ResourceTemplate;
+import org.ldp4j.application.template.TemplateLibrary;
+import org.ldp4j.application.template.TemplateVisitor;
 
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
+final class InMemoryTemplateLibrary implements TemplateLibrary {
 
-final class TemplateLibraryLoader {
+	private static interface TemplateRegistry {
 
-	public static interface TemplateRegistry {
-	
 		void register(Class<? extends ResourceHandler> handlerClass, ResourceTemplate template);
-		
+
 	}
 
-	public static interface TemplateResolver {
-	
+	private static interface TemplateResolver {
+
 		ResourceTemplate resolve(Class<? extends ResourceHandler> targetClass);
-		
+
 	}
 
 	private static abstract class Processor<A extends Annotation, R extends ResourceHandler,  M extends AbstractMutableTemplate<?>> {
-		
+
 		private final Class<? extends A> annotationClass;
-	
+
 		public Processor(Class<? extends A> annotationClass) {
 			this.annotationClass = annotationClass;
 		}
-		
-		
-		public M preProcess(Annotation annotation, Class<? extends R> handler, TemplateLibraryLoader.TemplateResolver resolver) {
+
+
+		public M preProcess(Annotation annotation, Class<? extends R> handler, TemplateResolver resolver) {
 			if(!annotationClass.isInstance(annotation)) {
 				throw new IllegalArgumentException("Invalid annotation");
 			}
 			return doProcess(annotationClass.cast(annotation),handler);
 		}
 
-		public void postProcess(Annotation annotation, M template, TemplateLibraryLoader.TemplateResolver resolver) {
+		public void postProcess(Annotation annotation, M template, TemplateResolver resolver) {
 			if(!annotationClass.isInstance(annotation)) {
 				throw new IllegalArgumentException("Invalid annotation");
 			}
 			doPostprocess(annotationClass.cast(annotation),template,resolver);
 		}
-	
+
 		protected M doProcess(A annotation, Class<? extends R> handler) {
 			M template = createTemplate(annotation,handler);
 			template.setName(nullable(name(annotation)));
@@ -99,18 +102,18 @@ final class TemplateLibraryLoader {
 		protected void doPostprocess(A annotation, M template, TemplateResolver resolver) {
 			for(Attachment attachment:attachments(annotation)) {
 				try {
-					
+
 					MutableAttachedTemplate attachedTemplate = template.attachTemplate(attachment.id(), resolver.resolve(attachment.handler()), attachment.path());
 					String predicate = attachment.predicate();
 					if(predicate!=null && predicate.length()>0) {
 						try {
 							attachedTemplate.setPredicate(new URI(predicate));
 						} catch (URISyntaxException e) {
-							throw new InvalidAttachmentDefinition(template.id(),attachment.id(),"Predicate value '"+predicate+"' is not valid",e);
+							throw new InvalidAttachmentDefinitionException(template.id(),attachment.id(),"Predicate value '"+predicate+"' is not valid",e);
 						}
 					}
 				} catch (IllegalArgumentException e) {
-					throw new InvalidAttachmentDefinition(template.id(),attachment.id(),"Invalid attachment definition",e);
+					throw new InvalidAttachmentDefinitionException(template.id(),attachment.id(),"Invalid attachment definition",e);
 				}
 			}
 		}
@@ -130,45 +133,45 @@ final class TemplateLibraryLoader {
 			}
 			return result;
 		}
-	
+
 	}
 
 	private static abstract class ContainerProcessor<A extends Annotation, T extends MutableContainerTemplate> extends Processor<A,ContainerHandler,T> {
-	
+
 		public ContainerProcessor(Class<? extends A> annotationClass) {
 			super(annotationClass);
 		}
-	
+
 		@Override
 		protected T doProcess(A annotation, Class<? extends ContainerHandler> handler) {
 			T template = super.doProcess(annotation, handler);
 			template.setMemberPath(nullable(memberPath(annotation)));
 			return template;
 		}
-		
+
 		@Override
 		protected void doPostprocess(A annotation, T template, TemplateResolver resolver) {
 			super.doPostprocess(annotation,template, resolver);
 			Class<? extends ResourceHandler> handler = memberHandler(annotation);
 			ResourceTemplate memberTemplate = resolver.resolve(handler);
 			if(memberTemplate==null) {
-				throw new TemplateLoadingRuntimeException(template.id(), "Could not resolve template for member handler '"+handler.getCanonicalName()+"' ");
+				throw new TemplateCreationException(template.id(), "Could not resolve template for member handler '"+handler.getCanonicalName()+"' ");
 			}
 			template.setMemberTemplate(memberTemplate);
 		}
-	
+
 		protected abstract String memberPath(A annotation);
-		
+
 		protected abstract Class<? extends ResourceHandler> memberHandler(A annotation);
-	
+
 	}
 
 	private static abstract class MembershipAwareContainerProcessor<A extends Annotation, T extends MutableMembershipAwareContainerTemplate> extends ContainerProcessor<A,T> {
-	
+
 		public MembershipAwareContainerProcessor(Class<? extends A> annotationClass) {
 			super(annotationClass);
 		}
-	
+
 		@Override
 		protected T doProcess(A annotation, Class<? extends ContainerHandler> handler) {
 			T template = super.doProcess(annotation, handler);
@@ -176,19 +179,19 @@ final class TemplateLibraryLoader {
 			try {
 				template.setMembershipPredicate(new URI(membershipPredicate(annotation)));
 			} catch (URISyntaxException e) {
-				throw new TemplateLoadingRuntimeException(template.id(),"Membership predicate value '"+membershipPredicate(annotation)+"' is not valid",e);
+				throw new TemplateCreationException(template.id(),"Membership predicate value '"+membershipPredicate(annotation)+"' is not valid",e);
 			}
 			return template;
 		}
-		
+
 		protected abstract String membershipPredicate(A annotation);
-	
+
 		protected abstract MembershipRelation membershipRelation(A annotation);
-	
+
 	}
 
 	private static class ResourceProcessor extends Processor<Resource,ResourceHandler,MutableResourceTemplate> {
-	
+
 		public ResourceProcessor() {
 			super(Resource.class);
 		}
@@ -212,15 +215,15 @@ final class TemplateLibraryLoader {
 		protected Attachment[] attachments(Resource annotation) {
 			return annotation.attachments();
 		}
-		
+
 	}
-	
+
 	private static class BasicContainerProcessor extends ContainerProcessor<BasicContainer,MutableBasicContainerTemplate> {
-	
+
 		public BasicContainerProcessor() {
 			super(BasicContainer.class);
 		}
-	
+
 		@Override
 		protected MutableBasicContainerTemplate createTemplate(BasicContainer annotation, Class<? extends ContainerHandler> handler) {
 			return new MutableBasicContainerTemplate(annotation.id(), handler);
@@ -254,11 +257,11 @@ final class TemplateLibraryLoader {
 	}
 
 	private static class DirectContainerProcessor extends MembershipAwareContainerProcessor<DirectContainer,MutableDirectContainerTemplate> {
-		
+
 		public DirectContainerProcessor() {
 			super(DirectContainer.class);
 		}
-	
+
 		@Override
 		protected MutableDirectContainerTemplate createTemplate(DirectContainer annotation, Class<? extends ContainerHandler> handler) {
 			return new MutableDirectContainerTemplate(annotation.id(), handler);
@@ -302,21 +305,21 @@ final class TemplateLibraryLoader {
 	}
 
 	private static class IndirectContainerProcessor extends MembershipAwareContainerProcessor<IndirectContainer,MutableIndirectContainerTemplate> {
-		
+
 		public IndirectContainerProcessor() {
 			super(IndirectContainer.class);
 		}
-	
+
 		@Override
 		protected MutableIndirectContainerTemplate createTemplate(IndirectContainer annotation, Class<? extends ContainerHandler> handler) {
 			try {
 				URI insertedContentRelation = new URI(annotation.insertedContentRelation());
 				if(insertedContentRelation.normalize().equals(URI.create(""))) {
-					throw new TemplateLoadingRuntimeException(annotation.id(),"The inserted content relation cannot be the null URI");
+					throw new TemplateCreationException(annotation.id(),"The inserted content relation cannot be the null URI");
 				}
 				return new MutableIndirectContainerTemplate(annotation.id(), handler,insertedContentRelation);
 			} catch (URISyntaxException e) {
-				throw new TemplateLoadingRuntimeException(annotation.id(),"Inserted content relation value '"+annotation.insertedContentRelation()+"' is not valid",e);
+				throw new TemplateCreationException(annotation.id(),"Inserted content relation value '"+annotation.insertedContentRelation()+"' is not valid",e);
 			}
 		}
 
@@ -362,23 +365,23 @@ final class TemplateLibraryLoader {
 		DIRECT_CONTAINER(DirectContainer.class,new DirectContainerProcessor()),
 		INDIRECT_CONTAINER(IndirectContainer.class,new IndirectContainerProcessor())
 		;
-		
+
 		private final Class<? extends Annotation> annotationClass;
-		private final TemplateLibraryLoader.Processor<?,ResourceHandler,AbstractMutableTemplate<?>> processor;
-	
+		private final Processor<?,ResourceHandler,AbstractMutableTemplate<?>> processor;
+
 		@SuppressWarnings("unchecked")
-		private <A extends Annotation, R extends ResourceHandler, M extends AbstractMutableTemplate<?>> SupportedAnnotations(Class<? extends A> annotationClass, TemplateLibraryLoader.Processor<A,R,M> processor) {
+		private <A extends Annotation, R extends ResourceHandler, M extends AbstractMutableTemplate<?>> SupportedAnnotations(Class<? extends A> annotationClass, Processor<A,R,M> processor) {
 			this.annotationClass = annotationClass;
-			this.processor = (TemplateLibraryLoader.Processor<?, ResourceHandler, AbstractMutableTemplate<?>>) processor;
+			this.processor = (Processor<?, ResourceHandler, AbstractMutableTemplate<?>>) processor;
 		}
-		
-		ResourceTemplate toTemplate(Annotation annotation, Class<? extends ResourceHandler> targetClass,TemplateLibraryLoader.TemplateRegistry templateRegistry, TemplateLibraryLoader.TemplateResolver templateResolver) {
+
+		ResourceTemplate toTemplate(Annotation annotation, Class<? extends ResourceHandler> targetClass, TemplateRegistry templateRegistry, TemplateResolver templateResolver) {
 			AbstractMutableTemplate<?> template = this.processor.preProcess(annotation,targetClass,templateResolver);
 			templateRegistry.register(targetClass, template);
 			this.processor.postProcess(annotation, template, templateResolver);
 			return template;
 		}
-		
+
 		static SupportedAnnotations fromAnnotation(Annotation annotation) {
 			for(SupportedAnnotations candidate:values()) {
 				if(candidate.supports(annotation)) {
@@ -387,13 +390,13 @@ final class TemplateLibraryLoader {
 			}
 			return null;
 		}
-	
+
 		private boolean supports(Annotation annotation) {
 			return this.annotationClass.isInstance(annotation);
 		}
 
-		static String toString(Collection<? extends TemplateLibraryLoader.SupportedAnnotations> values) {
-			StringBuilder builder=new StringBuilder(); 
+		static String toString(Collection<? extends SupportedAnnotations> values) {
+			StringBuilder builder=new StringBuilder();
 			for(Iterator<? extends SupportedAnnotations> it=values.iterator();it.hasNext();) {
 				SupportedAnnotations candidate = it.next();
 				builder.append(candidate.annotationName());
@@ -403,7 +406,7 @@ final class TemplateLibraryLoader {
 			}
 			return builder.toString();
 		}
-		
+
 		private String annotationName() {
 			return annotationClass.getCanonicalName();
 		}
@@ -411,77 +414,28 @@ final class TemplateLibraryLoader {
 		static String toString(SupportedAnnotations[] values) {
 			return toString(Arrays.asList(values));
 		}
-	
+
 	}
 
-	private static final class ImmutableTemplateLibrary implements TemplateLibrary {
-		
-		private Map<String, ResourceTemplate> templatesById;
-		private Map<HandlerId, ResourceTemplate> templatesByHandler;
+	private final class TemplateLoaderContext implements TemplateResolver, TemplateRegistry {
 
-		private ImmutableTemplateLibrary(Map<HandlerId,ResourceTemplate> templates) {
-			this.templatesByHandler = ImmutableMap.copyOf(templates);
-			this.templatesById=populateIndex(this.templatesByHandler);
-		}
-		
-		private Map<String, ResourceTemplate> populateIndex(
-				Map<HandlerId, ResourceTemplate> templates) {
-			Builder<String, ResourceTemplate> result=ImmutableMap.<String, ResourceTemplate>builder();
-			for(Entry<HandlerId, ResourceTemplate> entry:templates.entrySet()) {
-				ResourceTemplate template = entry.getValue();
-				result.put(template.id(),template);
-			}
-			return result.build();
-		}
-
-		@Override
-		public ResourceTemplate findByHandler(Class<? extends ResourceHandler> handlerClass) {
-			checkNotNull(handlerClass,"Resource handler class cannot be null");
-			return this.templatesByHandler.get(HandlerId.createId(handlerClass));
-		}
-		
-		@Override
-		public ResourceTemplate findById(String templateId) {
-			checkNotNull(templateId,"Template identifier cannot be null");
-			return this.templatesById.get(templateId);
-		}
-
-		@Override
-		public boolean contains(ResourceTemplate template) {
-			checkNotNull(template,"Template cannot be null");
-			return this.templatesById.containsValue(template);
-		}
-
-		@Override
-		public void accept(TemplateVisitor visitor) {
-			checkNotNull(visitor,"Template visitor cannot be null");
-			for(ResourceTemplate template:templatesById.values()) {
-				template.accept(visitor);
-			}
-		}
-
-		@Override
-		public String toString() {
-			return this.templatesById.values().toString();
-		}
-
-		
-	}
-	
-	private final class TemplateLoaderContext implements TemplateLibraryLoader.TemplateResolver, TemplateLibraryLoader.TemplateRegistry {
-
-		private final Map<HandlerId,ResourceTemplate> templatesByHandler=new LinkedHashMap<HandlerId, ResourceTemplate>();
-		private final Map<String, ResourceTemplate> templatesById=new LinkedHashMap<String, ResourceTemplate>();
+		private final Map<HandlerId,ResourceTemplate> templatesByHandler;
+		private final Map<String, ResourceTemplate> templatesById;
 
 		private TemplateLoaderContext() {
-			
+			this.templatesByHandler=Maps.newLinkedHashMap();
+			this.templatesById=Maps.newLinkedHashMap();
 		}
-		
+
+		private boolean isRegistered(Class<? extends ResourceHandler> handlerClass) {
+			return this.templatesByHandler.containsKey(HandlerId.createId(handlerClass));
+		}
+
 		@Override
 		public ResourceTemplate resolve(Class<? extends ResourceHandler> targetClass) {
 			ResourceTemplate template = this.templatesByHandler.get(HandlerId.createId(targetClass));
 			if(template==null) {
-				template=TemplateLibraryLoader.this.loadTemplates(targetClass,this);
+				template=InMemoryTemplateLibrary.this.loadTemplates(targetClass,this);
 			}
 			return template;
 		}
@@ -493,43 +447,30 @@ final class TemplateLibraryLoader {
 				if(template==previousTemplate) {
 					return;
 				}
-				throw new TemplateLoadingRuntimeException(template.id(), String.format("Cannot register two templates with the same handler (new: %s, registered: %s)",template,previousTemplate));
+				throw new TemplateCreationException(template.id(), String.format("Cannot register two templates with the same handler (new: %s, registered: %s)",template,previousTemplate));
 			}
 			previousTemplate=this.templatesById.get(template.id());
 			if(this.templatesById.containsKey(template.id()) ) {
-				throw new TemplateLoadingRuntimeException(template.id(), String.format("Cannot register two templates with the same identifier (new: %s, registered: %s)",template,previousTemplate));
+				throw new TemplateCreationException(template.id(), String.format("Cannot register two templates with the same identifier (new: %s, registered: %s)",template,previousTemplate));
 			}
 			this.templatesByHandler.put(HandlerId.createId(handlerClass), template);
 			this.templatesById.put(template.id(), template);
 		}
-		
-		private TemplateLibrary toLibrary() {
-			return new ImmutableTemplateLibrary(templatesByHandler);
+
+		private ResourceTemplate resolve(String templateId) {
+			return this.templatesById.get(templateId);
 		}
 
-		private boolean isRegistered(Class<? extends ResourceHandler> handlerClass) {
-			return this.templatesByHandler.containsKey(HandlerId.createId(handlerClass));
+		private Collection<ResourceTemplate> registeredTemplates() {
+			return ImmutableSet.copyOf(this.templatesByHandler.values());
 		}
 
 	}
-	
-	TemplateLibrary createLibrary(Collection<Class<?>> handlerClasses) throws TemplateLibraryLoadingException {
-		try {
-			TemplateLoaderContext context=new TemplateLoaderContext();
-			for(Class<?> targetClass:handlerClasses) {
-				Class<? extends ResourceHandler> handlerClass=toResourceHandlerClass(targetClass);
-				if(!context.isRegistered(handlerClass)) {
-					loadTemplates(handlerClass,context);
-				}
-			}
-			return context.toLibrary();
-		} catch (TemplateLoadingRuntimeException e) {
-			throw new TemplateLibraryLoadingException(e);
-		}
-	}
 
-	TemplateLibrary createLibrary(Class<?>... handlerClasses) throws TemplateLibraryLoadingException {
-		return createLibrary(Arrays.asList(handlerClasses));
+	private final TemplateLoaderContext context;
+
+	InMemoryTemplateLibrary() {
+		this.context=new TemplateLoaderContext();
 	}
 
 	private Class<? extends ResourceHandler> toResourceHandlerClass(Class<?> targetClass) {
@@ -544,7 +485,7 @@ final class TemplateLibraryLoader {
 	}
 
 	private ResourceTemplate createTemplate(Class<? extends ResourceHandler> targetClass, final TemplateLoaderContext ctx) {
-		Map<TemplateLibraryLoader.SupportedAnnotations,Annotation> annotations=new LinkedHashMap<TemplateLibraryLoader.SupportedAnnotations,Annotation>();
+		Map<SupportedAnnotations,Annotation> annotations=new LinkedHashMap<SupportedAnnotations,Annotation>();
 		SupportedAnnotations found=null;
 		for(Annotation annotation:targetClass.getDeclaredAnnotations()) {
 			SupportedAnnotations type=SupportedAnnotations.fromAnnotation(annotation);
@@ -559,6 +500,45 @@ final class TemplateLibraryLoader {
 			throw new IllegalArgumentException(String.format("Class '%s' is annotated with more than of the supported annotations (%s)",targetClass.getCanonicalName(),SupportedAnnotations.toString(annotations.keySet())));
 		}
 		return found.toTemplate(annotations.get(found),targetClass,ctx,ctx);
+	}
+
+	ResourceTemplate registerHandler(Class<?> targetClass) {
+		Class<? extends ResourceHandler> handlerClass=toResourceHandlerClass(targetClass);
+		checkArgument(!this.context.isRegistered(handlerClass),"Handler '%s' is already registered",handlerClass.getCanonicalName());
+		return loadTemplates(handlerClass,this.context);
+	}
+
+	@Override
+	public ResourceTemplate findByHandler(Class<? extends ResourceHandler> handlerClass) {
+		return this.context.resolve(handlerClass);
+	}
+
+	@Override
+	public ResourceTemplate findById(String templateId) {
+		return this.context.resolve(templateId);
+	}
+
+	@Override
+	public boolean contains(ResourceTemplate template) {
+		checkNotNull(template,"Template cannot be null");
+		return this.context.resolve(template.handlerClass())!=null;
+	}
+
+	@Override
+	public void accept(TemplateVisitor visitor) {
+		checkNotNull(visitor,"Template visitor cannot be null");
+		for(ResourceTemplate template:this.context.registeredTemplates()) {
+			template.accept(visitor);
+		}
+	}
+
+	@Override
+	public String toString() {
+		return
+			Objects.
+				toStringHelper(getClass()).
+					add("templates",this.context.registeredTemplates()).
+					toString();
 	}
 
 }

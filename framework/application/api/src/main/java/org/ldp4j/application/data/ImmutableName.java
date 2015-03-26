@@ -27,16 +27,18 @@
 package org.ldp4j.application.data;
 
 
+import java.io.Serializable;
+
 import com.google.common.base.Objects;
 
-final class ImmutableName<T> implements Name<T> {
-	
+final class ImmutableName<T extends Serializable> implements Name<T> {
+
 	private final T id;
 
 	private ImmutableName(T id) {
 		this.id = id;
 	}
-	
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -80,12 +82,12 @@ final class ImmutableName<T> implements Name<T> {
 		}
 		return result;
 	}
-	
-	public static <T> Name<T> newGlobalName(T id) {
+
+	public static <T extends Serializable> Name<T> newGlobalName(T id) {
 		return new ImmutableName<T>(id);
 	}
 
-	public static <T> Name<T> newLocalName(T id) {
+	public static <T extends Serializable> Name<T> newLocalName(T id) {
 		return new ImmutableName<T>(id);
 	}
 

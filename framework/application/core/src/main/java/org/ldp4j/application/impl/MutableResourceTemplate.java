@@ -24,9 +24,10 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.template.TemplateVisitor;
 
 public final class MutableResourceTemplate extends AbstractMutableTemplate<ResourceHandler> {
 
@@ -38,5 +39,5 @@ public final class MutableResourceTemplate extends AbstractMutableTemplate<Resou
 	public void accept(TemplateVisitor visitor) {
 		visitor.visitResourceTemplate(this);
 	}
-	
+
 }

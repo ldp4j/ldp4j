@@ -32,18 +32,14 @@ import java.util.Map.Entry;
 
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.application.endpoint.EndpointFactoryService;
 import org.ldp4j.application.engine.ApplicationConfigurationException;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Resource;
-import org.ldp4j.application.resource.ResourceFactoryService;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.setup.Environment;
-import org.ldp4j.application.spi.EndpointRepository;
-import org.ldp4j.application.spi.ResourceRepository;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.template.ResourceTemplate;
-import org.ldp4j.application.template.TemplateManagementService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,29 +50,29 @@ import com.google.common.collect.Lists;
 final class EnvironmentImpl implements Environment {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(EnvironmentImpl.class);
-	
+
 	private final class RootResource {
-	
+
 		private final Name<?> resourceName;
 		private final Class<? extends ResourceHandler> handlerClass;
 		private final String path;
 		private ResourceTemplate template;
-	
+
 		RootResource(Name<?> resourceName, Class<? extends ResourceHandler> handlerClass, String path) {
 			this.resourceName = resourceName;
 			this.handlerClass = handlerClass;
 			this.path = path;
 		}
-		
+
 		ResourceId resourceId() {
 			return ResourceId.createId(this.resourceName, this.template.id());
 		}
-		
+
 		String path() {
 			return path;
 		}
-		
-		
+
+
 		void validate() throws ApplicationConfigurationException {
 			if(this.resourceName==null) {
 				throw new ApplicationConfigurationException("Resource name cannot be null");
@@ -84,7 +80,7 @@ final class EnvironmentImpl implements Environment {
 			if(this.handlerClass==null) {
 				throw new ApplicationConfigurationException("No handler class specified for resource '"+this.resourceName+"'");
 			}
-			this.template = EnvironmentImpl.this.templateManagementService.findTemplateByHandler(handlerClass);
+			this.template = EnvironmentImpl.this.persistencyManager.templateOfHandler(handlerClass);
 			if(this.template==null) {
 				throw new ApplicationConfigurationException("Unknown resource handler '"+this.handlerClass.getCanonicalName()+"' specified for resource '"+this.resourceName+"'");
 			}
@@ -95,24 +91,16 @@ final class EnvironmentImpl implements Environment {
 				throw new ApplicationConfigurationException("Invalid path '"+this.path+"' specified for resource '"+this.resourceName+"': it must end with a single '/' and have at least one segment");
 			}
 		}
-	
+
 	}
 
 	private final List<RootResource> candidates;
-	
-	private final TemplateManagementService templateManagementService;
-	private final ResourceFactoryService resourceFactory;
-	private final ResourceRepository resourceRepository;
-	private final EndpointFactoryService endpointFactory;
-	private final EndpointRepository endpointRepository;
 
-	EnvironmentImpl(TemplateManagementService templateManagementService, ResourceFactoryService resourceFactoryService, EndpointFactoryService endpointFactoryService, ResourceRepository resourceRepository, EndpointRepository endpointRepository) {
+	private final PersistencyManager persistencyManager;
+
+	EnvironmentImpl(PersistencyManager persistencyManager) {
 		this.candidates=Lists.newArrayList();
-		this.templateManagementService = templateManagementService;
-		this.resourceFactory = resourceFactoryService;
-		this.endpointFactory = endpointFactoryService;
-		this.resourceRepository = resourceRepository;
-		this.endpointRepository = endpointRepository;
+		this.persistencyManager = persistencyManager;
 	}
 
 	@Override
@@ -153,10 +141,10 @@ final class EnvironmentImpl implements Environment {
 	}
 
 	private Class<? extends ResourceHandler> resolveHandler(ResourceId resourceId) {
-		ResourceTemplate template = this.templateManagementService.findTemplateById(resourceId.templateId());
+		ResourceTemplate template = this.persistencyManager.templateOfId(resourceId.templateId());
 		return template!=null?template.handlerClass():null;
 	}
-	
+
 	private String toString(ResourceId resourceId) {
 		Class<?> handler=resolveHandler(resourceId);
 		if(handler!=null) {
@@ -167,24 +155,24 @@ final class EnvironmentImpl implements Environment {
 	}
 
 	private <T extends Resource> void publish(Class<? extends T> clazz, ResourceId resourceId, String path) throws ApplicationConfigurationException {
-		Resource prevResource = this.resourceRepository.resourceOfId(resourceId);
-		Endpoint prevEndpoint = this.endpointRepository.endpointOfPath(path);
-		
+		Resource prevResource = this.persistencyManager.resourceOfId(resourceId);
+		Endpoint prevEndpoint = this.persistencyManager.endpointOfPath(path);
+
 		if(prevEndpoint!=null && !prevEndpoint.resourceId().equals(resourceId)) {
 			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+" cannot be published at '"+path+"' as that path is already in use by a resource "+toString(prevEndpoint.resourceId()));
 		}
-		
+
 		if(prevEndpoint==null && prevResource!=null) {
-			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+" cannot be published at '"+path+"' as it is already published at '"+this.endpointRepository.endpointOfResource(resourceId).path()+"'");
+			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+" cannot be published at '"+path+"' as it is already published at '"+this.persistencyManager.endpointOfResource(resourceId).path()+"'");
 		}
 
 		if(prevResource==null && prevEndpoint==null) {
-			T resource=this.resourceFactory.createResource(resourceId.templateId(),resourceId.name(),null,clazz);
-			this.resourceRepository.add(resource);
-			Endpoint endpoint=endpointFactory.createEndpoint(resource,path,new EntityTag(path),new Date());
-			this.endpointRepository.add(endpoint);
+			T resource=this.persistencyManager.createResource(resourceId.templateId(),resourceId.name(),null,clazz);
+			this.persistencyManager.add(resource);
+			Endpoint endpoint=this.persistencyManager.createEndpoint(resource,path,new EntityTag(path),new Date());
+			this.persistencyManager.add(endpoint);
 		}
 
 	}
-	
+
 }

@@ -24,29 +24,23 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.impl;
 
-import java.net.URI;
+import org.ldp4j.application.spi.TemplateCreationException;
 
-import org.ldp4j.application.ext.ContainerHandler;
+class InvalidAttachmentDefinitionException extends TemplateCreationException {
 
-final class MutableIndirectContainerTemplate extends MutableMembershipAwareContainerTemplate implements IndirectContainerTemplate {
+	private static final long serialVersionUID = 5228332100267319288L;
 
-	private final URI insertedContentRelation;
+	private final String attachmentId;
 
-	MutableIndirectContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass, URI insertedContentRelation) {
-		super(id, handlerClass);
-		this.insertedContentRelation = insertedContentRelation;
-	}
-	
-	@Override
-	public void accept(TemplateVisitor visitor) {
-		visitor.visitIndirectContainerTemplate(this);
+	public InvalidAttachmentDefinitionException(String templateId, String attachmentId, String message, Throwable t) {
+		super(templateId,message,t);
+		this.attachmentId = attachmentId;
 	}
 
-	@Override
-	public URI insertedContentRelation() {
-		return this.insertedContentRelation;
+	public String attachmentId() {
+		return attachmentId;
 	}
 
 }

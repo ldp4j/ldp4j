@@ -32,15 +32,15 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.Status;
 
-import org.ldp4j.application.engine.context.ApplicationContext;
+import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.PublicResource;
 
 final class GoneEndpointController extends FixedResponseEndpointController {
 
 	private final PublicResource resource;
 
-	GoneEndpointController(ApplicationContext applicationContext, PublicResource resource) {
-		super(applicationContext);
+	GoneEndpointController(ApplicationContextOperation operation, PublicResource resource) {
+		super(operation);
 		this.resource = resource;
 	}
 

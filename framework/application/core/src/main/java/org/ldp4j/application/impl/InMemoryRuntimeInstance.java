@@ -26,28 +26,28 @@
  */
 package org.ldp4j.application.impl;
 
-import org.ldp4j.application.spi.RepositoryRegistry;
+import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.RuntimeInstance;
 import org.ldp4j.application.spi.ServiceRegistry;
 
 public final class InMemoryRuntimeInstance extends RuntimeInstance {
 
 	private final ServiceRegistry serviceRegistry;
-	private final RepositoryRegistry repositoryRegistry;
+	private final PersistencyManager persistencyManager;
 
 	public InMemoryRuntimeInstance() {
 		this.serviceRegistry = new InMemoryServiceRegistry();
-		this.repositoryRegistry = new InMemoryRepositoryRegistry();
-	}
-	
-	@Override
-	public RepositoryRegistry getRepositoryRegistry() {
-		return repositoryRegistry;
+		this.persistencyManager= new InMemoryPersistencyManager();
 	}
 
 	@Override
 	public ServiceRegistry getServiceRegistry() {
-		return serviceRegistry;
+		return this.serviceRegistry;
+	}
+
+	@Override
+	public PersistencyManager getPersistencyManager() {
+		return this.persistencyManager;
 	}
 
 }

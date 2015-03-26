@@ -24,21 +24,26 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.template;
+package org.ldp4j.application.spi;
 
-class InvalidAttachmentDefinition extends TemplateLoadingRuntimeException {
+public class TemplateCreationException extends RuntimeException {
 
-	private static final long serialVersionUID = 5228332100267319288L;
+	private static final long serialVersionUID = -5575973583406973695L;
 
-	private final String attachmentId;
+	private final String templateId;
 
-	public InvalidAttachmentDefinition(String templateId, String attachmentId, String message, Throwable t) {
-		super(templateId,message,t);
-		this.attachmentId = attachmentId;
+	public TemplateCreationException(String templateId, String message, Throwable t) {
+		super(message,t);
+		this.templateId = templateId;
 	}
 
-	public String attachmentId() {
-		return attachmentId;
+	public TemplateCreationException(String templateId, String message) {
+		super(message);
+		this.templateId = templateId;
+	}
+
+	public final String templateId() {
+		return templateId;
 	}
 
 }

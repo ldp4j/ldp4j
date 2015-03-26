@@ -32,14 +32,14 @@ public class MethodNotAllowedException extends OperationContextException {
 
 	private static final long serialVersionUID = -3661009844197939466L;
 
-	private final Operation operation;
+	private final HttpOperation operation;
 
-	public MethodNotAllowedException(OperationContext operationContext, PublicResource resource, Operation operation) {
+	public MethodNotAllowedException(OperationContext operationContext, PublicResource resource, HttpOperation operation) {
 		super(resource,operationContext);
 		this.operation = operation;
 	}
 
-	public Operation getOperation() {
+	public HttpOperation getOperation() {
 		return operation;
 	}
 

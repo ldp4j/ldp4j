@@ -26,24 +26,28 @@
  */
 package org.ldp4j.application.template;
 
-class TemplateLoadingRuntimeException extends RuntimeException {
+public class TemplateManagementServiceConfigurationException extends Exception {
 
-	private static final long serialVersionUID = -5575973583406973695L;
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -3232432603895128046L;
 
-	private final String templateId;
-
-	public TemplateLoadingRuntimeException(String templateId, String message, Throwable t) {
-		super(message,t);
-		this.templateId = templateId;
+	public TemplateManagementServiceConfigurationException() {
+		super();
 	}
 
-	public TemplateLoadingRuntimeException(String templateId, String message) {
+	public TemplateManagementServiceConfigurationException(String message,
+			Throwable cause) {
+		super(message, cause);
+	}
+
+	public TemplateManagementServiceConfigurationException(String message) {
 		super(message);
-		this.templateId = templateId;
 	}
 
-	public final String templateId() {
-		return templateId;
+	public TemplateManagementServiceConfigurationException(Throwable cause) {
+		super(cause);
 	}
-	
+
 }

@@ -26,37 +26,39 @@
  */
 package org.ldp4j.application.vocabulary;
 
+import java.io.Serializable;
+
 
 /**
  * The class represents the terms of a vocabulary. The class includes different
  * mechanisms for identifying the term as well as utility methods for
  * transforming the term into different types.
- * 
+ *
  * @version 1.0
  * @since 1.0.0
  * @author Miguel Esteban Guti&eacute;rrez
  * @see Vocabulary
  */
-public interface Term extends Comparable<Term> {
-	
+public interface Term extends Comparable<Term>, Serializable {
+
 	/**
 	 * Returns the ordinal of this term (its position in its vocabulary
 	 * declaration, where the initial constant is assigned an ordinal of zero).
-	 * 
+	 *
 	 * @return the ordinal of this term
 	 */
 	int ordinal();
-	
+
 	/**
 	 * Returns the name of this term constant, exactly as declared in its
 	 * vocabulary declaration.
-	 * 
+	 *
 	 * <b>Most programmers should use the {@link #toString} method in preference
 	 * to this one, as the toString method may return a more user-friendly
 	 * name.</b> This method is designed primarily for use in specialized
 	 * situations where correctness depends on getting the exact name, which
 	 * will not vary from release to release.
-	 * 
+	 *
 	 * @return the name of this term
 	 */
 	String name();
@@ -78,7 +80,7 @@ public interface Term extends Comparable<Term> {
 	 * vocabulary type. Two term constants e1 and e2 are of the same vocabulary
 	 * type if and only if
 	 * {@code e1.getDeclaringVocabulary() == e2.getDeclaringVocabulary()}.
-	 * 
+	 *
 	 * @return the Vocabulary object corresponding to this term constant's
 	 *         vocabulary type
 	 */
@@ -86,7 +88,7 @@ public interface Term extends Comparable<Term> {
 
 	/**
 	 * Transform the term to an instance of the specified type.
-	 * 
+	 *
 	 * @param type
 	 *            The type to which the term is to be transformed to.
 	 * @return An instance of the specified type that represents this term.
