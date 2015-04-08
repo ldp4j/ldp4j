@@ -244,7 +244,7 @@ public class ApplicationManagerTest {
 		return appManager.findResourceByBusinessKey(simpleRDFSourceTemplate(),RID_1_BK,Resource.class);
 	}
 
-	private Container simpleRootBasicContainer() {
+	protected Container simpleRootBasicContainer() {
 		return appManager.findResourceByBusinessKey(simpleBasicContainerTemplate(),RID_2_BK,Container.class);
 	}
 
@@ -273,21 +273,21 @@ public class ApplicationManagerTest {
 		appManager.beginTransaction();
 		try {
 			Application application=appManager.createApplication(appPath,appName,null);
-			appManager.getTemplateManager(application);
-			
-			RDFSourceTemplate personTemplate = appManager.createRDFSourceTemplate(application, Person.class, Person.NAME, null);
-			RDFSourceTemplate addressTemplate = appManager.createRDFSourceTemplate(application, Address.class, Address.NAME, null);
-			RDFSourceTemplate positionTemplate = appManager.createRDFSourceTemplate(application, Position.class, Position.NAME, null);
-			RDFSourceTemplate bookTemplate = appManager.createRDFSourceTemplate(application, Book.class, Book.NAME, null);
-			RDFSourceTemplate contractTemplate = appManager.createRDFSourceTemplate(application, Contract.class, Contract.NAME, null);
-			BasicContainerTemplate publicationsTemplate = appManager.createBasicContainerTemplate(application, Library.class, Library.NAME, null,bookTemplate);
-			appManager.attachTemplate(personTemplate, addressTemplate, Person.ADDRESS_ATTACHMENT, "address", null);
-			appManager.attachTemplate(personTemplate, positionTemplate, Person.POSITION_ATTACHMENT, "position", null);
-			appManager.attachTemplate(personTemplate, publicationsTemplate, Person.LIBRARY_ATTACHMENT, "library", null);
-			appManager.attachTemplate(positionTemplate, addressTemplate,Position.BUSINESS_ADDRESS_ATTACHMENT, "business_address", null);
-			appManager.attachTemplate(positionTemplate, contractTemplate, Position.CONTRACT_ATTACHMENT, "contract", null);
-			appManager.attachTemplate(publicationsTemplate, addressTemplate, Library.LOCATION_ATTACHMENT, "location", null);
-			appManager.commitTransaction();
+			TemplateManager temManager = appManager.getTemplateManager(application);
+
+			RDFSourceTemplate personTemplate = temManager.createRDFSourceTemplate(Person.class, Person.NAME, null);
+			RDFSourceTemplate addressTemplate = temManager.createRDFSourceTemplate(Address.class, Address.NAME, null);
+			RDFSourceTemplate positionTemplate = temManager.createRDFSourceTemplate(Position.class, Position.NAME, null);
+			RDFSourceTemplate bookTemplate = temManager.createRDFSourceTemplate(Book.class, Book.NAME, null);
+			RDFSourceTemplate contractTemplate = temManager.createRDFSourceTemplate(Contract.class, Contract.NAME, null);
+			BasicContainerTemplate publicationsTemplate = temManager.createBasicContainerTemplate(Library.class, Library.NAME, null,bookTemplate);
+			temManager.attachTemplate(personTemplate, addressTemplate, Person.ADDRESS_ATTACHMENT, "address", null);
+			temManager.attachTemplate(personTemplate, positionTemplate, Person.POSITION_ATTACHMENT, "position", null);
+			temManager.attachTemplate(personTemplate, publicationsTemplate, Person.LIBRARY_ATTACHMENT, "library", null);
+			temManager.attachTemplate(positionTemplate, addressTemplate,Position.BUSINESS_ADDRESS_ATTACHMENT, "business_address", null);
+			temManager.attachTemplate(positionTemplate, contractTemplate, Position.CONTRACT_ATTACHMENT, "contract", null);
+			temManager.attachTemplate(publicationsTemplate, addressTemplate, Library.LOCATION_ATTACHMENT, "location", null);
+			temManager.commitTransaction();
 		} catch(Exception e) {
 			appManager.rollbackTransaction();
 			e.printStackTrace();

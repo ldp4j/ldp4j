@@ -1,4 +1,4 @@
-	/**
+/**
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   This file is part of the LDP4j Project:
  *     http://www.ldp4j.org/
@@ -27,21 +27,15 @@
 package org.ldp4j.application.persistence;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import javax.persistence.EntityManager;
 
-import org.ldp4j.application.ext.annotations.MembershipRelation;
 import org.ldp4j.application.persistence.domain.Application;
-import org.ldp4j.application.persistence.domain.BasicContainerTemplate;
-import org.ldp4j.application.persistence.domain.DirectContainerTemplate;
 import org.ldp4j.application.persistence.domain.Endpoint;
 import org.ldp4j.application.persistence.domain.Failure;
-import org.ldp4j.application.persistence.domain.IndirectContainerTemplate;
-import org.ldp4j.application.persistence.domain.RDFSourceTemplate;
 import org.ldp4j.application.persistence.domain.Resource;
 import org.ldp4j.application.persistence.domain.Template;
 import org.ldp4j.application.persistence.domain.TemplateAttachment;
@@ -76,41 +70,6 @@ public final class ApplicationManager extends BaseManager {
 		application.setDescription(description);
 		getManager().persist(application);
 		return application;
-	}
-
-	@Deprecated
-	public RDFSourceTemplate createRDFSourceTemplate(Application application, Class<?> handlerClass, String name, String description) {
-		return getTemplateManager(application).createRDFSourceTemplate(handlerClass, name, description);
-	}
-
-	@Deprecated
-	public BasicContainerTemplate createBasicContainerTemplate(Application application, Class<?> handlerClass, String name, String description, Template memberTemplate) {
-		return getTemplateManager(application).createBasicContainerTemplate(handlerClass, name, description, memberTemplate);
-	}
-
-	@Deprecated
-	public DirectContainerTemplate createDirectContainerTemplate(Application application, Class<?> handlerClass, String name, String description, Template memberTemplate, URI membershipPredicate, MembershipRelation membershipRelation) {
-		return getTemplateManager(application).createDirectContainerTemplate(handlerClass, name, description, memberTemplate, membershipPredicate, membershipRelation);
-	}
-
-	@Deprecated
-	public IndirectContainerTemplate createIndirectContainerTemplate(Application application, Class<?> handlerClass, String name, String description, Template memberTemplate, URI membershipPredicate, MembershipRelation membershipRelation, URI insertedContentRelation) {
-		return getTemplateManager(application).createIndirectContainerTemplate(handlerClass, name, description, memberTemplate, membershipPredicate, membershipRelation,insertedContentRelation);
-	}
-
-	// TODO: Add proper exception handling
-	public void attachTemplate(Template ownerTemplate, Template attachedTemplate, String name, String path, String description) {
-		if(!ownerTemplate.getApplication().equals(attachedTemplate.getApplication())) {
-			throw new IllegalArgumentException("Owner and attached templates must belong to the same application");
-		}
-		TemplateAttachment attachment=new TemplateAttachment();
-		attachment.setPath(path);
-		attachment.setName(name);
-		attachment.setDescription(description);
-		attachment.setOwnerTemplate(ownerTemplate);
-		attachment.setAttachedTemplate(attachedTemplate);
-		ownerTemplate.getTemplateAttachments().add(attachment);
-		getManager().persist(attachment);
 	}
 
 	// TODO: Add proper exception handling
