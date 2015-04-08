@@ -24,32 +24,26 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.controller.providers;
 
-import org.ldp4j.application.engine.context.ApplicationContextOperation;
-import org.ldp4j.application.engine.context.PublicResource;
+import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
+import javax.ws.rs.ext.ExceptionMapper;
+import javax.ws.rs.ext.Provider;
 
-abstract class AbstractEndpointController extends EndpointController {
+import org.ldp4j.server.controller.InvalidRequestContentException;
 
-	private final PublicResource resource;
-	private final ApplicationContextOperation operation;
-
-	AbstractEndpointController(ApplicationContextOperation operation, PublicResource resource) {
-		this.operation = operation;
-		this.resource = resource;
-	}
+@Provider
+public class InvalidRequestContentExceptionMapper implements ExceptionMapper<InvalidRequestContentException> {
 
 	@Override
-	public final OperationContextBuilder operationContextBuilder(HttpOperation operation) {
-		return new OperationContextBuilder(operation, getApplicationOperationContext(), getPublicResource());
-	}
-
-	protected final ApplicationContextOperation getApplicationOperationContext() {
-		return this.operation;
-	}
-
-	protected final PublicResource getPublicResource() {
-		return resource;
+	public Response toResponse(InvalidRequestContentException throwable) {
+		return
+				ContentProcessingExceptionSupport.
+					getFailureResponse(
+						Status.BAD_REQUEST,
+						throwable.getMessage()+". Required content matching ",
+						throwable);
 	}
 
 }

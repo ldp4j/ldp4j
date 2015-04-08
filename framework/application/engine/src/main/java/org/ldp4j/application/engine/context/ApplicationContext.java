@@ -34,7 +34,7 @@ public interface ApplicationContext {
 
 	String applicationClassName();
 
-	ApplicationContextOperation createOperation();
+	ApplicationContextOperation createOperation(HttpRequest request);
 
 	void registerApplicationLifecycleListener(ApplicationLifecycleListener listener);
 

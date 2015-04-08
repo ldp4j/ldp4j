@@ -26,6 +26,8 @@
  */
 package org.ldp4j.server.controller;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
@@ -42,13 +44,16 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.engine.context.ApplicationContext;
 import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.CreationPreferences;
 import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
 import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
 import org.ldp4j.application.engine.context.PublicContainer;
 import org.ldp4j.application.engine.context.PublicResource;
+import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.server.data.DataTransformator;
 import org.ldp4j.server.data.ResourceResolver;
 import org.ldp4j.server.data.UnsupportedMediaTypeException;
@@ -56,6 +61,10 @@ import org.ldp4j.server.utils.VariantHelper;
 import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 final class OperationContextImpl implements OperationContext {
 
@@ -90,27 +99,29 @@ final class OperationContextImpl implements OperationContext {
 
 	}
 
-	private final HttpOperation          operation;
+	private final ApplicationContext applicationContext;
+	private final String             endpointPath;
+	private final HttpMethod         method;
 	private final UriInfo            uriInfo;
 	private final HttpHeaders        headers;
 	private final Request            request;
-	private final ApplicationContextOperation applicationContextOperation;
-	private final PublicResource resource;
+	private final String             entity;
 
-	private String  entity;
-	private DataSet dataSet;
+	private ApplicationContextOperation applicationContextOperation;
+	private PublicResource              resource;
+	private DataSet                     dataSet;
 
 	OperationContextImpl(
-		ApplicationContextOperation applicationContextOperation,
-		PublicResource resource,
+		ApplicationContext applicationContext,
+		String endpointPath,
 		UriInfo uriInfo,
 		HttpHeaders headers,
 		Request request,
 		String entity,
-		HttpOperation operation) {
-		this.applicationContextOperation = applicationContextOperation;
-		this.resource = resource;
-		this.operation = operation;
+		HttpMethod method) {
+		this.applicationContext = applicationContext;
+		this.endpointPath = endpointPath;
+		this.method = method;
 		this.uriInfo=uriInfo;
 		this.headers=headers;
 		this.request=request;
@@ -162,6 +173,16 @@ final class OperationContextImpl implements OperationContext {
 		return URI.create(path());
 	}
 
+	private String normalizePath(String path) {
+		String tPath=path;
+		if(tPath==null) {
+			tPath="";
+		} else {
+			tPath = tPath.trim();
+		}
+		return tPath;
+	}
+
 	UriInfo uriInfo() {
 		return this.uriInfo;
 	}
@@ -180,15 +201,39 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public URI base() {
-		String path = uriInfo.getPath();
-		String prefix = "/"+path.substring(0,path.indexOf('/')+1);
-		return URI.create(uriInfo.getBaseUri().toString().concat(prefix));
+		String path=this.uriInfo.getPath();
+		String prefix="/"+path.substring(0,path.indexOf('/')+1);
+		return URI.create(this.uriInfo.getBaseUri().toString().concat(prefix));
 	}
 
 	@Override
 	public String path() {
-		String path = uriInfo.getPath();
+		String path=this.uriInfo.getPath();
 		return path.substring(path.indexOf('/')+1);
+	}
+
+	@Override
+	public boolean isQuery() {
+		return !this.uriInfo.getQueryParameters().isEmpty();
+	}
+
+	@Override
+	public boolean hasQueryParameter(String parameter) {
+		return this.uriInfo.getQueryParameters().get(parameter)!=null;
+	}
+
+	@Override
+	public List<String> getQueryParameters() {
+		return ImmutableList.copyOf(this.uriInfo.getQueryParameters().keySet());
+	}
+
+	@Override
+	public List<String> getQueryParameterValues(String parameter) {
+		List<String> result = this.uriInfo.getQueryParameters().get(parameter);
+		if(result==null) {
+			result=Lists.newArrayList();
+		}
+		return ImmutableList.copyOf(result);
 	}
 
 	@Override
@@ -212,7 +257,7 @@ final class OperationContextImpl implements OperationContext {
 	public OperationContext checkPreconditions() {
 		EntityTag entityTag=this.resource.entityTag();
 		Date lastModified=this.resource.lastModified();
-		if(HttpOperation.PUT.equals(this.operation)) {
+		if(HttpMethod.PUT.equals(this.method)) {
 			List<String> requestHeader = this.headers.getRequestHeader(HttpHeaders.IF_MATCH);
 			if((requestHeader==null || requestHeader.isEmpty())) {
 				throw new PreconditionRequiredException(this.resource);
@@ -233,7 +278,7 @@ final class OperationContextImpl implements OperationContext {
 	@Override
 	public OperationContext checkOperationSupport() {
 		boolean allowed=false;
-		switch(operation) {
+		switch(method) {
 		case GET:
 			allowed=true;
 			break;
@@ -257,7 +302,7 @@ final class OperationContextImpl implements OperationContext {
 			break;
 		}
 		if(!allowed) {
-			throw new MethodNotAllowedException(this,this.resource,this.operation);
+			throw new MethodNotAllowedException(this,this.resource,this.method);
 		}
 		return this;
 	}
@@ -272,7 +317,7 @@ final class OperationContextImpl implements OperationContext {
 						create(base()).
 						enableResolution(resourceResolver()).
 						mediaType(mediaType);
-				if(this.operation.equals(HttpOperation.POST)) {
+				if(this.method.equals(HttpMethod.POST)) {
 					transformator=transformator.surrogateEndpoint(endpoint());
 				} else {
 					transformator=transformator.permanentEndpoint(endpoint());
@@ -281,7 +326,7 @@ final class OperationContextImpl implements OperationContext {
 			} catch(UnsupportedMediaTypeException e) {
 				throw new UnsupportedContentException(this.resource,this,contentVariant());
 			} catch(IOException e) {
-				throw new ContentProcessingException("Entity cannot be parsed as '"+mediaType+"' ",this.resource,this);
+				throw new InvalidRequestContentException("Entity cannot be parsed as '"+mediaType+"' ("+Throwables.getRootCause(e).getMessage()+")",this.resource,this);
 			}
 		}
 		return this.dataSet;
@@ -313,13 +358,14 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	@Override
-	public String serialize(DataSet representation, MediaType mediaType) {
+	public String serialize(DataSet representation, Namespaces namespaces, MediaType mediaType) {
 		try {
 			DataTransformator transformator =
 				DataTransformator.
 					create(base()).
 					enableResolution(resourceResolver()).
 					mediaType(mediaType).
+					namespaces(namespaces).
 					permanentEndpoint(endpoint());
 			return transformator.marshall(representation);
 		} catch(UnsupportedMediaTypeException e) {
@@ -331,22 +377,26 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public PublicResource resource() {
+		if(this.resource==null) {
+			this.resource=
+				this.applicationContextOperation.
+					findResource(
+						normalizePath(this.endpointPath));
+		}
 		return this.resource;
 	}
 
 	@Override
 	public PublicContainer container() {
 		PublicResource tmp = resource();
-		if(!(tmp instanceof PublicContainer)) {
-			throw new IllegalStateException("Expected an instance of class "+PublicContainer.class.getName()+" but got an instance of class "+tmp.getClass().getCanonicalName());
-		}
+		checkState(tmp instanceof PublicContainer,"Expected an instance of class %s but got an instance of class %s",PublicContainer.class.getCanonicalName(),tmp.getClass().getCanonicalName());
 		return (PublicContainer)tmp;
 	}
 
 	@Override
 	public ContentPreferences contentPreferences() {
 		ContentPreferences result = null;
-		List<String> requestHeader = headers.getRequestHeader(ContentPreferencesUtils.PREFER_HEADER);
+		List<String> requestHeader = this.headers.getRequestHeader(ContentPreferencesUtils.PREFER_HEADER);
 		for(Iterator<String> it=requestHeader.iterator();it.hasNext() && result==null;) {
 			try {
 				String header = it.next();
@@ -356,6 +406,27 @@ final class OperationContextImpl implements OperationContext {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public void startOperation() {
+		this.applicationContextOperation=
+			this.applicationContext.
+					createOperation(
+						DefaultHttpRequest.
+							create(
+								this.method,
+								this.uriInfo,
+								this.headers,
+								this.entity,
+								new Date(),
+								this.headers.getDate()));
+	}
+
+	@Override
+	public void completeOperation() {
+		checkState(this.applicationContextOperation!=null,"Operation not started");
+		this.applicationContextOperation.dispose();
 	}
 
 }

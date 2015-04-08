@@ -20,36 +20,72 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-engine:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-engine-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.application.engine.context;
 
-import java.util.Locale;
+import java.util.Date;
+import java.util.List;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+public interface HttpRequest {
 
-import org.ldp4j.application.engine.context.PublicResource;
-
-final class GoneEndpointController extends FixedResponseEndpointController {
-
-	private final PublicResource resource;
-
-	GoneEndpointController(PublicResource resource) {
-		this.resource = resource;
+	enum ProtocolVersion {
+		HTTP_1_0,
+		HTTP_1_1
 	}
 
-	protected Response defaultResponse(OperationContext context) {
-		return
-			Response.
-				status(Status.GONE).
-				type(MediaType.TEXT_PLAIN).
-				language(Locale.ENGLISH).
-				entity("Endpoint at "+context.base().resolve(context.path())+" is gone. Last activity on "+this.resource.lastModified()).
-				build();
+	enum HttpMethod {
+		HEAD,
+		OPTIONS,
+		GET,
+		PUT,
+		POST,
+		DELETE,
+		PATCH
 	}
+
+	interface Header {
+
+		interface Element {
+
+			interface Parameter {
+
+				String name();
+
+				String value();
+
+			}
+
+			String name();
+
+			List<Parameter> parameters();
+
+		}
+
+		String name();
+
+		String rawValue();
+
+		List<Element> elements();
+
+	}
+
+	HttpMethod method();
+
+	String absolutePath();
+
+	String host();
+
+	ProtocolVersion version();
+
+	List<Header> headers();
+
+	String body();
+
+	Date serverDate();
+
+	Date clientDate();
 
 }

@@ -27,6 +27,7 @@
 package org.ldp4j.server.controller;
 
 import java.net.URI;
+import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Variant;
@@ -36,6 +37,7 @@ import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.CreationPreferences;
 import org.ldp4j.application.engine.context.PublicContainer;
 import org.ldp4j.application.engine.context.PublicResource;
+import org.ldp4j.rdf.Namespaces;
 
 public interface OperationContext {
 
@@ -63,6 +65,17 @@ public interface OperationContext {
 
 	URI resolve(PublicResource newResource);
 
-	String serialize(DataSet entity, MediaType mediaType);
+	String serialize(DataSet entity, Namespaces namespaces, MediaType mediaType);
 
+	boolean isQuery();
+
+	boolean hasQueryParameter(String string);
+
+	List<String> getQueryParameters();
+
+	List<String> getQueryParameterValues(String parameter);
+
+	void startOperation();
+
+	void completeOperation();
 }

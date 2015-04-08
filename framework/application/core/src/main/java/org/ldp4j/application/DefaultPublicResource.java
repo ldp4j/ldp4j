@@ -43,6 +43,7 @@ import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.Value;
+import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.ValidationReport;
 import org.ldp4j.application.data.validation.Validator;
@@ -58,8 +59,8 @@ import org.ldp4j.application.engine.context.PublicIndirectContainer;
 import org.ldp4j.application.engine.context.PublicRDFSource;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
-import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.InconsistentContentException;
+import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.resource.Attachment;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
@@ -183,6 +184,11 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 		applicationContext().modifyResource(endpoint(),dataSet);
 	}
 
+	@Override
+	public DataSet getConstraintReport(String constraintsId) throws ApplicationExecutionException {
+		return applicationContext().getConstraintReport(endpoint(),constraintsId);
+	}
+
 	protected DataSet metadata() {
 		DataSet metadata =
 			DataSetFactory.
@@ -304,7 +310,9 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 
 		ValidationReport report = validator.validate(dataSet);
 		if(!report.isValid()) {
-			InvalidContentException error = new InconsistentContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures());
+			// TODO: Add validation constraints
+			Constraints constraints = Constraints.constraints();
+			InvalidContentException error = new InconsistentContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures(),constraints);
 			throw new ApplicationExecutionException("Protocol/framework managed metadata validation failure",error);
 		}
 	}
@@ -317,5 +325,7 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 		}
 		return result;
 	}
+
+
 
 }

@@ -33,9 +33,13 @@ import java.util.Date;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.ldp4j.application.constraints.ConstraintReport;
+import org.ldp4j.application.constraints.ConstraintReportId;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.lifecycle.LifecycleException;
 import org.ldp4j.application.lifecycle.Managed;
@@ -109,6 +113,7 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	private final InMemoryResourceRepository resourceRepository;
 	private final InMemoryEndpointRepository endpointRepository;
 	private final InMemoryTemplateLibrary templateLibrary;
+	private final InMemoryConstraintReportRepository constraintReportRepository;
 
 	private final ThreadLocal<InMemoryTransaction> currentTransaction;
 	private final AtomicLong transactionCounter;
@@ -116,6 +121,7 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	InMemoryPersistencyManager() {
 		this.resourceRepository=new InMemoryResourceRepository();
 		this.endpointRepository=new InMemoryEndpointRepository();
+		this.constraintReportRepository=new InMemoryConstraintReportRepository();
 		this.templateLibrary=new InMemoryTemplateLibrary();
 		this.currentTransaction=new ThreadLocal<InMemoryTransaction>();
 		this.transactionCounter=new AtomicLong();
@@ -270,6 +276,7 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	@Override
 	public void remove(Resource resource) {
 		this.resourceRepository.remove(resource);
+		this.constraintReportRepository.removeByResource(resource);
 	}
 
 	@Override
@@ -301,6 +308,7 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		return ImmutableTemplateFactory.newImmutable(this.templateLibrary.findById(templateId));
 	}
 
+	@Override
 	public <T extends ResourceTemplate> T templateOfId(String templateId, Class<? extends T> templateClass) {
 		checkNotNull(templateClass,"Template class cannot be null");
 		ResourceTemplate found = templateOfId(templateId);
@@ -311,6 +319,22 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 			throw new IllegalArgumentException("Cannot cast template '"+templateId+"' to '"+templateClass.getCanonicalName()+"' ("+found.getClass().getCanonicalName()+")");
 		}
 		return templateClass.cast(found);
+	}
+
+	@Override
+	public ConstraintReport createConstraintReport(final Resource resource, final Constraints constraints, final Date date, final HttpRequest request) {
+		return new InMemoryConstraintReport(resource.id(), date, request, constraints);
+	}
+
+	@Override
+	public void add(ConstraintReport report) {
+		checkArgument(report instanceof InMemoryConstraintReport);
+		this.constraintReportRepository.add((InMemoryConstraintReport)report);
+	}
+
+	@Override
+	public ConstraintReport constraintReportOfId(ConstraintReportId id) {
+		return this.constraintReportRepository.constraintReportOfId(id);
 	}
 
 }

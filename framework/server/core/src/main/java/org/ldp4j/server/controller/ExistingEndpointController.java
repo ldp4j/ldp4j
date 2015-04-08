@@ -31,6 +31,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -39,8 +40,9 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.domain.RDFS;
 import org.ldp4j.application.engine.context.ApplicationContextException;
-import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.PublicBasicContainer;
@@ -56,14 +58,17 @@ import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
+import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
 
-final class ExistingEndpointController extends AbstractEndpointController {
+final class ExistingEndpointController implements EndpointController {
 
+
+	private static final String CONSTRAINT_QUERY_PARAMETER = "ldp:constrainedBy";
 
 	private static final String ACCEPT_POST_HEADER = "Accept-Post";
 
@@ -81,8 +86,19 @@ final class ExistingEndpointController extends AbstractEndpointController {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
 
-	ExistingEndpointController(ApplicationContextOperation applicationContextOperation, PublicResource resource) {
-		super(applicationContextOperation,resource);
+	ExistingEndpointController() {
+
+	}
+
+	private Namespaces defaultNamespaces() {
+		Namespaces namespaces=
+			new Namespaces().
+				addPrefix("rdf", RDF.NAMESPACE).
+				addPrefix("rdfs", RDFS.NAMESPACE).
+				addPrefix("xsd", "http://www.w3.org/2001/XMLSchema#").
+				addPrefix("ldp", LDP.NAMESPACE);
+
+		return namespaces;
 	}
 
 	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {
@@ -138,6 +154,11 @@ final class ExistingEndpointController extends AbstractEndpointController {
 			checkOperationSupport().
 			checkPreconditions();
 
+		Response response=tryQuery(context,includeEntity,variant);
+		if(response!=null) {
+			return response;
+		}
+
 		try {
 			PublicResource resource=context.resource();
 			ContentPreferences preferences=
@@ -157,7 +178,7 @@ final class ExistingEndpointController extends AbstractEndpointController {
 
 			LOGGER.trace("Data set to serialize: \n {}",entity);
 
-			String body=context.serialize(entity,variant.getMediaType());
+			String body=serialize(context, variant, entity, defaultNamespaces());
 
 			ResponseBuilder builder=Response.serverError();
 			builder.variant(variant);
@@ -180,6 +201,143 @@ final class ExistingEndpointController extends AbstractEndpointController {
 
 	}
 
+	private String serialize(OperationContext context, Variant variant, DataSet entity, Namespaces namespaces) {
+		return context.serialize(entity,namespaces,variant.getMediaType());
+	}
+
+	private Response tryQuery(OperationContext context, boolean includeEntity, Variant variant) {
+		if(!context.isQuery()) {
+			return null;
+		}
+		List<String> allParameters = context.getQueryParameters();
+		if(allParameters.contains(CONSTRAINT_QUERY_PARAMETER)) {
+			if(allParameters.size()==1) {
+				List<String> constraintIds=context.getQueryParameterValues(CONSTRAINT_QUERY_PARAMETER);
+				if(constraintIds.size()==1) {
+					return processConstraintReportRetrieval(context,includeEntity,variant,constraintIds.get(0));
+				} else {
+					ResponseBuilder builder=
+						Response.
+							status(Status.BAD_REQUEST).
+							type(MediaType.TEXT_PLAIN).
+							language(Locale.ENGLISH).
+							entity("Only one constraint identifier allowed");
+					addRequiredHeaders(context, builder);
+					return builder.build();
+				}
+			} else {
+				ResponseBuilder builder=
+						Response.
+							status(Status.BAD_REQUEST).
+							type(MediaType.TEXT_PLAIN).
+							language(Locale.ENGLISH).
+							entity("Mixed queries not allowed");
+				addRequiredHeaders(context, builder);
+				return builder.build();
+			}
+		} else {
+			return processQuery(context,includeEntity,variant);
+		}
+	}
+
+	private Response processQuery(OperationContext context, boolean includeEntity, Variant variant) {
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug("Executing query: ");
+			for(String parameter:context.getQueryParameters()) {
+				LOGGER.debug("  - {} : {}",parameter,context.getQueryParameterValues(parameter));
+			}
+		}
+		try {
+			PublicResource resource=context.resource();
+			ContentPreferences preferences=
+					context.contentPreferences();
+			boolean hasPreferences=preferences!=null;
+			if(!hasPreferences) {
+				preferences=ContentPreferences.defaultPreferences();
+			}
+			if(LOGGER.isDebugEnabled()) {
+				if(hasPreferences) {
+					LOGGER.debug("Using preferences: {}",preferences);
+				} else {
+					LOGGER.debug("No preferences specified");
+				}
+			}
+			// TODO: Update with actual query functionality when available
+			DataSet entity=resource.entity(preferences);
+
+			LOGGER.trace("Data set to serialize: \n {}",entity);
+
+			String body=serialize(context, variant, entity, defaultNamespaces());
+
+			ResponseBuilder builder=Response.serverError();
+			builder.variant(variant);
+			if(hasPreferences) {
+				builder.header(ContentPreferencesUtils.PREFERENCE_APPLIED_HEADER,ContentPreferencesUtils.asPreferenceAppliedHeader(preferences));
+			}
+			addOptionsMandatoryHeaders(context, builder);
+			builder.
+				status(Status.OK.getStatusCode()).
+				header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
+			if(includeEntity) {
+				builder.entity(body);
+			}
+			return builder.build();
+		} catch (ApplicationExecutionException e) {
+			return processExecutionException(context, e);
+		} catch (ApplicationContextException e) {
+			return processRuntimeException(context, e);
+		}
+	}
+
+	private Response processConstraintReportRetrieval(OperationContext context, boolean includeEntity, Variant variant, String constraintReportId) {
+		try {
+			PublicResource resource=context.resource();
+			if(LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Retrieving constraints: "+constraintReportId);
+			}
+
+			DataSet report=resource.getConstraintReport(constraintReportId);
+			if(report==null) {
+				ResponseBuilder builder=
+					Response.
+						status(Status.BAD_REQUEST).
+						type(MediaType.TEXT_PLAIN).
+						language(Locale.ENGLISH).
+						entity("Unknown constraints '"+constraintReportId+"'");
+				addRequiredHeaders(context, builder);
+				return builder.build();
+			}
+
+			LOGGER.trace("Constraints to serialize: \n {}",report);
+
+			Namespaces namespaces=
+				defaultNamespaces().
+					addPrefix("ldp4j", "http://www.ldp4j.org/vocab#").
+					addPrefix("dct", "http://purl.org/dc/terms/").
+					addPrefix("http", "http://www.w3.org/2011/http#").
+					addPrefix("cnt", "http://www.w3.org/2011/content#").
+					addPrefix("http-methods", "http://www.w3.org/2011/http-methods#").
+					addPrefix("http-headers", "http://www.w3.org/2011/http-headers#").
+					addPrefix("sh", "http://www.w3.org/ns/shacl#");
+
+			String body=serialize(context, variant, report, namespaces);
+
+			ResponseBuilder builder=Response.serverError();
+			builder.variant(variant);
+			builder.
+				status(Status.OK.getStatusCode()).
+				header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
+			if(includeEntity) {
+				builder.entity(body);
+			}
+			return builder.build();
+		} catch (ApplicationExecutionException e) {
+			return processExecutionException(context, e);
+		} catch (ApplicationContextException e) {
+			return processRuntimeException(context, e);
+		}
+	}
+
 	private Response processRuntimeException(OperationContext context, ApplicationContextException exception) {
 		ResponseBuilder builder=
 			Response.
@@ -200,9 +358,10 @@ final class ExistingEndpointController extends AbstractEndpointController {
 		String body=null;
 		Throwable rootCause = exception.getCause();
 		if(rootCause instanceof InvalidContentException) {
+			InvalidContentException ice=(InvalidContentException)rootCause;
 			if(rootCause instanceof InconsistentContentException) {
 				statusCode=Status.CONFLICT.getStatusCode();
-				body="Specified values for application-managed properties are not consistent with the actual resource state"+rootCause.getMessage();
+				body="Specified values for application-managed properties are not consistent with the actual resource state "+rootCause.getMessage();
 			} else if(rootCause instanceof UnsupportedContentException) {
 				statusCode=UNPROCESSABLE_ENTITY_STATUS_CODE;
 				body="Could not understand content: "+rootCause.getMessage();
@@ -210,7 +369,11 @@ final class ExistingEndpointController extends AbstractEndpointController {
 				statusCode=Status.BAD_REQUEST.getStatusCode();
 				body=Throwables.getStackTraceAsString(rootCause);
 			}
-			builder.header("Link",EndpointControllerUtils.createLink(context.base(), LDP.CONSTRAINED_BY.qualifiedEntityName()));
+			if(ice.getConstraintsId()==null) {
+				LOGGER.error("No constraints identifier defined. Full stacktrace follows",exception);
+				throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR.getStatusCode());
+			}
+			builder.header("Link",EndpointControllerUtils.createLink(context.base()+context.path()+"?ldp:constrainedBy="+ice.getConstraintsId(), LDP.CONSTRAINED_BY.qualifiedEntityName()));
 		} else if (rootCause instanceof UnknownResourceException) {
 			statusCode=Status.NOT_FOUND.getStatusCode();
 			body="Resource not found";

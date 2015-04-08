@@ -26,12 +26,17 @@
  */
 package org.ldp4j.server.controller;
 
-public enum HttpOperation {
-	OPTIONS,
-	HEAD,
-	GET,
-	PUT,
-	DELETE,
-	POST,
-	PATCH
+import org.ldp4j.application.engine.context.PublicResource;
+
+public class InvalidRequestContentException extends ContentProcessingException {
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -4256791645702385728L;
+
+	public InvalidRequestContentException(String message, PublicResource resource, OperationContext context) {
+		super(message, resource, context);
+	}
+
 }

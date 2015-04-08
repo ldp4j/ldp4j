@@ -26,20 +26,38 @@
  */
 package org.ldp4j.application.ext;
 
+import org.ldp4j.application.data.constraints.Constraints;
+
 public class InvalidContentException extends ApplicationUsageException {
 
 	private static final long serialVersionUID = 1090034112299823594L;
+	private final Constraints constraints;
 
-	public InvalidContentException(String message, Throwable cause) {
+	private String id;
+
+	public InvalidContentException(String message, Throwable cause, Constraints constraints) {
 		super(message, cause);
+		this.constraints = constraints;
 	}
 
-	public InvalidContentException(String message) {
-		super(message);
+	public InvalidContentException(String message, Constraints constraints) {
+		this(message,null,constraints);
 	}
 
-	public InvalidContentException(Throwable cause) {
-		super(cause);
+	public InvalidContentException(Throwable cause, Constraints constraints) {
+		this(null,cause,constraints);
+	}
+
+	public Constraints getConstraints() {
+		return constraints;
+	}
+
+	public final void setConstraintsId(String id) {
+		this.id = id;
+	}
+
+	public final String getConstraintsId() {
+		return this.id;
 	}
 
 }

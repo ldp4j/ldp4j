@@ -26,20 +26,22 @@
  */
 package org.ldp4j.application.ext;
 
+import org.ldp4j.application.data.constraints.Constraints;
+
 public class UnsupportedContentException extends InvalidContentException {
 
 	private static final long serialVersionUID = -9204136391485005628L;
 
-	public UnsupportedContentException(String message, Throwable cause) {
-		super(message, cause);
+	public UnsupportedContentException(String message, Throwable cause, Constraints constraints) {
+		super(message, cause, constraints);
 	}
 
-	public UnsupportedContentException(String message) {
-		super(message);
+	public UnsupportedContentException(String message, Constraints constraints) {
+		super(message,constraints);
 	}
 
-	public UnsupportedContentException(Throwable cause) {
-		super(cause);
+	public UnsupportedContentException(Throwable cause, Constraints constraints) {
+		super(cause,constraints);
 	}
 
 }

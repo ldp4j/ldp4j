@@ -28,36 +28,53 @@ package org.ldp4j.server.controller;
 
 import javax.ws.rs.core.Response;
 
-final class AutoclosingEndointController extends AbstractEndpointController {
+import org.ldp4j.application.engine.context.PublicResource;
 
-	private final AbstractEndpointController delegate;
+final class DefaultEndpointController implements EndpointController {
 
-	AutoclosingEndointController(AbstractEndpointController delegate) {
-		super(delegate.getApplicationOperationContext(),delegate.getPublicResource());
-		this.delegate = delegate;
+	DefaultEndpointController() {
 	}
 
 	private interface Operation {
-		Response execute(AbstractEndpointController delegate);
+		Response execute(EndpointController delegate, OperationContext context);
 	}
 
-	private Response safe(Operation operation) {
+	private Response safe(Operation operation, OperationContext context) {
+		context.startOperation();
 		try {
-			return operation.execute(this.delegate);
+			return operation.execute(getDelegate(context.resource()),context);
 		} finally {
-			this.delegate.getApplicationOperationContext().dispose();
+			context.completeOperation();
 		}
 	}
 
+	private EndpointController getDelegate(PublicResource resource) {
+		EndpointController result=new NotFoundEndpointController();
+		if(resource!=null) {
+			switch(resource.status()) {
+				case GONE:
+					result=new GoneEndpointController(resource);
+					break;
+				case PUBLISHED:
+					result=new ExistingEndpointController();
+					break;
+				default:
+					throw new IllegalStateException("Unsupported resource status "+resource.status());
+			}
+		}
+		return result;
+	}
+
 	@Override
-	public Response options(final OperationContext context) {
+	public Response options(OperationContext context) {
 		return safe(
 			new Operation() {
 				@Override
-				public Response execute(AbstractEndpointController delegate) {
+				public Response execute(EndpointController delegate, OperationContext context) {
 					return delegate.options(context);
 				}
-			}
+			},
+			context
 		);
 	}
 
@@ -66,10 +83,11 @@ final class AutoclosingEndointController extends AbstractEndpointController {
 		return safe(
 			new Operation() {
 				@Override
-				public Response execute(AbstractEndpointController delegate) {
+				public Response execute(EndpointController delegate, OperationContext context) {
 					return delegate.head(context);
 				}
-			}
+			},
+			context
 		);
 	}
 
@@ -78,10 +96,11 @@ final class AutoclosingEndointController extends AbstractEndpointController {
 		return safe(
 			new Operation() {
 				@Override
-				public Response execute(AbstractEndpointController delegate) {
+				public Response execute(EndpointController delegate, OperationContext context) {
 					return delegate.createResource(context);
 				}
-			}
+			},
+			context
 		);
 	}
 
@@ -90,10 +109,11 @@ final class AutoclosingEndointController extends AbstractEndpointController {
 		return safe(
 			new Operation() {
 				@Override
-				public Response execute(AbstractEndpointController delegate) {
+				public Response execute(EndpointController delegate, OperationContext context) {
 					return delegate.getResource(context);
 				}
-			}
+			},
+			context
 		);
 	}
 
@@ -102,10 +122,11 @@ final class AutoclosingEndointController extends AbstractEndpointController {
 		return safe(
 			new Operation() {
 				@Override
-				public Response execute(AbstractEndpointController delegate) {
+				public Response execute(EndpointController delegate, OperationContext context) {
 					return delegate.modifyResource(context);
 				}
-			}
+			},
+			context
 		);
 	}
 
@@ -114,10 +135,11 @@ final class AutoclosingEndointController extends AbstractEndpointController {
 		return safe(
 			new Operation() {
 				@Override
-				public Response execute(AbstractEndpointController delegate) {
+				public Response execute(EndpointController delegate, OperationContext context) {
 					return delegate.deleteResource(context);
 				}
-			}
+			},
+			context
 		);
 	}
 
@@ -126,10 +148,11 @@ final class AutoclosingEndointController extends AbstractEndpointController {
 		return safe(
 			new Operation() {
 				@Override
-				public Response execute(AbstractEndpointController delegate) {
+				public Response execute(EndpointController delegate, OperationContext context) {
 					return delegate.patchResource(context);
 				}
-			}
+			},
+			context
 		);
 	}
 

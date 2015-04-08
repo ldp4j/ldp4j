@@ -26,20 +26,21 @@
  */
 package org.ldp4j.server.controller;
 
+import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
 import org.ldp4j.application.engine.context.PublicResource;
 
 public class MethodNotAllowedException extends OperationContextException {
 
 	private static final long serialVersionUID = -3661009844197939466L;
 
-	private final HttpOperation operation;
+	private final HttpMethod operation;
 
-	public MethodNotAllowedException(OperationContext operationContext, PublicResource resource, HttpOperation operation) {
+	public MethodNotAllowedException(OperationContext operationContext, PublicResource resource, HttpMethod method) {
 		super(resource,operationContext);
-		this.operation = operation;
+		this.operation = method;
 	}
 
-	public HttpOperation getOperation() {
+	public HttpMethod getMethod() {
 		return operation;
 	}
 

@@ -20,36 +20,27 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-core:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.application;
 
-import java.util.Locale;
+import java.net.URI;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import org.junit.Test;
 
-import org.ldp4j.application.engine.context.PublicResource;
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
-final class GoneEndpointController extends FixedResponseEndpointController {
+public class URLTest {
 
-	private final PublicResource resource;
-
-	GoneEndpointController(PublicResource resource) {
-		this.resource = resource;
-	}
-
-	protected Response defaultResponse(OperationContext context) {
-		return
-			Response.
-				status(Status.GONE).
-				type(MediaType.TEXT_PLAIN).
-				language(Locale.ENGLISH).
-				entity("Endpoint at "+context.base().resolve(context.path())+" is gone. Last activity on "+this.resource.lastModified()).
-				build();
+	@Test
+	public void testEncoding() {
+		String query = "ldp:constrainedBy=123213123";
+		URI create=URI.create("http://www.host.org/api/res/0/?"+query);
+		assertThat(create.getQuery(),equalTo(query));
+		assertThat(create.getRawQuery(),equalTo(query));
 	}
 
 }

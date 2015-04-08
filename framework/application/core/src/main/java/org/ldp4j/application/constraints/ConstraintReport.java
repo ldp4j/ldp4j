@@ -20,32 +20,25 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-core:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.application.constraints;
 
-import java.util.Locale;
+import java.util.Date;
 
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.Status;
+import org.ldp4j.application.data.constraints.Constraints;
+import org.ldp4j.application.engine.context.HttpRequest;
 
-final class InternalFailureEndpointController extends FixedResponseEndpointController {
+public interface ConstraintReport {
 
-	InternalFailureEndpointController() {
-		super(null);
-	}
+	ConstraintReportId id();
 
-	protected Response defaultResponse(OperationContext context) {
-		return
-			Response.
-				status(Status.INTERNAL_SERVER_ERROR).
-				type(MediaType.TEXT_PLAIN).
-				language(Locale.ENGLISH).
-				entity("No LDP4j Application available for handling endpoint "+context.base().resolve(context.path())+".").
-				build();
-	}
+	Date getDate();
+
+	HttpRequest getRequest();
+
+	Constraints getConstraints();
 
 }
