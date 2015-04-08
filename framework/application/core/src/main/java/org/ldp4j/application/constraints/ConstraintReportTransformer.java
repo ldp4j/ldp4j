@@ -282,10 +282,10 @@ public final class ConstraintReportTransformer {
 
 	private void populateCardinality(Individual<?,?> individual, Cardinality cardinality) {
 		if(cardinality.min()>0) {
-			individual.addValue(shaclTerm("minCard"), literal(cardinality.min()));
+			individual.addValue(shaclTerm("minCard"), typedLiteral(cardinality.min(),"integer"));
 		}
 		if(cardinality.max()>=0) {
-			individual.addValue(shaclTerm("maxCard"), literal(cardinality.max()));
+			individual.addValue(shaclTerm("maxCard"), typedLiteral(cardinality.max(),"integer"));
 		}
 	}
 
@@ -342,6 +342,10 @@ public final class ConstraintReportTransformer {
 
 	private static <T> Literal<T> literal(T value) {
 		return DataSetUtils.newLiteral(value);
+	}
+
+	private static <T> Literal<T> typedLiteral(T value, String type) {
+		return DataSetUtils.newTypedLiteral(value, URI.create("http://www.w3.org/2001/XMLSchema#"+type));
 	}
 
 	private static URI vocabularyTerm(Term term) {
