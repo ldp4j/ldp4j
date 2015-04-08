@@ -51,7 +51,7 @@ import org.ldp4j.server.testing.stubs.WorkingResource;
 
 
 public class DeletionHelperTest {
-	
+
 	private DeletionResult ok, no_content, accepted, failure;
 
 	@Before
@@ -61,7 +61,7 @@ public class DeletionHelperTest {
 		accepted = DeletionResult.newBuilder().enacted(false).build();
 		failure = null;
 	}
-	
+
 	private static class AbstractHandler implements ILinkedDataPlatformResourceHandler {
 
 		@Override
@@ -88,47 +88,45 @@ public class DeletionHelperTest {
 			// TODO Auto-generated method stub
 			return null;
 		}
-		
+
 	}
-	
+
 	private static class InvalidParameter extends AbstractHandler {
-		
-		@SuppressWarnings("unused")
+
 		@Delete
 		public DeletionResult delete() throws DeletionException {
 			return null;
 		}
-		
+
 	}
 
 	private static class InvalidResult extends AbstractHandler {
-		
-		@SuppressWarnings("unused")
+
 		@Delete
 		public void delete(String id) throws DeletionException {
 		}
-		
+
 	}
-	
+
 	private static class AbstractDeletableResourceHandler extends AbstractHandler {
-		
+
 		private final DeletionResult result;
 
 		public AbstractDeletableResourceHandler(DeletionResult result) {
 			this.result = result;
 		}
-		
+
 		protected DeletionResult getResult() throws DeletionException {
 			if(result==null) {
 				throw new DeletionException("Error found");
 			}
 			return result;
 		}
-		
+
 	}
-	
+
 	private static class DeletableResource extends AbstractDeletableResourceHandler implements Deletable {
-		
+
 		public DeletableResource(DeletionResult result) {
 			super(result);
 		}
@@ -136,37 +134,34 @@ public class DeletionHelperTest {
 		public DeletionResult delete(String id) throws DeletionException {
 			return getResult();
 		}
-		
+
 	}
 
 	private static class AnnotatedDeletableResource extends AbstractDeletableResourceHandler {
-		
+
 		public AnnotatedDeletableResource(DeletionResult result) {
 			super(result);
 		}
 
-		@SuppressWarnings("unused")
 		@Delete
 		public DeletionResult delete(String id) throws DeletionException {
 			return getResult();
 		}
-		
+
 	}
 
 	private static class NonDeletable extends AbstractHandler {
-		
-		
+
+
 	}
 
 	private static class MoreThanOne extends AbstractHandler {
-		
-		@SuppressWarnings("unused")
+
 		@Delete
 		public DeletionResult deleteResource(String resourceId) throws DeletionException {
 			return null;
 		}
-		
-		@SuppressWarnings("unused")
+
 		@Delete
 		public DeletionResult delete(String resourceId) throws DeletionException {
 			return null;
@@ -202,13 +197,13 @@ public class DeletionHelperTest {
 		DeletionHelper sut = new DeletionHelper(new InvalidParameter());
 		assertFalse(sut.isDeletionSupported());
 	}
-	
+
 	@Test
 	public void testIsDeletionSupported$annotatedResource$invalidImplementation$returnType() throws Exception {
 		DeletionHelper sut = new DeletionHelper(new InvalidResult());
 		assertFalse(sut.isDeletionSupported());
 	}
-	
+
 	@Test
 	public void testDelete$deletableResult$success$OK() throws Exception {
 		DeletionHelper sut = new DeletionHelper(new DeletableResource(ok));
@@ -226,7 +221,7 @@ public class DeletionHelperTest {
 		assertTrue(delete.getStatus()==Status.OK.getStatusCode());
 		assertTrue(ok.getMessage().equals(delete.getEntity()));
 	}
-	
+
 	@Test
 	public void testDelete$deletableResult$success$noContent() throws Exception {
 		DeletionHelper sut = new DeletionHelper(new DeletableResource(no_content));
