@@ -28,6 +28,7 @@ package org.ldp4j.server.impl;
 
 import static org.ldp4j.rdf.util.RDFModelDSL.blankNode;
 import static org.ldp4j.rdf.util.RDFModelDSL.literal;
+import static org.ldp4j.rdf.util.RDFModelDSL.typedLiteral;
 import static org.ldp4j.rdf.util.RDFModelDSL.triple;
 import static org.ldp4j.rdf.util.RDFModelDSL.uriRef;
 
@@ -43,7 +44,9 @@ import javax.xml.namespace.QName;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.IndividualVisitor;
+import org.ldp4j.application.data.LanguageLiteral;
 import org.ldp4j.application.data.Literal;
+import org.ldp4j.application.data.LiteralVisitor;
 import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
@@ -53,6 +56,7 @@ import org.ldp4j.application.data.NewIndividual;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.RelativeIndividual;
 import org.ldp4j.application.data.RelativeIndividualId;
+import org.ldp4j.application.data.TypedLiteral;
 import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.rdf.BlankNode;
@@ -112,6 +116,30 @@ final class TripleSetBuilder {
 
 	private final class TripleGenerator implements ValueVisitor {
 
+		class LiteralTranslator implements LiteralVisitor {
+			private void append(org.ldp4j.rdf.Literal<?> object) {
+				triples.add(
+						triple(
+							subject,
+							predicate,
+							object
+						)
+					);
+			}
+			@Override
+			public void visitLiteral(Literal<?> literal) {
+				append(literal(literal.get()));
+			}
+			@Override
+			public void visitTypedLiteral(TypedLiteral<?> literal) {
+				append(typedLiteral(literal.get(),literal.type()));
+			}
+			@Override
+			public void visitLanguageLiteral(LanguageLiteral literal) {
+				append(literal(literal.get(),literal.language()));
+			}
+		}
+
 		private final Resource<?> subject;
 		private final URI predicate;
 
@@ -147,13 +175,7 @@ final class TripleSetBuilder {
 			if(subject==null) {
 				return;
 			}
-			triples.add(
-				triple(
-					subject,
-					predicate,
-					literal(literal.get())
-				)
-			);
+			literal.accept(new LiteralTranslator());
 		}
 	}
 

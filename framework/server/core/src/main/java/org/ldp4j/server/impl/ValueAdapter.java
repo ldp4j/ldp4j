@@ -72,12 +72,12 @@ final class ValueAdapter {
 
 		@Override
 		public Value visitLanguageLiteral(LanguageLiteral node, Value defaultResult) {
-			return DataSetUtils.newLiteral(node.getValue());
+			return DataSetUtils.newLanguageLiteral(node.getValue(),node.getLanguage());
 		}
 
 		@Override
 		public Value visitTypedLiteral(TypedLiteral<?> node, Value defaultResult) {
-			return DataSetUtils.newLiteral(node.getValue());
+			return DataSetUtils.newTypedLiteral(node.getValue(),node.getType().toURI());
 		}
 
 		@Override

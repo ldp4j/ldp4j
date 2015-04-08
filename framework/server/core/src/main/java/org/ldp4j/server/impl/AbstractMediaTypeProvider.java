@@ -46,11 +46,11 @@ import org.ldp4j.server.spi.IMediaTypeProvider;
 
 abstract class AbstractMediaTypeProvider implements IMediaTypeProvider {
 
-	private final class MarshallerImplementation implements Marshaller {
+	private final class DefaultMarshaller implements Marshaller {
 
 		private final Context context;
 
-		private MarshallerImplementation(Context context) {
+		private DefaultMarshaller(Context context) {
 			this.context = context;
 		}
 
@@ -67,14 +67,14 @@ abstract class AbstractMediaTypeProvider implements IMediaTypeProvider {
 		}
 	}
 
-	private final class UnmarshallerImpl implements Unmarshaller {
+	private final class DefaultUnmarshaller implements Unmarshaller {
 
 		
 		private final ListenerManager<TripleListener> listeners;
 
 		private final Context context;
 
-		private UnmarshallerImpl(Context context) {
+		private DefaultUnmarshaller(Context context) {
 			this.context = context;
 			this.listeners=ListenerManager.newInstance();
 		}
@@ -145,12 +145,12 @@ abstract class AbstractMediaTypeProvider implements IMediaTypeProvider {
 
 	@Override
 	public Marshaller newMarshaller(final Context context) {
-		return new MarshallerImplementation(context);
+		return new DefaultMarshaller(context);
 	}
 
 	@Override
 	public Unmarshaller newUnmarshaller(final Context context) {
-		return new UnmarshallerImpl(context);
+		return new DefaultUnmarshaller(context);
 	}
 
 	protected abstract Iterable<Triple> doUnmarshallContent(Context context,String content, MediaType type) throws ContentTransformationException;
