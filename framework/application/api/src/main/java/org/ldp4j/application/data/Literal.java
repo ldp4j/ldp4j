@@ -30,4 +30,6 @@ public interface Literal<T> extends Value {
 
 	T get();
 
+	void accept(LiteralVisitor visitor);
+
 }

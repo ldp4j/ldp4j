@@ -20,35 +20,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
+public interface LanguageLiteral extends Literal<String> {
 
-
-final class ImmutableLiteral<T> implements Literal<T> {
-
-	private final T value;
-
-	ImmutableLiteral(T value) {
-		this.value = value;
-	}
-
-	@Override
-	public void accept(ValueVisitor visitor) {
-		visitor.visitLiteral(this);
-	}
-
-	@Override
-	public T get() {
-		return this.value;
-	}
-
-	@Override
-	public void accept(LiteralVisitor visitor) {
-		visitor.visitLiteral(this);
-	}
+	String language();
 
 }
