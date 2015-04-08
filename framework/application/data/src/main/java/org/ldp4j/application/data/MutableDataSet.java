@@ -40,13 +40,13 @@ final class MutableDataSet implements DataSet {
 	private final Name<?> name;
 	private final Map<Object,Individual<?,?>> individuals;
 	private final IndividualFactory factory;
-	
+
 	public MutableDataSet(Name<?> name) {
 		this.name = name;
 		this.individuals=new LinkedHashMap<Object, Individual<?,?>>();
 		this.factory=new IndividualFactory(this);
 	}
-	
+
 	@Override
 	public Name<?> name() {
 		return this.name;
@@ -111,9 +111,9 @@ final class MutableDataSet implements DataSet {
 		}
 		return false;
 	}
-	
+
 	private static final String NL=System.getProperty("line.separator");
-	
+
 	@Override
 	public String toString() {
 		final StringBuilder builder=new StringBuilder();
@@ -128,8 +128,7 @@ final class MutableDataSet implements DataSet {
 							new ValueVisitor() {
 								@Override
 								public void visitLiteral(Literal<?> value) {
-									Object rawValue = value.get();
-									builder.append("\t").append("\t").append("\t").append("* ").append(rawValue).append(" [").append(rawValue.getClass().getCanonicalName()).append("]").append(NL);
+									builder.append("\t").append("\t").append("\t").append("* ").append(FormatUtils.formatLiteral(value)).append(NL);
 								}
 								@Override
 								public void visitIndividual(Individual<?, ?> value) {

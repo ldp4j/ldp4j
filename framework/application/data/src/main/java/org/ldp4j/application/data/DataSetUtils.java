@@ -215,6 +215,18 @@ public final class DataSetUtils {
 		return new ImmutableLiteral<T>(value);
 	}
 
+	public static <T> TypedLiteral<T> newTypedLiteral(T value, URI datatype) {
+		Preconditions.checkNotNull(value,"Literal value cannot be null");
+		Preconditions.checkNotNull(datatype,"Literal datatype cannot be null");
+		return new ImmutableTypedLiteral<T>(value,datatype);
+	}
+
+	public static LanguageLiteral newLanguageLiteral(String value, String datatype) {
+		Preconditions.checkNotNull(value,"Literal value cannot be null");
+		Preconditions.checkNotNull(datatype,"Literal languages cannot be null");
+		return new ImmutableLanguageLiteral(value,datatype);
+	}
+
 	public static boolean hasLiteral(Literal<?> literal, Property property) {
 		return hasLiteral(literal,property.values());
 	}

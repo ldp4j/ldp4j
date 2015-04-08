@@ -77,8 +77,28 @@ public final class FormatUtils implements IndividualVisitor {
 		log("<%s> {New}",individual.id());
 	}
 
-	public static String formatLiteral(Literal<?> literal) {
-		return String.format("%s [%s]",literal.get(),literal.get().getClass().getCanonicalName());
+	public static String formatLiteral(final Literal<?> literal) {
+		class LiteralFormatter implements LiteralVisitor {
+			private String format;
+			@Override
+			public void visitLiteral(Literal<?> literal) {
+				this.format=String.format("%s [%s]",literal.get(),literal.get().getClass().getCanonicalName());
+			}
+			@Override
+			public void visitTypedLiteral(TypedLiteral<?> literal) {
+				this.format=String.format("%s (%s) [%s]",literal.get(),literal.type(),literal.get().getClass().getCanonicalName());
+			}
+			@Override
+			public void visitLanguageLiteral(LanguageLiteral literal) {
+				this.format=String.format("%s (%s) [%s]",literal.get(),literal.language(),literal.get().getClass().getCanonicalName());
+			}
+			String format() {
+				return this.format;
+			}
+		}
+		LiteralFormatter literalFormatter = new LiteralFormatter();
+		literal.accept(literalFormatter);
+		return literalFormatter.format();
 	}
 
 	public static String formatName(Name<?> tmp) {
