@@ -59,6 +59,7 @@ import org.ldp4j.application.engine.context.UnsupportedInteractionModelException
 import org.ldp4j.application.engine.context.ContentPreferences.Preference;
 import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
 import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.Member;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.template.BasicContainerTemplate;
@@ -176,8 +177,8 @@ abstract class DefaultPublicContainer<T extends ContainerTemplate> extends Defau
 	@Override
 	public final Collection<PublicResource> members() {
 		List<PublicResource> members=Lists.newArrayList();
-		for(ResourceId memberId:resolveAs(Container.class).memberIds()) {
-			members.add(createResource(memberId));
+		for(Member member:resolveAs(Container.class).members()) {
+			members.add(createResource(member.memberId()));
 		}
 		return Collections.unmodifiableList(members);
 	}

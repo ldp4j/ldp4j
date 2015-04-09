@@ -54,16 +54,16 @@ import com.google.common.base.Objects;
 import com.google.common.base.Objects.ToStringHelper;
 
 abstract class PersistencyState {
-	
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(PersistencyState.class);
-	
+
 	private static final class PersistentResourceReferenceState extends PersistencyState {
-	
-	
+
+
 		private PersistentResourceReferenceState(ResourceId resourceId, ResourceTemplate template) {
 			super(resourceId,template);
 		}
-	
+
 		private PersistencyState resolve(DelegatedResourceSnapshot ctx) {
 			Resource resource=ctx.session().loadResource(resourceId());
 			PersistencyState newPersistencyState=PersistencyState.newPersistent(resource,template(),ctx.session());
@@ -75,25 +75,25 @@ abstract class PersistencyState {
 		Resource delegate(DelegatedResourceSnapshot ctx) {
 			return resolve(ctx).delegate(ctx);
 		}
-	
+
 		@Override
 		Set<DelegatedAttachmentSnapshot> attachments(DelegatedResourceSnapshot ctx) {
 			return resolve(ctx).attachments(ctx);
 		}
-	
+
 		@Override
 		DelegatedAttachmentSnapshot attachmentByResource(ResourceSnapshot resource, DelegatedResourceSnapshot ctx) {
 			return resolve(ctx).attachmentByResource(resource, ctx);
 		}
-	
+
 		@Override
 		DelegatedAttachmentSnapshot attachmentById(String attachmentId, DelegatedResourceSnapshot ctx) {
 			return resolve(ctx).attachmentById(attachmentId, ctx);
 		}
-	
+
 		@Override
 		<T extends DelegatedResourceSnapshot> T createAttachedResource(
-				Class<? extends T> snapshotClass, 
+				Class<? extends T> snapshotClass,
 				String attachmentId,
 				Name<?> name,
 				Class<? extends ResourceHandler> handlerClass,
@@ -105,7 +105,7 @@ abstract class PersistencyState {
 		boolean removeAttachment(DelegatedAttachmentSnapshot attachment, DelegatedResourceSnapshot ctx) {
 			return resolve(ctx).removeAttachment(attachment, ctx);
 		}
-	
+
 		@Override
 		boolean softDetach(DelegatedAttachmentSnapshot attachment, DelegatedResourceSnapshot ctx) {
 			return resolve(ctx).softDetach(attachment, ctx);
@@ -140,7 +140,7 @@ abstract class PersistencyState {
 		List<DelegatedResourceSnapshot> newMembers(DelegatedResourceSnapshot ctx) {
 			return resolve(ctx).newMembers(ctx);
 		}
-		
+
 		@Override
 		void saveChanges(DelegatedResourceSnapshot ctx) {
 			// Nothing to do
@@ -149,16 +149,16 @@ abstract class PersistencyState {
 	}
 
 	private static abstract class BasePersistencyState extends PersistencyState {
-	
+
 		private final AttachmentSnapshotCollection attachments;
 		private final MemberCollection members;
-	
+
 		private BasePersistencyState(ResourceId resourceId, ResourceTemplate template, AttachmentSnapshotCollection attachmentRepository, MemberCollection memberRepository) {
 			super(resourceId,template);
 			this.attachments=attachmentRepository;
 			this.members=memberRepository;
 		}
-	
+
 		private NameFilter nameFilterForAttachment(final String attachmentId) {
 			return new NameFilter() {
 				@Override
@@ -172,17 +172,17 @@ abstract class PersistencyState {
 		Set<DelegatedAttachmentSnapshot> attachments(DelegatedResourceSnapshot ctx) {
 			return this.attachments.attachments();
 		}
-	
+
 		@Override
 		DelegatedAttachmentSnapshot attachmentByResource(ResourceSnapshot resource, DelegatedResourceSnapshot ctx) {
 			return this.attachments.findByResource(resource);
 		}
-	
+
 		@Override
 		DelegatedAttachmentSnapshot attachmentById(String attachmentId, DelegatedResourceSnapshot ctx) {
 			return this.attachments.findById(attachmentId);
 		}
-	
+
 		<T extends DelegatedResourceSnapshot> T createAttachedResource(
 				Class<? extends T> snapshotClass,
 				String attachmentId,
@@ -203,8 +203,8 @@ abstract class PersistencyState {
 			}
 			return snapshotClass.cast(newSnapshot);
 		}
-	
-	
+
+
 		@Override
 		boolean removeAttachment(DelegatedAttachmentSnapshot attachment, DelegatedResourceSnapshot ctx) {
 			boolean detached = softDetach(attachment,ctx);
@@ -279,6 +279,7 @@ abstract class PersistencyState {
 
 		@Override
 		protected void toString(ToStringHelper helper) {
+			super.toString(helper);
 			helper.
 				add("attachments",this.attachments).
 				add("members",this.members);
@@ -306,7 +307,7 @@ abstract class PersistencyState {
 			this.newMembers=new LinkedHashMap<ResourceId, DelegatedResourceSnapshot>();
 			this.deletedMembers=new LinkedHashMap<ResourceId, DelegatedResourceSnapshot>();
 		}
-		
+
 		private void registerNewAttachment(String attachmentId, DelegatedResourceSnapshot ctx) {
 			DelegatedAttachmentSnapshot attachment = super.attachmentById(attachmentId, ctx);
 			this.newAttachments.put(attachmentId, attachment);
@@ -334,7 +335,7 @@ abstract class PersistencyState {
 
 		@Override
 		<T extends DelegatedResourceSnapshot> T createAttachedResource(
-				Class<? extends T> snapshotClass, 
+				Class<? extends T> snapshotClass,
 				String attachmentId,
 				Name<?> name,
 				Class<? extends ResourceHandler> handlerClass,
@@ -415,13 +416,13 @@ abstract class PersistencyState {
 						}
 					}
 				}
-			); 
+			);
 			this.deletedAttachments.clear();
 			this.newAttachments.clear();
 			this.deletedMembers.clear();
 			this.newMembers.clear();
 		}
-		
+
 		@Override
 		protected void toString(ToStringHelper helper) {
 			super.toString(helper);
@@ -439,7 +440,7 @@ abstract class PersistencyState {
 		private TransientResourceState(ResourceId resourceId, ResourceTemplate template) {
 			super(resourceId,template,AttachmentSnapshotCollection.newInstance(),MemberCollection.newInstance());
 		}
-		
+
 		@Override
 		void saveChanges(final DelegatedResourceSnapshot ctx) {
 			delegate(ctx).accept(
@@ -461,40 +462,40 @@ abstract class PersistencyState {
 						}
 					}
 				}
-			); 
+			);
 		}
-		
+
 	}
 	private static final class DeletedResourceState extends PersistencyState {
-		
+
 		private final String failureMessage;
-	
+
 		private DeletedResourceState(ResourceId resourceId, ResourceTemplate template, Resource delegate) {
 			super(resourceId,template);
 			setDelegate(delegate);
 			this.failureMessage = "Resource '"+resourceId+"' has been deleted";
 		}
-	
-		
+
+
 		@Override
 		Set<DelegatedAttachmentSnapshot> attachments(DelegatedResourceSnapshot ctx) {
 			return Collections.emptySet();
 		}
-	
+
 		@Override
 		DelegatedAttachmentSnapshot attachmentByResource(ResourceSnapshot resource, DelegatedResourceSnapshot ctx) {
 			throw new IllegalStateException(this.failureMessage);
 		}
-	
+
 		@Override
 		DelegatedAttachmentSnapshot attachmentById(String attachmentId, DelegatedResourceSnapshot ctx) {
 			throw new IllegalStateException(this.failureMessage);
 		}
 
-		
+
 		@Override
 		<T extends DelegatedResourceSnapshot> T createAttachedResource(
-				Class<? extends T> snapshotClass, 
+				Class<? extends T> snapshotClass,
 				String attachmentId,
 				Name<?> name,
 				Class<? extends ResourceHandler> handlerClass,
@@ -506,7 +507,7 @@ abstract class PersistencyState {
 		boolean removeAttachment(DelegatedAttachmentSnapshot attachment, DelegatedResourceSnapshot ctx) {
 			return false;
 		}
-	
+
 		@Override
 		boolean softDetach(DelegatedAttachmentSnapshot attachment, DelegatedResourceSnapshot delegatedResourceSnapshot) {
 			return false;
@@ -545,7 +546,7 @@ abstract class PersistencyState {
 		List<DelegatedResourceSnapshot> newMembers(DelegatedResourceSnapshot ctx) {
 			throw new IllegalStateException(this.failureMessage);
 		}
-		
+
 	}
 
 	private final ResourceId resourceId;
@@ -560,7 +561,7 @@ abstract class PersistencyState {
 	final ResourceId resourceId() {
 		return this.resourceId;
 	}
-	
+
 	final ResourceTemplate template() {
 		return this.template;
 	}
@@ -580,7 +581,7 @@ abstract class PersistencyState {
 	}
 
 	abstract Set<DelegatedAttachmentSnapshot> attachments(DelegatedResourceSnapshot ctx);
-	
+
 	abstract DelegatedAttachmentSnapshot attachmentByResource(ResourceSnapshot resource, DelegatedResourceSnapshot ctx);
 
 	abstract DelegatedAttachmentSnapshot attachmentById(String attachmentId, DelegatedResourceSnapshot ctx);
@@ -591,7 +592,7 @@ abstract class PersistencyState {
 			Name<?> name,
 			Class<? extends ResourceHandler> handlerClass,
 			DelegatedResourceSnapshot ctx);
-	
+
 	abstract boolean removeAttachment(DelegatedAttachmentSnapshot attachment, DelegatedResourceSnapshot ctx);
 
 	abstract Set<DelegatedResourceSnapshot> members(DelegatedResourceSnapshot ctx);
@@ -608,25 +609,24 @@ abstract class PersistencyState {
 
 	abstract boolean softRemoveMember(DelegatedResourceSnapshot snapshot, DelegatedResourceSnapshot ctx);
 
-	@Override 
+	@Override
 	public final String toString() {
-		ToStringHelper helper = 
-			Objects.
-				toStringHelper(getClass()).
-					omitNullValues().
-					add("resourceId", resourceId).
-					add("template().handlerClass()",template().handlerClass().getCanonicalName());
+		ToStringHelper helper=Objects.toStringHelper(getClass());
+		toString(helper);
 		return helper.toString();
 	}
 
 	protected void toString(ToStringHelper helper) {
-		// To be modified by subclasses
+		helper.
+			omitNullValues().
+			add("resourceId", resourceId).
+			add("template().handlerClass()",template().handlerClass().getCanonicalName());
 	}
 
 	static PersistencyState newPersistentState(ResourceId resourceId, ResourceTemplate template) {
 		return new PersistentResourceReferenceState(resourceId, template);
 	}
-	
+
 	static PersistencyState newPersistent(Resource resource, ResourceTemplate template, DelegatedWriteSession session) {
 		AttachmentSnapshotCollection attachments = AttachmentSnapshotCollection.createFromResource(resource, session);
 		MemberCollection members=MemberCollection.createFromResource(resource, session);

@@ -102,7 +102,7 @@ public final class EndpointManagementService implements Service {
 
 	}
 
-		private static final int MAX_ENDPOINT_CREATION_FAILURE = 3;
+	private static final int MAX_ENDPOINT_CREATION_FAILURE = 3;
 
 	private final PersistencyManager persistencyManager;
 	private final ListenerManager<EndpointLifecycleListener> listenerManager;
@@ -147,6 +147,9 @@ public final class EndpointManagementService implements Service {
 		StringBuilder builder=new StringBuilder();
 		addSegment(builder,endpoint.path());
 		addSegment(builder,attachedTemplate.path());
+		if(attachment.version()>0) {
+			addSegment(builder,attachment.version());
+		}
 		return builder.toString();
 	}
 
@@ -162,11 +165,6 @@ public final class EndpointManagementService implements Service {
 			addSegment(builder,parentTemplate.memberPath().or(""));
 			addSegment(builder,IdGenerator.nextMemberId(parent));
 			addSegment(builder,desiredPath);
-//			Object lastSegment = desiredPath;
-//			if(lastSegment==null) {
-//				lastSegment=IdGenerator.nextMemberId(parent);
-//			}
-//			addSegment(builder,lastSegment);
 			return builder.toString();
 		}
 		return null;
@@ -231,7 +229,7 @@ public final class EndpointManagementService implements Service {
 	/**
 	 * TODO: Verify that http://tools.ietf.org/html/rfc7232#section-2.2
 	 * holds: if the clock in the request is ahead of the clock of the origin
-	 * server (i.e., I request from Spain the update of a resource held in USA)
+	 * server (e.g., I request from Spain the update of a resource held in USA)
 	 * the last-modified data should be changed to that of the request and not
 	 * a generated date from the origin server
 	 */
@@ -244,8 +242,15 @@ public final class EndpointManagementService implements Service {
 		return newEndpoint;
 	}
 
+	/**
+	 * TODO: Verify that http://tools.ietf.org/html/rfc7232#section-2.2
+	 * holds: if the clock in the request is ahead of the clock of the origin
+	 * server (e.g., I request from Spain the update of a resource held in USA)
+	 * the last-modified data should be changed to that of the request and not
+	 * a generated date from the origin server
+	 */
 	public Endpoint modifyResourceEndpoint(Resource resource, EntityTag entityTag, Date lastModified) throws EndpointNotFoundException {
-		checkNotNull(resource,"ResourceSnapshot cannot be null");
+		checkNotNull(resource,"Resource cannot be null");
 		checkNotNull(entityTag,"Entity tag cannot be null");
 		checkNotNull(lastModified,"Last modified cannot be null");
 		Endpoint endpoint = this.persistencyManager.endpointOfResource(resource.id());
@@ -257,7 +262,7 @@ public final class EndpointManagementService implements Service {
 	}
 
 	public Endpoint deleteResourceEndpoint(Resource resource) throws EndpointNotFoundException {
-		checkNotNull(resource,"ResourceSnapshot cannot be null");
+		checkNotNull(resource,"Resource cannot be null");
 		Endpoint endpoint = this.persistencyManager.endpointOfResource(resource.id());
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resource.id());

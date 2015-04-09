@@ -35,6 +35,9 @@ import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.resource.Attachment;
@@ -56,23 +59,28 @@ import com.google.common.base.Objects.ToStringHelper;
 
 class InMemoryResource extends AbstractInMemoryResource implements Resource {
 
+	private static final class VersionGenerator {
+
+		private final ConcurrentMap<String,AtomicLong> ATTACHMENT_COUNTER=new ConcurrentHashMap<String, AtomicLong>();
+
+		long nextVersion(String id) {
+			AtomicLong counter = ATTACHMENT_COUNTER.putIfAbsent(id, new AtomicLong(-1));
+			if(counter==null) {
+				counter=ATTACHMENT_COUNTER.get(id);
+			}
+			return counter.incrementAndGet();
+		}
+
+	}
+
 	private static final class AttachmentImpl implements Attachment {
 
 		private final AttachmentId attachmentId;
+		private final long version;
 
-		private AttachmentImpl(AttachmentId attachmentId) {
+		private AttachmentImpl(AttachmentId attachmentId, long version) {
 			this.attachmentId = attachmentId;
-		}
-
-		@Override
-		public String toString() {
-			return
-				Objects.
-					toStringHelper(getClass()).
-						omitNullValues().
-						add("id", id()).
-						add("resourceId", resourceId()).
-						toString();
+			this.version = version;
 		}
 
 		private AttachmentId attachmentId() {
@@ -84,10 +92,26 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 			return this.attachmentId.id();
 		}
 
-
 		@Override
 		public ResourceId resourceId() {
 			return this.attachmentId.resourceId();
+		}
+
+		@Override
+		public long version() {
+			return this.version;
+		}
+
+		@Override
+		public String toString() {
+			return
+				Objects.
+					toStringHelper(getClass()).
+						omitNullValues().
+						add("id", id()).
+						add("resourceId", resourceId()).
+						add("version", this.version).
+						toString();
 		}
 
 	}
@@ -95,9 +119,12 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 	private final Map<AttachmentId, AttachmentImpl> attachments;
 	private final Map<String, AttachmentId> attachmentsById;
 	private final Map<ResourceId, AttachmentId> attachmentsByResourceId;
+	private final VersionGenerator versionGenerator;
+
 
 	private final ResourceId id;
 	private final ResourceId parentId;
+
 	private URI indirectId;
 
 	protected InMemoryResource(ResourceId id, ResourceId parentId) {
@@ -106,6 +133,7 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		this.attachments=new LinkedHashMap<AttachmentId, AttachmentImpl>();
 		this.attachmentsById=new LinkedHashMap<String,AttachmentId>();
 		this.attachmentsByResourceId=new LinkedHashMap<ResourceId,AttachmentId>();
+		this.versionGenerator = new VersionGenerator();
 	}
 
 	protected InMemoryResource(ResourceId id) {
@@ -204,7 +232,7 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		ResourceTemplate attachmentTemplate=super.getTemplate(resourceId);
 		checkState(areCompatible(clazz,attachmentTemplate),"Attachment '%s' is not of type '%s' (%s)",attachmentId,clazz.getCanonicalName(),attachmentTemplate.getClass().getCanonicalName());
 		InMemoryResource newResource=createChild(resourceId,attachmentTemplate);
-		AttachmentImpl newAttachment = new AttachmentImpl(aId);
+		AttachmentImpl newAttachment = new AttachmentImpl(aId,this.versionGenerator.nextVersion(attachmentId));
 		attachments.put(newAttachment.attachmentId(),newAttachment);
 		attachmentsById.put(aId.id(),aId);
 		attachmentsByResourceId.put(aId.resourceId(),aId);

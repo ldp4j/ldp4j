@@ -38,6 +38,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.Member;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.resource.ResourceVisitor;
@@ -45,7 +46,7 @@ import org.ldp4j.application.resource.ResourceVisitor;
 import com.google.common.base.Objects;
 
 final class MemberCollection {
-	
+
 	private final Map<ResourceId,DelegatedResourceSnapshot> members;
 	private final List<DelegatedResourceSnapshot> newMembers;
 
@@ -53,7 +54,7 @@ final class MemberCollection {
 		this.members=new LinkedHashMap<ResourceId, DelegatedResourceSnapshot>();
 		this.newMembers=new LinkedList<DelegatedResourceSnapshot>();
 	}
-	
+
 	private void registerMember(DelegatedResourceSnapshot snapshot) {
 		checkState(!members.containsKey(snapshot.resourceId()),"A resource with id '%s' is already a member of the container",snapshot.resourceId());
 		this.members.put(snapshot.resourceId(),snapshot);
@@ -83,14 +84,14 @@ final class MemberCollection {
 		}
 		return result;
 	}
-	
+
 	List<DelegatedResourceSnapshot> newMembers() {
 		return Collections.unmodifiableList(this.newMembers);
 	}
-	
+
 	@Override
 	public String toString() {
-		return 
+		return
 			Objects.
 				toStringHelper(getClass()).
 					add("members",this.members.keySet()).
@@ -111,13 +112,13 @@ final class MemberCollection {
 				}
 				@Override
 				public void visitContainer(Container resource) {
-					for(ResourceId memberId:resource.memberIds()) {
-						memberRepository.registerMember(session.resolveResource(memberId));
+					for(Member member:resource.members()) {
+						memberRepository.registerMember(session.resolveResource(member.memberId()));
 					}
 				}
 			}
 		);
 		return memberRepository;
 	}
-	
+
 }

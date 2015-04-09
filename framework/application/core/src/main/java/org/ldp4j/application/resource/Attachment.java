@@ -32,4 +32,10 @@ public interface Attachment {
 
 	ResourceId resourceId();
 
+	/**
+	 * Retrieve the current incarnation of the attachment
+	 * @return The version of the attachment
+	 */
+	long version();
+
 }

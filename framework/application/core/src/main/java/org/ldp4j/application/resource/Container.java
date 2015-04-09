@@ -30,12 +30,23 @@ import java.util.Set;
 
 public interface Container extends Resource {
 
+	@Deprecated
 	Set<ResourceId> memberIds();
 
 	boolean hasMember(ResourceId resourceId);
-	
+
+	@Deprecated
 	Resource addMember(ResourceId resourceId);
 
+	@Deprecated
 	boolean removeMember(ResourceId resourceId);
+
+	Set<Member> members();
+
+	Member findMember(ResourceId resourceId);
+
+	Member addMemberResource(ResourceId resourceId);
+
+	boolean removeMember(Member member);
 
 }

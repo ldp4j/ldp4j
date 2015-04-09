@@ -78,8 +78,8 @@ final class AttachmentId {
 	}
 
 	public static AttachmentId createId(String attachmentId, ResourceId resourceId) {
-		checkNotNull(resourceId,"Resource resourceId cannot be null");
 		checkNotNull(attachmentId,"Template identifier cannot be null");
+		checkNotNull(resourceId,"Resource identifier cannot be null");
 		return new AttachmentId(attachmentId,resourceId);
 	}
 

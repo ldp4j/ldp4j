@@ -29,27 +29,82 @@ package org.ldp4j.application.impl;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.Collections;
-import java.util.LinkedHashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.Member;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.resource.ResourceVisitor;
 import org.ldp4j.application.template.ContainerTemplate;
 
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+
 final class InMemoryContainer extends InMemoryResource implements Container {
 
-	private final Set<ResourceId> members;
+	private final class InMemoryMember implements Member {
+
+		private final ResourceId resourceId;
+		private final ResourceId containerId;
+		private final long number;
+
+		private InMemoryMember(ResourceId resourceId, ResourceId containerId, long number) {
+			this.resourceId = resourceId;
+			this.containerId = containerId;
+			this.number = number;
+		}
+
+		@Override
+		public long number() {
+			return number;
+		}
+
+		@Override
+		public ResourceId containerId() {
+			return containerId;
+		}
+
+		@Override
+		public ResourceId memberId() {
+			return resourceId;
+		}
+
+	}
+
+	private final ConcurrentMap<ResourceId,Member> members;
+	private final AtomicLong memberCounter;
 
 	protected InMemoryContainer(ResourceId id, ResourceId parentId) {
 		super(id,parentId);
-		this.members=new LinkedHashSet<ResourceId>();
+		this.members=Maps.newConcurrentMap();
+		this.memberCounter=new AtomicLong();
 	}
 
 	protected InMemoryContainer(ResourceId id) {
 		this(id,null);
+	}
+
+	private Member createMember(InMemoryResource newResource) {
+		InMemoryMember member = new InMemoryMember(newResource.id(), id(), this.memberCounter.incrementAndGet());
+		Member result = this.members.putIfAbsent(member.memberId(), member);
+		if(result==null) {
+			result=member;
+		}
+		return result;
+	}
+
+	private InMemoryResource createMemberResource(ResourceId resourceId) {
+		checkNotNull(resourceId,"Member resource identifier cannot be null");
+		checkState(!this.members.containsKey(resourceId),"A resource with id '%s' is already a member of the container",resourceId);
+		InMemoryResource newResource=createChild(resourceId,template().memberTemplate());
+		return newResource;
+	}
+
+	private ContainerTemplate template() {
+		return (ContainerTemplate)super.getTemplate(id());
 	}
 
 	@Override
@@ -57,39 +112,60 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 		visitor.visitContainer(this);
 	}
 
-	ContainerTemplate template() {
-		return (ContainerTemplate)super.getTemplate(id());
-	}
-
+	@Deprecated
 	@Override
 	public Set<ResourceId> memberIds() {
-		return Collections.unmodifiableSet(new LinkedHashSet<ResourceId>(this.members));
+		return ImmutableSet.copyOf(this.members.keySet());
 	}
 
+	@Deprecated
 	@Override
-	public Resource addMember(ResourceId resourceName) {
-		checkNotNull(resourceName,"Member resource name cannot be null");
-		checkState(!this.members.contains(resourceName),"A resource with id '%s' is already a member of the container",resourceName);
-		InMemoryResource newResource=createChild(resourceName,template().memberTemplate());
-		this.members.add(newResource.id());
+	public Resource addMember(ResourceId resourceId) {
+		InMemoryResource newResource = createMemberResource(resourceId);
+		createMember(newResource);
 		return newResource;
 	}
 
 	@Override
 	public boolean hasMember(ResourceId resource) {
-		return this.members.contains(resource);
+		return this.members.containsKey(resource);
+	}
+
+	@Deprecated
+	@Override
+	public boolean removeMember(ResourceId resourceId) {
+		Member remove = this.members.remove(resourceId);
+		return remove!=null;
 	}
 
 	@Override
-	public boolean removeMember(ResourceId resourceId) {
-		return this.members.remove(resourceId);
+	public Set<Member> members() {
+		return ImmutableSet.copyOf(members.values());
+	}
+
+	@Override
+	public Member findMember(ResourceId resourceId) {
+		return this.members.get(resourceId);
+	}
+
+	@Override
+	public Member addMemberResource(ResourceId resourceId) {
+		InMemoryResource newResource = createMemberResource(resourceId);
+		return createMember(newResource);
+	}
+
+	@Override
+	public boolean removeMember(Member member) {
+		checkNotNull(member,"Member cannot be null");
+		return members.remove(member.memberId(), member);
 	}
 
 	@Override
 	public String toString() {
 		return
 			stringHelper().
-				add("members", memberIds()).
+				add("memberCounter",this.memberCounter).
+				add("members",this.members).
 				toString();
 	}
 
