@@ -29,9 +29,6 @@ package org.ldp4j.application.endpoint;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
 
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.util.ListenerManager;
@@ -88,22 +85,6 @@ public final class EndpointManagementService implements Service {
 
 	}
 
-	// TODO: We need to devise a mechanism for persisting the ids of the members
-	@Deprecated
-	private static final class IdGenerator {
-
-		private final static ConcurrentMap<ResourceId,AtomicLong> CONTAINER_COUNTER=new ConcurrentHashMap<ResourceId, AtomicLong>();
-
-		static long nextMemberId(Container container) {
-			AtomicLong counter = CONTAINER_COUNTER.putIfAbsent(container.id(), new AtomicLong(-1));
-			if(counter==null) {
-				counter=CONTAINER_COUNTER.get(container.id());
-			}
-			return counter.incrementAndGet();
-		}
-
-	}
-
 	private static final int MAX_ENDPOINT_CREATION_FAILURE = 3;
 
 	private final PersistencyManager persistencyManager;
@@ -146,13 +127,13 @@ public final class EndpointManagementService implements Service {
 		Endpoint endpoint=getResourceEndpoint(parent.id());
 		ResourceTemplate parentTemplate=this.persistencyManager.templateOfId(parent.id().templateId());
 		AttachedTemplate attachedTemplate = parentTemplate.attachedTemplate(attachment.id());
-		StringBuilder builder=new StringBuilder();
-		addSegment(builder,endpoint.path());
-		addSegment(builder,attachedTemplate.path());
-		if(attachment.version()>0) {
-			addSegment(builder,attachment.version());
-		}
-		return builder.toString();
+		return
+			PathBuilder.
+				create().
+					addSegment(endpoint.path()).
+					addSegment(attachedTemplate.path()).
+					addSegment(attachment.version()>0?attachment.version():null).
+					build();
 	}
 
 	private String generatePathForMember(Resource child, Container parent, String desiredPath) throws EndpointNotFoundException {
@@ -163,27 +144,16 @@ public final class EndpointManagementService implements Service {
 			if(parentTemplate==null) {
 				throw new IllegalStateException("Could not find template resource '"+parent+"'");
 			}
-
-			StringBuilder builder=new StringBuilder();
-			addSegment(builder,endpoint.path());
-			addSegment(builder,parentTemplate.memberPath().or(""));
-			addSegment(builder,member.number());
-			addSegment(builder,desiredPath);
-			return builder.toString();
+			return
+				PathBuilder.
+					create().
+						addSegment(endpoint.path()).
+						addSegment(parentTemplate.memberPath().or("")).
+						addSegment(member.number()).
+						addSegment(desiredPath).
+						build();
 		}
 		return null;
-	}
-
-	private <T> void addSegment(StringBuilder builder, T segment) {
-		if(segment!=null) {
-			String strSegment=segment.toString();
-			if(strSegment!=null && strSegment.length()>0) {
-				builder.append(strSegment);
-				if(!strSegment.endsWith("/")) {
-					builder.append("/");
-				}
-			}
-		}
 	}
 
 	private Endpoint createEndpoint(Resource resource, String relativePath, EntityTag entityTag, Date lastModified) throws EndpointCreationException {

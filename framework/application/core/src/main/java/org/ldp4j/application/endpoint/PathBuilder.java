@@ -24,20 +24,37 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.resource;
+package org.ldp4j.application.endpoint;
 
-import java.util.Set;
+final class PathBuilder {
 
-public interface Container extends Resource {
+	private static final String SUFFIX = "/";
 
-	Set<Member> members();
+	private final StringBuilder builder;
 
-	boolean hasMember(ResourceId resourceId);
+	private PathBuilder() {
+		this.builder = new StringBuilder();
+	}
 
-	Member findMember(ResourceId resourceId);
+	<T> PathBuilder addSegment(T segment) {
+		if(segment!=null) {
+			String strSegment=segment.toString();
+			if(strSegment!=null && strSegment.length()>0) {
+				this.builder.append(strSegment);
+				if(!strSegment.endsWith(SUFFIX)) {
+					this.builder.append(SUFFIX);
+				}
+			}
+		}
+		return this;
+	}
 
-	Resource addMember(ResourceId resourceId);
+	String build() {
+		return this.builder.toString();
+	}
 
-	boolean removeMember(Member member);
+	static PathBuilder create() {
+		return new PathBuilder();
+	}
 
 }

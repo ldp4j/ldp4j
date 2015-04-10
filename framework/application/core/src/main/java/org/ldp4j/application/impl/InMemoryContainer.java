@@ -40,6 +40,7 @@ import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.resource.ResourceVisitor;
 import org.ldp4j.application.template.ContainerTemplate;
 
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
@@ -47,12 +48,12 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 
 	private static final class InMemoryMember implements Member {
 
-		private final ResourceId resourceId;
+		private final ResourceId memberId;
 		private final ResourceId containerId;
 		private final long number;
 
-		private InMemoryMember(ResourceId resourceId, ResourceId containerId, long number) {
-			this.resourceId = resourceId;
+		private InMemoryMember(ResourceId containerId, ResourceId memberId, long number) {
+			this.memberId = memberId;
 			this.containerId = containerId;
 			this.number = number;
 		}
@@ -69,7 +70,18 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 
 		@Override
 		public ResourceId memberId() {
-			return resourceId;
+			return memberId;
+		}
+
+		@Override
+		public String toString() {
+			return
+				Objects.
+					toStringHelper(getClass()).
+						add("number",this.number).
+						add("containerId",this.containerId).
+						add("memberId", this.memberId).
+						toString();
 		}
 
 	}
@@ -88,7 +100,7 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 	}
 
 	private Member createMember(InMemoryResource newResource) {
-		InMemoryMember member = new InMemoryMember(newResource.id(), id(), this.memberCounter.incrementAndGet());
+		InMemoryMember member = new InMemoryMember(id(), newResource.id(), this.memberCounter.incrementAndGet());
 		Member result = this.members.putIfAbsent(member.memberId(), member);
 		if(result==null) {
 			result=member;
@@ -112,13 +124,6 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 		visitor.visitContainer(this);
 	}
 
-	@Deprecated
-	@Override
-	public Set<ResourceId> memberIds() {
-		return ImmutableSet.copyOf(this.members.keySet());
-	}
-
-
 	@Override
 	public Resource addMember(ResourceId resourceId) {
 		InMemoryResource newResource = createMemberResource(resourceId);
@@ -131,13 +136,6 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 		return this.members.containsKey(resource);
 	}
 
-	@Deprecated
-	@Override
-	public boolean removeMember(ResourceId resourceId) {
-		Member remove = this.members.remove(resourceId);
-		return remove!=null;
-	}
-
 	@Override
 	public Set<Member> members() {
 		return ImmutableSet.copyOf(members.values());
@@ -146,13 +144,6 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 	@Override
 	public Member findMember(ResourceId resourceId) {
 		return this.members.get(resourceId);
-	}
-
-	@Deprecated
-	@Override
-	public Member addMemberResource(ResourceId resourceId) {
-		InMemoryResource newResource = createMemberResource(resourceId);
-		return createMember(newResource);
 	}
 
 	@Override

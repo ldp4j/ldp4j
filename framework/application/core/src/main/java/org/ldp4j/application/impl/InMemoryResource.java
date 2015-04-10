@@ -73,12 +73,12 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 
 	}
 
-	private static final class AttachmentImpl implements Attachment {
+	private static final class InMemoryAttachment implements Attachment {
 
 		private final AttachmentId attachmentId;
 		private final long version;
 
-		private AttachmentImpl(AttachmentId attachmentId, long version) {
+		private InMemoryAttachment(AttachmentId attachmentId, long version) {
 			this.attachmentId = attachmentId;
 			this.version = version;
 		}
@@ -116,7 +116,7 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 
 	}
 
-	private final Map<AttachmentId, AttachmentImpl> attachments;
+	private final Map<AttachmentId, InMemoryAttachment> attachments;
 	private final Map<String, AttachmentId> attachmentsById;
 	private final Map<ResourceId, AttachmentId> attachmentsByResourceId;
 	private final VersionGenerator versionGenerator;
@@ -130,7 +130,7 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 	protected InMemoryResource(ResourceId id, ResourceId parentId) {
 		this.id=id;
 		this.parentId = parentId;
-		this.attachments=new LinkedHashMap<AttachmentId, AttachmentImpl>();
+		this.attachments=new LinkedHashMap<AttachmentId, InMemoryAttachment>();
 		this.attachmentsById=new LinkedHashMap<String,AttachmentId>();
 		this.attachmentsByResourceId=new LinkedHashMap<ResourceId,AttachmentId>();
 		this.versionGenerator = new VersionGenerator();
@@ -232,7 +232,7 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		ResourceTemplate attachmentTemplate=super.getTemplate(resourceId);
 		checkState(areCompatible(clazz,attachmentTemplate),"Attachment '%s' is not of type '%s' (%s)",attachmentId,clazz.getCanonicalName(),attachmentTemplate.getClass().getCanonicalName());
 		InMemoryResource newResource=createChild(resourceId,attachmentTemplate);
-		AttachmentImpl newAttachment = new AttachmentImpl(aId,this.versionGenerator.nextVersion(attachmentId));
+		InMemoryAttachment newAttachment = new InMemoryAttachment(aId,this.versionGenerator.nextVersion(attachmentId));
 		attachments.put(newAttachment.attachmentId(),newAttachment);
 		attachmentsById.put(aId.id(),aId);
 		attachmentsByResourceId.put(aId.resourceId(),aId);
@@ -250,8 +250,8 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		return found;
 	}
 	@Override
-	public Set<AttachmentImpl> attachments() {
-		return Collections.unmodifiableSet(new LinkedHashSet<AttachmentImpl>(this.attachments.values()));
+	public Set<InMemoryAttachment> attachments() {
+		return Collections.unmodifiableSet(new LinkedHashSet<InMemoryAttachment>(this.attachments.values()));
 	}
 
 	@Override
