@@ -36,8 +36,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.resource.Attachment;
 import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.Member;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.resource.ResourceVisitor;
@@ -45,8 +48,6 @@ import org.ldp4j.application.session.AttachmentSnapshotCollection.DelegatedAttac
 import org.ldp4j.application.template.AttachedTemplate;
 import org.ldp4j.application.template.ContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.ext.ResourceHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -408,7 +409,9 @@ abstract class PersistencyState {
 					public void visitContainer(Container resource) {
 						visitResource(resource);
 						for(ResourceId resourceId:PersistentResourceState.this.deletedMembers.keySet()) {
-							resource.removeMember(resourceId);
+//							resource.removeMember(resourceId);
+							Member member=resource.findMember(resourceId);
+							resource.removeMember(member);
 						}
 						for(DelegatedResourceSnapshot member:PersistentResourceState.this.newMembers.values()) {
 							Resource addedResource = resource.addMember(member.resourceId());

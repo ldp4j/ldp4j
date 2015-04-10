@@ -45,7 +45,7 @@ import com.google.common.collect.Maps;
 
 final class InMemoryContainer extends InMemoryResource implements Container {
 
-	private final class InMemoryMember implements Member {
+	private static final class InMemoryMember implements Member {
 
 		private final ResourceId resourceId;
 		private final ResourceId containerId;
@@ -118,7 +118,7 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 		return ImmutableSet.copyOf(this.members.keySet());
 	}
 
-	@Deprecated
+
 	@Override
 	public Resource addMember(ResourceId resourceId) {
 		InMemoryResource newResource = createMemberResource(resourceId);
@@ -148,6 +148,7 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 		return this.members.get(resourceId);
 	}
 
+	@Deprecated
 	@Override
 	public Member addMemberResource(ResourceId resourceId) {
 		InMemoryResource newResource = createMemberResource(resourceId);

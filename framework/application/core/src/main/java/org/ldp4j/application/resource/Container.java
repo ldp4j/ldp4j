@@ -35,7 +35,6 @@ public interface Container extends Resource {
 
 	boolean hasMember(ResourceId resourceId);
 
-	@Deprecated
 	Resource addMember(ResourceId resourceId);
 
 	@Deprecated
@@ -45,6 +44,7 @@ public interface Container extends Resource {
 
 	Member findMember(ResourceId resourceId);
 
+	@Deprecated
 	Member addMemberResource(ResourceId resourceId);
 
 	boolean removeMember(Member member);
