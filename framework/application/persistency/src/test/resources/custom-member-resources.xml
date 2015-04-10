@@ -29,6 +29,7 @@
 <!DOCTYPE dataset SYSTEM "database-schema.dtd">
 <dataset>
 	<Endpoint endpoint_id="1" path="/container/resource/" created="2012-03-14" entityTag="etag" modified="2012-03-14" app_path="path"/>
-	<Resource resource_id="1" businessKey="resourceKey" template_id="1" endpoint_id="1" container_id="2"/>
+	<Resource resource_id="1" businessKey="resourceKey" template_id="1" endpoint_id="1"/>
 	<RDFSource resource_id="1"/>
+	<ResourceMembership membership_id="0" position="0" member_id="1" container_id="2"/>
 </dataset>

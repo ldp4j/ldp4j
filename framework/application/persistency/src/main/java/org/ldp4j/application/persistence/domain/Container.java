@@ -37,6 +37,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Transient;
 
 import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
 
 @Entity
@@ -46,14 +48,15 @@ public class Container extends RDFSource implements Serializable {
 
 	private AtomicLong memberCount;
 
-	private List<Resource> members;
 	private List<Slug> slugs;
+
+	private List<ResourceMembership> memberships;
 
 	public Container() {
 		super();
 		this.memberCount=new AtomicLong();
-		this.members=Lists.newArrayList();
 		this.slugs=Lists.newArrayList();
+		this.memberships=Lists.newArrayList();
 	}
 
 	@Transient
@@ -81,8 +84,21 @@ public class Container extends RDFSource implements Serializable {
 		this.memberCount.set(counter);;
 	}
 
-	public String nextMemberPath(Slug slug) {
-		long memberId=memberCount.getAndIncrement();
+	@OneToMany(mappedBy="container")
+	public List<ResourceMembership> getMemberships() {
+		return this.memberships;
+	}
+
+	public void setMemberships(List<ResourceMembership> memberships) {
+		this.memberships = memberships;
+	}
+
+	public long nextMemberOrder() {
+		return this.memberCount.getAndIncrement();
+	}
+
+	public String nextMemberPath(ResourceMembership membership, Slug slug) {
+		long memberId=membership.getOrder();
 		StringBuilder builder=new StringBuilder();
 		builder.append(getEndpoint().getPath());
 		if(!getEndpoint().getPath().endsWith("/")) {
@@ -97,13 +113,13 @@ public class Container extends RDFSource implements Serializable {
 		return builder.toString();
 	}
 
-	@OneToMany(mappedBy="container")
+	@Transient
 	public List<Resource> getMembers() {
-		return this.members;
-	}
-
-	public void setMembers(List<Resource> members) {
-		this.members = members;
+		Builder<Resource> members=ImmutableList.<Resource>builder();
+		for(ResourceMembership rm:this.memberships) {
+			members.add(rm.getMember());
+		}
+		return members.build();
 	}
 
 	@OneToMany(mappedBy="container")
@@ -123,7 +139,7 @@ public class Container extends RDFSource implements Serializable {
 		super.toString(helper);
 		helper.
 			add("memberCount",this.memberCount).
-			add("members",DomainHelper.identifyEntities(this.members));
+			add("memberships",DomainHelper.identifyEntities(this.memberships));
 	}
 
 }

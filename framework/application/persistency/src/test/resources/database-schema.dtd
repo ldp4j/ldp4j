@@ -26,14 +26,13 @@
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
-<!ELEMENT dataset ((Application*, Endpoint*, Template* , TemplateAttachment* , RDFSourceTemplate* , BasicContainerTemplate*, DirectContainerTemplate* , IndirectContainerTemplate* , Resource* , ResourceAttachment* , RDFSource* , Container*, MembershipAwareContainer* , Slug* , Failure*))>
+<!ELEMENT dataset ((Application*, Endpoint*, Template*, TemplateAttachment*, RDFSourceTemplate*, BasicContainerTemplate*, DirectContainerTemplate*, IndirectContainerTemplate*, Resource*, RDFSource*, Container*, MembershipAwareContainer*, ResourceAttachment*, ResourceMembership*, Slug*, Failure*))>
 <!ELEMENT Application EMPTY>
 <!ATTLIST Application
 	path CDATA #REQUIRED
 	name CDATA #REQUIRED
 	description CDATA #IMPLIED
 >
-
 <!ELEMENT Template EMPTY>
 <!ATTLIST Template
 	template_id CDATA #REQUIRED
@@ -42,7 +41,6 @@
 	description CDATA #IMPLIED
 	app_path CDATA #REQUIRED
 >
-
 <!ELEMENT TemplateAttachment EMPTY>
 <!ATTLIST TemplateAttachment
 	attachment_id CDATA #REQUIRED
@@ -53,18 +51,15 @@
 	owner_template_id CDATA #REQUIRED
 	attached_template_id CDATA #REQUIRED
 >
-
 <!ELEMENT RDFSourceTemplate EMPTY>
 <!ATTLIST RDFSourceTemplate
 	template_id CDATA #REQUIRED
 >
-
 <!ELEMENT BasicContainerTemplate EMPTY>
 <!ATTLIST BasicContainerTemplate
 	template_id CDATA #REQUIRED
 	member_template_id CDATA #REQUIRED
 >
-
 <!ELEMENT DirectContainerTemplate EMPTY>
 <!ATTLIST DirectContainerTemplate
 	template_id CDATA #REQUIRED
@@ -72,7 +67,6 @@
 	membershipPredicate CDATA #REQUIRED
 	membershipRelation CDATA #REQUIRED
 >
-
 <!ELEMENT IndirectContainerTemplate EMPTY>
 <!ATTLIST IndirectContainerTemplate
 	template_id CDATA #REQUIRED
@@ -81,7 +75,6 @@
 	membershipRelation CDATA #REQUIRED
 	insertedContentRelation CDATA #REQUIRED
 >
-
 <!ELEMENT Resource EMPTY>
 <!ATTLIST Resource
 	resource_id CDATA #REQUIRED
@@ -89,10 +82,7 @@
 	indirect_id CDATA #IMPLIED
 	template_id CDATA #REQUIRED
 	endpoint_id CDATA #REQUIRED
-	container_id CDATA #IMPLIED
 >
-
-<!ELEMENT ResourceAttachment EMPTY>
 <!ATTLIST ResourceAttachment
 	attachment_id CDATA #REQUIRED
 	template_attachment_id CDATA #REQUIRED
@@ -100,32 +90,35 @@
 	attached_resource_id CDATA #REQUIRED
 	version CDATA #REQUIRED
 >
-
+<!ATTLIST ResourceMembership
+	membership_id CDATA #REQUIRED
+	position CDATA #REQUIRED
+	member_id CDATA #REQUIRED
+	container_id CDATA #REQUIRED
+>
 <!ELEMENT RDFSource EMPTY>
 <!ATTLIST RDFSource
 	resource_id CDATA #REQUIRED
 >
-
 <!ELEMENT Container EMPTY>
 <!ATTLIST Container
 	resource_id CDATA #REQUIRED
 	memberCount CDATA #REQUIRED
 >
-
 <!ELEMENT MembershipAwareContainer EMPTY>
+<!ELEMENT ResourceAttachment EMPTY>
 <!ATTLIST MembershipAwareContainer
 	resource_id CDATA #REQUIRED
 	target_resource_id CDATA #REQUIRED
 	memberCount CDATA #REQUIRED
 >
-
+<!ELEMENT ResourceMembership EMPTY>
 <!ELEMENT Slug EMPTY>
 <!ATTLIST Slug
 	resource_id CDATA #REQUIRED
 	path CDATA #REQUIRED
 	version CDATA #REQUIRED
 >
-
 <!ELEMENT Endpoint EMPTY>
 <!ATTLIST Endpoint
 	endpoint_id CDATA #REQUIRED
@@ -136,12 +129,11 @@
 	modified CDATA #REQUIRED
 	app_path CDATA #REQUIRED
 >
-
 <!ELEMENT Failure EMPTY>
 <!ATTLIST Failure
 	failure_id CDATA #REQUIRED
 	message CDATA #REQUIRED
 	ocurredOn CDATA #REQUIRED
 	request CDATA #REQUIRED
-	endpoint_id CDATA #REQUIRED
+	resource_id CDATA #REQUIRED
 >

@@ -90,6 +90,8 @@ final class DomainHelper {
 			return ((TemplateAttachment) entity).getId();
 		} else if (ResourceAttachment.class.isInstance(entity)) {
 			return ((ResourceAttachment) entity).getId();
+		} else if (ResourceMembership.class.isInstance(entity)) {
+			return ((ResourceMembership) entity).getId();
 		} else if (Slug.class.isInstance(entity)) {
 			return createSlugId((Slug) entity);
 		} else {
@@ -122,6 +124,8 @@ final class DomainHelper {
 			fillInTemplateAttachmentKeys(keys,(List<TemplateAttachment>) entities);
 		} else if (ResourceAttachment.class.isAssignableFrom(clazz)) {
 			fillInResourceAttachmentKeys(keys,(List<ResourceAttachment>) entities);
+		} else if (ResourceMembership.class.isAssignableFrom(clazz)) {
+			fillInResourceMembershipKeys(keys,(List<ResourceMembership>) entities);
 		} else if (Slug.class.isAssignableFrom(clazz)) {
 			fillInSlugKeys(keys,(List<Slug>) entities);
 		} else {
@@ -139,6 +143,12 @@ final class DomainHelper {
 
 	private static void fillInResourceAttachmentKeys(List<Object> keys, List<ResourceAttachment> entities) {
 		for (ResourceAttachment entity : entities) {
+			keys.add(entity.getId());
+		}
+	}
+
+	private static void fillInResourceMembershipKeys(List<Object> keys, List<ResourceMembership> entities) {
+		for (ResourceMembership entity : entities) {
 			keys.add(entity.getId());
 		}
 	}

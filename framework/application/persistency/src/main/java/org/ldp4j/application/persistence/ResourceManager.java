@@ -52,6 +52,7 @@ import org.ldp4j.application.persistence.domain.RDFSource;
 import org.ldp4j.application.persistence.domain.RDFSourceTemplate;
 import org.ldp4j.application.persistence.domain.Resource;
 import org.ldp4j.application.persistence.domain.ResourceAttachment;
+import org.ldp4j.application.persistence.domain.ResourceMembership;
 import org.ldp4j.application.persistence.domain.ResourceVisitor;
 import org.ldp4j.application.persistence.domain.Slug;
 import org.ldp4j.application.persistence.domain.Template;
@@ -221,6 +222,8 @@ public final class ResourceManager extends BaseManager {
 
 			private Slug slug;
 
+			private ResourceMembership membership;
+
 			private MemberResourceBuilder(Container container) {
 				this.container = container;
 			}
@@ -291,16 +294,33 @@ public final class ResourceManager extends BaseManager {
 				checkState(!(this.container.getDefinedBy() instanceof IndirectContainerTemplate) || this.indirectId!=null,"No indirect ID specified for a member of an indirect container");
 				Resource resource=createEmptyResource();
 				resource.setIndirectId(this.indirectId);
-				resource.setContainer(this.container);;
-				this.container.getMembers().add(resource);
+				initMembership(resource);
 				persistResource(resource);
 				persistSlug(getSlug());
+				persistMembership(resource);
 				return resource;
+			}
+
+			private void persistMembership(Resource resource) {
+				resource.setMembership(this.membership);
+				this.container.getMemberships().add(this.membership);
+				getManager().persist(this.membership);
 			}
 
 			@Override
 			protected String getPath() {
-				return this.container.nextMemberPath(getSlug());
+				return this.container.nextMemberPath(getMembership(),getSlug());
+			}
+
+			private ResourceMembership getMembership() {
+				return this.membership;
+			}
+
+			private void initMembership(Resource resource) {
+				this.membership=new ResourceMembership();
+				membership.setOrder(this.container.nextMemberOrder());
+				membership.setMember(resource);
+				membership.setContainer(this.container);
 			}
 
 			@Override
@@ -328,7 +348,7 @@ public final class ResourceManager extends BaseManager {
 				checkState(this.resourceAttachment!=null,"No attachment specified");
 				Resource resource=createEmptyResource();
 				persistResource(resource);
-				resource.setAttachement(this.resourceAttachment);
+				resource.setAttachment(this.resourceAttachment);
 				this.resourceAttachment.setAttachedResource(resource);
 				return resource;
 			}
@@ -400,6 +420,7 @@ public final class ResourceManager extends BaseManager {
 	private static final class DeletionContext {
 
 		private final Deque<ResourceAttachment> attachments;
+		private final Deque<ResourceMembership> memberships;
 		private final Deque<Resource> pendingResources;
 		private final Deque<Resource> completedResources;
 		private final EntityManager ctxManager;
@@ -409,21 +430,27 @@ public final class ResourceManager extends BaseManager {
 			this.ctxManager = ctxManager;
 			this.timestamp = timestamp;
 			this.attachments=new LinkedList<ResourceAttachment>();
+			this.memberships=new LinkedList<ResourceMembership>();
 			this.pendingResources=new LinkedList<Resource>();
 			this.completedResources=new LinkedList<Resource>();
 			this.pendingResources.add(resource);
 		}
 
-		public void addAttachment(ResourceAttachment attachment) {
-			this.attachments.add(attachment);
-			Resource attachedResource = attachment.getAttachedResource();
-			if(attachedResource!=null) {
-				this.pendingResources.add(attachedResource);
+		public void addAttachments(List<ResourceAttachment> attachments) {
+			for(ResourceAttachment attachment:attachments) {
+				this.attachments.add(attachment);
+				Resource attachedResource = attachment.getAttachedResource();
+				if(attachedResource!=null) {
+					this.pendingResources.add(attachedResource);
+				}
 			}
 		}
 
-		public void addMembers(List<Resource> members) {
-			this.pendingResources.addAll(members);
+		public void addMemberships(List<ResourceMembership> memberships) {
+			for(ResourceMembership membership:memberships) {
+				this.memberships.add(membership);
+				this.pendingResources.add(membership.getMember());
+			}
 		}
 
 		public boolean hasNextResource() {
@@ -441,6 +468,9 @@ public final class ResourceManager extends BaseManager {
 		public void deleteResources() {
 			for(ResourceAttachment attachment:this.attachments) {
 				removeEntity(attachment);
+			}
+			for(ResourceMembership membership:this.memberships) {
+				removeEntity(membership);
 			}
 			while(!this.completedResources.isEmpty()) {
 				Resource resource=this.completedResources.pop();
@@ -544,14 +574,12 @@ public final class ResourceManager extends BaseManager {
 				new ResourceVisitor() {
 					@Override
 					public void visitRDFSource(RDFSource resource) {
-						for(ResourceAttachment attachment:resource.getResourceAttachments()) {
-							context.addAttachment(attachment);
-						}
+						context.addAttachments(resource.getResourceAttachments());
 					}
 					@Override
 					public void visitContainer(Container resource) {
 						visitRDFSource(resource);
-						context.addMembers(resource.getMembers());
+						context.addMemberships(resource.getMemberships());
 					}
 					@Override
 					public void visitMembershipAwareContainer(MembershipAwareContainer resource) {
@@ -566,9 +594,12 @@ public final class ResourceManager extends BaseManager {
 			return ;
 		}
 		if(resource.isAttached()) {
-			resource.getAttachement().setAttachedResource(null);
+			resource.getAttachment().setAttachedResource(null);
+			resource.setAttachment(null);
 		} else {
-			resource.getContainer().getMembers().remove(resource);
+			ResourceMembership membership = resource.getMembership();
+			membership.getContainer().getMemberships().remove(membership);
+			resource.setMembership(null);
 		}
 	}
 

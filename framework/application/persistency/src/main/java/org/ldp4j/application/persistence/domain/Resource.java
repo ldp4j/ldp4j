@@ -86,8 +86,9 @@ public abstract class Resource implements Serializable {
 
 	private final Lock writeLock;
 	private final Lock readLock;
-	private Container container;
+
 	private ResourceAttachment attachment;
+	private ResourceMembership membership;
 
 	private List<ResourceAttachment> resourceAttachments;
 	private List<Failure> failures;
@@ -153,46 +154,45 @@ public abstract class Resource implements Serializable {
 		this.indirectId = indirectId;
 	}
 
-	@ManyToOne(optional=true)
-	@JoinColumn(name="container_id")
-	public Container getContainer() {
+	@OneToOne(optional=true,mappedBy="attachedResource")
+	public ResourceAttachment getAttachment() {
 		this.readLock.lock();
 		try {
-			return this.container;
+			return this.attachment;
 		} finally {
 			this.readLock.unlock();
 		}
 	}
 
-	public void setContainer(Container container) {
+	public void setAttachment(ResourceAttachment attachment) {
 		this.writeLock.lock();
 		try {
-			if(container!=null && this.attachment!=null) {
-				throw new IllegalStateException("An attached resource cannot be a member of a container");
+			if(attachment!=null && this.membership!=null) {
+				throw new IllegalStateException("A member resource cannot be attached to another resource");
 			}
-			this.container = container;
+			this.attachment=attachment;
 		} finally {
 			this.writeLock.unlock();
 		}
 	}
 
-	@OneToOne(optional=true,mappedBy="attachedResource")
-	public ResourceAttachment getAttachement() {
+	@OneToOne(optional=true,mappedBy="member")
+	public ResourceMembership getMembership() {
 		this.readLock.lock();
 		try {
-			return attachment;
+			return this.membership;
 		} finally {
 			this.readLock.unlock();
 		}
 	}
 
-	public void setAttachement(ResourceAttachment attachement) {
+	public void setMembership(ResourceMembership membership) {
 		this.writeLock.lock();
 		try {
-			if(attachment!=null && this.container!=null) {
-				throw new IllegalStateException("An member resource cannot be attached to another resource");
+			if(membership!=null && this.attachment!=null) {
+				throw new IllegalStateException("An attached resource cannot be a member of a container");
 			}
-			this.attachment = attachement;
+			this.membership=membership;
 		} finally {
 			this.writeLock.unlock();
 		}
@@ -200,7 +200,7 @@ public abstract class Resource implements Serializable {
 
 	@OneToMany(mappedBy="ownerResource")
 	public List<ResourceAttachment> getResourceAttachments() {
-		return resourceAttachments;
+		return this.resourceAttachments;
 	}
 
 	public void setResourceAttachments(List<ResourceAttachment> attachments) {
@@ -211,7 +211,7 @@ public abstract class Resource implements Serializable {
 	public boolean isMember() {
 		this.readLock.lock();
 		try {
-			return this.container!=null;
+			return this.membership!=null;
 		} finally {
 			this.readLock.unlock();
 		}
@@ -231,7 +231,7 @@ public abstract class Resource implements Serializable {
 	public boolean isRoot() {
 		this.readLock.lock();
 		try {
-			return this.attachment==null && this.container==null;
+			return this.attachment==null && this.membership==null;
 		} finally {
 			this.readLock.unlock();
 		}
@@ -241,8 +241,8 @@ public abstract class Resource implements Serializable {
 	public Resource getParent() {
 		this.readLock.lock();
 		try {
-			if(this.container!=null) {
-				return this.container;
+			if(this.membership!=null) {
+				return this.membership.getContainer();
 			}
 			if(this.attachment!=null) {
 				return this.attachment.getOwnerResource();
@@ -277,9 +277,9 @@ public abstract class Resource implements Serializable {
 			add("definedBy",DomainHelper.identifyEntity(this.definedBy)).
 			add("businessKey",this.businessKey).
 			add("endpoint",DomainHelper.identifyEntity(this.endpoint)).
-			add("container",DomainHelper.identifyEntity(this.container)).
 			add("indirectId",this.indirectId).
 			add("attachment",DomainHelper.identifyEntity(this.attachment)).
+			add("membership",DomainHelper.identifyEntity(this.membership)).
 			add("resourceAttachments",DomainHelper.identifyEntities(this.resourceAttachments)).
 			add("failures",DomainHelper.identifyEntities(this.failures));
 	}

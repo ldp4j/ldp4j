@@ -324,7 +324,7 @@ public class ApplicationManagerTest {
 		try {
 			String rootPath = "/root/rdfsource/path";
 			LOGGER.debug("Before creating root resource:");
-			LOGGER.debug("- Template: "+simpleRDFSourceTemplate());
+			LOGGER.debug("- Template: {}",simpleRDFSourceTemplate());
 			Resource resource = resManager.createRootResource(simpleRDFSourceTemplate(),rootPath,rootPath,entityTag(rootPath),null);
 			LOGGER.debug("After creating root resource:");
 			LOGGER.debug("- Created resource: "+resource);
@@ -346,7 +346,7 @@ public class ApplicationManagerTest {
 		try {
 			String rootPath = "/root/basic_container/path";
 			LOGGER.debug("Before creating root resource:");
-			LOGGER.debug("- Template: "+simpleBasicContainerTemplate());
+			LOGGER.debug("- Template: {}",simpleBasicContainerTemplate());
 			Resource resource = resManager.createRootResource(simpleBasicContainerTemplate(),rootPath,rootPath,entityTag(rootPath),null);
 			LOGGER.debug("After creating root resource:");
 			LOGGER.debug("- Created resource: "+resource);
