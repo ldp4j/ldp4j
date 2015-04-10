@@ -38,6 +38,7 @@ import org.ldp4j.application.engine.util.ListenerManager;
 import org.ldp4j.application.engine.util.Notification;
 import org.ldp4j.application.resource.Attachment;
 import org.ldp4j.application.resource.Container;
+import org.ldp4j.application.resource.Member;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.spi.PersistencyManager;
@@ -88,6 +89,7 @@ public final class EndpointManagementService implements Service {
 	}
 
 	// TODO: We need to devise a mechanism for persisting the ids of the members
+	@Deprecated
 	private static final class IdGenerator {
 
 		private final static ConcurrentMap<ResourceId,AtomicLong> CONTAINER_COUNTER=new ConcurrentHashMap<ResourceId, AtomicLong>();
@@ -154,16 +156,18 @@ public final class EndpointManagementService implements Service {
 	}
 
 	private String generatePathForMember(Resource child, Container parent, String desiredPath) throws EndpointNotFoundException {
-		if(parent.hasMember(child.id())) {
+		Member member = parent.findMember(child.id());
+		if(member!=null) {
 			Endpoint endpoint=getResourceEndpoint(parent.id());
 			ContainerTemplate parentTemplate=this.persistencyManager.templateOfId(parent.id().templateId(),ContainerTemplate.class);
 			if(parentTemplate==null) {
 				throw new IllegalStateException("Could not find template resource '"+parent+"'");
 			}
+
 			StringBuilder builder=new StringBuilder();
 			addSegment(builder,endpoint.path());
 			addSegment(builder,parentTemplate.memberPath().or(""));
-			addSegment(builder,IdGenerator.nextMemberId(parent));
+			addSegment(builder,member.number());
 			addSegment(builder,desiredPath);
 			return builder.toString();
 		}
