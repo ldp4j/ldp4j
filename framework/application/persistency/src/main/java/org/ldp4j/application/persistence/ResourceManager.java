@@ -444,6 +444,9 @@ public final class ResourceManager extends BaseManager {
 			}
 			while(!this.completedResources.isEmpty()) {
 				Resource resource=this.completedResources.pop();
+				for(Failure failure:resource.getFailures()) {
+					removeEntity(failure);
+				}
 				Endpoint endpoint = resource.getEndpoint();
 				endpoint.setDeleted(this.timestamp);
 				endpoint.setResource(null);
@@ -523,13 +526,12 @@ public final class ResourceManager extends BaseManager {
 
 	// TODO: Add proper exception handling
 	public Failure createFailure(Resource resource, String request, String message) {
-		Endpoint endpoint = resource.getEndpoint();
 		Failure failure=new Failure();
-		failure.setEndpoint(endpoint);
+		failure.setResource(resource);
 		failure.setRequest(request);
 		failure.setMessage(message);
 		failure.setOccurredOn(getTimestamp());
-		endpoint.getFailures().add(failure);
+		resource.getFailures().add(failure);
 		getManager().persist(failure);
 		return failure;
 	}

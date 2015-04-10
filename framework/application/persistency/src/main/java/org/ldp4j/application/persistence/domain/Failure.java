@@ -45,11 +45,11 @@ import com.google.common.base.Objects;
 @NamedQueries({
 	@NamedQuery(
 		name=Failure.DELETE_APPLICATION_FAILURES_BY_DATE,
-		query="DELETE FROM Failure f WHERE f.occurredOn <= :"+Failure.OCCURRED_ON+" AND f.endpoint IN (SELECT e FROM Endpoint e WHERE e.application = :"+Failure.APPLICATION+")"
+		query="DELETE FROM Failure f WHERE f.occurredOn <= :"+Failure.OCCURRED_ON+" AND f.resource IN (SELECT r FROM Resource r WHERE r.endpoint.application = :"+Failure.APPLICATION+")"
 	),
 	@NamedQuery(
 		name=Failure.DELETE_ALL_APPLICATION_FAILURES,
-		query="DELETE FROM Failure f WHERE f.endpoint IN (SELECT e FROM Endpoint e WHERE e.application = :"+Failure.APPLICATION+")"
+		query="DELETE FROM Failure f WHERE f.resource IN (SELECT r FROM Resource r WHERE r.endpoint.application = :"+Failure.APPLICATION+")"
 	)
 })
 public class Failure {
@@ -60,7 +60,7 @@ public class Failure {
 	public static final String APPLICATION="application";
 
 	private long id;
-	private Endpoint endpoint;
+	private Resource resource;
 	private String request;
 	private String message;
 
@@ -78,13 +78,13 @@ public class Failure {
 	}
 
 	@ManyToOne
-	@JoinColumn(name="endpoint_id",nullable=false,updatable=false)
-	public Endpoint getEndpoint() {
-		return endpoint;
+	@JoinColumn(name="resource_id",nullable=false,updatable=false)
+	public Resource getResource() {
+		return this.resource;
 	}
 
-	public void setEndpoint(Endpoint resource) {
-		this.endpoint = resource;
+	public void setResource(Resource resource) {
+		this.resource = resource;
 	}
 
 	@Column(nullable=false,updatable=false)
@@ -122,7 +122,7 @@ public class Failure {
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("id",this.id).
-					add("endpoint",DomainHelper.identifyEntity(this.endpoint)).
+					add("resource",DomainHelper.identifyEntity(this.resource)).
 					add("operation",this.request).
 					add("message",this.message).
 					add("ocurredOn",this.message).

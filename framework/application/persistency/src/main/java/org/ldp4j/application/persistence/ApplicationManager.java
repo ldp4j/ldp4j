@@ -55,9 +55,6 @@ public final class ApplicationManager extends BaseManager {
 					setParameter(Endpoint.APPLICATION, application).
 					getResultList();
 		for(Endpoint endpoint:endpoints) {
-			for(Failure failure:endpoint.getFailures()) {
-				ctxManager.remove(failure);
-			}
 			ctxManager.remove(endpoint);
 		}
 	}

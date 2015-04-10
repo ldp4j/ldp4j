@@ -28,7 +28,6 @@ package org.ldp4j.application.persistence.domain;
 
 import java.io.Serializable;
 import java.util.Date;
-import java.util.List;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -38,7 +37,6 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.NamedQueries;
 import javax.persistence.NamedQuery;
-import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Temporal;
@@ -46,7 +44,6 @@ import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 
 import com.google.common.base.Objects;
-import com.google.common.collect.Lists;
 
 @Entity
 @Table(
@@ -77,11 +74,6 @@ public class Endpoint implements Serializable {
 	private String entityTag;
 	private Resource resource;
 	private Application application;
-	private List<Failure> failures;
-
-	public Endpoint() {
-		this.failures=Lists.newArrayList();
-	}
 
 	@Id
 	@GeneratedValue
@@ -161,15 +153,6 @@ public class Endpoint implements Serializable {
 		this.application = application;
 	}
 
-	@OneToMany(mappedBy="endpoint")
-	public List<Failure> getFailures() {
-		return this.failures;
-	}
-
-	public void setFailures(List<Failure> failures) {
-		this.failures = failures;
-	}
-
 	@Override
 	public String toString() {
 		return
@@ -184,7 +167,6 @@ public class Endpoint implements Serializable {
 					add("entityTag",this.entityTag).
 					add("resource",DomainHelper.identifyEntity(this.resource)).
 					add("application",DomainHelper.identifyEntity(this.application)).
-					add("failures",DomainHelper.identifyEntities(this.failures)).
 					toString();
 	}
 

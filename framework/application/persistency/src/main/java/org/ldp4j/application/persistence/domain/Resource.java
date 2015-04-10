@@ -90,12 +90,14 @@ public abstract class Resource implements Serializable {
 	private ResourceAttachment attachment;
 
 	private List<ResourceAttachment> resourceAttachments;
+	private List<Failure> failures;
 
 	private static final long serialVersionUID = 1L;
 
 	public Resource() {
 		super();
 		this.resourceAttachments=Lists.newArrayList();
+		this.failures=Lists.newArrayList();
 		ReadWriteLock lock=new ReentrantReadWriteLock();
 		writeLock = lock.writeLock();
 		readLock = lock.readLock();
@@ -250,6 +252,15 @@ public abstract class Resource implements Serializable {
 			this.readLock.unlock();
 		}
 	}
+	@OneToMany(mappedBy="resource")
+	public List<Failure> getFailures() {
+		return this.failures;
+	}
+
+	public void setFailures(List<Failure> failures) {
+		this.failures = failures;
+	}
+
 
 	public abstract void accept(ResourceVisitor visitor);
 
@@ -269,7 +280,8 @@ public abstract class Resource implements Serializable {
 			add("container",DomainHelper.identifyEntity(this.container)).
 			add("indirectId",this.indirectId).
 			add("attachment",DomainHelper.identifyEntity(this.attachment)).
-			add("resourceAttachments",DomainHelper.identifyEntities(this.resourceAttachments));
+			add("resourceAttachments",DomainHelper.identifyEntities(this.resourceAttachments)).
+			add("failures",DomainHelper.identifyEntities(this.failures));
 	}
 
 }

@@ -39,7 +39,6 @@ public abstract class BaseManager {
 	protected BaseManager(EntityManager entityManager, Date timestamp) {
 		this.entityManager = entityManager;
 		this.timestamp = timestamp;
-
 	}
 
 	protected final EntityManager getManager() {
