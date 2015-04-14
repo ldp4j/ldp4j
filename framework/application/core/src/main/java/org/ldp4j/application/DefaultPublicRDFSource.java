@@ -34,7 +34,7 @@ import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.PublicRDFSource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
 
-class DefaultPublicRDFSource extends DefaultPublicResource implements PublicRDFSource {
+class DefaultPublicRDFSource extends DefaultExistingPublicResource implements PublicRDFSource {
 
 	protected DefaultPublicRDFSource(DefaultApplicationContext applicationContext, Endpoint endpoint) {
 		super(applicationContext, endpoint);
@@ -52,6 +52,14 @@ class DefaultPublicRDFSource extends DefaultPublicResource implements PublicRDFS
 			addValue(
 				ctx.property(RDF.TYPE),
 				ctx.reference(LDP.RDF_SOURCE));
+	}
+
+	@Override
+	protected void fillInMetadata(ContentPreferences contentPreferences,
+			Individual<?, ?> individual,
+			org.ldp4j.application.DefaultPublicResource.Context ctx) {
+		// TODO Auto-generated method stub
+
 	}
 
 }

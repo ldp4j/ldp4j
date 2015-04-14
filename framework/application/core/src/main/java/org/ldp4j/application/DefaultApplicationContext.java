@@ -28,7 +28,6 @@ package org.ldp4j.application;
 
 import static com.google.common.base.Preconditions.checkState;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 
@@ -45,11 +44,8 @@ import org.ldp4j.application.engine.context.ApplicationContextException;
 import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.Capabilities;
-import org.ldp4j.application.engine.context.ContentPreferences;
-import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.context.PublicResource;
-import org.ldp4j.application.engine.context.PublicResourceVisitor;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
@@ -147,74 +143,6 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	}
 
-	private static final class GonePublicResource implements PublicResource {
-
-		private final Endpoint endpoint;
-
-		private GonePublicResource(Endpoint endpoint) {
-			this.endpoint = endpoint;
-		}
-
-		@Override
-		public Status status() {
-			return Status.GONE;
-		}
-
-		@Override
-		public String path() {
-			return endpoint.path();
-		}
-
-		@Override
-		public EntityTag entityTag() {
-			return endpoint.entityTag();
-		}
-
-		@Override
-		public Date lastModified() {
-			return endpoint.lastModified();
-		}
-
-		@Override
-		public Capabilities capabilities() {
-			return new MutableCapabilities();
-		}
-
-		@Override
-		public Map<String, PublicResource> attachments() {
-			return Collections.emptyMap();
-		}
-
-		@Override
-		public ManagedIndividualId individualId() {
-			return ManagedIndividualId.createId(endpoint.resourceId().name(), endpoint.resourceId().templateId());
-		}
-
-		@Override
-		public <T> T accept(PublicResourceVisitor<T> visitor) {
-			throw new UnsupportedOperationException("The endpoint is gone");
-		}
-
-		@Override
-		public DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException {
-			throw new UnsupportedOperationException("The endpoint is gone");
-		}
-
-		@Override
-		public void delete() throws ApplicationExecutionException {
-			throw new UnsupportedOperationException("The endpoint is gone");
-		}
-
-		@Override
-		public void modify(DataSet dataSet) throws ApplicationExecutionException {
-			throw new UnsupportedOperationException("The endpoint is gone");
-		}
-
-		@Override
-		public DataSet getConstraintReport(String failureId) {
-			throw new UnsupportedOperationException("The endpoint is gone");
-		}
-	}
 
 	private final class LocalEndpointLifecycleListener implements EndpointLifecycleListener {
 		@Override
@@ -273,15 +201,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	}
 
 	private PublicResource findResource(final String path) {
-		checkNotNull(path,"Endpoint path cannot be null");
-		PublicResource resolved = resolveResource(path);
-		if(resolved==null) {
-			Endpoint endpoint=this.goneEndpoints.get(path);
-			if(endpoint!=null) {
-				resolved=new GonePublicResource(endpoint);
-			}
-		}
-		return resolved;
+		return resolveResource(path);
 	}
 
 	private PublicResource resolveResource(final String path) {

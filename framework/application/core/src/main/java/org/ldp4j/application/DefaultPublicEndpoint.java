@@ -99,8 +99,12 @@ abstract class DefaultPublicEndpoint implements PublicEndpoint {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Status status() {
-		return Status.PUBLISHED;
+	public final Status status() {
+		Status result=Status.PUBLISHED;
+		if(this.endpoint.deleted()!=null) {
+			return Status.GONE;
+		}
+		return result;
 	}
 
 	/**

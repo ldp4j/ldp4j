@@ -26,6 +26,8 @@
  */
 package org.ldp4j.application;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
@@ -40,11 +42,29 @@ final class DefaultPublicResourceFactory {
 		this.applicationContext = applicationContext;
 	}
 
+	private ResourceTemplate resolveTemplate(Endpoint endpoint) {
+		Resource resource = this.applicationContext.resolveResource(endpoint);
+		if(resource==null) {
+			throw new IllegalStateException("Could not resolve endpoint "+endpoint.path());
+		}
+		ResourceTemplate template = this.applicationContext.resourceTemplate(resource);
+		if(template==null) {
+			throw new IllegalStateException("Could not find template for resource "+resource.id());
+		}
+		return template;
+	}
+
 	DefaultPublicResource createResource(ResourceId resourceId) {
 		return createResource(this.applicationContext.resolveResource(resourceId));
 	}
 
 	DefaultPublicResource createResource(Endpoint endpoint) {
+		checkNotNull(endpoint,"Endpoint cannot be null");
+
+		if(endpoint.deleted()!=null) {
+			return new DefaultGonePublicResource(this.applicationContext,endpoint);
+		}
+
 		ResourceTemplate resourceTemplate = resolveTemplate(endpoint);
 		TemplateIntrospector introspector = TemplateIntrospector.newInstance(resourceTemplate);
 		DefaultPublicResource resource=null;
@@ -58,18 +78,6 @@ final class DefaultPublicResourceFactory {
 			resource=new DefaultPublicRDFSource(this.applicationContext,endpoint);
 		}
 		return resource;
-	}
-
-	private ResourceTemplate resolveTemplate(Endpoint endpoint) {
-		Resource resource = this.applicationContext.resolveResource(endpoint);
-		if(resource==null) {
-			throw new IllegalStateException("Could not resolve endpoint "+endpoint.path());
-		}
-		ResourceTemplate template = this.applicationContext.resourceTemplate(resource);
-		if(template==null) {
-			throw new IllegalStateException("Could not find template for resource "+resource.id());
-		}
-		return template;
 	}
 
 	static DefaultPublicResourceFactory newInstance(DefaultApplicationContext applicationContext) {
