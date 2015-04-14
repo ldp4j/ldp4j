@@ -280,8 +280,10 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	}
 
 	@Override
-	public void remove(Endpoint endpoint) {
+	public void remove(Endpoint endpoint, Date deletionDate) {
+		checkArgument(endpoint instanceof InMemoryEndpoint);
 		this.endpointRepository.remove(endpoint);
+		((InMemoryEndpoint)endpoint).delete(deletionDate);
 	}
 
 	@Override

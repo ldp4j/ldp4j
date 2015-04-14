@@ -181,12 +181,13 @@ public final class WriteSessionService implements Service {
 
 	private void modifyResource(Resource resource, Date lastModified) {
 		try {
-			persistencyManager.add(resource);
+//			persistencyManager.add(resource);
 			Endpoint endpoint =
-				endpointManagementService.modifyResourceEndpoint(
-					resource,
-					generateEntityTag(resource),
-					lastModified);
+				endpointManagementService.
+					modifyResourceEndpoint(
+						resource,
+						generateEntityTag(resource),
+						lastModified);
 			if(LOGGER.isTraceEnabled()) {
 				LOGGER.trace("Modified "+resource);
 				LOGGER.trace("Modified "+endpoint);
@@ -199,7 +200,11 @@ public final class WriteSessionService implements Service {
 	private void deleteResource(Resource resource, Date lastModified) {
 		try {
 			persistencyManager.remove(resource);
-			Endpoint endpoint = endpointManagementService.deleteResourceEndpoint(resource);
+			Endpoint endpoint =
+				endpointManagementService.
+					deleteResourceEndpoint(
+						resource,
+						lastModified);
 			if(LOGGER.isTraceEnabled()) {
 				LOGGER.trace("Deleted "+resource);
 				LOGGER.trace("Deleted "+endpoint);

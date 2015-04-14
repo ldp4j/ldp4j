@@ -97,8 +97,7 @@ final class InMemoryEndpoint implements Endpoint {
 		this.lastModified=new Date(newLastModified.getTime());
 	}
 
-	@Override
-	public void delete(Date deleted) {
+	void delete(Date deleted) {
 		checkState(this.deleted==null,"Endpoint is already deleted");
 		this.deleted=deleted;
 		this.resourceId=null;

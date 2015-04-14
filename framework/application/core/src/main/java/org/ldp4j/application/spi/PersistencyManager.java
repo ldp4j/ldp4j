@@ -62,7 +62,7 @@ public interface PersistencyManager {
 
 	void add(Resource resource);
 
-	void remove(Endpoint endpoint);
+	void remove(Endpoint endpoint, Date deletionDate);
 
 	void remove(Resource resource);
 

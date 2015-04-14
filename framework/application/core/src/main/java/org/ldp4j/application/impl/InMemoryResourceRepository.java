@@ -26,7 +26,7 @@
  */
 package org.ldp4j.application.impl;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -93,6 +93,7 @@ final class InMemoryResourceRepository implements Managed {
 		checkNotNull(resource,"Resource cannot be null");
 		lock.writeLock().lock();
 		try {
+			checkState(find(resource.id())==null,"A resource with identifier '%s' already exists",resource.id());
 			resource.accept(
 				new ResourceVisitor() {
 					@Override

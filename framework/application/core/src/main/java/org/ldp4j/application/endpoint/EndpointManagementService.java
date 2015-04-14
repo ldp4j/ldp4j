@@ -44,6 +44,8 @@ import org.ldp4j.application.spi.ServiceBuilder;
 import org.ldp4j.application.template.AttachedTemplate;
 import org.ldp4j.application.template.ContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class EndpointManagementService implements Service {
 
@@ -156,22 +158,25 @@ public final class EndpointManagementService implements Service {
 		return null;
 	}
 
+	private static Logger LOGGER=LoggerFactory.getLogger(EndpointManagementService.class);
+
 	private Endpoint createEndpoint(Resource resource, String relativePath, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
 		String candidatePath=relativePath;
 		int repetitions=0;
 		while(repetitions<MAX_ENDPOINT_CREATION_FAILURE) {
+			LOGGER.debug("({}) Creating endpoint for {} [{},{},{}]",repetitions,resource.id(),entityTag,lastModified,relativePath);
 			try {
 				String resourcePath = calculateResourcePath(resource,candidatePath);
+				LOGGER.debug("({}) Trying resource path {} ",repetitions,resourcePath);
 				Endpoint newEndpoint = this.persistencyManager.createEndpoint(resource,resourcePath,entityTag,lastModified);
 				this.persistencyManager.add(newEndpoint);
 				return newEndpoint;
 			} catch (EndpointNotFoundException e) {
 				throw new EndpointCreationException("Could not calculate path for resource '"+resource.id()+"'",e);
 			} catch (IllegalArgumentException e) {
+				LOGGER.debug("Could not create endpoint",e);
 				// TODO: Define a proper exception
-				if(candidatePath!=null) {
-					repetitions++;
-				}
+				repetitions++;
 				candidatePath=null;
 			}
 		}
@@ -235,13 +240,13 @@ public final class EndpointManagementService implements Service {
 		return endpoint;
 	}
 
-	public Endpoint deleteResourceEndpoint(Resource resource) throws EndpointNotFoundException {
+	public Endpoint deleteResourceEndpoint(Resource resource, Date deletionDate) throws EndpointNotFoundException {
 		checkNotNull(resource,"Resource cannot be null");
 		Endpoint endpoint = this.persistencyManager.endpointOfResource(resource.id());
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resource.id());
 		}
-		this.persistencyManager.remove(endpoint);
+		this.persistencyManager.remove(endpoint,deletionDate);
 		this.listenerManager.notify(new EndpointDeletionNotification(endpoint));
 		return endpoint;
 	}
