@@ -33,23 +33,26 @@ import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.resource.ResourceId;
 
 import com.google.common.base.Objects;
+import static com.google.common.base.Preconditions.*;
 
 final class InMemoryEndpoint implements Endpoint {
 
 	private final long id;
-	private final ResourceId resourceId;
 	private final String path;
+	private final Date created;
 
-
+	private ResourceId resourceId;
 	private EntityTag entityTag;
 	private Date lastModified;
+	private Date deleted;
 
-	InMemoryEndpoint(long id, String path, ResourceId resourceId, EntityTag entityTag, Date lastModified) {
+	InMemoryEndpoint(long id, String path, ResourceId resourceId, Date created, EntityTag entityTag) {
 		this.id = id;
 		this.path = path;
 		this.resourceId = resourceId;
+		this.created = created;
 		this.entityTag = entityTag;
-		this.lastModified = lastModified;
+		this.lastModified = created;
 	}
 
 	@Override
@@ -63,24 +66,42 @@ final class InMemoryEndpoint implements Endpoint {
 	}
 
 	@Override
+	public Date created() {
+		return this.created;
+	}
+
+	@Override
+	public Date deleted() {
+		return this.deleted;
+	}
+
+	@Override
 	public EntityTag entityTag() {
-		return entityTag;
+		return this.entityTag;
 	}
 
 	@Override
 	public Date lastModified() {
-		return lastModified;
+		return this.lastModified;
 	}
 
 	@Override
 	public ResourceId resourceId() {
-		return resourceId;
+		return this.resourceId;
 	}
 
 	@Override
 	public void modify(EntityTag newEntityTag, Date newLastModified) {
+		checkState(this.deleted==null,"Endpoint is already deleted");
 		this.entityTag=newEntityTag;
 		this.lastModified=new Date(newLastModified.getTime());
+	}
+
+	@Override
+	public void delete(Date deleted) {
+		checkState(this.deleted==null,"Endpoint is already deleted");
+		this.deleted=deleted;
+		this.resourceId=null;
 	}
 
 	@Override
@@ -91,9 +112,11 @@ final class InMemoryEndpoint implements Endpoint {
 					omitNullValues().
 					add("id",this.id).
 					add("path",this.path).
-					add("resourceId",this.resourceId).
+					add("created",this.created).
+					add("deleted",this.deleted).
 					add("entityTag",this.entityTag).
 					add("lastModified",this.lastModified.getTime()).
+					add("resourceId",this.resourceId).
 					toString();
 	}
 

@@ -34,15 +34,21 @@ import org.ldp4j.application.resource.ResourceId;
 public interface Endpoint {
 
 	long id();
-	
-	String path();
-	
+
 	ResourceId resourceId();
+
+	String path();
+
+	Date created();
+
+	Date deleted();
 
 	EntityTag entityTag();
 
 	Date lastModified();
 
 	void modify(EntityTag newEntityTag, Date newLastModified);
+
+	void delete(Date deleted);
 
 }
