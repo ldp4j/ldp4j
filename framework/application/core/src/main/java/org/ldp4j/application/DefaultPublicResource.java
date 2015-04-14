@@ -27,10 +27,10 @@
 package org.ldp4j.application;
 
 import java.net.URI;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
@@ -67,7 +67,8 @@ import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.template.AttachedTemplate;
 import org.ldp4j.application.vocabulary.Term;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
 
 abstract class DefaultPublicResource extends DefaultPublicEndpoint implements PublicResource {
 
@@ -172,16 +173,21 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 	public final void modify(DataSet dataSet) throws ApplicationExecutionException {
 		DataSet metadata = metadata();
 
-		// First check that the framework/protocol metadata has not been messed
-		// around
-		validate(dataSet, metadata);
+		try {
+			// First check that the framework/protocol metadata has not been messed
+			// around
+			validate(dataSet, metadata);
 
-		// Second, remove the framework/protocol metadata from the
-		// representation that will be handed to the application
-		DataSetUtils.remove(metadata, dataSet);
+			// Second, remove the framework/protocol metadata from the
+			// representation that will be handed to the application
+			DataSetUtils.remove(metadata, dataSet);
 
-		// Third, request the modification using the cleansed and validated data
-		applicationContext().modifyResource(endpoint(),dataSet);
+			// Third, request the modification using the cleansed and validated data
+			applicationContext().modifyResource(endpoint(),dataSet);
+		} catch (InvalidContentException error) {
+			applicationContext().registerContentFailure(endpoint(),error);
+			throw new ApplicationExecutionException("Protocol/framework managed metadata validation failure",error);
+		}
 	}
 
 	@Override
@@ -255,18 +261,24 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 
 	protected void configureValidationConstraints(ValidatorBuilder builder, Individual<?,?> individual, DataSet metadata) {
 		builder.withPropertyConstraint(ValidationConstraintFactory.mandatoryPropertyValues(individual.property(RDF.TYPE.as(URI.class))));
-		Set<URI> properties=Sets.newHashSet();
+		Multimap<URI,AttachedTemplate> attachmentMap=LinkedHashMultimap.create();
 		for(AttachedTemplate attachedTemplate:template().attachedTemplates()) {
 			URI propertyId = attachedTemplate.predicate().or(HAS_ATTACHMENT);
-			if(!properties.contains(propertyId)) {
-				Property property = individual.property(propertyId);
-				if(property!=null) {
-					builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(property));
-					configureAdditionalValidationConstraints(builder,individual,metadata,attachments().get(attachedTemplate.id()));
-				} else {
-					builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.id(),propertyId));
+			attachmentMap.put(propertyId, attachedTemplate);
+		}
+		for(Entry<URI, Collection<AttachedTemplate>> entry:attachmentMap.asMap().entrySet()) {
+			URI propertyId=entry.getKey();
+			Property property = individual.property(propertyId);
+			if(property!=null) {
+				builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(property));
+				for(AttachedTemplate attachedTemplate:entry.getValue()) {
+					PublicResource resource = attachments().get(attachedTemplate.id());
+					if(resource!=null) {
+						configureAdditionalValidationConstraints(builder,individual,metadata,resource);
+					}
 				}
-				properties.add(propertyId);
+			} else {
+				builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.id(),propertyId));
 			}
 		}
 	}
@@ -298,7 +310,7 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 		);
 	}
 
-	private void validate(DataSet dataSet, DataSet metadata) throws ApplicationExecutionException {
+	private void validate(DataSet dataSet, DataSet metadata) throws InvalidContentException {
 		ManagedIndividualId id = individualId();
 		Individual<?,?> individual=metadata.individualOfId(id);
 
@@ -313,7 +325,7 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 			// TODO: Add validation constraints
 			Constraints constraints = Constraints.constraints();
 			InvalidContentException error = new InconsistentContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures(),constraints);
-			throw new ApplicationExecutionException("Protocol/framework managed metadata validation failure",error);
+			throw error;
 		}
 	}
 

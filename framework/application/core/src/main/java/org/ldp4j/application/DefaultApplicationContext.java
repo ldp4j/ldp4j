@@ -299,21 +299,25 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return this.factory.createResource(ResourceId.createId(id.name(), id.managerId()));
 	}
 
-	private void processConstraintValidationFailure(Resource resource, FeatureExecutionException e) {
-		if(e.getCause() instanceof InvalidContentException) {
-			InvalidContentException cause=(InvalidContentException)e.getCause();
-			ConstraintReport report=
-					this.engine().
-						persistencyManager().
-							createConstraintReport(
-								resource,
-								cause.getConstraints(),
-								new Date(),
-								currentRequest());
-			this.engine().persistencyManager().add(report);
-			LOGGER.debug("Constraint validation failed. Registered constraint report {}",report.id());
-			cause.setConstraintsId(report.id().constraintsId());
+	private void processConstraintValidationFailure(Resource resource, Throwable failure) {
+		if(failure.getCause() instanceof InvalidContentException) {
+			InvalidContentException cause=(InvalidContentException)failure.getCause();
+			registerConstraintReport(resource, cause);
 		}
+	}
+
+	private void registerConstraintReport(Resource resource, InvalidContentException error) {
+		ConstraintReport report=
+			this.engine().
+				persistencyManager().
+					createConstraintReport(
+						resource,
+						error.getConstraints(),
+						new Date(),
+						currentRequest());
+		this.engine().persistencyManager().add(report);
+		LOGGER.debug("Constraint validation failed. Registered constraint report {}",report.id());
+		error.setConstraintsId(report.id().constraintsId());
 	}
 
 	private HttpRequest currentRequest() {
@@ -336,6 +340,11 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			String errorMessage = applicationFailureMessage("Resource '%s' retrieval failed ",endpoint);
 			throw createException(errorMessage,e);
 		}
+	}
+
+	void registerContentFailure(Endpoint endpoint, InvalidContentException error) {
+		ResourceId resourceId=endpoint.resourceId();
+		registerConstraintReport(this.engine().persistencyManager().resourceOfId(resourceId),error);
 	}
 
 	Resource resolveResource(Endpoint endpoint) {
