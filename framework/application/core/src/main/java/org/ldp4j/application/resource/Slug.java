@@ -26,24 +26,14 @@
  */
 package org.ldp4j.application.resource;
 
-import java.util.Set;
+public interface Slug {
 
-public interface Container extends Resource {
+	ResourceId containerId();
 
-	Set<Slug> slugs();
+	String preferredPath();
 
-	Set<Member> members();
+	long version();
 
-	boolean hasMember(ResourceId resourceId);
-
-	Member findMember(ResourceId resourceId);
-
-	Resource addMember(ResourceId resourceId);
-
-	boolean removeMember(Member member);
-
-	Slug findSlug(String preferredPath);
-
-	Slug addSlug(String preferredPath);
+	String nextPath();
 
 }

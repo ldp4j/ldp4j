@@ -38,6 +38,7 @@ import org.ldp4j.application.resource.Container;
 import org.ldp4j.application.resource.Member;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.resource.Slug;
 import org.ldp4j.application.spi.PersistencyManager;
 import org.ldp4j.application.spi.Service;
 import org.ldp4j.application.spi.ServiceBuilder;
@@ -146,16 +147,29 @@ public final class EndpointManagementService implements Service {
 			if(parentTemplate==null) {
 				throw new IllegalStateException("Could not find template resource '"+parent+"'");
 			}
+			String slugPath=getSlugPath(parent, desiredPath);
 			return
 				PathBuilder.
 					create().
 						addSegment(endpoint.path()).
 						addSegment(parentTemplate.memberPath().or("")).
 						addSegment(member.number()).
-						addSegment(desiredPath).
+						addSegment(slugPath).
 						build();
 		}
 		return null;
+	}
+
+	private String getSlugPath(Container parent, String desiredPath) {
+		String slugPath=null;
+		if(desiredPath!=null) {
+			Slug slug=parent.findSlug(desiredPath);
+			if(slug==null) {
+				slug=parent.addSlug(desiredPath);
+			}
+			slugPath=slug.nextPath();
+		}
+		return slugPath;
 	}
 
 	private static Logger LOGGER=LoggerFactory.getLogger(EndpointManagementService.class);

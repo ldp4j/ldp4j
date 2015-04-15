@@ -38,6 +38,7 @@ import org.ldp4j.application.resource.Member;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.resource.ResourceVisitor;
+import org.ldp4j.application.resource.Slug;
 import org.ldp4j.application.template.ContainerTemplate;
 
 import com.google.common.base.Objects;
@@ -45,6 +46,56 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
 final class InMemoryContainer extends InMemoryResource implements Container {
+
+	private final class InMemorySlug implements Slug {
+
+		private final ResourceId containerId;
+		private final String preferredPath;
+		private final AtomicLong version=new AtomicLong();
+
+		private InMemorySlug(ResourceId containerId, String preferredPath) {
+			this.containerId = containerId;
+			this.preferredPath = preferredPath;
+		}
+
+		@Override
+		public ResourceId containerId() {
+			return this.containerId;
+		}
+
+		@Override
+		public String preferredPath() {
+			return this.preferredPath;
+		}
+
+		@Override
+		public long version() {
+			return this.version.get();
+		}
+
+		@Override
+		public String nextPath() {
+			long id=this.version.getAndIncrement();
+			String result = this.preferredPath;
+			if(id>0) {
+				result+="_"+id;
+			}
+			return result;
+		}
+
+		@Override
+		public String toString() {
+			return
+				Objects.
+					toStringHelper(getClass()).
+						omitNullValues().
+						add("containerId",this.containerId).
+						add("preferredPath",this.preferredPath).
+						add("version",this.version.get()).
+						toString();
+		}
+
+	}
 
 	private static final class InMemoryMember implements Member {
 
@@ -88,14 +139,16 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 
 	private final ConcurrentMap<ResourceId,Member> members;
 	private final AtomicLong memberCounter;
+	private final ConcurrentMap<String,Slug> slugs;
 
-	protected InMemoryContainer(ResourceId id, ResourceId parentId) {
+	InMemoryContainer(ResourceId id, ResourceId parentId) {
 		super(id,parentId);
 		this.members=Maps.newConcurrentMap();
 		this.memberCounter=new AtomicLong();
+		this.slugs=Maps.newConcurrentMap();
 	}
 
-	protected InMemoryContainer(ResourceId id) {
+	InMemoryContainer(ResourceId id) {
 		this(id,null);
 	}
 
@@ -153,11 +206,32 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 	}
 
 	@Override
+	public Set<Slug> slugs() {
+		return ImmutableSet.copyOf(this.slugs.values());
+	}
+
+	@Override
+	public Slug findSlug(String preferredPath) {
+		return this.slugs.get(preferredPath);
+	}
+
+	@Override
+	public Slug addSlug(String preferredPath) {
+		Slug slug = new InMemorySlug(id(), preferredPath);
+		Slug result=this.slugs.putIfAbsent(slug.preferredPath(),slug);
+		if(result==null) {
+			result=slug;
+		}
+		return result;
+	}
+
+	@Override
 	public String toString() {
 		return
 			stringHelper().
 				add("memberCounter",this.memberCounter).
 				add("members",this.members).
+				add("slugs",this.slugs).
 				toString();
 	}
 
