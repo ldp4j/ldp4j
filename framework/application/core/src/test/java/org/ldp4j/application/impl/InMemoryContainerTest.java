@@ -101,9 +101,7 @@ public class InMemoryContainerTest {
 		original.nextPath();
 		assertThat(original.version(),equalTo(3L));
 		Slug slug = this.container.addSlug("slug_3");
-		assertThat(slug,notNullValue());
-		assertThat(slug.preferredPath(),equalTo("slug_3"));
-		assertThat(slug.version(),equalTo(1L));
+		assertThat(slug,sameInstance(original));
 		assertThat(original.version(),equalTo(3L));
 	}
 

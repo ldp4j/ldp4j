@@ -180,6 +180,8 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 			if(slug.version()<tmp.version()) {
 				slug.setVersion(tmp.version());
 				return slug;
+			} else if(slug.version()==tmp.version()) {
+				return slug;
 			}
 		}
 
