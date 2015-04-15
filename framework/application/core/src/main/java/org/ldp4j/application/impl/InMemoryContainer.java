@@ -47,56 +47,6 @@ import com.google.common.collect.Maps;
 
 final class InMemoryContainer extends InMemoryResource implements Container {
 
-	private final class InMemorySlug implements Slug {
-
-		private final ResourceId containerId;
-		private final String preferredPath;
-		private final AtomicLong version=new AtomicLong();
-
-		private InMemorySlug(ResourceId containerId, String preferredPath) {
-			this.containerId = containerId;
-			this.preferredPath = preferredPath;
-		}
-
-		@Override
-		public ResourceId containerId() {
-			return this.containerId;
-		}
-
-		@Override
-		public String preferredPath() {
-			return this.preferredPath;
-		}
-
-		@Override
-		public long version() {
-			return this.version.get();
-		}
-
-		@Override
-		public String nextPath() {
-			long id=this.version.getAndIncrement();
-			String result = this.preferredPath;
-			if(id>0) {
-				result+="_"+id;
-			}
-			return result;
-		}
-
-		@Override
-		public String toString() {
-			return
-				Objects.
-					toStringHelper(getClass()).
-						omitNullValues().
-						add("containerId",this.containerId).
-						add("preferredPath",this.preferredPath).
-						add("version",this.version.get()).
-						toString();
-		}
-
-	}
-
 	private static final class InMemoryMember implements Member {
 
 		private final ResourceId memberId;
@@ -139,7 +89,7 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 
 	private final ConcurrentMap<ResourceId,Member> members;
 	private final AtomicLong memberCounter;
-	private final ConcurrentMap<String,Slug> slugs;
+	private final ConcurrentMap<String,InMemorySlug> slugs;
 
 	InMemoryContainer(ResourceId id, ResourceId parentId) {
 		super(id,parentId);
@@ -207,7 +157,7 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 
 	@Override
 	public Set<Slug> slugs() {
-		return ImmutableSet.copyOf(this.slugs.values());
+		return ImmutableSet.<Slug>copyOf(this.slugs.values());
 	}
 
 	@Override
@@ -217,12 +167,23 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 
 	@Override
 	public Slug addSlug(String preferredPath) {
-		Slug slug = new InMemorySlug(id(), preferredPath);
-		Slug result=this.slugs.putIfAbsent(slug.preferredPath(),slug);
-		if(result==null) {
-			result=slug;
+		checkNotNull(preferredPath,"Preferred path cannot be null");
+
+		InMemorySlug tmp = InMemorySlug.create(preferredPath,this);
+
+		InMemorySlug slug=this.slugs.putIfAbsent(tmp.preferredPath(),tmp);
+		if(slug==null) {
+			return tmp;
 		}
-		return result;
+
+		synchronized(slug) {
+			if(slug.version()<tmp.version()) {
+				slug.setVersion(tmp.version());
+				return slug;
+			}
+		}
+
+		return addSlug(preferredPath+"_1");
 	}
 
 	@Override
