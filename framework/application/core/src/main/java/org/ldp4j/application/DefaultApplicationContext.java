@@ -29,7 +29,6 @@ package org.ldp4j.application;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Date;
-import java.util.Map;
 
 import org.ldp4j.application.constraints.ConstraintReport;
 import org.ldp4j.application.constraints.ConstraintReportId;
@@ -37,7 +36,6 @@ import org.ldp4j.application.constraints.ConstraintReportTransformer;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.endpoint.Endpoint;
-import org.ldp4j.application.endpoint.EndpointLifecycleListener;
 import org.ldp4j.application.engine.ApplicationContextCreationException;
 import org.ldp4j.application.engine.context.ApplicationContext;
 import org.ldp4j.application.engine.context.ApplicationContextException;
@@ -63,8 +61,6 @@ import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateIntrospector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.Maps;
 
 public final class DefaultApplicationContext implements ApplicationContext {
 
@@ -143,24 +139,11 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	}
 
-
-	private final class LocalEndpointLifecycleListener implements EndpointLifecycleListener {
-		@Override
-		public void endpointCreated(Endpoint endpoint) {
-		}
-		@Override
-		public void endpointDeleted(Endpoint endpoint) {
-			DefaultApplicationContext.this.goneEndpoints.put(endpoint.path(),endpoint);
-		}
-	}
-
 	private static Logger LOGGER=LoggerFactory.getLogger(DefaultApplicationContext.class);
 
 	private Application<Configuration> application;
 
 	private final DefaultPublicResourceFactory factory;
-	private final EndpointLifecycleListener endpointLifecycleListener;
-	private final Map<String,Endpoint> goneEndpoints;
 
 	private final DefaultApplicationEngine engine;
 
@@ -169,10 +152,8 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	private final ThreadLocal<DefaultApplicationOperation> currentOperation;
 
 	DefaultApplicationContext(DefaultApplicationEngine engine) {
-		this.engine = engine;
+		this.engine=engine;
 		this.factory=DefaultPublicResourceFactory.newInstance(this);
-		this.goneEndpoints=Maps.newLinkedHashMap();
-		this.endpointLifecycleListener = new LocalEndpointLifecycleListener();
 		this.operationController=new ApplicationContextOperationController();
 		this.currentOperation=new ThreadLocal<DefaultApplicationOperation>();
 	}
@@ -206,12 +187,11 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	private PublicResource resolveResource(final String path) {
 		checkNotNull(path,"Endpoint path cannot be null");
-		PublicResource resolved=null;
-		Endpoint endpoint = this.engine().endpointManagementService().resolveEndpoint(path);
-		if(endpoint!=null) {
-			resolved = this.factory.createResource(endpoint);
-		}
-		return resolved;
+		Endpoint endpoint=
+				engine().
+					endpointManagementService().
+						resolveEndpoint(path);
+		return this.factory.createResource(endpoint);
 	}
 
 	private PublicResource resolveResource(ManagedIndividualId id) {
@@ -377,7 +357,6 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	void initialize(String applicationClassName) throws ApplicationContextCreationException {
 		try {
-			this.engine().endpointManagementService().registerEndpointLifecycleListener(this.endpointLifecycleListener);
 			this.application = this.engine().applicationLifecycleService().initialize(applicationClassName);
 		} catch (ApplicationContextCreationException e) {
 			String errorMessage = "Application '"+applicationClassName+"' initilization failed";
@@ -387,7 +366,6 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	}
 
 	boolean shutdown() {
-		this.engine().endpointManagementService().deregisterEndpointLifecycleListener(this.endpointLifecycleListener);
 		return true;
 	}
 

@@ -289,12 +289,14 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	@Override
 	public void init() throws LifecycleException {
 		this.resourceRepository.init();
+		this.constraintReportRepository.init();
 		this.endpointRepository.init();
 	}
 
 	@Override
 	public void shutdown() throws LifecycleException {
 		this.endpointRepository.shutdown();
+		this.constraintReportRepository.shutdown();
 		this.resourceRepository.shutdown();
 	}
 

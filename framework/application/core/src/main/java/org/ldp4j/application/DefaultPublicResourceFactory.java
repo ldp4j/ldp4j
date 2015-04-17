@@ -26,7 +26,7 @@
  */
 package org.ldp4j.application;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.resource.Resource;
@@ -44,22 +44,22 @@ final class DefaultPublicResourceFactory {
 
 	private ResourceTemplate resolveTemplate(Endpoint endpoint) {
 		Resource resource = this.applicationContext.resolveResource(endpoint);
-		if(resource==null) {
-			throw new IllegalStateException("Could not resolve endpoint "+endpoint.path());
-		}
+		checkState(resource!=null,"Could not resolve endpoint %s",endpoint.path());
 		ResourceTemplate template = this.applicationContext.resourceTemplate(resource);
-		if(template==null) {
-			throw new IllegalStateException("Could not find template for resource "+resource.id());
-		}
+		checkState(template!=null,"Could not find template for resource %s",resource.id());
 		return template;
 	}
 
 	DefaultPublicResource createResource(ResourceId resourceId) {
-		return createResource(this.applicationContext.resolveResource(resourceId));
+		Endpoint endpoint=this.applicationContext.resolveResource(resourceId);
+		checkState(endpoint!=null,"Could not resolve resource %s",resourceId);
+		return createResource(endpoint);
 	}
 
 	DefaultPublicResource createResource(Endpoint endpoint) {
-		checkNotNull(endpoint,"Endpoint cannot be null");
+		if(endpoint==null) {
+			return null;
+		}
 
 		if(endpoint.deleted()!=null) {
 			return new DefaultGonePublicResource(this.applicationContext,endpoint);

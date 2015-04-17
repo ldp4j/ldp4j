@@ -81,8 +81,8 @@ final class InMemoryEndpointRepository implements Managed {
 	void remove(Endpoint endpoint) {
 		lock.writeLock().lock();
 		try {
-			endpointsById.remove(endpoint.id());
-			endpointsByPath.remove(endpoint.path());
+//			endpointsById.remove(endpoint.id());
+//			endpointsByPath.remove(endpoint.path());
 			endpointsByResourceName.remove(endpoint.resourceId());
 		} finally {
 			lock.writeLock().unlock();
