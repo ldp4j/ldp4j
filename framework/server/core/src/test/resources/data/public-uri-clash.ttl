@@ -1,0 +1,7 @@
+<>
+	a <http://www.w3.org/ns/ldp#RDFSource>, <http://example.com/ns#Bug> ;
+	<http://example.com/ns#child> <relative/> ;
+	<http://example.com/ns#last> <http://localhost:8080/ldp4j-server-tckf/ldp4j/api/basic_container/0/> ;
+	<http://example.com/ns#severity> "High" ;
+	<http://purl.org/dc/terms/description> "Issues that need to be fixed." ;
+	<http://purl.org/dc/terms/title> "Another bug to test." .

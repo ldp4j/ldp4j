@@ -103,4 +103,40 @@ public class DataTransformatorTest {
 		assertThat(data,notNullValue());
 	}
 
+	@Test
+	public void testCornerCase() throws Exception {
+		DataTransformator sut =
+			DataTransformator.
+				create(URI.create("http://localhost:8080/ldp4j-server-tckf/ldp4j/")).
+				surrogateEndpoint(URI.create("api/basic_container/")).
+				enableResolution(
+					new ResourceResolver() {
+
+					@Override
+					public URI resolveResource(ManagedIndividualId id) {
+						// TODO Auto-generated method stub
+						return null;
+					}
+
+					@Override
+					public ManagedIndividualId resolveLocation(URI path) {
+						// TODO Auto-generated method stub
+						return null;
+					}
+				}).
+				mediaType(new MediaType("text","turtle"));
+
+		DataSet dataSet = sut.unmarshall(loadResource("/data/public-uri-clash.ttl"));
+		String data=sut.marshall(dataSet);
+		assertThat(data,notNullValue());
+	}
+
+	@Test
+	public void testJSON_LD() throws Exception {
+		DataSet dataSet = sut.unmarshall(loadResource("/data/relative-managed-individuals.ttl"));
+		DataTransformator marshaller=sut.mediaType(new MediaType("application","ld+json"));
+		String data=marshaller.marshall(dataSet);
+		assertThat(data,notNullValue());
+	}
+
 }
