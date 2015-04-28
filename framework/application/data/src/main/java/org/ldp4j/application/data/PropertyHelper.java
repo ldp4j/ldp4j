@@ -65,10 +65,10 @@ public final class PropertyHelper {
 		for(Value value:this.property) {
 			value.accept(extractor);
 			if(extractor.isAvailable()) {
-				break;
+				return extractor.getValue().id();
 			}
 		}
-		return extractor.getValue().id();
+		return null;
 	}
 
 }
