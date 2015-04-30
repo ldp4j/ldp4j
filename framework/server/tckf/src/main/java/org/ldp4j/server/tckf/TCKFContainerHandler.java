@@ -72,7 +72,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 		LOGGER.trace("Creating member of container {} using: \n{}",getHandlerName(),representation);
 
 		DataSetHelper helper=
-				DataSetHelper.newInstance(representation);
+				DataSetUtils.newHelper(representation);
 
 		ManagedIndividualId newId =
 			ManagedIndividualId.

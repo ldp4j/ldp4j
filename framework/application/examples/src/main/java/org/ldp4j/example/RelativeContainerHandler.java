@@ -45,13 +45,13 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 
 @DirectContainer(
-	id=RelativeContainerHandler.ID, 
+	id=RelativeContainerHandler.ID,
 	memberHandler=PersonHandler.class,
 	membershipRelation=MembershipRelation.HAS_MEMBER,
 	membershipPredicate="http://www.ldp4j.org/vocabularies/example#hasRelative"
 )
 public class RelativeContainerHandler extends InMemoryContainerHandler {
-	
+
 	public static final String ID="relativeContainerTemplate";
 	private PersonHandler handler;
 
@@ -68,20 +68,20 @@ public class RelativeContainerHandler extends InMemoryContainerHandler {
 			NamingScheme.
 				getDefault().
 					name(id.incrementAndGet());
-		
+
 		DataSetHelper helper=
-				DataSetHelper.newInstance(representation);
-		
-		ManagedIndividual individual = 
+				DataSetUtils.newHelper(representation);
+
+		ManagedIndividual individual =
 			helper.
 				replace(
-					DataSetHelper.SELF, 
-					ManagedIndividualId.createId(name,PersonHandler.ID), 
+					DataSetHelper.SELF,
+					ManagedIndividualId.createId(name,PersonHandler.ID),
 					ManagedIndividual.class);
 
 		individual.
 			addValue(
-				URI.create("http://www.example.org/vocab#creationDate"), 
+				URI.create("http://www.example.org/vocab#creationDate"),
 				DataSetUtils.newLiteral(new Date()));
 		try {
 			handler.add(name, representation);
@@ -97,5 +97,5 @@ public class RelativeContainerHandler extends InMemoryContainerHandler {
 	public void setHandler(PersonHandler resourceHandler) {
 		this.handler = resourceHandler;
 	}
-	
+
 }

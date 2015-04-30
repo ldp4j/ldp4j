@@ -44,11 +44,11 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 
 @BasicContainer(
-	id = PersonContainerHandler.ID, 
+	id = PersonContainerHandler.ID,
 	memberHandler = PersonHandler.class
 )
 public class PersonContainerHandler extends InMemoryContainerHandler {
-	
+
 	public static final String ID="personContainerTemplate";
 
 	private PersonHandler handler;
@@ -70,20 +70,20 @@ public class PersonContainerHandler extends InMemoryContainerHandler {
 			NamingScheme.
 				getDefault().
 					name(id.incrementAndGet());
-		
+
 		DataSetHelper helper=
-					DataSetHelper.newInstance(representation);
-		
-		ManagedIndividual individual = 
+					DataSetUtils.newHelper(representation);
+
+		ManagedIndividual individual =
 			helper.
 				replace(
-					DataSetHelper.SELF, 
-					ManagedIndividualId.createId(name,PersonHandler.ID), 
+					DataSetHelper.SELF,
+					ManagedIndividualId.createId(name,PersonHandler.ID),
 					ManagedIndividual.class);
-		
+
 		individual.
 			addValue(
-				URI.create("http://www.example.org/vocab#creationDate"), 
+				URI.create("http://www.example.org/vocab#creationDate"),
 				DataSetUtils.newLiteral(new Date()));
 		try {
 			this.handler.add(name, representation);
@@ -95,5 +95,5 @@ public class PersonContainerHandler extends InMemoryContainerHandler {
 			throw new IllegalStateException("Could not create member",e);
 		}
 	}
-	
+
 }
