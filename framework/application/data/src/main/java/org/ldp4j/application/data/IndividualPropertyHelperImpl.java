@@ -30,12 +30,44 @@ import java.net.URI;
 
 import org.ldp4j.application.vocabulary.Term;
 
-public interface IndividualHelper {
+final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 
-	PropertyHelper property(URI propertyId);
+	private final IndividualHelper iHelper;
+	private final PropertyHelper pHelper;
 
-	PropertyHelper property(String propertyId);
+	IndividualPropertyHelperImpl(IndividualHelper iHelper, PropertyHelper pHelper) {
+		this.iHelper = iHelper;
+		this.pHelper = pHelper;
+	}
 
-	PropertyHelper property(Term property);
+	@Override
+	public <T> T firstValue(Class<? extends T> aClazz) {
+		return this.pHelper.firstValue(aClazz);
+	}
+
+	@Override
+	public <T, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz) {
+		return this.pHelper.firstIndividual(clazz);
+	}
+
+	@Override
+	public <T> IndividualPropertyHelper withLiteral(T rawValue) {
+		return this.pHelper.withLiteral(rawValue);
+	}
+
+	@Override
+	public PropertyHelper property(URI propertyId) {
+		return this.iHelper.property(propertyId);
+	}
+
+	@Override
+	public PropertyHelper property(String propertyId) {
+		return this.iHelper.property(propertyId);
+	}
+
+	@Override
+	public PropertyHelper property(Term property) {
+		return this.iHelper.property(property);
+	}
 
 }

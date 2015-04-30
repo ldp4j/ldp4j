@@ -28,14 +28,30 @@ package org.ldp4j.application.data;
 
 import java.net.URI;
 
+import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.vocabulary.Term;
 
-public interface IndividualHelper {
+class IndividualHelperImpl implements IndividualHelper {
 
-	PropertyHelper property(URI propertyId);
+	private final Individual<?, ?> individual;
 
-	PropertyHelper property(String propertyId);
+	IndividualHelperImpl(Individual<?,?> individual) {
+		this.individual = individual;
+	}
 
-	PropertyHelper property(Term property);
+	@Override
+	public PropertyHelper property(URI propertyId) {
+		return new PropertyHelperImpl(propertyId,this.individual);
+	}
+
+	@Override
+	public PropertyHelper property(String propertyId) {
+		return property(URI.create(propertyId));
+	}
+
+	@Override
+	public PropertyHelper property(Term property) {
+		return property(property.as(URI.class));
+	}
 
 }

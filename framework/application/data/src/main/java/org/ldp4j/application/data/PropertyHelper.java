@@ -26,49 +26,12 @@
  */
 package org.ldp4j.application.data;
 
-import java.net.URI;
+public interface PropertyHelper {
 
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.Property;
-import org.ldp4j.application.data.Value;
+	<T> T firstValue(Class<? extends T> aClazz);
 
-public final class PropertyHelper {
+	<T, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz);
 
-	private Property property;
-	private URI propertyId;
-
-	public PropertyHelper(URI propertyId, Property property) {
-		this.propertyId = propertyId;
-		this.property = property;
-	}
-
-	public <T> T firstValue(final Class<? extends T> aClazz) {
-		if(this.property==null) {
-			return null;
-		}
-		LiteralValueExtractor<T> extractor =
-			new LiteralValueExtractor<T>(new LiteralAdapter<T>(aClazz));
-		for(Value value:property) {
-			value.accept(extractor);
-			if(extractor.isAvailable()) {
-				break;
-			}
-		}
-		return extractor.getValue();
-	}
-
-	public <T, S extends Individual<T,S>> T firstIndividual(final Class<? extends S> clazz) {
-		if(this.property==null) {
-			return null;
-		}
-		IndividualExtractor<T,S> extractor=new IndividualExtractor<T,S>(clazz);
-		for(Value value:this.property) {
-			value.accept(extractor);
-			if(extractor.isAvailable()) {
-				return extractor.getValue().id();
-			}
-		}
-		return null;
-	}
+	<T> IndividualPropertyHelper withLiteral(T rawValue);
 
 }

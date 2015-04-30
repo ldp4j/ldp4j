@@ -274,4 +274,12 @@ public final class DataSetUtils {
 		return found.get();
 	}
 
+	public static DataSetHelper newHelper(DataSet dataSet) {
+		return new DataSetHelperImpl(dataSet);
+	}
+
+	public static IndividualHelper newHelper(Individual<?,?> individual) {
+		return new IndividualHelperImpl(individual);
+	}
+
 }

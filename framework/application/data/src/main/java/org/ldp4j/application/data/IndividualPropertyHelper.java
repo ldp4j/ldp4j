@@ -26,16 +26,6 @@
  */
 package org.ldp4j.application.data;
 
-import java.net.URI;
-
-import org.ldp4j.application.vocabulary.Term;
-
-public interface IndividualHelper {
-
-	PropertyHelper property(URI propertyId);
-
-	PropertyHelper property(String propertyId);
-
-	PropertyHelper property(Term property);
+public interface IndividualPropertyHelper extends IndividualHelper, PropertyHelper {
 
 }
