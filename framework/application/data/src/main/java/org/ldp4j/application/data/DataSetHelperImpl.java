@@ -192,4 +192,11 @@ final class DataSetHelperImpl extends DataSetHelper {
 		return new IndividualHelperImpl(individual);
 	}
 
+	@Override
+	public IndividualHelper localIndividual(Name<?> name) {
+		@SuppressWarnings("rawtypes")
+		LocalIndividual individual = this.dataSet.individual((Name)name, LocalIndividual.class);
+		return new IndividualHelperImpl(individual);
+	}
+
 }

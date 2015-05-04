@@ -70,4 +70,29 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 		return this.iHelper.property(property);
 	}
 
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(Name<?> id) {
+		return this.pHelper.withIndividual(id);
+	}
+
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(URI id) {
+		return this.pHelper.withIndividual(id);
+	}
+
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(String id) {
+		return this.pHelper.withIndividual(id);
+	}
+
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(Term id) {
+		return this.pHelper.withIndividual(id);
+	}
+
+	@Override
+	public IndividualHelper firstIndividual() {
+		return this.pHelper.firstIndividual();
+	}
+
 }

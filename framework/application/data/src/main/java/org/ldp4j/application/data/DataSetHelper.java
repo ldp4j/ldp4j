@@ -64,4 +64,6 @@ public abstract class DataSetHelper {
 
 	public abstract IndividualHelper managedIndividual(Name<?> name, String managerId);
 
+	public abstract IndividualHelper localIndividual(Name<?> name);
+
 }

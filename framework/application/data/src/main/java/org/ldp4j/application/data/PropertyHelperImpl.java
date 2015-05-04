@@ -31,6 +31,7 @@ import java.net.URI;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.Value;
+import org.ldp4j.application.vocabulary.Term;
 
 final class PropertyHelperImpl implements PropertyHelper {
 
@@ -64,6 +65,20 @@ final class PropertyHelperImpl implements PropertyHelper {
 	}
 
 	@Override
+	public IndividualHelper firstIndividual() {
+		Property property=getProperty();
+		if(property==null) {
+			return null;
+		}
+		for(Value value:property) {
+			if(value instanceof Individual<?,?>) {
+				return new IndividualHelperImpl((Individual<?,?>)value);
+			}
+		}
+		return null;
+	}
+
+	@Override
 	public <T, S extends Individual<T,S>> T firstIndividual(final Class<? extends S> clazz) {
 		Property property=getProperty();
 		if(property==null) {
@@ -84,6 +99,41 @@ final class PropertyHelperImpl implements PropertyHelper {
 		if(rawValue!=null) {
 			Literal<T> value = DataSetUtils.newLiteral(rawValue);
 			this.individual.addValue(this.propertyId,value);
+		}
+		return new IndividualPropertyHelperImpl(new IndividualHelperImpl(this.individual),this);
+	}
+
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(Name<?> id) {
+		if(id!=null) {
+			@SuppressWarnings("rawtypes")
+			Individual<?,?> individual = this.individual.dataSet().individual((Name)id, LocalIndividual.class);
+			this.individual.addValue(this.propertyId,individual);
+		}
+		return new IndividualPropertyHelperImpl(new IndividualHelperImpl(this.individual),this);
+	}
+
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(URI id) {
+		if(id!=null) {
+			Individual<?,?> individual=this.individual.dataSet().individual(id, ExternalIndividual.class);
+			this.individual.addValue(this.propertyId,individual);
+		}
+		return new IndividualPropertyHelperImpl(new IndividualHelperImpl(this.individual),this);
+	}
+
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(String id) {
+		if(id!=null) {
+			withIndividual(URI.create(id));
+		}
+		return new IndividualPropertyHelperImpl(new IndividualHelperImpl(this.individual),this);
+	}
+
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(Term id) {
+		if(id!=null) {
+			withIndividual(id.qualifiedEntityName());
 		}
 		return new IndividualPropertyHelperImpl(new IndividualHelperImpl(this.individual),this);
 	}

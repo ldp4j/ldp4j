@@ -26,12 +26,26 @@
  */
 package org.ldp4j.application.data;
 
+import java.net.URI;
+
+import org.ldp4j.application.vocabulary.Term;
+
 public interface PropertyHelper {
 
 	<T> T firstValue(Class<? extends T> aClazz);
 
+	IndividualHelper firstIndividual();
+
 	<T, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz);
 
 	<T> IndividualPropertyHelper withLiteral(T rawValue);
+
+	<T> IndividualPropertyHelper withIndividual(Name<?> id);
+
+	<T> IndividualPropertyHelper withIndividual(URI id);
+
+	<T> IndividualPropertyHelper withIndividual(String id);
+
+	<T> IndividualPropertyHelper withIndividual(Term id);
 
 }
