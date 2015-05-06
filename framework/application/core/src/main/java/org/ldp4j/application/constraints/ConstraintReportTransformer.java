@@ -26,11 +26,20 @@
  */
 package org.ldp4j.application.constraints;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.net.URI;
 import java.util.Date;
+import java.util.GregorianCalendar;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Queue;
+import java.util.Set;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
@@ -65,8 +74,9 @@ import org.ldp4j.application.vocabulary.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.google.common.base.Preconditions.*;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 /**
  * The current implementation has the following caveats:
@@ -126,6 +136,73 @@ public final class ConstraintReportTransformer {
 		}
 	}
 
+	private static class CacheEntry {
+
+		private final LocalIndividual individual;
+		private final String id;
+		private boolean populated;
+
+		private CacheEntry(String id, LocalIndividual individual) {
+			this.id = id;
+			this.individual = individual;
+		}
+
+		boolean isPopulated() {
+			return this.populated;
+		}
+
+		void populate() {
+			this.populated=true;
+		}
+
+		LocalIndividual individual() {
+			return this.individual;
+		}
+
+		String id() {
+			return this.id;
+		}
+
+	}
+
+	private class ShapeIndividualCache {
+
+		private final IdentityHashMap<Shape,CacheEntry> cache;
+
+		private int shapeCount;
+
+		private ShapeIndividualCache() {
+			this.cache=Maps.newIdentityHashMap();
+		}
+
+		private CacheEntry getOrCreate(Shape shape) {
+			CacheEntry entry=this.cache.get(shape);
+			if(entry==null) {
+				String nextId = "s"+(shapeCount++);
+				entry=new CacheEntry(nextId, localIndividual(nextId));
+				this.cache.put(shape, entry);
+			}
+			return entry;
+		}
+
+		String id(Shape shape) {
+			return getOrCreate(shape).id();
+		}
+
+		LocalIndividual individual(Shape shape) {
+			return getOrCreate(shape).individual();
+		}
+
+		public boolean isPopulated(Shape shape) {
+			return getOrCreate(shape).isPopulated();
+		}
+
+		public void populate(Shape shape) {
+			getOrCreate(shape).populate();
+		}
+
+	}
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(ConstraintReportTransformer.class);
 
 	private final ConstraintReport report;
@@ -165,7 +242,7 @@ public final class ConstraintReportTransformer {
 
 	private void populateResourceIndividual(Endpoint endpoint) {
 		resourceInd().addValue(ldp4jTerm("entityTag"), literal(endpoint.entityTag()));
-		resourceInd().addValue(ldp4jTerm("lastModified"), literal(endpoint.lastModified()));
+		resourceInd().addValue(ldp4jTerm("lastModified"), literal(dateTime(endpoint.lastModified())));
 		resourceInd().addValue(ldpTerm("constrainedBy"), reportInd());
 	}
 
@@ -221,53 +298,104 @@ public final class ConstraintReportTransformer {
 		LOGGER.debug("Populating constraints: {}",constraints);
 		reportInd().addValue(vocabularyTerm(RDF.TYPE), externalIndividual(ldp4jTerm("ConstraintReport")));
 		reportInd().addValue(ldp4jTerm("failureId"), literal(this.report.id().constraintsId()));
-		reportInd().addValue(ldp4jTerm("failureDate"), literal(this.report.getDate()));
+		reportInd().addValue(ldp4jTerm("failureDate"), literal(dateTime(this.report.getDate())));
 		reportInd().addValue(ldp4jTerm("failureRequest"), requestInd());
 
-		List<Shape> shapes = constraints.shapes();
-		if(!shapes.isEmpty()) {
-			final IndividualTranslator translator = new IndividualTranslator();
-			IdentityHashMap<Shape,LocalIndividual> shapeIndCache=Maps.newIdentityHashMap();
-			for(int i=0;i<shapes.size();i++) {
-				Shape shape=shapes.get(i);
-				LocalIndividual shapeInd = localIndividual("s"+i);
-				shapeIndCache.put(shape, shapeInd);
-				reportInd().addValue(ldp4jTerm("hasShape"), shapeInd);
-				shapeInd.addValue(vocabularyTerm(RDF.TYPE), externalIndividual(shaclTerm("Shape")));
-				populateDescription(shapeInd, shape);
-				List<PropertyConstraint> pcs = shape.propertyConstraints();
-				for(int j=0;j<pcs.size();j++) {
-					PropertyConstraint pc = pcs.get(j);
-					LocalIndividual pcInd = localIndividual("s"+i+"_pc"+j);
-					shapeInd.addValue(shaclTerm("property"), pcInd);
-					pcInd.addValue(vocabularyTerm(RDF.TYPE), externalIndividual(shaclTerm("PropertyConstraint")));
-					pcInd.addValue(shaclTerm("predicate"), externalIndividual(pc.predicate()));
-					populateDescription(pcInd, pc);
-					populateCardinality(pcInd, pc.cardinality());
-					populateNodeKind(pcInd, pc.nodeKind());
-					populateHasValues(pcInd, pc.values(), translator);
-				}
-				List<InversePropertyConstraint> ipcs = shape.inversePropertyConstraints();
-				for(int j=0;j<ipcs.size();j++) {
-					InversePropertyConstraint ipc = ipcs.get(j);
-					LocalIndividual ipcInd = localIndividual("s"+i+"_ipc"+j);
-					shapeInd.addValue(shaclTerm("property"), ipcInd);
-					ipcInd.addValue(vocabularyTerm(RDF.TYPE), externalIndividual(shaclTerm("InversePropertyConstraint")));
-					ipcInd.addValue(shaclTerm("predicate"), externalIndividual(ipc.predicate()));
-					populateDescription(ipcInd, ipc);
-					populateCardinality(ipcInd, ipc.cardinality());
-					populateNodeKind(ipcInd, ipc.nodeKind());
-					populateHasValues(ipcInd, ipc.values(), translator);
-				}
+		IndividualTranslator translator = new IndividualTranslator();
+		ShapeIndividualCache shapeCache=new ShapeIndividualCache();
+
+		Queue<Shape> pendingShapes=Lists.newLinkedList(constraints.shapes());
+		while(!pendingShapes.isEmpty()) {
+			Shape shape=pendingShapes.poll();
+			if(!shapeCache.isPopulated(shape)) {
+				shapeCache.populate(shape);
+				Set<Shape> foundShapes = populateShapeDefinition(shape, shapeCache, translator);
+				pendingShapes.addAll(foundShapes);
 			}
-			for(URI type:constraints.types()) {
-				Individual<?,?> typeInd=externalIndividual(type);
-				typeInd.addValue(shaclTerm("typeShape"), shapeIndCache.get(constraints.typeShape(type)));
+		}
+
+		for(URI type:constraints.types()) {
+			Individual<?,?> typeInd=externalIndividual(type);
+			typeInd.addValue(shaclTerm("typeShape"), shapeCache.individual(constraints.typeShape(type)));
+		}
+		for(Individual<?, ?> node:constraints.nodes()) {
+			Individual<?, ?> individual = translator.translate(node);
+			individual.addValue(shaclTerm("nodeShape"), shapeCache.individual(constraints.nodeShape(node)));
+		}
+
+
+	}
+
+	private XMLGregorianCalendar dateTime(Date date) {
+		XMLGregorianCalendar newXMLGregorianCalendar=null;
+		try {
+			GregorianCalendar gc=new GregorianCalendar();
+			gc.setTime(date);
+			newXMLGregorianCalendar =
+				DatatypeFactory.
+					newInstance().
+						newXMLGregorianCalendar(gc);
+		} catch (DatatypeConfigurationException e) {
+			throw new IllegalStateException("Could not configure datatype",e);
+		}
+		return newXMLGregorianCalendar;
+	}
+
+	private Set<Shape> populateShapeDefinition(Shape shape, ShapeIndividualCache cache, IndividualTranslator translator) {
+		LocalIndividual shapeInd = cache.individual(shape);
+		String shapeId = cache.id(shape);
+		reportInd().addValue(ldp4jTerm("hasShape"), shapeInd);
+		shapeInd.addValue(vocabularyTerm(RDF.TYPE), externalIndividual(shaclTerm("Shape")));
+		populateDescription(shapeInd, shape);
+		List<PropertyConstraint> pcs = shape.propertyConstraints();
+		Set<Shape> shapes=Sets.newLinkedHashSet();
+		for(int j=0;j<pcs.size();j++) {
+			PropertyConstraint pc = pcs.get(j);
+			LocalIndividual pcInd = localIndividual(shapeId+"_pc"+j);
+			shapeInd.addValue(shaclTerm("property"), pcInd);
+			pcInd.addValue(vocabularyTerm(RDF.TYPE), externalIndividual(shaclTerm("PropertyConstraint")));
+			pcInd.addValue(shaclTerm("predicate"), externalIndividual(pc.predicate()));
+			populateDescription(pcInd, pc);
+			populateCardinality(pcInd, pc.cardinality());
+			populateNodeKind(pcInd, pc.nodeKind());
+			populateHasValues(pcInd, pc.values(), translator);
+			populateValueType(pcInd,pc.valueType());
+			Shape valueShape = pc.valueShape();
+			if(valueShape!=null) {
+				populateValueShape(pcInd,cache.individual(valueShape));
+				shapes.add(valueShape);
 			}
-			for(Individual<?, ?> node:constraints.nodes()) {
-				Individual<?, ?> individual = translator.translate(node);
-				individual.addValue(shaclTerm("nodeShape"), shapeIndCache.get(constraints.nodeShape(node)));
+		}
+		List<InversePropertyConstraint> ipcs = shape.inversePropertyConstraints();
+		for(int j=0;j<ipcs.size();j++) {
+			InversePropertyConstraint ipc = ipcs.get(j);
+			LocalIndividual ipcInd = localIndividual(shapeId+"_ipc"+j);
+			shapeInd.addValue(shaclTerm("property"), ipcInd);
+			ipcInd.addValue(vocabularyTerm(RDF.TYPE), externalIndividual(shaclTerm("InversePropertyConstraint")));
+			ipcInd.addValue(shaclTerm("predicate"), externalIndividual(ipc.predicate()));
+			populateDescription(ipcInd, ipc);
+			populateCardinality(ipcInd, ipc.cardinality());
+			populateNodeKind(ipcInd, ipc.nodeKind());
+			populateHasValues(ipcInd, ipc.values(), translator);
+			populateValueType(ipcInd,ipc.valueType());
+			Shape valueShape = ipc.valueShape();
+			if(valueShape!=null) {
+				populateValueShape(ipcInd,cache.individual(valueShape));
+				shapes.add(valueShape);
 			}
+		}
+		return shapes;
+	}
+
+	private void populateValueShape(LocalIndividual constraint, LocalIndividual shape) {
+		if(shape!=null) {
+			constraint.addValue(shaclTerm("valueShape"),shape);
+		}
+	}
+
+	private void populateValueType(LocalIndividual constraint, URI valueType) {
+		if(valueType!=null) {
+			constraint.addValue(shaclTerm("valueType"),externalIndividual(valueType));
 		}
 	}
 
