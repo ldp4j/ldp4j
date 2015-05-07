@@ -27,9 +27,13 @@
 package org.ldp4j.application.data;
 
 import java.net.URI;
+import java.util.Set;
 
 import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.vocabulary.Term;
+
+import com.google.common.collect.Sets;
 
 class IndividualHelperImpl implements IndividualHelper {
 
@@ -37,6 +41,50 @@ class IndividualHelperImpl implements IndividualHelper {
 
 	IndividualHelperImpl(Individual<?,?> individual) {
 		this.individual = individual;
+	}
+
+	@Override
+	public Set<URI> types() {
+		Property property = this.individual.property(RDF.TYPE.as(URI.class));
+		final Set<URI> types=Sets.newLinkedHashSet();
+		for(Value value:property) {
+			value.accept(
+				new ValueVisitor() {
+					@Override
+					public void visitLiteral(Literal<?> value) {
+						// Discard invalid types
+					}
+					@Override
+					public void visitIndividual(Individual<?, ?> value) {
+						value.accept(
+							new IndividualVisitor() {
+								@Override
+								public void visitManagedIndividual(ManagedIndividual individual) {
+									// Discard invalid types
+								}
+								@Override
+								public void visitRelativeIndividual(RelativeIndividual individual) {
+									// Discard invalid types
+								}
+								@Override
+								public void visitLocalIndividual(LocalIndividual individual) {
+									// Discard invalid types
+								}
+								@Override
+								public void visitExternalIndividual(ExternalIndividual individual) {
+									types.add(individual.id());
+								}
+								@Override
+								public void visitNewIndividual(NewIndividual individual) {
+									// Discard invalid types
+								}
+							}
+						);
+					}
+				}
+			);
+		}
+		return types;
 	}
 
 	@Override

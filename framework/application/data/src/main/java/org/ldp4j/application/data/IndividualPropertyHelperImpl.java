@@ -27,6 +27,7 @@
 package org.ldp4j.application.data;
 
 import java.net.URI;
+import java.util.Set;
 
 import org.ldp4j.application.vocabulary.Term;
 
@@ -51,8 +52,13 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 	}
 
 	@Override
-	public <T> IndividualPropertyHelper withLiteral(T rawValue) {
-		return this.pHelper.withLiteral(rawValue);
+	public IndividualHelper firstIndividual() {
+		return this.pHelper.firstIndividual();
+	}
+
+	@Override
+	public Set<URI> types() {
+		return this.iHelper.types();
 	}
 
 	@Override
@@ -68,6 +74,11 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 	@Override
 	public PropertyHelper property(Term property) {
 		return this.iHelper.property(property);
+	}
+
+	@Override
+	public <T> IndividualPropertyHelper withLiteral(T rawValue) {
+		return this.pHelper.withLiteral(rawValue);
 	}
 
 	@Override
@@ -88,11 +99,6 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 	@Override
 	public <T> IndividualPropertyHelper withIndividual(Term id) {
 		return this.pHelper.withIndividual(id);
-	}
-
-	@Override
-	public IndividualHelper firstIndividual() {
-		return this.pHelper.firstIndividual();
 	}
 
 }

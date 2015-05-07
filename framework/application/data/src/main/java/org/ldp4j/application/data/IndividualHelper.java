@@ -27,10 +27,13 @@
 package org.ldp4j.application.data;
 
 import java.net.URI;
+import java.util.Set;
 
 import org.ldp4j.application.vocabulary.Term;
 
 public interface IndividualHelper {
+
+	Set<URI> types();
 
 	PropertyHelper property(URI propertyId);
 
