@@ -71,7 +71,6 @@ import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.context.HttpRequest.Header;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.vocabulary.Term;
-import org.ldp4j.rdf.Datatype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -390,14 +389,9 @@ public final class ConstraintReportTransformer {
 		return shapes;
 	}
 
-	private void populateDatatype(LocalIndividual constraint, Class<?> clazz) {
-		if(clazz!=null) {
-			Datatype datatype = Datatype.matching(clazz);
-			if(datatype!=null) {
-				constraint.addValue(shaclTerm("datatype"),externalIndividual(datatype.toURI()));
-			} else {
-				LOGGER.warn("Could not find XML datatype for class '"+clazz.getCanonicalName()+"'");
-			}
+	private void populateDatatype(LocalIndividual constraint, URI datatype) {
+		if(datatype!=null) {
+			constraint.addValue(shaclTerm("datatype"),externalIndividual(datatype));
 		}
 	}
 

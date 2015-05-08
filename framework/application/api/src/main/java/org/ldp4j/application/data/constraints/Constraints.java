@@ -136,7 +136,7 @@ public final class Constraints {
 		private String label;
 		private Set<Value> allowedValues;
 		private List<Value> values;
-		private Class<?> datatype;
+		private URI datatype;
 		private NodeKind nodeKind;
 		private Shape valueShape;
 		private URI valueType;
@@ -200,13 +200,13 @@ public final class Constraints {
 			return ImmutableSet.copyOf(values);
 		}
 
-		public T withDatatype(Class<?> datatype) {
+		public T withDatatype(URI datatype) {
 			checkNotNull(datatype,"Datatype cannot be null");
 			this.datatype = datatype;
 			return delegate();
 		}
 
-		public Class<?> datatype() {
+		public URI datatype() {
 			return this.datatype;
 		}
 
