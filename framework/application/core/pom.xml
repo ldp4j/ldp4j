@@ -79,7 +79,11 @@
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-data</artifactId>
 		</dependency>
-
+		<dependency>
+			<groupId>org.ldp4j.commons.rmf</groupId>
+			<artifactId>rmf-api</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-examples</artifactId>

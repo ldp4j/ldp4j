@@ -71,6 +71,7 @@ import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.context.HttpRequest.Header;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.vocabulary.Term;
+import org.ldp4j.rdf.Datatype;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -360,6 +361,7 @@ public final class ConstraintReportTransformer {
 			populateNodeKind(pcInd, pc.nodeKind());
 			populateHasValues(pcInd, pc.values(), translator);
 			populateValueType(pcInd,pc.valueType());
+			populateDatatype(pcInd,pc.datatype());
 			Shape valueShape = pc.valueShape();
 			if(valueShape!=null) {
 				populateValueShape(pcInd,cache.individual(valueShape));
@@ -378,6 +380,7 @@ public final class ConstraintReportTransformer {
 			populateNodeKind(ipcInd, ipc.nodeKind());
 			populateHasValues(ipcInd, ipc.values(), translator);
 			populateValueType(ipcInd,ipc.valueType());
+			populateDatatype(ipcInd,ipc.datatype());
 			Shape valueShape = ipc.valueShape();
 			if(valueShape!=null) {
 				populateValueShape(ipcInd,cache.individual(valueShape));
@@ -385,6 +388,17 @@ public final class ConstraintReportTransformer {
 			}
 		}
 		return shapes;
+	}
+
+	private void populateDatatype(LocalIndividual constraint, Class<?> clazz) {
+		if(clazz!=null) {
+			Datatype datatype = Datatype.matching(clazz);
+			if(datatype!=null) {
+				constraint.addValue(shaclTerm("datatype"),externalIndividual(datatype.toURI()));
+			} else {
+				LOGGER.warn("Could not find XML datatype for class '"+clazz.getCanonicalName()+"'");
+			}
+		}
 	}
 
 	private void populateValueShape(LocalIndividual constraint, LocalIndividual shape) {
@@ -410,10 +424,10 @@ public final class ConstraintReportTransformer {
 
 	private void populateCardinality(Individual<?,?> individual, Cardinality cardinality) {
 		if(cardinality.min()>0) {
-			individual.addValue(shaclTerm("minCard"), typedLiteral(cardinality.min(),"integer"));
+			individual.addValue(shaclTerm("minCount"), typedLiteral(cardinality.min(),"integer"));
 		}
 		if(cardinality.max()>=0) {
-			individual.addValue(shaclTerm("maxCard"), typedLiteral(cardinality.max(),"integer"));
+			individual.addValue(shaclTerm("maxCount"), typedLiteral(cardinality.max(),"integer"));
 		}
 	}
 
