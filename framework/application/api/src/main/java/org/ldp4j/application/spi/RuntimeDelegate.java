@@ -37,6 +37,7 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.ldp4j.application.ApplicationContextException;
 import org.ldp4j.application.session.WriteSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -297,11 +298,18 @@ public abstract class RuntimeDelegate {
 			throw new UnsupportedOperationException(ERROR_MESSAGE);
 		}
 
+		@Override
+		public void terminateSession(WriteSession session) throws ApplicationContextException {
+			throw new UnsupportedOperationException(ERROR_MESSAGE);
+		}
+
 	}
 
 	public abstract boolean isOffline();
 
-	public abstract WriteSession createSession();
+	public abstract WriteSession createSession() throws ApplicationContextException;
+
+	public abstract void terminateSession(WriteSession session) throws ApplicationContextException;
 
 
 }
