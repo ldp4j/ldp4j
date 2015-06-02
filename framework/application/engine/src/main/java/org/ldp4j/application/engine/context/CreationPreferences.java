@@ -28,7 +28,7 @@ package org.ldp4j.application.engine.context;
 
 import java.net.URI;
 
-import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.Term;
 
 import com.google.common.base.Objects;

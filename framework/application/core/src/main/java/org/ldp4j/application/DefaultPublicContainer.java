@@ -47,8 +47,6 @@ import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.validation.ValidationConstraint;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.ContentPreferences;
@@ -69,6 +67,8 @@ import org.ldp4j.application.template.IndirectContainerTemplate;
 import org.ldp4j.application.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.template.ResourceTemplate;
 import org.ldp4j.application.template.TemplateVisitor;
+import org.ldp4j.application.vocabulary.LDP;
+import org.ldp4j.application.vocabulary.RDF;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;

@@ -27,12 +27,12 @@
 package org.ldp4j.application;
 
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.PublicRDFSource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
+import org.ldp4j.application.vocabulary.LDP;
+import org.ldp4j.application.vocabulary.RDF;
 
 class DefaultPublicRDFSource extends DefaultExistingPublicResource implements PublicRDFSource {
 

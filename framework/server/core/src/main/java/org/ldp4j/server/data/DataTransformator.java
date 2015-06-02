@@ -36,9 +36,9 @@ import java.net.URISyntaxException;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
-import org.ldp4j.application.domain.RDFS;
+import org.ldp4j.application.vocabulary.LDP;
+import org.ldp4j.application.vocabulary.RDF;
+import org.ldp4j.application.vocabulary.RDFS;
 import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.server.spi.ContentTransformationException;
 import org.ldp4j.server.spi.IMediaTypeProvider;

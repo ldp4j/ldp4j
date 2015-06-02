@@ -48,8 +48,6 @@ import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.ValidationReport;
 import org.ldp4j.application.data.validation.Validator;
 import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.ContentPreferences;
@@ -65,6 +63,8 @@ import org.ldp4j.application.resource.Attachment;
 import org.ldp4j.application.resource.Resource;
 import org.ldp4j.application.resource.ResourceId;
 import org.ldp4j.application.template.AttachedTemplate;
+import org.ldp4j.application.vocabulary.LDP;
+import org.ldp4j.application.vocabulary.RDF;
 import org.ldp4j.application.vocabulary.Term;
 
 import com.google.common.collect.LinkedHashMultimap;

@@ -32,13 +32,13 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
-import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.PublicDirectContainer;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
 import org.ldp4j.application.template.DirectContainerTemplate;
+import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.Term;
 
 final class DefaultPublicDirectContainer extends DefaultPublicMembershipAwareContainer<DirectContainerTemplate> implements PublicDirectContainer {

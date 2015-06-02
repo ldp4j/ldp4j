@@ -28,11 +28,11 @@ package org.ldp4j.application.impl;
 
 import java.net.URI;
 
-import org.ldp4j.application.domain.LDP;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.annotations.MembershipRelation;
 import org.ldp4j.application.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.template.TemplateVisitor;
+import org.ldp4j.application.vocabulary.LDP;
 
 class MutableMembershipAwareContainerTemplate extends MutableContainerTemplate implements MembershipAwareContainerTemplate {
 

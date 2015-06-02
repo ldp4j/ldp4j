@@ -35,8 +35,6 @@ import org.ldp4j.application.data.DataDSL;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.session.ContainerSnapshot;
@@ -45,6 +43,8 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.application.setup.Bootstrap;
 import org.ldp4j.application.setup.Environment;
+import org.ldp4j.application.vocabulary.LDP;
+import org.ldp4j.application.vocabulary.RDF;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

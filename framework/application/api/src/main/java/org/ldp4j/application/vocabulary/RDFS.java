@@ -24,15 +24,11 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.domain;
+package org.ldp4j.application.vocabulary;
 
 import java.net.URI;
 
 import javax.xml.namespace.QName;
-
-import org.ldp4j.application.vocabulary.AbstractImmutableVocabulary;
-import org.ldp4j.application.vocabulary.ImmutableTerm;
-import org.ldp4j.application.vocabulary.Term;
 
 /**
  * W3C RDF Vocabulary Description Language 1.0 (RDF Schema) Vocabulary.

@@ -64,12 +64,12 @@ import org.ldp4j.application.data.constraints.Constraints.InversePropertyConstra
 import org.ldp4j.application.data.constraints.Constraints.NodeKind;
 import org.ldp4j.application.data.constraints.Constraints.PropertyConstraint;
 import org.ldp4j.application.data.constraints.Constraints.Shape;
-import org.ldp4j.application.domain.RDF;
-import org.ldp4j.application.domain.RDFS;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.context.HttpRequest.Header;
 import org.ldp4j.application.resource.Resource;
+import org.ldp4j.application.vocabulary.RDF;
+import org.ldp4j.application.vocabulary.RDFS;
 import org.ldp4j.application.vocabulary.Term;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

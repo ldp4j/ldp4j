@@ -28,7 +28,7 @@ package org.ldp4j.server.resources;
 
 import java.net.URI;
 
-import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.Term;
 
 public enum MembershipRelation {

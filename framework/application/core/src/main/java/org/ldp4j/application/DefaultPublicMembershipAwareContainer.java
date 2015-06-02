@@ -34,14 +34,14 @@ import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.validation.ValidationConstraint;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
 import org.ldp4j.application.endpoint.Endpoint;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.PublicMembershipAwareContainer;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.ContentPreferences.Preference;
 import org.ldp4j.application.template.MembershipAwareContainerTemplate;
+import org.ldp4j.application.vocabulary.LDP;
+import org.ldp4j.application.vocabulary.RDF;
 import org.ldp4j.application.vocabulary.Term;
 
 abstract class DefaultPublicMembershipAwareContainer<T extends MembershipAwareContainerTemplate> extends DefaultPublicContainer<T> implements PublicMembershipAwareContainer {
