@@ -35,7 +35,7 @@ import javax.ws.rs.core.MediaType;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.resource.ResourceId;
+import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.server.Endpoint;
 import org.ldp4j.server.EndpointFactory;
 import org.ldp4j.server.EndpointRegistrationException;
