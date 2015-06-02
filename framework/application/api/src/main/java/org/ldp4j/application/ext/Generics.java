@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.util;
+package org.ldp4j.application.ext;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -34,32 +34,32 @@ import java.lang.reflect.TypeVariable;
 
 /**
  * Helper methods for class type parameters.
- * 
+ *
  * @see <a
  *      href="http://gafter.blogspot.com/2006/12/super-type-tokens.html">Super
  *      Type Tokens</a>
  */
-public final class Generics {
+final class Generics {
 
-	private Generics() { 
+	private Generics() {
 		/* singleton */
 	}
 
 	/**
 	 * Finds the type parameter for the given class.
-	 * 
+	 *
 	 * @param klass
 	 *            a parameterized class
 	 * @return the class's type parameter
 	 */
-	public static Class<?> getTypeParameter(Class<?> klass) {
+	static Class<?> getTypeParameter(Class<?> klass) {
 		return getTypeParameter(klass, Object.class);
 	}
 
 	/**
 	 * Finds the type parameter for the given class which is assignable to the
 	 * bound class.
-	 * 
+	 *
 	 * @param clazz
 	 *            a parameterized class
 	 * @param bound
@@ -68,7 +68,7 @@ public final class Generics {
 	 *            the type bound
 	 * @return the class's type parameter
 	 */
-	public static <T> Class<T> getTypeParameter(Class<?> clazz, Class<? super T> bound) {
+	static <T> Class<T> getTypeParameter(Class<?> clazz, Class<? super T> bound) {
 		Type t = checkNotNull(clazz);
 		while (t instanceof Class<?>) {
 			t = ((Class<?>) t).getGenericSuperclass();

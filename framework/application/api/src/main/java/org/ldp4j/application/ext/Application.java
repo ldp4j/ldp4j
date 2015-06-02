@@ -29,7 +29,6 @@ package org.ldp4j.application.ext;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.setup.Bootstrap;
 import org.ldp4j.application.setup.Environment;
-import org.ldp4j.application.util.Generics;
 
 public abstract class Application<T extends Configuration> {
 
