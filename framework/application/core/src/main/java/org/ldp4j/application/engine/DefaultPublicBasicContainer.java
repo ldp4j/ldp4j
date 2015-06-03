@@ -32,6 +32,8 @@ import org.ldp4j.application.engine.context.PublicBasicContainer;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
 import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.template.BasicContainerTemplate;
+import org.ldp4j.application.vocabulary.LDP;
+import org.ldp4j.application.vocabulary.RDF;
 
 final class DefaultPublicBasicContainer extends DefaultPublicContainer<BasicContainerTemplate> implements PublicBasicContainer {
 
@@ -47,6 +49,10 @@ final class DefaultPublicBasicContainer extends DefaultPublicContainer<BasicCont
 	@Override
 	protected void fillInMetadata(ContentPreferences contentPreferences, Individual<?, ?> individual, Context ctx) {
 		super.fillInMetadata(contentPreferences,individual,ctx);
+		individual.
+			addValue(
+				ctx.property(RDF.TYPE),
+				ctx.reference(LDP.BASIC_CONTAINER));
 	}
 
 }

@@ -51,7 +51,7 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 
 		private final DataSet dataSet;
 
-		private Context(DataSet dataSet) {
+		protected Context(DataSet dataSet) {
 			this.dataSet = dataSet;
 		}
 
@@ -60,7 +60,7 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 		}
 
 		public Individual<?,?> reference(URI externalIndividual) {
-			return dataSet.individual(externalIndividual, ExternalIndividual.class);
+			return this.dataSet.individual(externalIndividual, ExternalIndividual.class);
 		}
 
 		public Individual<?,?> reference(Term term) {
@@ -68,16 +68,16 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 		}
 
 		public Individual<?,?> newIndividual(URI id) {
-			return dataSet.individual(id, ExternalIndividual.class);
+			return this.dataSet.individual(id, ExternalIndividual.class);
 		}
 
 		@SuppressWarnings("rawtypes")
 		public Individual<?,?> newIndividual(Name<?> id) {
-			return dataSet.individual((Name)id, LocalIndividual.class);
+			return this.dataSet.individual((Name)id, LocalIndividual.class);
 		}
 
 		public Individual<?,?> newIndividual(ManagedIndividualId id) {
-			return dataSet.individual(id, ManagedIndividual.class);
+			return this.dataSet.individual(id, ManagedIndividual.class);
 		}
 
 		public Individual<?,?> newIndividual(PublicResource resource) {
@@ -89,7 +89,7 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 		public Value resourceSurrogate(PublicResource member) {
 			ResourceId resourceId = ((DefaultPublicResource)member).id();
 			ManagedIndividualId surrogateId = ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
-			return dataSet.individualOfId(surrogateId);
+			return this.dataSet.individualOfId(surrogateId);
 		}
 
 		public Value value(Object value) {
@@ -107,7 +107,7 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 
 	protected abstract ResourceId id();
 
-	protected abstract void fillInMetadata(ContentPreferences contentPreferences, final Individual<?, ?> individual, final Context ctx);
+	protected abstract void fillInMetadata(ContentPreferences contentPreferences, Individual<?, ?> individual, Context ctx);
 
 	protected abstract void configureValidationConstraints(ValidatorBuilder builder, Individual<?,?> individual, DataSet metadata);
 

@@ -54,12 +54,4 @@ class DefaultPublicRDFSource extends DefaultExistingPublicResource implements Pu
 				ctx.reference(LDP.RDF_SOURCE));
 	}
 
-	@Override
-	protected void fillInMetadata(ContentPreferences contentPreferences,
-			Individual<?, ?> individual,
-			org.ldp4j.application.engine.DefaultPublicResource.Context ctx) {
-		// TODO Auto-generated method stub
-
-	}
-
 }

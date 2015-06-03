@@ -35,14 +35,9 @@ import java.util.Map.Entry;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.DataSetUtils;
-import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.LocalIndividual;
-import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.Property;
-import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.ValidationReport;
@@ -65,64 +60,14 @@ import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.RDF;
-import org.ldp4j.application.vocabulary.Term;
 
 import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Multimap;
 
 abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 
-	protected static final class Context {
-
-		private final DataSet dataSet;
-
-		private Context(DataSet dataSet) {
-			this.dataSet = dataSet;
-		}
-
-		public URI property(Term term) {
-			return term.as(URI.class);
-		}
-
-		public Individual<?,?> reference(URI externalIndividual) {
-			return dataSet.individual(externalIndividual, ExternalIndividual.class);
-		}
-
-		public Individual<?,?> reference(Term term) {
-			return reference(term.as(URI.class));
-		}
-
-		public Individual<?,?> newIndividual(URI id) {
-			return dataSet.individual(id, ExternalIndividual.class);
-		}
-
-		@SuppressWarnings("rawtypes")
-		public Individual<?,?> newIndividual(Name<?> id) {
-			return dataSet.individual((Name)id, LocalIndividual.class);
-		}
-
-		public Individual<?,?> newIndividual(ManagedIndividualId id) {
-			return dataSet.individual(id, ManagedIndividual.class);
-		}
-
-		public Individual<?,?> newIndividual(PublicResource resource) {
-			ResourceId resourceId = ((DefaultExistingPublicResource)resource).id();
-			ManagedIndividualId id = ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
-			return newIndividual(id);
-		}
-
-		public Value resourceSurrogate(PublicResource member) {
-			ResourceId resourceId = ((DefaultExistingPublicResource)member).id();
-			ManagedIndividualId surrogateId = ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
-			return dataSet.individualOfId(surrogateId);
-		}
-
-		public Value value(Object value) {
-			return DataSetUtils.newLiteral(value);
-		}
-	}
-
 	private static final URI HAS_ATTACHMENT = URI.create("http://www.ldp4j.org/ns/application#hasAttachment");
+
 	private final ManagedIndividualId individualId;
 
 	protected DefaultExistingPublicResource(DefaultApplicationContext applicationContext, Endpoint endpoint) {
@@ -217,6 +162,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 		return endpoint().resourceId();
 	}
 
+	@Override
 	protected void fillInMetadata(ContentPreferences contentPreferences, final Individual<?, ?> individual, final Context ctx) {
 		individual.
 			addValue(
@@ -258,6 +204,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 		);
 	}
 
+	@Override
 	protected void configureValidationConstraints(ValidatorBuilder builder, Individual<?,?> individual, DataSet metadata) {
 		builder.withPropertyConstraint(ValidationConstraintFactory.mandatoryPropertyValues(individual.property(RDF.TYPE.as(URI.class))));
 		Multimap<URI,AttachedTemplate> attachmentMap=LinkedHashMultimap.create();
@@ -336,7 +283,5 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 		}
 		return result;
 	}
-
-
 
 }
