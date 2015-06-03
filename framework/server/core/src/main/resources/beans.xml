@@ -42,6 +42,21 @@
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
+<!--
+	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
+ -->
+	<bean class="org.ldp4j.server.utils.spring.MonitorizedPropertyPlaceholderConfigurer">
+		<property name="moduleName" value="ldp4j-server-frontend"/>
+		<property name="ignoreResourceNotFound" value="true"/>
+		<property name="locations">
+			<list>
+				<value>classpath:META-INF/ldp4j-server-frontend.cfg</value>
+				<value>classpath:ldp4j-server-frontend.cfg</value>
+				<value>file:ldp4j-server-frontend.cfg</value>
+			</list>
+		</property>
+	</bean>
+
 	<bean
 		id="logInInterceptor"
 		class="org.apache.cxf.interceptor.LoggingInInterceptor" />
@@ -56,7 +71,7 @@
 		class="org.ldp4j.server.frontend.ServerFrontend">
 	</bean>
 
-	<jaxrs:server id="api" address="/ldp4j">
+	<jaxrs:server id="api" address="/${ldp4j.server.frontend.path}">
 		<jaxrs:serviceBeans>
 			<ref bean="frontend"/>
 		</jaxrs:serviceBeans>
