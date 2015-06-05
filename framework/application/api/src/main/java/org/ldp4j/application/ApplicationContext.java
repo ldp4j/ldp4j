@@ -40,121 +40,119 @@ import static com.google.common.base.Preconditions.*;
 
 public final class ApplicationContext {
 
-	private static final Logger LOGGER=LoggerFactory.getLogger(ApplicationContext.class);
-
-	private final class SafeWriteSession implements WriteSession {
-
-		private final WriteSession session;
-
-		private boolean dispossed;
-		private boolean completed;
-
-
-		private SafeWriteSession(WriteSession session) {
-			this.session = session;
-		}
-
-		@Override
-		public <S extends ResourceSnapshot> S resolve(Class<? extends S> snapshotClass, Individual<?, ?> individual) {
-			S result=null;
-			if(!this.dispossed) {
-				result=session.resolve(snapshotClass,individual);
-			}
-			return result;
-		}
-
-		@Override
-		public <S extends ResourceSnapshot> S find(Class<? extends S> snapshotClass, Name<?> id, Class<? extends ResourceHandler> handlerClass) {
-			S result=null;
-			if(!this.dispossed) {
-				result=session.find(snapshotClass,id,handlerClass);
-			}
-			return result;
-		}
-
-		@Override
-		public void modify(ResourceSnapshot resource) {
-			if(this.dispossed) {
-				throw new IllegalStateException("Session has already been terminated");
-			}
-			session.modify(resource);
-		}
-
-		@Override
-		public void delete(ResourceSnapshot resource) {
-			if(this.dispossed) {
-				throw new IllegalStateException("Session has already been terminated");
-			}
-			this.session.delete(resource);
-		}
-
-		@Override
-		public void saveChanges() throws WriteSessionException {
-			if(this.dispossed) {
-				throw new IllegalStateException("Session has already been terminated");
-			}
-			if(this.completed) {
-				throw new WriteSessionException("Session has already been completed");
-			}
-			this.completed=true;
-			this.session.saveChanges();
-		}
-
-		@Override
-		public void discardChanges() throws WriteSessionException {
-			if(this.dispossed) {
-				throw new IllegalStateException("Session has already been terminated");
-			}
-			if(this.completed) {
-				throw new WriteSessionException("Session has already been completed");
-			}
-			this.completed=true;
-			this.session.discardChanges();
-		}
-
-		void dispose() throws ApplicationContextException {
-			this.dispossed=true;
-			ApplicationContext.this.sessions.remove();
-			ApplicationContext.this.delegate.terminateSession(this.session);
-		}
-
-	}
-
 	private static class ApplicationEngineSingleton {
 
 		private static final ApplicationContext SINGLETON=new ApplicationContext();
 
 	}
 
+	private final class SafeWriteSession implements WriteSession {
+
+		private final WriteSession nativeSession;
+
+		private boolean dispossed;
+		private boolean completed;
+
+		private SafeWriteSession(WriteSession session) {
+			this.nativeSession = session;
+		}
+
+		private void verifyExecutability() {
+			checkState(!this.dispossed,"Session has already been dispossed");
+			checkState(!this.completed,"Session has already been completed");
+		}
+
+		@Override
+		public <S extends ResourceSnapshot> S resolve(Class<? extends S> snapshotClass, Individual<?, ?> individual) {
+			verifyExecutability();
+			return this.nativeSession.resolve(snapshotClass,individual);
+		}
+
+		@Override
+		public <S extends ResourceSnapshot> S find(Class<? extends S> snapshotClass, Name<?> id, Class<? extends ResourceHandler> handlerClass) {
+			verifyExecutability();
+			return this.nativeSession.find(snapshotClass,id,handlerClass);
+		}
+
+		@Override
+		public void modify(ResourceSnapshot resource) {
+			verifyExecutability();
+			this.nativeSession.modify(resource);
+		}
+
+		@Override
+		public void delete(ResourceSnapshot resource) {
+			verifyExecutability();
+			this.nativeSession.delete(resource);
+		}
+
+		@Override
+		public void saveChanges() throws WriteSessionException {
+			verifyExecutability();
+			this.completed=true;
+			this.nativeSession.saveChanges();
+		}
+
+		@Override
+		public void discardChanges() throws WriteSessionException {
+			verifyExecutability();
+			this.completed=true;
+			this.nativeSession.discardChanges();
+		}
+
+		void dispose() throws ApplicationContextException {
+			if(!this.dispossed) {
+				this.dispossed=true;
+				ApplicationContext.this.session.remove();
+				ApplicationContext.this.delegate.terminateSession(this.nativeSession);
+			}
+		}
+
+	}
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(ApplicationContext.class);
+
 	private final RuntimeDelegate delegate;
 
-	private final ThreadLocal<WriteSession> sessions;
+	private final ThreadLocal<WriteSession> session;
 
 	private ApplicationContext() {
 		this.delegate=RuntimeDelegate.getInstance();
-		this.sessions=new ThreadLocal<WriteSession>();
+		this.session=new ThreadLocal<WriteSession>();
 		LOGGER.info("Initialized Application Context");
 	}
 
+	private ApplicationContextException failure(Throwable cause,String fmt, Object... args) {
+		String message=String.format(fmt,args);
+
+		if(cause!=null) {
+			LOGGER.error(message+". Full stacktrace follows",cause);
+		} else {
+			LOGGER.error(message);
+		}
+
+		return new ApplicationContextException(message,cause);
+	}
+
 	public WriteSession createSession() throws ApplicationContextException {
-		if(this.sessions.get()!=null) {
-			throw new ApplicationContextException("Thread already owns a session");
+		if(this.session.get()!=null) {
+			throw failure(null,"Thread already has an active session");
 		}
 		try {
 			if(this.delegate.isOffline()) {
-				throw new ApplicationContextException("The Application Engine is off-line");
+				throw failure(null,"The Application Engine is off-line");
 			}
 			return new SafeWriteSession(this.delegate.createSession());
 		} catch (UnsupportedOperationException e) {
-			throw new ApplicationContextException("No Application Engine is available");
+			throw failure(e,"No Application Engine is available");
 		}
 	}
 
 	public void disposeSession(WriteSession session) throws ApplicationContextException {
 		checkNotNull(session,"Session cannot be null");
 		checkArgument(session instanceof SafeWriteSession,"Unknown session");
-		if(this.sessions.get()!=session) {
-			throw new ApplicationContextException("Session '"+session+"' is not owned by current thread");
+		if(this.session.get()!=session) {
+			throw failure(null,"Session '%s' is not owned by current thread",session);
 		}
 		SafeWriteSession safeWriteSession = (SafeWriteSession)session;
 		safeWriteSession.dispose();
