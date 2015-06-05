@@ -29,10 +29,27 @@ package org.ldp4j.application.engine;
 import org.ldp4j.application.ApplicationContextException;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.session.WriteSessionService;
+import org.ldp4j.application.engine.spi.PersistencyManager;
+import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.spi.RuntimeDelegate;
 
 public final class CoreRuntimeDelegate extends RuntimeDelegate {
+
+	private DefaultApplicationEngine applicationEngine() throws ApplicationEngineException {
+		return
+			ApplicationEngine.
+				engine().
+					unwrap(DefaultApplicationEngine.class);
+	}
+
+	private WriteSessionService sessionService() throws ApplicationEngineException {
+		return applicationEngine().writeSessionService();
+	}
+
+	private PersistencyManager persistencyManager() throws ApplicationEngineException {
+		return applicationEngine().persistencyManager();
+	}
 
 	@Override
 	public boolean isOffline() {
@@ -43,31 +60,26 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 	@Override
 	public WriteSession createSession() throws ApplicationContextException {
 		try {
-			WriteSession session =
-				getSessionService().
+			WriteSession delegate =
+				sessionService().
 					createSession(
 						WriteSessionConfiguration.
 							builder().
 								build());
-			return session;
+			Transaction transaction=persistencyManager().currentTransaction();
+			if(!transaction.isStarted()) {
+				transaction.begin();
+			}
+			return new TransactionalWriteSession(transaction, delegate);
 		} catch (ApplicationEngineException e) {
 			throw new ApplicationContextException("Unsupported application engine implementation",e);
 		}
 	}
 
-	private WriteSessionService getSessionService() throws ApplicationEngineException {
-		WriteSessionService service=
-			ApplicationEngine.
-				engine().
-					unwrap(DefaultApplicationEngine.class).
-						writeSessionService();
-		return service;
-	}
-
 	@Override
 	public void terminateSession(WriteSession session) throws ApplicationContextException {
 		try {
-			getSessionService().terminateSession(session);
+			sessionService().terminateSession(session);
 		} catch (ApplicationEngineException e) {
 			throw new ApplicationContextException("Unsupported application engine implementation",e);
 		}
