@@ -33,6 +33,7 @@ import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.ServiceRegistry;
+import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.ApplicationInitializationException;
@@ -100,13 +101,21 @@ final class ApplicationLoader<T extends Configuration> {
 	}
 
 	private void initialize(Application<T> application) throws ApplicationConfigurationException {
-		WriteSession session = writeSessionService().createSession(WriteSessionConfiguration.builder().build());
+		Transaction transaction=this.persistencyManager().currentTransaction();
+		transaction.begin();
 		try {
-			application.initialize(session);
-		} catch (ApplicationInitializationException e) {
-			throw new ApplicationConfigurationException(e);
+			WriteSession session = writeSessionService().createSession(WriteSessionConfiguration.builder().build());
+			try {
+				application.initialize(session);
+			} catch (ApplicationInitializationException e) {
+				throw new ApplicationConfigurationException(e);
+			} finally {
+				writeSessionService().terminateSession(session);
+			}
 		} finally {
-			writeSessionService().terminateSession(session);
+			if(transaction.isStarted() && !transaction.isCompleted()) {
+				transaction.rollback();
+			}
 		}
 	}
 

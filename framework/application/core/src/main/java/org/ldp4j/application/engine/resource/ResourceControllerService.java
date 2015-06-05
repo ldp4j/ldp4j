@@ -26,36 +26,17 @@
  */
 package org.ldp4j.application.engine.resource;
 
-import java.net.URI;
-import java.util.List;
-
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.ExternalIndividual;
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.IndividualVisitor;
-import org.ldp4j.application.data.Literal;
-import org.ldp4j.application.data.LocalIndividual;
-import org.ldp4j.application.data.ManagedIndividual;
-import org.ldp4j.application.data.NewIndividual;
-import org.ldp4j.application.data.Property;
-import org.ldp4j.application.data.RelativeIndividual;
-import org.ldp4j.application.data.Value;
-import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.Service;
 import org.ldp4j.application.engine.spi.ServiceBuilder;
 import org.ldp4j.application.engine.template.ResourceTemplate;
-import org.ldp4j.application.engine.template.TemplateIntrospector;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.ext.ResourceHandler;
 
-import com.google.common.collect.Lists;
-
 public class ResourceControllerService implements Service {
-
-	private static final URI NEW_RESOURCE_SURROGATE_ID = URI.create("");
 
 	private static final class ResourceControllerServiceBuilder extends ServiceBuilder<ResourceControllerService> {
 
@@ -90,8 +71,8 @@ public class ResourceControllerService implements Service {
 		return AdapterFactory.newAdapter(resource,delegate,this.writeSessionService,configuration);
 	}
 
-	public DataSet getResource(Resource resource) throws FeatureException {
-		return adapter(resource, WriteSessionConfiguration.builder().build()).get();
+	public DataSet getResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
+		return adapter(resource, configuration).get();
 	}
 
 	public void updateResource(Resource resource, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
@@ -102,85 +83,8 @@ public class ResourceControllerService implements Service {
 		adapter(resource, configuration).delete();
 	}
 
-	public Resource createResource(Container container, DataSet dataSet, String desiredPath) throws FeatureException {
-		WriteSessionConfiguration configuration =
-			WriteSessionConfiguration.
-				builder().
-					withPath(desiredPath).
-					withIndirectId(getIndirectId(container, dataSet)).
-					build();
+	public Resource createResource(Container container, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
 		return adapter(container,configuration).create(dataSet);
-	}
-
-	private URI getIndirectId(Container container, DataSet dataSet) {
-		TemplateIntrospector introspector=
-				TemplateIntrospector.
-					newInstance(
-						this.persistencyManager.
-							templateOfId(container.id().templateId()));
-		if(!introspector.isIndirectContainer()) {
-			return null;
-		}
-		Property property = getInsertedContentRelation(dataSet,introspector.getInsertedContentRelation());
-		if(property==null) {
-			// TODO: Check if this situation is a failure
-			return null;
-		}
-		final List<URI> indirectIdentities= findIndirectIds(property);
-		if(indirectIdentities.size()==1) {
-			return indirectIdentities.get(0);
-		}
-		// TODO: We should fail here, either because no valid identifiers were
-		// specified or because to many of them were specified
-		return null;
-	}
-
-	private Property getInsertedContentRelation(DataSet dataSet, URI insertedContentRelation) {
-		NewIndividual individual = dataSet.individual(NEW_RESOURCE_SURROGATE_ID, NewIndividual.class);
-		return individual.property(insertedContentRelation);
-	}
-
-	private List<URI> findIndirectIds(Property property) {
-		final List<URI> indirectIdentities=Lists.newArrayList();
-		for(Value v:property) {
-			v.accept(
-				new ValueVisitor() {
-					@Override
-					public void visitLiteral(Literal<?> value) {
-						// TODO: We should fail here
-					}
-					@Override
-					public void visitIndividual(Individual<?, ?> value) {
-						value.accept(
-							new IndividualVisitor() {
-								@Override
-								public void visitManagedIndividual(ManagedIndividual individual) {
-									// TODO: We should fail here
-								}
-								@Override
-								public void visitLocalIndividual(LocalIndividual individual) {
-									// TODO: We should fail here
-								}
-								@Override
-								public void visitExternalIndividual(ExternalIndividual individual) {
-									indirectIdentities.add(individual.id());
-								}
-								@Override
-								public void visitRelativeIndividual(RelativeIndividual individual) {
-									// TODO: We should fail here
-								}
-								@Override
-								public void visitNewIndividual( NewIndividual individual) {
-									// TODO: We should fail here
-
-								}
-							}
-						);
-					}
-				}
-			);
-		}
-		return indirectIdentities;
 	}
 
 	public static ServiceBuilder<ResourceControllerService> serviceBuilder() {

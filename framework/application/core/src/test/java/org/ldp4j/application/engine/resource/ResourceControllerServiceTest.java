@@ -35,6 +35,7 @@ import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference
 
 import java.util.Arrays;
 import java.util.Date;
+import java.util.concurrent.Callable;
 
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -55,6 +56,7 @@ import org.ldp4j.application.engine.resource.ResourceControllerService;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
+import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.example.BookContainerHandler;
@@ -68,13 +70,18 @@ public class ResourceControllerServiceTest {
 
 	private ResourceControllerService sut;
 	private TemplateManagementService tms;
+	private PersistencyManager persistencyManager;
 
 	private <T extends Resource> T publishResource(Class<? extends T> clazz, String templateId, Name<?> resourceName, String path) {
-		PersistencyManager persistencyManager = RuntimeDelegate.getInstance().getPersistencyManager();
+		Transaction transaction = persistencyManager.currentTransaction();
+		transaction.begin();
+
 		T resource=persistencyManager.createResource(templateId,resourceName,null,clazz);
 		persistencyManager.add(resource);
 		Endpoint endpoint=persistencyManager.createEndpoint(resource,path,new EntityTag(path),new Date());
 		persistencyManager.add(endpoint);
+
+		transaction.commit();
 		return resource;
 	}
 
@@ -147,24 +154,56 @@ public class ResourceControllerServiceTest {
 				getInstance().
 					getServiceRegistry().
 						getService(ResourceControllerService.class);
-		tms = RuntimeDelegate.getInstance().getServiceRegistry().getService(TemplateManagementService.class);
+		tms =
+			RuntimeDelegate.
+				getInstance().
+					getServiceRegistry().
+						getService(TemplateManagementService.class);
+
+		persistencyManager=
+			RuntimeDelegate.
+				getInstance().
+					getPersistencyManager();
+	}
+
+
+	public <T> T transactional(Callable<T> callable) throws Exception {
+		Transaction transaction = persistencyManager.currentTransaction();
+		transaction.begin();
+		try {
+			return callable.call();
+		} finally {
+			try {
+				assertThat(transaction.isCompleted(),equalTo(true));
+			} catch (Exception e) {
+				transaction.rollback();
+			}
+		}
 	}
 
 	@Test
 	public void testGetResource() throws Exception {
 		String resourcePath = "get";
 		Name<?> resourceName = name(resourcePath);
-		DataSet initial = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
+		final DataSet initial = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
 
 		// BEGIN initialization
-		Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
+		final Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
 		PersonHandler handler = getHandler(PersonHandler.class);
 		handler.add(resourceName, initial);
 		// END Initialization
 
-		DataSet data = sut.getResource(resource);
-		assertThat(data,notNullValue());
-		assertThat(data,sameInstance(initial));
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					DataSet data = sut.getResource(resource,WriteSessionConfiguration.builder().build());
+					assertThat(data,notNullValue());
+					assertThat(data,sameInstance(initial));
+					return null;
+				}
+			}
+		);
 	}
 
 	@Test
@@ -172,73 +211,131 @@ public class ResourceControllerServiceTest {
 		String resourcePath = "update";
 		Name<?> resourceName = name(resourcePath);
 		Date date = new Date();
-		DataSet initial = getInitialData(newReference().toManagedIndividual(PersonHandler.ID).named(resourcePath), date);
-		DataSet updatedDate = getUpdatedData(newReference().toManagedIndividual(PersonHandler.ID).named(resourcePath), date);
+		final DataSet initial = getInitialData(newReference().toManagedIndividual(PersonHandler.ID).named(resourcePath), date);
+		final DataSet updatedDate = getUpdatedData(newReference().toManagedIndividual(PersonHandler.ID).named(resourcePath), date);
 		System.out.println(initial);
 
 		// BEGIN initialization
-		Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
+		final Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
 		PersonHandler handler = getHandler(PersonHandler.class);
 		handler.add(resourceName, initial);
 		// END Initialization
 
-		DataSet data = sut.getResource(resource);
-		assertThat(data,sameInstance(initial));
-		try {
-			sut.updateResource(resource,updatedDate, WriteSessionConfiguration.builder().build());
-			data = sut.getResource(resource);
-			assertThat(data,sameInstance(updatedDate));
-		} catch (FeatureException e) {
-			e.printStackTrace();
-			fail("Should not fail update");
-		}
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					DataSet data = sut.getResource(resource,WriteSessionConfiguration.builder().build());
+					assertThat(data,sameInstance(initial));
+					return null;
+				}
+			}
+		);
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					try {
+						sut.updateResource(resource,updatedDate,WriteSessionConfiguration.builder().build());
+					} catch (FeatureException e) {
+						e.printStackTrace();
+						fail("Should not fail update");
+					}
+					return null;
+				}
+			}
+		);
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					DataSet data = sut.getResource(resource,WriteSessionConfiguration.builder().build());
+					assertThat(data,sameInstance(updatedDate));
+					return null;
+				}
+			}
+		);
 	}
 
 	@Test
 	public void testDeleteResource() throws Exception {
 		String resourcePath = "delete";
-		Name<?> resourceName = name(resourcePath);
-		DataSet initial = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
+		final Name<?> resourceName = name(resourcePath);
+		final DataSet initial = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
 
 		// BEGIN initialization
-		Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
-		PersonHandler handler = getHandler(PersonHandler.class);
+		final Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
+		final PersonHandler handler = getHandler(PersonHandler.class);
 		handler.add(resourceName, initial);
 		// END Initialization
 
-		DataSet data = sut.getResource(resource);
-		assertThat(data,sameInstance(initial));
-		sut.deleteResource(resource, WriteSessionConfiguration.builder().build());
-		assertThat(handler.hasResource(resourceName),equalTo(false));
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					DataSet data = sut.getResource(resource,WriteSessionConfiguration.builder().build());
+					assertThat(data,sameInstance(initial));
+					return null;
+				}
+			}
+		);
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					sut.deleteResource(resource, WriteSessionConfiguration.builder().build());
+					assertThat(handler.hasResource(resourceName),equalTo(false));
+					return null;
+				}
+			}
+		);
 	}
 
 	@Test
 	public void testCreateResource() throws Exception {
 		String resourcePath = "post";
-		Name<?> resourceName = name(resourcePath);
-		DataSet initialData = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
+		final Name<?> resourceName = name(resourcePath);
+		final DataSet initialData = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
 
 		// BEGIN initialization
-		Container resource = publishResource(Container.class,BookContainerHandler.ID, resourceName, resourcePath);
+		final Container resource = publishResource(Container.class,BookContainerHandler.ID, resourceName, resourcePath);
 
 		NameProvider nameProvider = NameProvider.create(resourceName);
-		Name<String> id = NamingScheme.getDefault().name("book1");
+		final Name<String> id = NamingScheme.getDefault().name("book1");
 		nameProvider.addMemberName(id);
 
-		BookHandler resourceHandler = getHandler(BookHandler.class);
+		final BookHandler resourceHandler = getHandler(BookHandler.class);
 		BookContainerHandler containerHandler = getHandler(BookContainerHandler.class);
 		containerHandler.add(resourceName, null);
 		containerHandler.setBookHandler(resourceHandler);
 		containerHandler.addNameProvider(resourceName, nameProvider);
 		// END Initialization
 
-		Resource newResource = sut.createResource(resource,initialData,null);
-		assertThat(newResource,notNullValue());
-		assertThat((Object)newResource.id().name(),equalTo((Object)id));
-		assertThat(newResource.id().templateId(),equalTo(BookHandler.ID));
-		assertThat(resourceHandler.hasResource(resourceName),equalTo(false));
-		DataSet data = sut.getResource(newResource);
-		assertThat(data,sameInstance(initialData));
+		final Resource newResource =
+			transactional(
+				new Callable<Resource>() {
+					@Override
+					public Resource call() throws Exception {
+						Resource result=sut.createResource(resource,initialData,WriteSessionConfiguration.builder().build());
+						assertThat(result,notNullValue());
+						assertThat((Object)result.id().name(),equalTo((Object)id));
+						assertThat(result.id().templateId(),equalTo(BookHandler.ID));
+						assertThat(resourceHandler.hasResource(resourceName),equalTo(false));
+						return result;
+					}
+				}
+			);
+
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					DataSet data = sut.getResource(newResource,WriteSessionConfiguration.builder().build());
+					assertThat(data,sameInstance(initialData));
+					return null;
+				}
+			}
+		);
 	}
 
 }

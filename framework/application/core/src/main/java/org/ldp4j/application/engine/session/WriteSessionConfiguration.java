@@ -28,6 +28,7 @@ package org.ldp4j.application.engine.session;
 
 import java.net.URI;
 
+import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.session.ResourceSnapshot;
 
 import com.google.common.base.Objects;
@@ -49,6 +50,7 @@ public final class WriteSessionConfiguration {
 		this.indirectId = indirectId;
 	}
 
+	@Deprecated
 	public void setTargetSnapshot(ResourceSnapshot targetSnapshot) {
 		this.targetSnapshot = targetSnapshot;
 	}
@@ -61,6 +63,7 @@ public final class WriteSessionConfiguration {
 		return this.indirectId;
 	}
 
+	@Deprecated
 	public ResourceSnapshot getTargetSnapshot() {
 		return this.targetSnapshot;
 	}

@@ -381,6 +381,7 @@ final class DelegatedWriteSession implements WriteSession {
 	public void discardChanges() throws WriteSessionException {
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,this.status);
 		this.status=Status.ABORTED;
+		this.writeSessionService.rollbackSession(this);
 	}
 
 }

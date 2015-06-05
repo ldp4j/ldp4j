@@ -102,7 +102,6 @@ public final class WriteSessionService implements Service {
 	}
 
 	public WriteSession createSession(WriteSessionConfiguration configuration) {
-		// TODO: We should start the transaction here
 		UnitOfWork.newCurrent();
 		logLifecycleMessage("Created write session: %s",configuration);
 		return new DelegatedWriteSession(configuration,this.persistencyManager,this);
@@ -116,12 +115,9 @@ public final class WriteSessionService implements Service {
 				case ACTIVE:
 					logLifecycleMessage("Force termination of active session...");
 					session.discardChanges();
-					// TODO: We should abort the transaction here
 					break;
 				case ABORTED:
-					logLifecycleMessage("Force termination of aborted session...");
-					session.discardChanges();
-					// TODO: We should abort the transaction here
+					// Nothing to do
 					break;
 				case COMPLETED:
 					// Nothing to do
@@ -129,7 +125,7 @@ public final class WriteSessionService implements Service {
 
 			}
 		} catch (WriteSessionException e) {
-			// TODO: Log this failure
+			LOGGER.error("Could not force termination of active session",e);
 		} finally {
 			UnitOfWork.setCurrent(null);
 		}
@@ -149,7 +145,13 @@ public final class WriteSessionService implements Service {
 	void commitSession(DelegatedWriteSession session) {
 		logLifecycleMessage("Commiting session...");
 		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date(),session));
-		// TODO: We should commit the transaction here
+		this.persistencyManager.currentTransaction().commit();
+	}
+
+	void rollbackSession(DelegatedWriteSession session) {
+		logLifecycleMessage("Rolling back session...");
+		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date(),session));
+		this.persistencyManager.currentTransaction().rollback();
 	}
 
 	private void logLifecycleMessage(String msg, Object... args) {

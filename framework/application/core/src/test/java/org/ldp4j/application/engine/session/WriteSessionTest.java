@@ -51,6 +51,7 @@ import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.session.UnitOfWork.Visitor;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
+import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -116,6 +117,10 @@ public class WriteSessionTest {
 	private UnitOfWork uow;
 	private WriteSession sut;
 
+	private PersistencyManager persistencyManager;
+
+	private Transaction transaction;
+
 	@Before
 	public void setUp() throws Exception {
 		RuntimeDelegate.setInstance(new InMemoryRuntimeDelegate());
@@ -126,6 +131,10 @@ public class WriteSessionTest {
 						configure(
 							Lists.<Class<?>>newArrayList(),
 							Arrays.<ResourceHandler>asList(new PersonHandler()));
+		persistencyManager=
+			RuntimeDelegate.
+				getInstance().
+					getPersistencyManager();
 		writeSessionService=
 			RuntimeDelegate.
 				getInstance().
@@ -141,8 +150,8 @@ public class WriteSessionTest {
 	@Test
 	public void testSession() throws WriteSessionException {
 		// BEGIN initialization
+		// TODO: Apply transactions here
 		uow = UnitOfWork.newCurrent();
-		PersistencyManager persistencyManager = RuntimeDelegate.getInstance().getPersistencyManager();
 
 		org.ldp4j.application.engine.resource.Resource rootResource=persistencyManager.createResource("personTemplate",name("me"),null);
 		Endpoint rootEndpoint=persistencyManager.createEndpoint(rootResource,"root",new EntityTag("root"),new Date());
@@ -294,26 +303,30 @@ public class WriteSessionTest {
 		uow.accept(new UnitOfWorkInspector());
 		sut.saveChanges();
 		writeSessionService.terminateSession(sut);
+		assertThat(transaction.isCompleted(),equalTo(true));
 	}
 
 	private void prepareSession(Action action, ResourceSnapshot resource) {
 		logAction(Stage.PREPARATION,action,resource);
+		transaction=persistencyManager.currentTransaction();
+		transaction.begin();
 		sut = writeSessionService.createSession(WriteSessionConfiguration.builder().build());
 		uow = UnitOfWork.getCurrent();
 	}
 
 	private void prepareSession(Action action, org.ldp4j.application.engine.resource.Resource resource) {
 		logAction(Stage.PREPARATION, action, resource);
-		uow = UnitOfWork.newCurrent();
+		transaction=persistencyManager.currentTransaction();
+		transaction.begin();
 		sut = writeSessionService.createSession(WriteSessionConfiguration.builder().build());
+		uow = UnitOfWork.getCurrent();
 	}
 
 	private void handleAction(Action action, org.ldp4j.application.engine.resource.Resource resource) {
 		logAction(Stage.HANDLING,action,resource);
 	}
 
-	private void logAction(Stage stage, Action action,
-			org.ldp4j.application.engine.resource.Resource resource) {
+	private void logAction(Stage stage, Action action, org.ldp4j.application.engine.resource.Resource resource) {
 		LOGGER.debug(String.format(">> %s %s(%s)",stage.prefix,action,resource.id().name()));
 	}
 

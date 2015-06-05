@@ -206,6 +206,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 	}
 
+	// TODO: How do we do this transactionally
 	private void registerConstraintReport(Resource resource, InvalidContentException error) {
 		ConstraintReport report=
 			this.engine().
@@ -235,7 +236,10 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			throw new ApplicationExecutionException(errorMessage);
 		}
 		try {
-			return this.engine().resourceControllerService().getResource(resource);
+			WriteSessionConfiguration config=
+				new DefaultApplicationContextHelper(this.engine().persistencyManager()).
+					createConfiguration();
+			return this.engine().resourceControllerService().getResource(resource,config);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource '%s' retrieval failed ",endpoint);
 			throw createException(errorMessage,e);
@@ -264,7 +268,10 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			throw new ApplicationExecutionException(errorMessage);
 		}
 		try {
-			return this.engine().resourceControllerService().createResource(resource,dataSet,desiredPath);
+			WriteSessionConfiguration config=
+				new DefaultApplicationContextHelper(this.engine().persistencyManager()).
+					createConfiguration(resource,dataSet,desiredPath);
+			return this.engine().resourceControllerService().createResource(resource,dataSet,config);
 		} catch (FeatureExecutionException e) {
 			processConstraintValidationFailure(resource, e);
 			String errorMessage = applicationFailureMessage("Resource create failed at '%s'",endpoint);
@@ -284,7 +291,10 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			throw new ApplicationExecutionException(errorMessage);
 		}
 		try {
-			this.engine().resourceControllerService().deleteResource(resource, WriteSessionConfiguration.builder().build());
+			WriteSessionConfiguration config=
+				new DefaultApplicationContextHelper(this.engine().persistencyManager()).
+					createConfiguration();
+			this.engine().resourceControllerService().deleteResource(resource,config);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource deletion failed at '%s'",endpoint);
 			throw createException(errorMessage,e);
@@ -300,7 +310,10 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			throw new ApplicationExecutionException(errorMessage);
 		}
 		try {
-			this.engine().resourceControllerService().updateResource(resource,dataSet, WriteSessionConfiguration.builder().build());
+			WriteSessionConfiguration config=
+				new DefaultApplicationContextHelper(this.engine().persistencyManager()).
+					createConfiguration();
+			this.engine().resourceControllerService().updateResource(resource,dataSet,config);
 		} catch (FeatureExecutionException e) {
 			processConstraintValidationFailure(resource, e);
 			String errorMessage = applicationFailureMessage("Resource modification failed at '%s'",endpoint);
