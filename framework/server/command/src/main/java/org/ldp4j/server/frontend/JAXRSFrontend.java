@@ -107,17 +107,23 @@ public class JAXRSFrontend {
 		URI resourceUri = normalizePath(path);
 		Endpoint result=null;
 		switch(this.state) {
-		case AVAILABLE:
+		case STARTED:
 			result=registry.findEndpoint(resourceUri);
+			break;
+		case AVAILABLE:
+			result=EndpointFactory.unavailable(resourceUri);
 			break;
 		case SHUTDOWN:
 			result=EndpointFactory.unavailable(resourceUri);
 			break;
 		case UNAVAILABLE:
-			result=EndpointFactory.serverError(resourceUri);
+			result=EndpointFactory.unavailable(resourceUri);
 			break;
 		case UNDEFINED:
 			result=EndpointFactory.serverError(resourceUri);
+			break;
+		default:
+			break;
 		}
 		return result;
 	}

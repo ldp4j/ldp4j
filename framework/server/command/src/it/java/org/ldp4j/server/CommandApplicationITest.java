@@ -46,6 +46,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ldp4j.server.commands.xml.CreateEndpoint;
 import org.ldp4j.server.commands.xml.DeleteEndpoint;
+import org.ldp4j.server.testing.ServerFrontendTestHelper;
 import org.ldp4j.server.testing.TestingApplicationBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

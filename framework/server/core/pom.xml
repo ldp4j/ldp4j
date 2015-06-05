@@ -109,6 +109,12 @@
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-depchain</artifactId>
 			<type>pom</type>
+			<exclusions>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -201,13 +207,6 @@
 			<groupId>org.ldp4j.commons</groupId>
 			<artifactId>ldp4j-commons-testing</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<!-- TODO: Extract integration testing stuff to its own module -->
-		<dependency>
-			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-server-impl</artifactId>
-			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 
@@ -421,10 +420,8 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
 					<systemPropertyVariables>
-						<!-- org.ldp4j.testing.categories.logging.setup>true</org.ldp4j.testing.categories.logging.setup -->
-						<!-- org.ldp4j.testing.categories.logging.archive>true</org.ldp4j.testing.categories.logging.archive -->
-						<!-- org.ldp4j.server.bootstrap.logging.initialization>true</org.ldp4j.server.bootstrap.logging.initialization-->
-						<!-- org.ldp4j.server.bootstrap.logging.shutdown>true</org.ldp4j.server.bootstrap.logging.shutdown -->
+						<!-- org.ldp4j.testing.logging.setup>true</org.ldp4j.testing.logging.setup -->
+						<!-- org.ldp4j.testing.logging.archive>true</org.ldp4j.testing.logging.archive -->
 						<!-- org.ops4j.pax.url.mvn.localRepository>${settings.localRepository}</org.ops4j.pax.url.mvn.localRepository -->
 						<!-- org.ops4j.pax.url.mvn.settings>${basedir}/target/test-classes/settings.xml</org.ops4j.pax.url.mvn.settings -->
 						<arquillian.launch>tomcat-cluster</arquillian.launch>
