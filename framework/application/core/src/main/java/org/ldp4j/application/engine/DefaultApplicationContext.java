@@ -67,10 +67,11 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	private final class DefaultApplicationOperation implements ApplicationContextOperation {
 
 		private final HttpRequest request;
+		private final Transaction transaction;
 
 		private DefaultApplicationOperation(HttpRequest request) {
 			this.request = request;
-			getContext().operationController.beginTransaction();
+			this.transaction=getContext().operationController.beginTransaction();
 		}
 
 		HttpRequest getRequest() {
@@ -100,7 +101,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		@Override
 		public void dispose() {
 			try {
-				getContext().operationController.endTransaction();
+				getContext().operationController.endTransaction(this.transaction);
 			} finally {
 				getContext().currentOperation.remove();
 			}
@@ -117,17 +118,17 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			return engine().persistencyManager().currentTransaction();
 		}
 
-		public void beginTransaction() {
+		public Transaction beginTransaction() {
 			Transaction transaction = currentTransaction();
 			transaction.begin();
 			LOGGER.
 				info("Started transaction {}.{},",
 					Thread.currentThread().getName(),
 					transaction);
+			return transaction;
 		}
 
-		public void endTransaction() {
-			Transaction transaction = currentTransaction();
+		public void endTransaction(Transaction transaction) {
 			if(!transaction.isCompleted() && transaction.isStarted()) {
 				transaction.rollback();
 			}
