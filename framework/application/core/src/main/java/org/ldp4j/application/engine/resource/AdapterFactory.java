@@ -199,7 +199,6 @@ final class AdapterFactory {
 	static Adapter newAdapter(Resource resource, ResourceHandler resourceHandler, WriteSessionService writeSessionService, WriteSessionConfiguration configuration) {
 		WriteSession session = writeSessionService.createSession(configuration);
 		ResourceSnapshot snapshot = writeSessionService.attach(session,resource,resourceHandler.getClass());
-		configuration.setTargetSnapshot(snapshot);
 		FactoryVistor factory = new FactoryVistor(resource.id(),session,writeSessionService,resourceHandler);
 		snapshot.accept(factory);
 		return factory.getAdapter();

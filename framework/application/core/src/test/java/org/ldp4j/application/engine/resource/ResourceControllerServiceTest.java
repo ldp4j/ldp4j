@@ -197,7 +197,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(resource,WriteSessionConfiguration.builder().build());
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
 					assertThat(data,notNullValue());
 					assertThat(data,sameInstance(initial));
 					return null;
@@ -225,7 +225,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(resource,WriteSessionConfiguration.builder().build());
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
 					assertThat(data,sameInstance(initial));
 					return null;
 				}
@@ -236,7 +236,7 @@ public class ResourceControllerServiceTest {
 				@Override
 				public Void call() throws Exception {
 					try {
-						sut.updateResource(resource,updatedDate,WriteSessionConfiguration.builder().build());
+						sut.updateResource(resource,updatedDate,getSessionConfiguration(resource));
 					} catch (FeatureException e) {
 						e.printStackTrace();
 						fail("Should not fail update");
@@ -249,7 +249,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(resource,WriteSessionConfiguration.builder().build());
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
 					assertThat(data,sameInstance(updatedDate));
 					return null;
 				}
@@ -273,7 +273,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(resource,WriteSessionConfiguration.builder().build());
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
 					assertThat(data,sameInstance(initial));
 					return null;
 				}
@@ -283,7 +283,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					sut.deleteResource(resource, WriteSessionConfiguration.builder().build());
+					sut.deleteResource(resource,getSessionConfiguration(resource));
 					assertThat(handler.hasResource(resourceName),equalTo(false));
 					return null;
 				}
@@ -316,7 +316,7 @@ public class ResourceControllerServiceTest {
 				new Callable<Resource>() {
 					@Override
 					public Resource call() throws Exception {
-						Resource result=sut.createResource(resource,initialData,WriteSessionConfiguration.builder().build());
+						Resource result=sut.createResource(resource,initialData,getSessionConfiguration(resource));
 						assertThat(result,notNullValue());
 						assertThat((Object)result.id().name(),equalTo((Object)id));
 						assertThat(result.id().templateId(),equalTo(BookHandler.ID));
@@ -330,12 +330,20 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(newResource,WriteSessionConfiguration.builder().build());
+					DataSet data = sut.getResource(newResource,getSessionConfiguration(newResource));
 					assertThat(data,sameInstance(initialData));
 					return null;
 				}
 			}
 		);
+	}
+
+	private WriteSessionConfiguration getSessionConfiguration(final Resource resource) {
+		return
+			WriteSessionConfiguration.
+				builder().
+					withTarget(resource).
+					build();
 	}
 
 }

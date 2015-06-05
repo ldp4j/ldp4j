@@ -28,16 +28,15 @@ package org.ldp4j.application.engine.session;
 
 import java.net.URI;
 
-import org.ldp4j.application.engine.spi.Transaction;
-import org.ldp4j.application.session.ResourceSnapshot;
+import org.ldp4j.application.engine.resource.Resource;
 
 import com.google.common.base.Objects;
 
 public final class WriteSessionConfiguration {
 
 	private String path;
-	private ResourceSnapshot targetSnapshot;
 	private URI indirectId;
+	private Resource target;
 
 	private WriteSessionConfiguration() {
 	}
@@ -50,9 +49,8 @@ public final class WriteSessionConfiguration {
 		this.indirectId = indirectId;
 	}
 
-	@Deprecated
-	public void setTargetSnapshot(ResourceSnapshot targetSnapshot) {
-		this.targetSnapshot = targetSnapshot;
+	public Resource getTarget() {
+		return this.target;
 	}
 
 	public String getPath() {
@@ -63,18 +61,15 @@ public final class WriteSessionConfiguration {
 		return this.indirectId;
 	}
 
-	@Deprecated
-	public ResourceSnapshot getTargetSnapshot() {
-		return this.targetSnapshot;
-	}
-
 	@Override
 	public String toString() {
 		return
 			Objects.
 				toStringHelper("WriteSessionConfiguration").
+					omitNullValues().
+					add("target",this.target).
 					add("path",this.path).
-					add("targetSnapshot",this.targetSnapshot).
+					add("indirectId",this.indirectId).
 					toString();
 	}
 
@@ -88,6 +83,11 @@ public final class WriteSessionConfiguration {
 
 		private WriteSessionConfigurationBuilder() {
 			this.configuration = new WriteSessionConfiguration();
+		}
+
+		public WriteSessionConfigurationBuilder withTarget(Resource resource) {
+			this.configuration.setTarget(resource);
+			return this;
 		}
 
 		public WriteSessionConfigurationBuilder withIndirectId(URI indirectId) {
@@ -104,6 +104,10 @@ public final class WriteSessionConfiguration {
 			return this.configuration;
 		}
 
+	}
+
+	private void setTarget(Resource resource) {
+		this.target=resource;
 	}
 
 }

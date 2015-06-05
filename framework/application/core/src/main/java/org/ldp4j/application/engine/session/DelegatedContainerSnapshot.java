@@ -31,26 +31,32 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.List;
 import java.util.Set;
 
-import org.ldp4j.application.session.ContainerSnapshot;
-import org.ldp4j.application.session.ResourceSnapshot;
-import org.ldp4j.application.session.SnapshotVisitor;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.template.ContainerTemplate;
+import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.session.ContainerSnapshot;
+import org.ldp4j.application.session.ResourceSnapshot;
+import org.ldp4j.application.session.SnapshotVisitor;
 
 
 final class DelegatedContainerSnapshot extends DelegatedResourceSnapshot implements ContainerSnapshot {
 
-	protected DelegatedContainerSnapshot(ResourceId resourceId) {
-		super(resourceId);
+	protected DelegatedContainerSnapshot(ResourceId resourceId,Class<? extends ContainerHandler> handlerClass) {
+		super(resourceId,handlerClass);
 	}
-	
+
+	@Override
+	public Class<? extends ContainerHandler> handlerClass() {
+		return super.handlerClass().asSubclass(ContainerHandler.class);
+	}
+
 	@Override
 	public void accept(SnapshotVisitor visitor) {
 		visitor.visitContainerSnapshot(this);
 	}
-	
+
 	void accept(DelegatedSnapshotVisitor visitor) {
 		visitor.visitDelegatedContainerSnapshot(this);
 	}
@@ -84,7 +90,7 @@ final class DelegatedContainerSnapshot extends DelegatedResourceSnapshot impleme
 		checkArgument(member instanceof DelegatedResourceSnapshot,"Unsupported snapshot type");
 		return super.persistencyState().removeMember((DelegatedResourceSnapshot)member,this);
 	}
-	
+
 	boolean softRemoveMember(ResourceSnapshot member) {
 		checkArgument(member instanceof DelegatedResourceSnapshot,"Unsupported snapshot type");
 		return super.persistencyState().softRemoveMember((DelegatedResourceSnapshot)member,this);
@@ -92,7 +98,7 @@ final class DelegatedContainerSnapshot extends DelegatedResourceSnapshot impleme
 
 	@Override
 	public String toString() {
-		return 
+		return
 			stringHelper().
 				add("members", members()).
 				toString();

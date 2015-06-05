@@ -43,6 +43,7 @@ import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.FeatureException;
+import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.template.TemplateIntrospector;
@@ -54,15 +55,15 @@ final class DefaultApplicationContextHelper {
 	private static final URI NEW_RESOURCE_SURROGATE_ID = URI.create("");
 	private PersistencyManager persistencyManager;
 
-	DefaultApplicationContextHelper(PersistencyManager persistencyManager) {
+	private DefaultApplicationContextHelper(PersistencyManager persistencyManager) {
 		this.persistencyManager = persistencyManager;
 	}
 
-
-	WriteSessionConfiguration createConfiguration() {
+	WriteSessionConfiguration createConfiguration(Resource resource) {
 		return
 			WriteSessionConfiguration.
 				builder().
+					withTarget(resource).
 					build();
 	}
 
@@ -70,6 +71,7 @@ final class DefaultApplicationContextHelper {
 		return
 			WriteSessionConfiguration.
 				builder().
+					withTarget(container).
 					withPath(desiredPath).
 					withIndirectId(getIndirectId(container, dataSet)).
 					build();
@@ -77,10 +79,10 @@ final class DefaultApplicationContextHelper {
 
 	private URI getIndirectId(Container container, DataSet dataSet) {
 		TemplateIntrospector introspector=
-				TemplateIntrospector.
-					newInstance(
-						this.persistencyManager.
-							templateOfId(container.id().templateId()));
+			TemplateIntrospector.
+				newInstance(
+					this.persistencyManager.
+						templateOfId(container.id().templateId()));
 		if(!introspector.isIndirectContainer()) {
 			return null;
 		}
@@ -144,6 +146,10 @@ final class DefaultApplicationContextHelper {
 			);
 		}
 		return indirectIdentities;
+	}
+
+	static DefaultApplicationContextHelper create(PersistencyManager persistencyManager) {
+		return new DefaultApplicationContextHelper(persistencyManager);
 	}
 
 }

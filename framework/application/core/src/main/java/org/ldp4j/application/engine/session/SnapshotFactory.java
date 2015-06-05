@@ -39,6 +39,8 @@ import org.ldp4j.application.engine.resource.ResourceVisitor;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateIntrospector;
+import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.ext.ResourceHandler;
 
 final class SnapshotFactory {
 
@@ -61,11 +63,19 @@ final class SnapshotFactory {
 		DelegatedResourceSnapshot snapshot=null;
 		TemplateIntrospector introspector=TemplateIntrospector.newInstance(template);
 		if(!introspector.isContainer()) {
-			snapshot=new DelegatedResourceSnapshot(resourceId);
+			snapshot=new DelegatedResourceSnapshot(resourceId,template.handlerClass());
 		} else {
-			snapshot=new DelegatedContainerSnapshot(resourceId);
+			snapshot=new DelegatedContainerSnapshot(resourceId,handlerClass(template,ContainerHandler.class));
 		}
 		return snapshot;
+	}
+
+	private <T extends ResourceHandler> Class<? extends T> handlerClass(ResourceTemplate template, Class<? extends T> clazz) {
+		Class<?> handlerClass = template.handlerClass();
+		if(!clazz.isAssignableFrom(handlerClass)) {
+			throw new IllegalStateException("Cannot cast '"+handlerClass.getCanonicalName()+"' to a subclass of '"+clazz.getCanonicalName()+"'");
+		}
+		return handlerClass.asSubclass(clazz);
 	}
 
 	DelegatedResourceSnapshot newPersistent(Resource resource, final ResourceTemplate template) {
@@ -74,14 +84,14 @@ final class SnapshotFactory {
 			new ResourceVisitor() {
 				@Override
 				public void visitResource(Resource resource) {
-					DelegatedResourceSnapshot snapshot=new DelegatedResourceSnapshot(resource.id());
+					DelegatedResourceSnapshot snapshot=new DelegatedResourceSnapshot(resource.id(),template.handlerClass());
 					snapshot.setParentState(ParentState.parentOf(resource));
 					snapshot.setPersistencyState(PersistencyState.newPersistent(resource,template,session));
 					result.set(snapshot);
 				}
 				@Override
 				public void visitContainer(Container resource) {
-					DelegatedContainerSnapshot snapshot=new DelegatedContainerSnapshot(resource.id());
+					DelegatedContainerSnapshot snapshot=new DelegatedContainerSnapshot(resource.id(),handlerClass(template,ContainerHandler.class));
 					snapshot.setParentState(ParentState.parentOf(resource));
 					snapshot.setPersistencyState(PersistencyState.newPersistent(resource,template,session));
 					result.set(snapshot);

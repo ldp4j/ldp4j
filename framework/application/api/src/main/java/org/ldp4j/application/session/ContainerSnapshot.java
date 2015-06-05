@@ -29,8 +29,11 @@ package org.ldp4j.application.session;
 import java.util.Set;
 
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.ext.ContainerHandler;
 
 public interface ContainerSnapshot extends ResourceSnapshot {
+
+	Class<? extends ContainerHandler> handlerClass();
 
 	Set<? extends ResourceSnapshot> members();
 

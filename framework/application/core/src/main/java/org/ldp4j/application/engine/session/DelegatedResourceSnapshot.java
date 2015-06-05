@@ -79,7 +79,7 @@ class DelegatedResourceSnapshot implements ResourceSnapshot {
 				}
 				children.add(resource);
 			}
-			
+
 		}
 
 		public List<DelegatedResourceSnapshot> getChildren() {
@@ -91,7 +91,7 @@ class DelegatedResourceSnapshot implements ResourceSnapshot {
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(DelegatedResourceSnapshot.class);
-	
+
 	private ParentState parentState;
 
 	private DelegatedWriteSession session;
@@ -100,8 +100,11 @@ class DelegatedResourceSnapshot implements ResourceSnapshot {
 
 	private final ResourceId resourceId;
 
-	protected DelegatedResourceSnapshot(ResourceId resourceId) {
+	private final Class<? extends ResourceHandler> handlerClass;
+
+	protected DelegatedResourceSnapshot(ResourceId resourceId, Class<? extends ResourceHandler> handlerClass) {
 		this.resourceId = resourceId;
+		this.handlerClass = handlerClass;
 	}
 
 	private final <T> T logTransition(String concern, T oldState, T newState) {
@@ -232,7 +235,17 @@ class DelegatedResourceSnapshot implements ResourceSnapshot {
 	public final Name<?> name() {
 		return resourceId().name();
 	}
-	
+
+	@Override
+	public final String templateId() {
+		return resourceId().templateId();
+	}
+
+	@Override
+	public Class<? extends ResourceHandler> handlerClass() {
+		return this.handlerClass;
+	}
+
 	@Override
 	public final boolean isRoot() {
 		return parentState.isRoot(this);
@@ -278,10 +291,12 @@ class DelegatedResourceSnapshot implements ResourceSnapshot {
 	}
 
 	protected ToStringHelper stringHelper() {
-		return 
+		return
 			Objects.
 				toStringHelper(getClass()).
 					omitNullValues().
+					add("resourceId",this.resourceId).
+					add("handlerClass",this.handlerClass.getCanonicalName()).
 					add("persistencyState",this.persistencyState).
 					add("parentState",this.parentState);
 	}

@@ -238,8 +238,9 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 		try {
 			WriteSessionConfiguration config=
-				new DefaultApplicationContextHelper(this.engine().persistencyManager()).
-					createConfiguration();
+				DefaultApplicationContextHelper.
+					create(this.engine().persistencyManager()).
+						createConfiguration(resource);
 			return this.engine().resourceControllerService().getResource(resource,config);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource '%s' retrieval failed ",endpoint);
@@ -270,8 +271,9 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 		try {
 			WriteSessionConfiguration config=
-				new DefaultApplicationContextHelper(this.engine().persistencyManager()).
-					createConfiguration(resource,dataSet,desiredPath);
+				DefaultApplicationContextHelper.
+					create(this.engine().persistencyManager()).
+						createConfiguration(resource,dataSet,desiredPath);
 			return this.engine().resourceControllerService().createResource(resource,dataSet,config);
 		} catch (FeatureExecutionException e) {
 			processConstraintValidationFailure(resource, e);
@@ -293,8 +295,9 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 		try {
 			WriteSessionConfiguration config=
-				new DefaultApplicationContextHelper(this.engine().persistencyManager()).
-					createConfiguration();
+				DefaultApplicationContextHelper.
+					create(this.engine().persistencyManager()).
+						createConfiguration(resource);
 			this.engine().resourceControllerService().deleteResource(resource,config);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage("Resource deletion failed at '%s'",endpoint);
@@ -312,8 +315,9 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 		try {
 			WriteSessionConfiguration config=
-				new DefaultApplicationContextHelper(this.engine().persistencyManager()).
-					createConfiguration();
+				DefaultApplicationContextHelper.
+					create(this.engine().persistencyManager()).
+						createConfiguration(resource);
 			this.engine().resourceControllerService().updateResource(resource,dataSet,config);
 		} catch (FeatureExecutionException e) {
 			processConstraintValidationFailure(resource, e);

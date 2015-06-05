@@ -244,7 +244,7 @@ final class DelegatedWriteSession implements WriteSession {
 	}
 
 	private boolean isMainResource(DelegatedResourceSnapshot snapshot) {
-		ResourceSnapshot targetSnapshot = this.configuration.getTargetSnapshot();
+		ResourceSnapshot targetSnapshot = getTargetSnapshot();
 		if(!(targetSnapshot instanceof DelegatedContainerSnapshot)) {
 			return false;
 		}
@@ -255,6 +255,15 @@ final class DelegatedWriteSession implements WriteSession {
 			return false;
 		}
 		return snapshot==newMembers.get(0);
+	}
+
+	private ResourceSnapshot getTargetSnapshot() {
+		ResourceSnapshot targetSnapshot=null;
+		Resource target=this.configuration.getTarget();
+		if(target!=null) {
+			targetSnapshot=find(ResourceSnapshot.class, target.id());
+		}
+		return targetSnapshot;
 	}
 
 	ResourceTemplate loadTemplate(String templateId) {
