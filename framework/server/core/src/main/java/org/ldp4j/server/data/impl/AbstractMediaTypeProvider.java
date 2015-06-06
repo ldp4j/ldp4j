@@ -40,8 +40,8 @@ import org.ldp4j.application.engine.util.ListenerManager;
 import org.ldp4j.application.engine.util.Notification;
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.util.TripleSet;
-import org.ldp4j.server.data.Context;
 import org.ldp4j.server.data.spi.ContentTransformationException;
+import org.ldp4j.server.data.spi.Context;
 import org.ldp4j.server.data.spi.IMediaTypeProvider;
 
 abstract class AbstractMediaTypeProvider implements IMediaTypeProvider {

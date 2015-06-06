@@ -29,9 +29,10 @@ package org.ldp4j.server.data;
 import java.net.URI;
 
 import org.ldp4j.rdf.Namespaces;
+import org.ldp4j.server.data.spi.Context;
 
 
-public final class ImmutableContext implements Context {
+final class ImmutableContext implements Context {
 
 	private URI base;
 	private ResourceResolver resourceResolver;

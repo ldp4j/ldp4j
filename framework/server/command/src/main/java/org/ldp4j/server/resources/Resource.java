@@ -26,6 +26,7 @@
  */
 package org.ldp4j.server.resources;
 
+import java.net.URI;
 import java.util.Date;
 
 import javax.ws.rs.core.EntityTag;
@@ -38,13 +39,13 @@ public interface Resource {
 	ResourceType type();
 
 	Resource parent();
-	
+
 	ResourceId id();
 
 	EntityTag entityTag();
 
 	Date lastModified();
-	
-	Entity entity();
+
+	Entity entity(URI applicationBase);
 
 }

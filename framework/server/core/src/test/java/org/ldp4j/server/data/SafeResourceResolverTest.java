@@ -47,7 +47,7 @@ import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.server.data.spi.ContentTransformationException;
 import org.ldp4j.server.data.spi.IMediaTypeProvider;
-import org.ldp4j.server.data.spi.RuntimeInstance;
+import org.ldp4j.server.data.spi.RuntimeDelegate;
 import org.ldp4j.server.data.spi.IMediaTypeProvider.Unmarshaller;
 
 import com.google.common.collect.ImmutableMap;
@@ -61,7 +61,7 @@ public class SafeResourceResolverTest {
 	@Before
 	public void setUp() {
 		this.mediaType = new MediaType("text", "turtle");
-		this.provider = RuntimeInstance.getInstance().getMediaTypeProvider(mediaType);
+		this.provider = RuntimeDelegate.getInstance().getMediaTypeProvider(mediaType);
 	}
 
 	@Test

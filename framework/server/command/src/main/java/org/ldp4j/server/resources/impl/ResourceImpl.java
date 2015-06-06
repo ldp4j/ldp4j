@@ -52,30 +52,30 @@ import org.ldp4j.server.resources.ResourceType;
 public class ResourceImpl implements Resource {
 
 	protected static final class Context {
-		
+
 		private final DataSet dataSet;
-	
+
 		private Context(DataSet dataSet) {
 			this.dataSet = dataSet;
 		}
-		
+
 		public URI property(Term term) {
 			return term.as(URI.class);
 		}
-		
+
 		public Value reference(Term term) {
 			return dataSet.individual(term.as(URI.class), ExternalIndividual.class);
 		}
-		
+
 		public Individual<?,?> newIndividual(URI id) {
 			return dataSet.individual(id, ExternalIndividual.class);
 		}
-	
+
 		@SuppressWarnings("rawtypes")
 		public Individual<?,?> newIndividual(Name<?> id) {
 			return dataSet.individual((Name)id, LocalIndividual.class);
 		}
-		
+
 		public Individual<?,?> newIndividual(ManagedIndividualId id) {
 			return dataSet.individual(id, ManagedIndividual.class);
 		}
@@ -99,7 +99,7 @@ public class ResourceImpl implements Resource {
 	private DataSet content;
 	private EntityTag etag;
 	private Date lastModified;
-	
+
 	protected ResourceImpl(ResourceType type, Resource parent) {
 		this.type = type;
 		this.parentId = parent;
@@ -108,20 +108,20 @@ public class ResourceImpl implements Resource {
 	protected ResourceImpl(ResourceType type) {
 		this(type,null);
 	}
-	
+
 	public ResourceImpl(Resource parent) {
 		this(ResourceType.RESOURCE,parent);
 	}
-	
+
 	public ResourceImpl() {
 		this(ResourceType.RESOURCE,null);
 	}
-	
+
 	@Override
 	public final ResourceType type() {
 		return type;
 	}
-	
+
 	@Override
 	public final ResourceId id() {
 		return id;
@@ -139,7 +139,7 @@ public class ResourceImpl implements Resource {
 	void setEntityTag(EntityTag etag) {
 		this.etag = etag;
 	}
-	
+
 	@Override
 	public final Date lastModified() {
 		return new Date(lastModified.getTime());
@@ -172,7 +172,7 @@ public class ResourceImpl implements Resource {
 		ResourceId resourceId = id();
 		ManagedIndividualId id=ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
 		fillInMetadata(
-			dataSet.individual(id,ManagedIndividual.class), 
+			dataSet.individual(id,ManagedIndividual.class),
 			new Context(dataSet));
 		return dataSet;
 	}
@@ -180,17 +180,17 @@ public class ResourceImpl implements Resource {
 	protected void fillInMetadata(Individual<?, ?> individual, Context ctx) {
 		individual.
 			addValue(
-				ctx.property(RDF.TYPE), 
+				ctx.property(RDF.TYPE),
 				ctx.reference(LDP.RESOURCE));
 	}
-	
+
 	@Override
-	public final Entity entity() {
+	public final Entity entity(URI applicationBase) {
 		DataSet dataSet=createDataSet();
 		DataSetUtils.merge(metadata(), dataSet);
 		DataSetUtils.merge(content(), dataSet);
-		return EntityFactory.createEntity(dataSet);
-		
+		return EntityFactory.createEntity(dataSet,applicationBase);
+
 	}
 
 	@Override

@@ -42,74 +42,36 @@ import javax.ws.rs.core.MediaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * RuntimeInstance is an abstract factory class that provides various methods for
- * the creation of objects that implement the LDP4j ServerComponentDirectory SPI (LSS for short).
- * These methods are designed for use by other LSS classes and are not intended
- * to be called directly by applications.
- * RuntimeInstance allows the standard LSS classes to use different LKS
- * implementations without any code changes. <br />
- * <br/>
- *
- * An implementation of LSS MUST provide a concrete subclass of RuntimeInstance.
- * Using the supplied RuntimeInstance this can be provided to LKS in one of two
- * ways:<br />
- *	<ol>
- * 		<li>An instance of RuntimeInstance can be instantiated and injected using its
- * static method <code>setInstance</code>. In this case the implementation is responsible
- * for creating the instance; this option is intended for use with
- * implementations based on IoC frameworks.</li>
- * 		<li>The class to be used can be configured, (see below). In this case LSS is
- * responsible for instantiating an instance of the class and the configured
- * class MUST have a public constructor which takes no arguments.</li>
- * 	</ol>
- *
- * Note that an implementation MAY supply an alternate implementation of the
- * RuntimeInstance API class (provided it passes the TCK signature test and
- * behaves according to the specification) that supports alternate means of
- * locating a concrete subclass. <br />
- * <br/>
- *
- * A LSS implementation may rely on a particular implementation of
- * RuntimeInstance being used – applications SHOULD NOT override the supplied
- * RuntimeInstance instance with an application-supplied alternative and doing so
- * may cause unexpected problems.
- * <br/>
- *
- * @author Miguel Esteban Gutiérrez
- * @since 1.0.0
- * @version 1.0
- */
-public abstract class RuntimeInstance {
+public abstract class RuntimeDelegate {
 
 	private static final String INSTANTIATE_ACTION = "instantiate";
 
-	private static final Logger LOGGER=LoggerFactory.getLogger(RuntimeInstance.class);
+	private static final Logger LOGGER=LoggerFactory.getLogger(RuntimeDelegate.class);
 
-	public static final String LDP4J_SERVER_SPI_RUNTIMEINSTANCE_FINDER = "org.ldp4j.server.api.spi.runtimeinstance.finder";
+	public static final String LDP4j_SERVER_DATA_SPI_RUNTIMEDELEGATE_FINDER = "org.ldp4j.server.data.spi.RuntimeDelegate.finder";
 
 	/**
 	 * Name of the configuration file where the
-	 * {@link RuntimeInstance#LDP4J_SERVER_SPI_PROPERTY} property that
-	 * identifies the {@link RuntimeInstance} implementation to be returned from
-	 * {@link RuntimeInstance#getInstance()} can be defined.
+	 * {@link RuntimeDelegate#LDP4j_SERVER_DATA_SPI_PROPERTY} property that
+	 * identifies the {@link RuntimeDelegate} implementation to be returned from
+	 * {@link RuntimeDelegate#getInstance()} can be defined.
 	 */
-	public static final String LDP4J_SERVER_SPI_CFG = "ldp4j-server.properties";
+	public static final String LDP4j_SERVER_DATA_SPI_CFG = "ldp4j-server-data.properties";
 
 	/**
-	 * Name of the property identifying the {@link RuntimeInstance} implementation
-	 * to be returned from {@link RuntimeInstance#getInstance()}.
+	 * Name of the property identifying the {@link RuntimeDelegate} implementation
+	 * to be returned from {@link RuntimeDelegate#getInstance()}.
 	 */
-	public static final String LDP4J_SERVER_SPI_PROPERTY = "org.ldp4j.server.api.spi.RuntimeInstance";
+	public static final String LDP4j_SERVER_DATA_SPI_PROPERTY = "org.ldp4j.server.data.spi.RuntimeDelegate";
 
-	private static final AtomicReference<RuntimeInstance> CACHED_DELEGATE=new AtomicReference<RuntimeInstance>();
+	private static final AtomicReference<RuntimeDelegate> CACHED_DELEGATE=new AtomicReference<RuntimeDelegate>();
 
 	private static ReflectPermission suppressAccessChecksPermission = new ReflectPermission("suppressAccessChecks");
 
 	/**
 	 * Allows custom implementations to extend the {@code RuntimeInstance} class.
 	 */
-	protected RuntimeInstance() {
+	protected RuntimeDelegate() {
 	}
 
 	/**
@@ -118,17 +80,17 @@ public abstract class RuntimeInstance {
 	 *
 	 * @return an instance of {@code RuntimeInstance}.
 	 */
-	private static RuntimeInstance findDelegate() {
+	private static RuntimeDelegate findDelegate() {
 		try {
-			RuntimeInstance result=createRuntimeInstanceFromSPI();
+			RuntimeDelegate result=createRuntimeDelegateFromSPI();
 			if(result==null) {
-				result=createRuntimeInstanceFromConfigurationFile();
+				result=createRuntimeDelegateFromConfigurationFile();
 			}
 
 			if(result==null) {
-				String delegateClassName = System.getProperty(LDP4J_SERVER_SPI_PROPERTY);
+				String delegateClassName = System.getProperty(LDP4j_SERVER_DATA_SPI_PROPERTY);
 				if(delegateClassName!=null) {
-					result=createRuntimeInstanceForClassName(delegateClassName);
+					result=createRuntimeDelegateForClassName(delegateClassName);
 				}
 			}
 
@@ -142,8 +104,8 @@ public abstract class RuntimeInstance {
 		}
 	}
 
-	private static RuntimeInstance createRuntimeInstanceFromConfigurationFile() {
-		RuntimeInstance result=null;
+	private static RuntimeDelegate createRuntimeDelegateFromConfigurationFile() {
+		RuntimeDelegate result=null;
 		File configFile = getConfigurationFile();
 		if(configFile.canRead()) {
 			InputStream is=null;
@@ -151,9 +113,9 @@ public abstract class RuntimeInstance {
 				is=new FileInputStream(configFile);
 				Properties configProperties=new Properties();
 				configProperties.load(is);
-				String delegateClassName=configProperties.getProperty(LDP4J_SERVER_SPI_PROPERTY);
+				String delegateClassName=configProperties.getProperty(LDP4j_SERVER_DATA_SPI_PROPERTY);
 				if(delegateClassName!=null) {
-					result=createRuntimeInstanceForClassName(delegateClassName);
+					result=createRuntimeDelegateForClassName(delegateClassName);
 				}
 				if(delegateClassName==null && LOGGER.isWarnEnabled()) {
 					LOGGER.warn("MutableConfiguration file '"+configFile.getAbsolutePath()+"' does not define a delegate class name");
@@ -175,13 +137,13 @@ public abstract class RuntimeInstance {
 
 	/**
 	 * Get the configuration file for the Runtime Instance: a file named
-	 * {@link RuntimeInstance#LDP4J_SERVER_SPI_CFG} in the <code>lib</code> directory of
+	 * {@value #LDP4j_SERVER_DATA_SPI_CFG} in the <code>lib</code> directory of
 	 * current JAVA_HOME.
 	 *
 	 * @return The configuration file for the runtime instance.
 	 */
 	private static File getConfigurationFile() {
-		return new File(new File(System.getProperty("java.home")),"lib"+File.separator+LDP4J_SERVER_SPI_CFG);
+		return new File(new File(System.getProperty("java.home")),"lib"+File.separator+LDP4j_SERVER_DATA_SPI_CFG);
 	}
 
 	/**
@@ -201,22 +163,22 @@ public abstract class RuntimeInstance {
 		}
 	}
 
-	private static RuntimeInstance createRuntimeInstanceFromSPI() {
-		if(!"disable".equalsIgnoreCase(System.getProperty(LDP4J_SERVER_SPI_RUNTIMEINSTANCE_FINDER))) {
-			for (RuntimeInstance delegate : ServiceLoader.load(RuntimeInstance.class)) {
+	private static RuntimeDelegate createRuntimeDelegateFromSPI() {
+		if(!"disable".equalsIgnoreCase(System.getProperty(LDP4j_SERVER_DATA_SPI_RUNTIMEDELEGATE_FINDER))) {
+			for (RuntimeDelegate delegate : ServiceLoader.load(RuntimeDelegate.class)) {
 				return delegate;
 			}
 		}
 		return null;
 	}
 
-	private static RuntimeInstance createRuntimeInstanceForClassName(String delegateClassName) {
-		RuntimeInstance result = null;
+	private static RuntimeDelegate createRuntimeDelegateForClassName(String delegateClassName) {
+		RuntimeDelegate result = null;
 		try {
 			Class<?> delegateClass = Class.forName(delegateClassName);
-			if(RuntimeInstance.class.isAssignableFrom(delegateClass)) {
+			if(RuntimeDelegate.class.isAssignableFrom(delegateClass)) {
 				Object impl = delegateClass.newInstance();
-				result = RuntimeInstance.class.cast(impl);
+				result = RuntimeDelegate.class.cast(impl);
 			}
 		} catch (ClassNotFoundException e) {
 			handleFailure(delegateClassName, "find", e);
@@ -228,11 +190,6 @@ public abstract class RuntimeInstance {
 		return result;
 	}
 
-	/**
-	 * @param delegateClassName
-	 * @param action
-	 * @param failure
-	 */
 	private static void handleFailure(String delegateClassName, String action,
 			Exception failure) {
 		if(LOGGER.isWarnEnabled()) {
@@ -241,54 +198,54 @@ public abstract class RuntimeInstance {
 	}
 
 	/**
-	 * Obtain a {@code RuntimeInstance} instance. If an instance had not already
-	 * been created and set via {@link #setInstance(RuntimeInstance)}, the first
+	 * Obtain a {@code RuntimeDelegate} instance. If an instance had not already
+	 * been created and set via {@link #setInstance(RuntimeDelegate)}, the first
 	 * invocation will create an instance which will then be cached for future
 	 * use.
 	 *
 	 * <p>
-	 * The algorithm used to locate the RuntimeInstance subclass to use consists
+	 * The algorithm used to locate the RuntimeDelegate subclass to use consists
 	 * of the following steps:
 	 * </p>
 	 * <ul>
 	 * <li>
 	 * If a resource with the name of
-	 * {@code META-INF/services/org.centeropenmiddleware.almistack.poc.clients.spi.RuntimeInstance} exists, then
+	 * {@code META-INF/services/org.ldp4j.server.data.spi.RuntimeDelegate} exists, then
 	 * its first line, if present, is used as the UTF-8 encoded name of the
 	 * implementation class.</li>
 	 * <li>
-	 * If the $java.home/lib/poc-business-logic.properties file exists and it is readable by
+	 * If the $java.home/lib/ldp4j-server-data.properties file exists and it is readable by
 	 * the {@code java.util.Properties.load(InputStream)} method and it contains
-	 * an entry whose key is {@code org.centeropenmiddleware.almistack.poc.clients.spi.RuntimeInstance}, then the
+	 * an entry whose key is {@code org.ldp4j.server.data.spi.RuntimeDelegate}, then the
 	 * value of that entry is used as the name of the implementation class.</li>
 	 * <li>
 	 * If a system property with the name
-	 * {@code org.centeropenmiddleware.almistack.poc.clients.spi.RuntimeInstance} is defined, then its value is
+	 * {@code org.ldp4j.server.data.spi.RuntimeDelegate} is defined, then its value is
 	 * used as the name of the implementation class.</li>
 	 * <li>
 	 * Finally, a default implementation class name is used.</li>
 	 * </ul>
 	 *
-	 * @return an instance of {@code RuntimeInstance}.
+	 * @return an instance of {@code RuntimeDelegate}.
 	 */
-	public static RuntimeInstance getInstance() {
-		RuntimeInstance result = RuntimeInstance.CACHED_DELEGATE.get();
+	public static RuntimeDelegate getInstance() {
+		RuntimeDelegate result = RuntimeDelegate.CACHED_DELEGATE.get();
 		if (result != null) {
 			return result;
 		}
-		synchronized(RuntimeInstance.CACHED_DELEGATE) {
-			result=RuntimeInstance.CACHED_DELEGATE.get();
+		synchronized(RuntimeDelegate.CACHED_DELEGATE) {
+			result=RuntimeDelegate.CACHED_DELEGATE.get();
 			if(result==null) {
-				RuntimeInstance.CACHED_DELEGATE.set(findDelegate());
-				result=RuntimeInstance.CACHED_DELEGATE.get();
+				RuntimeDelegate.CACHED_DELEGATE.set(findDelegate());
+				result=RuntimeDelegate.CACHED_DELEGATE.get();
 			}
 			return result;
 		}
 	}
 
 	/**
-	 * Set the runtime delegate that will be used by Client Business Logic API
-	 * classes. If this method is not called prior to {@link #getInstance} then
+	 * Set the runtime delegate that will be used by Data API classe.
+	 * If this method is not called prior to {@link #getInstance} then
 	 * an implementation will be sought as described in {@link #getInstance}.
 	 *
 	 * @param delegate
@@ -298,21 +255,21 @@ public abstract class RuntimeInstance {
 	 *             ReflectPermission("suppressAccessChecks") has not been
 	 *             granted.
 	 */
-	public static void setInstance(final RuntimeInstance delegate) {
+	public static void setInstance(final RuntimeDelegate delegate) {
 		SecurityManager security = System.getSecurityManager();
 		if (security != null) {
 			security.checkPermission(suppressAccessChecksPermission);
 		}
-		RuntimeInstance.CACHED_DELEGATE.set(delegate);
+		RuntimeDelegate.CACHED_DELEGATE.set(delegate);
 	}
 
 	public abstract Set<MediaType> getSupportedMediaTypes();
 
 	public abstract IMediaTypeProvider getMediaTypeProvider(MediaType mediaType);
 
-	private static class DefaultRuntimeInstance extends RuntimeInstance {
+	private static class DefaultRuntimeInstance extends RuntimeDelegate {
 
-		private static final String ERROR_MESSAGE = String.format("No implementation for '%s' found",RuntimeInstance.class);
+		private static final String ERROR_MESSAGE = String.format("No implementation for '%s' found",RuntimeDelegate.class);
 
 		@Override
 		public Set<MediaType> getSupportedMediaTypes() {
@@ -323,7 +280,6 @@ public abstract class RuntimeInstance {
 		public IMediaTypeProvider getMediaTypeProvider(MediaType mediaType) {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
-
 
 	}
 

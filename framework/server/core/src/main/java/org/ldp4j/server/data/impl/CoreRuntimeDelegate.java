@@ -36,18 +36,18 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.server.data.spi.IMediaTypeProvider;
-import org.ldp4j.server.data.spi.RuntimeInstance;
+import org.ldp4j.server.data.spi.RuntimeDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class RuntimeInstanceImpl extends RuntimeInstance {
+public class CoreRuntimeDelegate extends RuntimeDelegate {
 
-	private static final Logger LOGGER=LoggerFactory.getLogger(RuntimeInstanceImpl.class);
+	private static final Logger LOGGER=LoggerFactory.getLogger(CoreRuntimeDelegate.class);
 	
 	private final List<IMediaTypeProvider> providers=new CopyOnWriteArrayList<IMediaTypeProvider>();
 	private final Set<MediaType> mediaTypes=new HashSet<MediaType>();
 	
-	public RuntimeInstanceImpl() {
+	public CoreRuntimeDelegate() {
 		ServiceLoader<IMediaTypeProvider> loader=ServiceLoader.load(IMediaTypeProvider.class);
 		for(IMediaTypeProvider provider:loader) {
 			addMediaTypeProvider(provider);

@@ -41,7 +41,7 @@ import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.server.data.ResolutionContext.ResolutionContextBuilder;
 import org.ldp4j.server.data.spi.ContentTransformationException;
 import org.ldp4j.server.data.spi.IMediaTypeProvider;
-import org.ldp4j.server.data.spi.RuntimeInstance;
+import org.ldp4j.server.data.spi.RuntimeDelegate;
 import org.ldp4j.server.data.spi.IMediaTypeProvider.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -200,7 +200,7 @@ final class SafeResourceResolver implements ResourceResolver {
 		private IMediaTypeProvider provider() {
 			if(this.provider==null) {
 				this.provider =
-					RuntimeInstance.
+					RuntimeDelegate.
 						getInstance().
 							getMediaTypeProvider(this.type);
 			}

@@ -24,11 +24,12 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.data;
+package org.ldp4j.server.data.spi;
 
 import java.net.URI;
 
 import org.ldp4j.rdf.Namespaces;
+import org.ldp4j.server.data.ResourceResolver;
 
 
 public interface Context {

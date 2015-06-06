@@ -26,6 +26,7 @@
  */
 package org.ldp4j.server;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Iterator;
 import java.util.List;
@@ -41,9 +42,7 @@ import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.server.blueprint.ComponentRegistry;
-import org.ldp4j.server.data.ImmutableContext;
-import org.ldp4j.server.data.spi.ContentTransformationException;
-import org.ldp4j.server.data.spi.RuntimeInstance;
+import org.ldp4j.server.data.DataTransformator;
 import org.ldp4j.server.resources.Resource;
 import org.ldp4j.server.resources.ResourceType;
 import org.ldp4j.server.utils.ProtocolUtils;
@@ -53,9 +52,9 @@ import com.google.common.base.Throwables;
 
 
 class BaseEndpoint<R extends Resource> implements Endpoint {
-	
+
 	private static final int    METHOD_NOT_ALLOWED    = 405;
-	
+
 	private static final String ENTITY_TAG_HEADER     = "ETag";
 	private static final String LAST_MODIFIED_HEADER  = "Last-Modified";
 	private static final String CONTENT_LENGTH_HEADER = "Content-Length";
@@ -67,20 +66,20 @@ class BaseEndpoint<R extends Resource> implements Endpoint {
 	private final ComponentRegistry registry;
 
 	private final URI path;
-	
+
 	BaseEndpoint(URI path, Configuration<R> configuration, ComponentRegistry registry) {
 		this.path = path;
 		this.configuration = configuration;
 		this.registry = registry;
 	}
-	
+
 	protected Configuration<R> getConfiguration() {
 		return configuration;
 	}
-	
+
 	private Response doRetrieveResource(UriInfo uriInfo, Request request, boolean includeBody) {
 		// First, evaluate if we can proceed with the operation
-		ResponseBuilder builder = 
+		ResponseBuilder builder =
 			request.
 				evaluatePreconditions(
 					getConfiguration().getResource().lastModified(),
@@ -91,15 +90,13 @@ class BaseEndpoint<R extends Resource> implements Endpoint {
 		Entity entity=
 			getConfiguration().
 				getResource().
-					entity();
+					entity(uriInfo.getBaseUri());
 
 		// Second, evaluate if we can serve the contents required
-		List<Variant> variants= 
+		List<Variant> variants=
 			VariantUtils.
 				createVariants(
-					RuntimeInstance.
-						getInstance().
-							getSupportedMediaTypes());
+					DataTransformator.supportedMediaTypes());
 
 		Variant variant = request.selectVariant(variants);
 
@@ -127,22 +124,27 @@ class BaseEndpoint<R extends Resource> implements Endpoint {
 				}
 				URI parentRelative=URI.create(tmp.toString());
 				URI base=fullPath.resolve(parentRelative);
-				body=entity.serialize(variant,ImmutableContext.newInstance(base, registry.getComponent(ResourceIndex.class)));
+				body=
+					entity.
+						serialize(
+							variant,
+							base,
+							registry.getComponent(ResourceIndex.class));
 				status=entity.isEmpty()?Status.NO_CONTENT:Status.OK;
 				builder.type(variant.getMediaType());
-			} catch (ContentTransformationException e) {
+			} catch (IOException e) {
 				status=Status.INTERNAL_SERVER_ERROR;
 				body=Throwables.getStackTraceAsString(e);
 				builder.type(MediaType.TEXT_PLAIN);
 			}
 		}
-		
+
 		// Fourth, add protocol endorsed headers
 		populateProtocolEndorsedHeaders(builder);
-		
+
 		// Fifth, add protocol specific headers
 		populateProtocolSpecificHeaders(builder);
-		
+
 		// Sixth, set status and attach response entity as required.
 		builder.
 			status(status.getStatusCode()).
@@ -150,7 +152,7 @@ class BaseEndpoint<R extends Resource> implements Endpoint {
 		if(includeBody) {
 			builder.entity(body);
 		}
-	
+
 		return builder.build();
 	}
 
@@ -198,12 +200,12 @@ class BaseEndpoint<R extends Resource> implements Endpoint {
 	}
 
 	private Response getDefaultResponse(
-			boolean isSupported, 
+			boolean isSupported,
 			String action,
 			String capability) {
-		int status = 
-			isSupported ? 
-				Status.INTERNAL_SERVER_ERROR.getStatusCode() : 
+		int status =
+			isSupported ?
+				Status.INTERNAL_SERVER_ERROR.getStatusCode() :
 				METHOD_NOT_ALLOWED;
 		String content =
 			isSupported ?
@@ -223,7 +225,7 @@ class BaseEndpoint<R extends Resource> implements Endpoint {
 		return responseBuilder.build();
 	}
 
-	
+
 	@Override
 	public final URI path() {
 		return path;
@@ -244,7 +246,7 @@ class BaseEndpoint<R extends Resource> implements Endpoint {
 			// LDP 1.0 - 7.1.2 : "The Accept-Post HTTP header should appear
 			// in the OPTIONS response for any resource that supports the
 			// use of the POST method."
-			for(MediaType mediaType:RuntimeInstance.getInstance().getSupportedMediaTypes()) {
+			for(MediaType mediaType:DataTransformator.supportedMediaTypes()) {
 				builder.header(ACCEPT_POST_HEADER,mediaType.toString());
 			}
 		}
@@ -266,10 +268,10 @@ class BaseEndpoint<R extends Resource> implements Endpoint {
 					withUriInfo(uriInfo).
 					build();
 		helper.checkPreconditions();
-		return 
+		return
 			getDefaultResponse(
-				getConfiguration().isDeletable(), 
-				"delete", 
+				getConfiguration().isDeletable(),
+				"delete",
 				"deletable");
 	}
 
@@ -286,19 +288,19 @@ class BaseEndpoint<R extends Resource> implements Endpoint {
 			checkPreconditions().
 			checkContents(VariantUtils.defaultVariants()).
 			getExpectedVariant(VariantUtils.defaultVariants());
-		return 
+		return
 			getDefaultResponse(
-				getConfiguration().isModifiable(), 
-				"update", 
+				getConfiguration().isModifiable(),
+				"update",
 				"updateable");
 	}
 
 	@Override
 	public Response patchResource(UriInfo uriInfo, HttpHeaders headers, Request request, String entity) {
-		return 
+		return
 			getDefaultResponse(
-				getConfiguration().isPatchable(), 
-				"patch", 
+				getConfiguration().isPatchable(),
+				"patch",
 				"patchable");
 	}
 
@@ -314,10 +316,10 @@ class BaseEndpoint<R extends Resource> implements Endpoint {
 		helper.
 			checkPreconditions().
 			getExpectedVariant(VariantUtils.defaultVariants());
-		return 
+		return
 			getDefaultResponse(
-				getConfiguration().isFactory(), 
-				"creation", 
+				getConfiguration().isFactory(),
+				"creation",
 				"a factory");
 	}
 

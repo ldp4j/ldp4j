@@ -42,8 +42,9 @@ import org.ldp4j.application.vocabulary.RDF;
 import org.ldp4j.application.vocabulary.RDFS;
 import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.server.data.spi.ContentTransformationException;
+import org.ldp4j.server.data.spi.Context;
 import org.ldp4j.server.data.spi.IMediaTypeProvider;
-import org.ldp4j.server.data.spi.RuntimeInstance;
+import org.ldp4j.server.data.spi.RuntimeDelegate;
 import org.ldp4j.server.data.spi.IMediaTypeProvider.Marshaller;
 import org.ldp4j.server.data.spi.IMediaTypeProvider.Unmarshaller;
 import org.slf4j.Logger;
@@ -123,7 +124,7 @@ public final class DataTransformator {
 
 	private static IMediaTypeProvider getProvider(MediaType mediaType) throws UnsupportedMediaTypeException {
 		IMediaTypeProvider provider =
-			RuntimeInstance.
+			RuntimeDelegate.
 				getInstance().
 					getMediaTypeProvider(mediaType);
 
@@ -261,7 +262,7 @@ public final class DataTransformator {
 	}
 
 	public static Set<MediaType> supportedMediaTypes() {
-		return RuntimeInstance.getInstance().getSupportedMediaTypes();
+		return RuntimeDelegate.getInstance().getSupportedMediaTypes();
 	}
 
 	public static DataTransformator create(final URI applicationBase) {

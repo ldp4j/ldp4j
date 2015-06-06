@@ -26,6 +26,7 @@
  */
 package org.ldp4j.server.commands;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
 
@@ -42,6 +43,7 @@ import org.ldp4j.server.EndpointRegistrationException;
 import org.ldp4j.server.EndpointRegistry;
 import org.ldp4j.server.MutableConfiguration;
 import org.ldp4j.server.ResourceIndex;
+import org.ldp4j.server.UnsupportedMediaTypeException;
 import org.ldp4j.server.blueprint.ComponentRegistry;
 import org.ldp4j.server.commands.xml.CreateEndpoint;
 import org.ldp4j.server.commands.xml.DeleteEndpoint;
@@ -52,10 +54,7 @@ import org.ldp4j.server.commands.xml.MembershipRelationType;
 import org.ldp4j.server.commands.xml.ModifyEndpointConfiguration;
 import org.ldp4j.server.commands.xml.ResourceStateType;
 import org.ldp4j.server.commands.xml.UpdateResourceState;
-import org.ldp4j.server.data.ImmutableContext;
-import org.ldp4j.server.data.spi.ContentTransformationException;
-import org.ldp4j.server.data.spi.IMediaTypeProvider;
-import org.ldp4j.server.data.spi.RuntimeInstance;
+import org.ldp4j.server.data.DataTransformator;
 import org.ldp4j.server.resources.MembershipRelation;
 import org.ldp4j.server.resources.Resource;
 import org.ldp4j.server.resources.impl.ResourceBuilder;
@@ -235,7 +234,7 @@ abstract class CommandProcessor<T> {
 				Resource newResource = builder.build();
 				resourceIndex.publish(newResource.id(), URI.create(path));
 				return newResource;
-			} catch (ContentTransformationException e) {
+			} catch (IOException e) {
 				throw new CommandExecutionException("Could not parse endpoint contents",e);
 			}
 		}
@@ -244,18 +243,23 @@ abstract class CommandProcessor<T> {
 		 * @param rawEntity
 		 * @param index
 		 * @return
-		 * @throws AssertionError
-		 * @throws ContentTransformationException
+		 * @throws IOException
 		 */
-		private DataSet unmarshallContent(String path,EntityType rawEntity, ResourceIndex index) throws ContentTransformationException {
+		private DataSet unmarshallContent(String path,EntityType rawEntity, ResourceIndex index) throws IOException {
 			MediaType mediaType=
 				FormatConverter.
 					parseFormat(rawEntity.getFormat().value());
-			IMediaTypeProvider provider = RuntimeInstance.getInstance().getMediaTypeProvider(mediaType);
-			if(provider==null){
-				throw new AssertionError("Could not create entity for unsupported media type '"+mediaType+"'");
+			try {
+				return
+					DataTransformator.
+						create(URI.create("http://www.example.org/")).
+						enableResolution(index).
+						surrogateEndpoint(URI.create("http://www.example.org/").resolve(path)).
+						mediaType(mediaType).
+						unmarshall(rawEntity.getValue());
+			} catch (org.ldp4j.server.data.UnsupportedMediaTypeException e) {
+				throw new UnsupportedMediaTypeException("Could not create entity",mediaType);
 			}
-			return provider.newUnmarshaller(ImmutableContext.newInstance(URI.create("http://www.example.org/").resolve(path),index)).unmarshall(rawEntity.getValue(),mediaType);
 		}
 
 	}
