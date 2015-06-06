@@ -51,11 +51,11 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.ldp4j.server.commands.Command;
 import org.ldp4j.server.commands.CommandDescription;
 import org.ldp4j.server.commands.CommandDescriptionUtil;
-import org.ldp4j.server.impl.RDFXMLMediaTypeProvider;
-import org.ldp4j.server.impl.RuntimeInstanceImpl;
-import org.ldp4j.server.impl.TurtleMediaTypeProvider;
-import org.ldp4j.server.spi.IMediaTypeProvider;
-import org.ldp4j.server.spi.RuntimeInstance;
+import org.ldp4j.server.data.impl.RDFXMLMediaTypeProvider;
+import org.ldp4j.server.data.impl.RuntimeInstanceImpl;
+import org.ldp4j.server.data.impl.TurtleMediaTypeProvider;
+import org.ldp4j.server.data.spi.IMediaTypeProvider;
+import org.ldp4j.server.data.spi.RuntimeInstance;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;

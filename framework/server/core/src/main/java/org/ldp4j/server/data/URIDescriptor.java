@@ -26,6 +26,8 @@
  */
 package org.ldp4j.server.data;
 
+import com.google.common.base.Objects;
+
 final class URIDescriptor {
 
 	public enum Scope {
@@ -73,7 +75,7 @@ final class URIDescriptor {
 	private final Type type;
 
 	boolean isResolvable() {
-		return scope.equals(Scope.APPLICATION) || scope.equals(Scope.ENDPOINT) || (scope.equals(Scope.RESOURCE) /*&& type.equals(Type.ABSOLUTE)*/);
+		return scope.equals(Scope.APPLICATION) || scope.equals(Scope.ENDPOINT) || scope.equals(Scope.RESOURCE);
 	}
 
 	private URIDescriptor(URIDescriptor.Scope scope, URIDescriptor.Type type) {
@@ -113,12 +115,12 @@ final class URIDescriptor {
 
 	@Override
 	public String toString() {
-		StringBuilder builder = new StringBuilder();
-		builder.append("URIDescriptor [");
-		builder.append("scope=").append(scope).append(", ");
-		builder.append("type=").append(type);
-		builder.append("]");
-		return builder.toString();
+		return
+			Objects.
+				toStringHelper(getClass()).
+					add("scope",this.scope).
+					add("type",this.type).
+					toString();
 	}
 
 	static URIDescriptor newDescriptor(Scope scope, Type type) {

@@ -32,6 +32,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 
@@ -40,11 +41,11 @@ import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.RDF;
 import org.ldp4j.application.vocabulary.RDFS;
 import org.ldp4j.rdf.Namespaces;
-import org.ldp4j.server.spi.ContentTransformationException;
-import org.ldp4j.server.spi.IMediaTypeProvider;
-import org.ldp4j.server.spi.IMediaTypeProvider.Marshaller;
-import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;
-import org.ldp4j.server.spi.RuntimeInstance;
+import org.ldp4j.server.data.spi.ContentTransformationException;
+import org.ldp4j.server.data.spi.IMediaTypeProvider;
+import org.ldp4j.server.data.spi.RuntimeInstance;
+import org.ldp4j.server.data.spi.IMediaTypeProvider.Marshaller;
+import org.ldp4j.server.data.spi.IMediaTypeProvider.Unmarshaller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -259,20 +260,18 @@ public final class DataTransformator {
 		}
 	}
 
+	public static Set<MediaType> supportedMediaTypes() {
+		return RuntimeInstance.getInstance().getSupportedMediaTypes();
+	}
+
 	public static DataTransformator create(final URI applicationBase) {
 		checkNotNull(applicationBase,"Application base URI cannot be null");
 		checkArgument(applicationBase.isAbsolute() && !applicationBase.isOpaque(),"Application base URI must be absolute and hierarchical");
-		final MediaType mediaType=
-			Iterables.
-				getFirst(
-					RuntimeInstance.
-						getInstance().
-							getSupportedMediaTypes(),
-					null);
+		MediaType mediaType=Iterables.getFirst(supportedMediaTypes(),null);
 		if(mediaType==null) {
 			throw new IllegalStateException("No media type providers are available");
 		}
-		final DataTransformator dataTransformation=new DataTransformator();
+		DataTransformator dataTransformation=new DataTransformator();
 		dataTransformation.setApplicationBase(applicationBase);
 		dataTransformation.setMediaType(mediaType, getProvider(mediaType));
 		return dataTransformation;

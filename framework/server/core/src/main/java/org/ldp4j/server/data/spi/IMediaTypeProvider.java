@@ -24,17 +24,44 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.spi;
+package org.ldp4j.server.data.spi;
 
-public class ContentTransformationException extends Exception {
+import java.util.Set;
 
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 6991285594220399831L;
+import javax.ws.rs.core.MediaType;
 
-	public ContentTransformationException(String message, Throwable t) {
-		super(message,t);
+import org.ldp4j.application.data.DataSet;
+import org.ldp4j.rdf.Triple;
+import org.ldp4j.server.data.Context;
+
+public interface IMediaTypeProvider {
+
+	public interface Marshaller {
+		
+		String marshall(DataSet content, MediaType targetMediaType) throws ContentTransformationException;
+		
+	}
+	
+	public interface Unmarshaller {
+		
+		public interface TripleListener {
+			void handleTriple(Triple triple);
+		}
+		
+		void registerTripleListener(TripleListener listener);
+		
+		void deregisterTripleListener(TripleListener listener);
+		
+		DataSet unmarshall(String content, MediaType targetMediaType) throws ContentTransformationException;
+		
 	}
 
+	boolean isSupported(MediaType type);
+
+	Set<MediaType> getSupportedMediaTypes();
+
+	Marshaller newMarshaller(Context configuration);
+
+	Unmarshaller newUnmarshaller(Context configuration);
+	
 }

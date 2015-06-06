@@ -45,10 +45,10 @@ import org.junit.Test;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.server.spi.ContentTransformationException;
-import org.ldp4j.server.spi.IMediaTypeProvider;
-import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;
-import org.ldp4j.server.spi.RuntimeInstance;
+import org.ldp4j.server.data.spi.ContentTransformationException;
+import org.ldp4j.server.data.spi.IMediaTypeProvider;
+import org.ldp4j.server.data.spi.RuntimeInstance;
+import org.ldp4j.server.data.spi.IMediaTypeProvider.Unmarshaller;
 
 import com.google.common.collect.ImmutableMap;
 

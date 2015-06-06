@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.impl;
+package org.ldp4j.server.data.impl;
 
 import java.io.IOException;
 import java.io.StringWriter;
@@ -37,7 +37,7 @@ import org.ldp4j.rdf.RDFContext;
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.impl.UnmarshallOptions;
 import org.ldp4j.server.data.Context;
-import org.ldp4j.server.spi.ContentTransformationException;
+import org.ldp4j.server.data.spi.ContentTransformationException;
 
 import com.google.common.collect.ImmutableSet;
 

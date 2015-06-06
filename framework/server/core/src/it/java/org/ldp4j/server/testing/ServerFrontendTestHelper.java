@@ -44,12 +44,12 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
-import org.ldp4j.server.impl.JSONLDMediaTypeProvider;
-import org.ldp4j.server.impl.RDFXMLMediaTypeProvider;
-import org.ldp4j.server.impl.RuntimeInstanceImpl;
-import org.ldp4j.server.impl.TurtleMediaTypeProvider;
-import org.ldp4j.server.spi.IMediaTypeProvider;
-import org.ldp4j.server.spi.RuntimeInstance;
+import org.ldp4j.server.data.impl.JSONLDMediaTypeProvider;
+import org.ldp4j.server.data.impl.RDFXMLMediaTypeProvider;
+import org.ldp4j.server.data.impl.RuntimeInstanceImpl;
+import org.ldp4j.server.data.impl.TurtleMediaTypeProvider;
+import org.ldp4j.server.data.spi.IMediaTypeProvider;
+import org.ldp4j.server.data.spi.RuntimeInstance;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;

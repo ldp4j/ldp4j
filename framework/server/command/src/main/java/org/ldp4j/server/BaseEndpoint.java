@@ -42,10 +42,10 @@ import javax.ws.rs.core.Variant;
 
 import org.ldp4j.server.blueprint.ComponentRegistry;
 import org.ldp4j.server.data.ImmutableContext;
+import org.ldp4j.server.data.spi.ContentTransformationException;
+import org.ldp4j.server.data.spi.RuntimeInstance;
 import org.ldp4j.server.resources.Resource;
 import org.ldp4j.server.resources.ResourceType;
-import org.ldp4j.server.spi.ContentTransformationException;
-import org.ldp4j.server.spi.RuntimeInstance;
 import org.ldp4j.server.utils.ProtocolUtils;
 import org.ldp4j.server.utils.VariantUtils;
 

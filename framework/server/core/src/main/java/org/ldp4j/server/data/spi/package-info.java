@@ -32,4 +32,4 @@
  * provides the means for creating third party implementations or extensions of 
  * the <i>LDP4j ServerComponentDirectory</i>.
  */
-package org.ldp4j.server.spi;
+package org.ldp4j.server.data.spi;

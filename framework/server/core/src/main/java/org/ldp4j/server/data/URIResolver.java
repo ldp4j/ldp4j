@@ -28,11 +28,14 @@ package org.ldp4j.server.data;
 
 import java.net.URI;
 
+import com.google.common.base.Objects;
+
 import static com.google.common.base.Preconditions.*;
 
 final class URIResolver {
 
 	private static final URI SELF_URI = URI.create("");
+
 	private final URI endpoint;
 	private final URI alternative;
 
@@ -70,6 +73,16 @@ final class URIResolver {
 			resolved = getRelativePathFromBase(cr1);
 		}
 		return resolved;
+	}
+
+	@Override
+	public String toString() {
+		return
+			Objects.
+				toStringHelper(getClass()).
+					add("endpoint",this.endpoint).
+					add("alternative", this.alternative).
+					toString();
 	}
 
 	static URIResolver newInstance(URI endpoint, URI alternative) {

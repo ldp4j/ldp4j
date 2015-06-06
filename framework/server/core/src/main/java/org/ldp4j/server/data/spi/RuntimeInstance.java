@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.spi;
+package org.ldp4j.server.data.spi;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -44,13 +44,13 @@ import org.slf4j.LoggerFactory;
 
 /**
  * RuntimeInstance is an abstract factory class that provides various methods for
- * the creation of objects that implement the LDP4j ServerComponentDirectory SPI (LSS for short). 
- * These methods are designed for use by other LSS classes and are not intended 
+ * the creation of objects that implement the LDP4j ServerComponentDirectory SPI (LSS for short).
+ * These methods are designed for use by other LSS classes and are not intended
  * to be called directly by applications.
  * RuntimeInstance allows the standard LSS classes to use different LKS
  * implementations without any code changes. <br />
  * <br/>
- * 
+ *
  * An implementation of LSS MUST provide a concrete subclass of RuntimeInstance.
  * Using the supplied RuntimeInstance this can be provided to LKS in one of two
  * ways:<br />
@@ -63,7 +63,7 @@ import org.slf4j.LoggerFactory;
  * responsible for instantiating an instance of the class and the configured
  * class MUST have a public constructor which takes no arguments.</li>
  * 	</ol>
- * 
+ *
  * Note that an implementation MAY supply an alternate implementation of the
  * RuntimeInstance API class (provided it passes the TCK signature test and
  * behaves according to the specification) that supports alternate means of
@@ -85,7 +85,7 @@ public abstract class RuntimeInstance {
 	private static final String INSTANTIATE_ACTION = "instantiate";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(RuntimeInstance.class);
-	
+
 	public static final String LDP4J_SERVER_SPI_RUNTIMEINSTANCE_FINDER = "org.ldp4j.server.api.spi.runtimeinstance.finder";
 
 	/**
@@ -115,7 +115,7 @@ public abstract class RuntimeInstance {
 	/**
 	 * Obtain a {@code RuntimeInstance} instance using the method described in
 	 * {@link #getInstance}.
-	 * 
+	 *
 	 * @return an instance of {@code RuntimeInstance}.
 	 */
 	private static RuntimeInstance findDelegate() {
@@ -135,7 +135,7 @@ public abstract class RuntimeInstance {
 			if(result==null) {
 				result=new DefaultRuntimeInstance();
 			}
-			
+
 			return result;
 		} catch (Exception ex) {
 			throw new IllegalStateException("Could not find runtime delegate",ex);
@@ -177,7 +177,7 @@ public abstract class RuntimeInstance {
 	 * Get the configuration file for the Runtime Instance: a file named
 	 * {@link RuntimeInstance#LDP4J_SERVER_SPI_CFG} in the <code>lib</code> directory of
 	 * current JAVA_HOME.
-	 * 
+	 *
 	 * @return The configuration file for the runtime instance.
 	 */
 	private static File getConfigurationFile() {
@@ -245,7 +245,7 @@ public abstract class RuntimeInstance {
 	 * been created and set via {@link #setInstance(RuntimeInstance)}, the first
 	 * invocation will create an instance which will then be cached for future
 	 * use.
-	 * 
+	 *
 	 * <p>
 	 * The algorithm used to locate the RuntimeInstance subclass to use consists
 	 * of the following steps:
@@ -268,14 +268,14 @@ public abstract class RuntimeInstance {
 	 * <li>
 	 * Finally, a default implementation class name is used.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @return an instance of {@code RuntimeInstance}.
 	 */
 	public static RuntimeInstance getInstance() {
 		RuntimeInstance result = RuntimeInstance.CACHED_DELEGATE.get();
 		if (result != null) {
 			return result;
-		} 
+		}
 		synchronized(RuntimeInstance.CACHED_DELEGATE) {
 			result=RuntimeInstance.CACHED_DELEGATE.get();
 			if(result==null) {
@@ -290,7 +290,7 @@ public abstract class RuntimeInstance {
 	 * Set the runtime delegate that will be used by Client Business Logic API
 	 * classes. If this method is not called prior to {@link #getInstance} then
 	 * an implementation will be sought as described in {@link #getInstance}.
-	 * 
+	 *
 	 * @param delegate
 	 *            the {@code RuntimeInstance} runtime delegate instance.
 	 * @throws SecurityException
@@ -309,7 +309,6 @@ public abstract class RuntimeInstance {
 	public abstract Set<MediaType> getSupportedMediaTypes();
 
 	public abstract IMediaTypeProvider getMediaTypeProvider(MediaType mediaType);
-	
 
 	private static class DefaultRuntimeInstance extends RuntimeInstance {
 

@@ -53,13 +53,13 @@ import org.ldp4j.server.commands.xml.ModifyEndpointConfiguration;
 import org.ldp4j.server.commands.xml.ResourceStateType;
 import org.ldp4j.server.commands.xml.UpdateResourceState;
 import org.ldp4j.server.data.ImmutableContext;
+import org.ldp4j.server.data.spi.ContentTransformationException;
+import org.ldp4j.server.data.spi.IMediaTypeProvider;
+import org.ldp4j.server.data.spi.RuntimeInstance;
 import org.ldp4j.server.resources.MembershipRelation;
 import org.ldp4j.server.resources.Resource;
 import org.ldp4j.server.resources.impl.ResourceBuilder;
 import org.ldp4j.server.resources.impl.ResourceBuilder.ContainerBuilder;
-import org.ldp4j.server.spi.ContentTransformationException;
-import org.ldp4j.server.spi.IMediaTypeProvider;
-import org.ldp4j.server.spi.RuntimeInstance;
 import org.ldp4j.server.xml.converters.FormatConverter;
 
 abstract class CommandProcessor<T> {
