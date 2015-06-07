@@ -105,6 +105,29 @@ final class MediaTypeSupport {
 			return dataSet;
 		}
 
+		public DataSet altUnmarshall(Context context, ResourceResolver resourceResolver, String content) throws ContentTransformationException {
+			checkNotNull(content,"Content cannot be null");
+			Iterable<Triple> triples=this.provider.unmarshallContent(context,content,this.targetMediaType);
+			final DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(context.getBase()));
+			final ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet,context.getBase());
+			for(final Triple triple:triples) {
+				this.listeners.notify(
+					new Notification<TripleListener>() {
+						@Override
+						public void propagate(TripleListener listener) {
+							listener.handleTriple(triple);
+						}
+					}
+				);
+				Individual<?,?> individual=adapter.getIndividual(triple.getSubject());
+				individual.
+					addValue(
+						triple.getPredicate().getIdentity(),
+						adapter.getValue(triple.getObject()));
+			}
+			return dataSet;
+		}
+
 		public void registerTripleListener(TripleListener listener) {
 			this.listeners.registerListener(listener);
 		}

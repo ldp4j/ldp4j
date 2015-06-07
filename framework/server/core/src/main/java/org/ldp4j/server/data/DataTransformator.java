@@ -39,12 +39,17 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.RDF;
 import org.ldp4j.application.vocabulary.RDFS;
 import org.ldp4j.rdf.Namespaces;
+import org.ldp4j.rdf.Triple;
 import org.ldp4j.server.data.MediaTypeSupport.Marshaller;
 import org.ldp4j.server.data.MediaTypeSupport.Unmarshaller;
+import org.ldp4j.server.data.TripleResolver.TripleResolution;
 import org.ldp4j.server.data.spi.ContentTransformationException;
 import org.ldp4j.server.data.spi.Context;
 import org.ldp4j.server.data.spi.RuntimeDelegate;
@@ -218,6 +223,40 @@ public final class DataTransformator {
 		DataTransformator result = new DataTransformator(this);
 		result.setResourceResolver(DEFAULT_RESOLVER);
 		return result;
+	}
+
+
+	public DataSet safeUnmarshall(String entity) throws IOException {
+		checkNotNull(entity,"Entity cannot be null");
+		checkNotNull(mediaType,"Media type cannot be null");
+		URI endpoint = baseEndpoint();
+		LOGGER.trace("Raw entity to unmarshall: \n{}",entity);
+		LOGGER.trace("Unmarshalling using base '{}'...",endpoint);
+		try {
+			TripleResolver tripleResolver=
+				TripleResolver.
+					builder().
+						withApplication(this.applicationBase).
+						withEndpoint(endpoint).
+						withAlternative(createAlternative(endpoint)).
+						withEntity(entity, this.mediaType).
+						build();
+
+			DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(endpoint));
+			ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet,endpoint);
+			for(TripleResolution tripleResolution:tripleResolver.tripleResolutions()) {
+				Triple triple=tripleResolution.triple();
+				Individual<?,?> individual=adapter.getIndividual(triple.getSubject(),tripleResolution.subjectResolution());
+				individual.
+					addValue(
+						triple.getPredicate().getIdentity(),
+						adapter.getValue(triple.getObject(),tripleResolution.objectResolution()));
+			}
+			LOGGER.trace("Unmarshalled data set: \n{}",dataSet);
+			return dataSet;
+		} catch (ContentTransformationException e) {
+			throw new IOException("Entity cannot be parsed as '"+mediaType+"'",e);
+		}
 	}
 
 	public DataSet unmarshall(String entity) throws IOException {

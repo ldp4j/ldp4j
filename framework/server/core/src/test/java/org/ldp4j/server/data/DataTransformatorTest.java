@@ -29,6 +29,7 @@ package org.ldp4j.server.data;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.MediaType;
 
@@ -111,24 +112,28 @@ public class DataTransformatorTest {
 				surrogateEndpoint(URI.create("api/basic_container/")).
 				enableResolution(
 					new ResourceResolver() {
-
-					@Override
-					public URI resolveResource(ManagedIndividualId id) {
-						// TODO Auto-generated method stub
-						return null;
+						@Override
+						public URI resolveResource(ManagedIndividualId id) {
+							return null;
+						}
+						@Override
+						public ManagedIndividualId resolveLocation(URI path) {
+							return null;
+						}
 					}
-
-					@Override
-					public ManagedIndividualId resolveLocation(URI path) {
-						// TODO Auto-generated method stub
-						return null;
-					}
-				}).
+				).
 				mediaType(new MediaType("text","turtle"));
 
-		DataSet dataSet = sut.unmarshall(loadResource("/data/public-uri-clash.ttl"));
-		String data=sut.marshall(dataSet);
-		assertThat(data,notNullValue());
+		long nBD1 = System.nanoTime();
+		sut.unmarshall(loadResource("/data/public-uri-clash.ttl"));
+		long nBD2 = System.nanoTime();
+		sut.safeUnmarshall(loadResource("/data/public-uri-clash.ttl"));
+		long nA = System.nanoTime();
+		long tRegular = nBD2-nBD1;
+		System.out.printf("Original: %4d ms%n",TimeUnit.NANOSECONDS.toMillis(tRegular));
+		long tFixed = nA-nBD2;
+		System.out.printf("Fixed...: %4d ms%n",TimeUnit.NANOSECONDS.toMillis(tFixed));
+		System.out.printf("--------- %.2f %%%n",(float)tFixed/(float)tRegular*100);
 	}
 
 	@Test

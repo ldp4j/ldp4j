@@ -49,6 +49,7 @@ import org.ldp4j.rdf.NodeVisitor;
 import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.TypedLiteral;
 import org.ldp4j.rdf.URIRef;
+import org.ldp4j.server.data.TripleResolver.ResourceResolution;
 import org.ldp4j.server.utils.URIHelper;
 
 final class ValueAdapter {
@@ -105,6 +106,8 @@ final class ValueAdapter {
 
 	private final URI base;
 
+	private ResourceResolution resolution;
+
 	ValueAdapter(ResourceResolver resourceResolver, DataSet dataSet, URI base) {
 		this.resourceResolver = resourceResolver;
 		this.dataSet = dataSet;
@@ -127,6 +130,13 @@ final class ValueAdapter {
 				}
 			}
 		}
+		if(resolution!=null) {
+			if(resolution.descriptor().isTransient()) {
+				return dataSet.individual(resolution.realURI(),NewIndividual.class);
+			} else {
+				return dataSet.individual(location,ExternalIndividual.class);
+			}
+		}
 		URI path = base.relativize(location);
 		if(!path.isAbsolute()) {
 			return dataSet.individual(path,NewIndividual.class);
@@ -137,6 +147,16 @@ final class ValueAdapter {
 	@SuppressWarnings("rawtypes")
 	private Individual<?, ?> resolveBlankNode(BlankNode node) {
 		return dataSet.individual((Name)NamingScheme.getDefault().name(node.getIdentity()), LocalIndividual.class);
+	}
+
+	Individual<?,?> getIndividual(Resource<?> resource, ResourceResolution resolution) {
+		this.resolution = resolution;
+		return resource.accept(individualGenerator);
+	}
+
+	Value getValue(Node object,ResourceResolution resolution) {
+		this.resolution = resolution;
+		return object.accept(objectGenerator);
 	}
 
 	Individual<?,?> getIndividual(Resource<?> resource) {

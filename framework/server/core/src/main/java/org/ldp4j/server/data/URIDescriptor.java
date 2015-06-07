@@ -59,7 +59,7 @@ final class URIDescriptor {
 
 		boolean isRelative() {
 			boolean result=false;
-			if(this.parent==null) {
+			if(this.parent!=null) {
 				result=this.parent.isRelative();
 			}
 			return result;
@@ -76,6 +76,10 @@ final class URIDescriptor {
 
 	boolean isResolvable() {
 		return scope.equals(Scope.APPLICATION) || scope.equals(Scope.ENDPOINT) || scope.equals(Scope.RESOURCE);
+	}
+
+	boolean isTransient() {
+		return type.isRelative();
 	}
 
 	private URIDescriptor(URIDescriptor.Scope scope, URIDescriptor.Type type) {
