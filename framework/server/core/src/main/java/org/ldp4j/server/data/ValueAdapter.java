@@ -49,7 +49,6 @@ import org.ldp4j.rdf.NodeVisitor;
 import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.TypedLiteral;
 import org.ldp4j.rdf.URIRef;
-import org.ldp4j.server.data.TripleResolver.ResourceResolution;
 import org.ldp4j.server.utils.URIHelper;
 
 final class ValueAdapter {
@@ -104,66 +103,51 @@ final class ValueAdapter {
 
 	private final DataSet dataSet;
 
-	private final URI base;
-
 	private ResourceResolution resolution;
 
-	ValueAdapter(ResourceResolver resourceResolver, DataSet dataSet, URI base) {
+	ValueAdapter(ResourceResolver resourceResolver, DataSet dataSet) {
 		this.resourceResolver = resourceResolver;
 		this.dataSet = dataSet;
-		this.base = base;
 		this.individualGenerator = new IndividualGenerator();
 		this.objectGenerator = new ObjectGenerator();
 	}
 
 	private Individual<?, ?> resolveURIRef(URIRef node) {
-		if(resolution!=null && resolution.descriptor().isTransient()) {
-			return dataSet.individual(resolution.realURI(),NewIndividual.class);
+		if(this.resolution.isTransient()) {
+			return this.dataSet.individual(this.resolution.realURI(),NewIndividual.class);
 		}
 		URI location = node.getIdentity();
 		for(URI identity:URIHelper.getParents(location)) {
-			ManagedIndividualId resourceId = resourceResolver.resolveLocation(identity);
+			ManagedIndividualId resourceId = this.resourceResolver.resolveLocation(identity);
 			if(resourceId!=null) {
 				if(identity.equals(location)) {
-					return dataSet.individual(resourceId, ManagedIndividual.class);
+					return this.dataSet.individual(resourceId, ManagedIndividual.class);
 				} else {
 					URI relativePath = identity.relativize(location);
 					RelativeIndividualId relativeId = RelativeIndividualId.createId(resourceId, relativePath);
-					return dataSet.individual(relativeId,RelativeIndividual.class);
+					return this.dataSet.individual(relativeId,RelativeIndividual.class);
 				}
 			}
 		}
-		if(resolution!=null) {
-			return dataSet.individual(location,ExternalIndividual.class);
-		}
-		URI path = base.relativize(location);
-		if(!path.isAbsolute()) {
-			return dataSet.individual(path,NewIndividual.class);
-		}
-		return dataSet.individual(location,ExternalIndividual.class);
+		return this.dataSet.individual(location,ExternalIndividual.class);
 	}
 
 	@SuppressWarnings("rawtypes")
 	private Individual<?, ?> resolveBlankNode(BlankNode node) {
-		return dataSet.individual((Name)NamingScheme.getDefault().name(node.getIdentity()), LocalIndividual.class);
+		return
+			this.dataSet.individual(
+				(Name)NamingScheme.getDefault().name(node.getIdentity()),
+				LocalIndividual.class);
 	}
 
 	Individual<?,?> getIndividual(Resource<?> resource, ResourceResolution resolution) {
 		this.resolution = resolution;
-		return resource.accept(individualGenerator);
+		return resource.accept(this.individualGenerator);
 	}
 
-	Value getValue(Node object,ResourceResolution resolution) {
+	Value getValue(Node object, ResourceResolution resolution) {
 		this.resolution = resolution;
-		return object.accept(objectGenerator);
-	}
-
-	Individual<?,?> getIndividual(Resource<?> resource) {
-		return resource.accept(individualGenerator);
-	}
-
-	Value getValue(Node object) {
-		return object.accept(objectGenerator);
+		return object.accept(this.objectGenerator);
 	}
 
 }

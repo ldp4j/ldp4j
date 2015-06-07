@@ -45,26 +45,6 @@ import com.google.common.collect.ImmutableList.Builder;
 
 final class TripleResolver {
 
-	static interface ResourceResolution {
-
-		boolean isResolvable();
-
-		URI realURI();
-
-		URIDescriptor descriptor();
-
-	}
-
-	static interface TripleResolution {
-
-		Triple triple();
-
-		ResourceResolution subjectResolution();
-
-		ResourceResolution objectResolution();
-
-	}
-
 	static class TripleResolverBuilder {
 
 		private final class ImmutableTripleResolution implements TripleResolution {
@@ -111,72 +91,6 @@ final class TripleResolver {
 
 		}
 
-		private static final class ResolvableResourceResolution implements ResourceResolution {
-
-			private final URI uri;
-			private final URIDescriptor descriptor;
-
-			private ResolvableResourceResolution(URI uri, URIDescriptor descriptor) {
-				this.uri = uri;
-				this.descriptor = descriptor;
-			}
-
-			@Override
-			public boolean isResolvable() {
-				return descriptor.isResolvable();
-			}
-
-			@Override
-			public URI realURI() {
-				return uri;
-			}
-
-			@Override
-			public URIDescriptor descriptor() {
-				return descriptor;
-			}
-
-			@Override
-			public String toString() {
-				return
-					Objects.
-						toStringHelper(getClass()).
-							omitNullValues().
-							add("resolvable",descriptor.isResolvable()).
-							add("transient",descriptor.isTransient()).
-							add("uri","<"+uri+">").
-							toString();
-			}
-
-		}
-
-		private final class NonResolvableResourceResolution implements ResourceResolution {
-
-			@Override
-			public boolean isResolvable() {
-				return false;
-			}
-
-			@Override
-			public URIDescriptor descriptor() {
-				return null;
-			}
-
-			@Override
-			public URI realURI() {
-				return null;
-			}
-
-			@Override
-			public String toString() {
-				return
-					Objects.
-						toStringHelper(getClass()).
-							toString();
-			}
-
-		}
-
 		private final class ResourceResolutionGenerator extends NodeVisitor<ResourceResolution> {
 
 			private final Node alternativeNode;
@@ -190,7 +104,7 @@ final class TripleResolver {
 				URIRef alternativeURIRef=(URIRef)alternativeNode;
 				URI uri = resolver.resolve(endpointURIRef.getIdentity(), alternativeURIRef.getIdentity());
 				URIDescriptor descriptor = describer.describe(uri);
-				return new ResolvableResourceResolution(uri, descriptor);
+				return ResourceResolutionFactory.customResolution(uri, descriptor);
 			}
 
 		}
@@ -256,7 +170,7 @@ final class TripleResolver {
 				nEndpoint.
 					accept(
 						new ResourceResolutionGenerator(nAlternative),
-						new NonResolvableResourceResolution()
+						ResourceResolutionFactory.nullResolution()
 					);
 		}
 

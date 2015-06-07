@@ -49,7 +49,6 @@ import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.server.data.MediaTypeSupport.Marshaller;
 import org.ldp4j.server.data.MediaTypeSupport.Unmarshaller;
-import org.ldp4j.server.data.TripleResolver.TripleResolution;
 import org.ldp4j.server.data.spi.ContentTransformationException;
 import org.ldp4j.server.data.spi.Context;
 import org.ldp4j.server.data.spi.RuntimeDelegate;
@@ -161,7 +160,7 @@ public final class DataTransformator {
 					build();
 
 		DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(endpoint));
-		ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet,endpoint);
+		ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet);
 		for(TripleResolution tripleResolution:tripleResolver.tripleResolutions()) {
 			Triple triple=tripleResolution.triple();
 			Individual<?,?> individual=adapter.getIndividual(triple.getSubject(),tripleResolution.subjectResolution());

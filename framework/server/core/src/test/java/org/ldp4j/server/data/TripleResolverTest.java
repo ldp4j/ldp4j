@@ -35,7 +35,6 @@ import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.ldp4j.server.data.TripleResolver.TripleResolution;
 import org.ldp4j.server.data.spi.ContentTransformationException;
 
 public class TripleResolverTest {

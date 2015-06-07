@@ -35,15 +35,12 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.engine.util.ListenerManager;
-import org.ldp4j.application.engine.util.Notification;
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.util.TripleSet;
 import org.ldp4j.server.data.spi.ContentTransformationException;
 import org.ldp4j.server.data.spi.Context;
 import org.ldp4j.server.data.spi.MediaTypeProvider;
 import org.ldp4j.server.data.spi.RuntimeDelegate;
-import org.ldp4j.server.data.spi.TripleListener;
 
 final class MediaTypeSupport {
 
@@ -59,7 +56,8 @@ final class MediaTypeSupport {
 
 		public String marshall(Context context, ResourceResolver resourceResolver, DataSet content) throws ContentTransformationException {
 			checkNotNull(content,"Content cannot be null");
-			TripleSetBuilder tripleSetBuilder = new TripleSetBuilder(resourceResolver,context.getBase());
+			TripleSetBuilder tripleSetBuilder =
+				new TripleSetBuilder(resourceResolver,context.getBase());
 			for(Individual<?,?> individual:content) {
 				tripleSetBuilder.generateTriples(individual);
 			}
@@ -70,8 +68,6 @@ final class MediaTypeSupport {
 
 	static final class Unmarshaller {
 
-		private final ListenerManager<TripleListener> listeners;
-
 		private final MediaType targetMediaType;
 
 		private final MediaTypeProvider provider;
@@ -79,62 +75,32 @@ final class MediaTypeSupport {
 		private Unmarshaller(MediaType targetMediaType, MediaTypeProvider provider) {
 			this.targetMediaType = targetMediaType;
 			this.provider = provider;
-			this.listeners=ListenerManager.newInstance();
 		}
 
 		public DataSet unmarshall(Context context, ResourceResolver resourceResolver, String content) throws ContentTransformationException {
 			checkNotNull(content,"Content cannot be null");
-			Iterable<Triple> triples=this.provider.unmarshallContent(context,content,this.targetMediaType);
-			final DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(context.getBase()));
-			final ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet,context.getBase());
-			for(final Triple triple:triples) {
-				this.listeners.notify(
-					new Notification<TripleListener>() {
-						@Override
-						public void propagate(TripleListener listener) {
-							listener.handleTriple(triple);
-						}
-					}
-				);
-				Individual<?,?> individual=adapter.getIndividual(triple.getSubject());
+			Iterable<Triple> triples=
+				this.provider.
+					unmarshallContent(context,content,this.targetMediaType);
+			DataSet dataSet=
+				DataSetFactory.
+					createDataSet(
+						NamingScheme.getDefault().name(context.getBase()));
+			ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet);
+			ResourceResolution nullResolution=
+				ResourceResolutionFactory.nullResolution();
+			for(Triple triple:triples) {
+				Individual<?,?> individual=
+					adapter.
+						getIndividual(triple.getSubject(),nullResolution);
 				individual.
 					addValue(
 						triple.getPredicate().getIdentity(),
-						adapter.getValue(triple.getObject()));
+						adapter.getValue(triple.getObject(),nullResolution));
 			}
 			return dataSet;
 		}
 
-		public DataSet altUnmarshall(Context context, ResourceResolver resourceResolver, String content) throws ContentTransformationException {
-			checkNotNull(content,"Content cannot be null");
-			Iterable<Triple> triples=this.provider.unmarshallContent(context,content,this.targetMediaType);
-			final DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(context.getBase()));
-			final ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet,context.getBase());
-			for(final Triple triple:triples) {
-				this.listeners.notify(
-					new Notification<TripleListener>() {
-						@Override
-						public void propagate(TripleListener listener) {
-							listener.handleTriple(triple);
-						}
-					}
-				);
-				Individual<?,?> individual=adapter.getIndividual(triple.getSubject());
-				individual.
-					addValue(
-						triple.getPredicate().getIdentity(),
-						adapter.getValue(triple.getObject()));
-			}
-			return dataSet;
-		}
-
-		public void registerTripleListener(TripleListener listener) {
-			this.listeners.registerListener(listener);
-		}
-
-		public void deregisterTripleListener(TripleListener listener) {
-			this.listeners.deregisterListener(listener);
-		}
 	}
 
 	static Marshaller newMarshaller(MediaType mediaType) {
