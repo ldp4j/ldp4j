@@ -56,8 +56,6 @@ import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.application.vocabulary.LDP;
-import org.ldp4j.application.vocabulary.RDF;
-import org.ldp4j.application.vocabulary.RDFS;
 import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
@@ -90,16 +88,6 @@ final class ExistingEndpointController implements EndpointController {
 
 	}
 
-	private Namespaces defaultNamespaces() {
-		Namespaces namespaces=
-			new Namespaces().
-				addPrefix("rdf", RDF.NAMESPACE).
-				addPrefix("rdfs", RDFS.NAMESPACE).
-				addPrefix("xsd", "http://www.w3.org/2001/XMLSchema#").
-				addPrefix("ldp", LDP.NAMESPACE);
-
-		return namespaces;
-	}
 
 	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {
 		EndpointControllerUtils.
@@ -178,7 +166,7 @@ final class ExistingEndpointController implements EndpointController {
 
 			LOGGER.trace("Data set to serialize: \n {}",entity);
 
-			String body=serialize(context, variant, entity, defaultNamespaces());
+			String body=serialize(context, variant, entity, NamespacesHelper.resourceNamespaces(context.applicationNamespaces()));
 
 			ResponseBuilder builder=Response.serverError();
 			builder.variant(variant);
@@ -267,7 +255,7 @@ final class ExistingEndpointController implements EndpointController {
 
 			LOGGER.trace("Data set to serialize: \n {}",entity);
 
-			String body=serialize(context, variant, entity, defaultNamespaces());
+			String body=serialize(context, variant, entity, NamespacesHelper.resourceNamespaces(context.applicationNamespaces()));
 
 			ResponseBuilder builder=Response.serverError();
 			builder.variant(variant);
@@ -310,17 +298,8 @@ final class ExistingEndpointController implements EndpointController {
 
 			LOGGER.trace("Constraints to serialize: \n {}",report);
 
-			Namespaces namespaces=
-				defaultNamespaces().
-					addPrefix("ldp4j", "http://www.ldp4j.org/vocab#").
-					addPrefix("dct", "http://purl.org/dc/terms/").
-					addPrefix("http", "http://www.w3.org/2011/http#").
-					addPrefix("cnt", "http://www.w3.org/2011/content#").
-					addPrefix("http-methods", "http://www.w3.org/2011/http-methods#").
-					addPrefix("http-headers", "http://www.w3.org/2011/http-headers#").
-					addPrefix("sh", "http://www.w3.org/ns/shacl#");
 
-			String body=serialize(context, variant, report, namespaces);
+			String body=serialize(context, variant, report, NamespacesHelper.constraintReportNamespaces(context.applicationNamespaces()));
 
 			ResponseBuilder builder=Response.serverError();
 			builder.variant(variant);

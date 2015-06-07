@@ -48,6 +48,7 @@ final class ApplicationLoader<T extends Configuration> {
 	private WriteSessionService writeSessionService;
 	private TemplateManagementService templateManagementService;
 	private PersistencyManager persistencyManager;
+	private T configuration;
 
 	private ApplicationLoader(Class<? extends Application<T>> appClass) {
 		this.appClass=appClass;
@@ -94,10 +95,14 @@ final class ApplicationLoader<T extends Configuration> {
 
 	Application<T> bootstrap() throws ApplicationContextBootstrapException {
 		Application<T> application=instantiateApplication();
-		T configuration = instantiateConfiguration(application);
-		setup(application, configuration);
+		this.configuration = instantiateConfiguration(application);
+		setup(application);
 		initialize(application);
 		return application;
+	}
+
+	T configuration() {
+		return this.configuration;
 	}
 
 	private void initialize(Application<T> application) throws ApplicationConfigurationException {
@@ -119,8 +124,8 @@ final class ApplicationLoader<T extends Configuration> {
 		}
 	}
 
-	private void setup(Application<T> application, T configuration) throws ApplicationConfigurationException {
-		BootstrapImpl<T> bootstrap=new BootstrapImpl<T>(configuration,templateManagementService());
+	private void setup(Application<T> application) throws ApplicationConfigurationException {
+		BootstrapImpl<T> bootstrap=new BootstrapImpl<T>(this.configuration,templateManagementService());
 		EnvironmentImpl environment=
 			new EnvironmentImpl(
 				persistencyManager()

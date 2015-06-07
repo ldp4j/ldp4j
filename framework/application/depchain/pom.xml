@@ -86,6 +86,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-util</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-core</artifactId>
 			<scope>runtime</scope>
 		</dependency>

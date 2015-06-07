@@ -21,15 +21,13 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-application:1.0.0-SNAPSHOT
-      Bundle      : ldp4j-application-1.0.0-SNAPSHOT.pom
+      Artifact    : org.ldp4j.framework:ldp4j-application-util:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-application-util-1.0.0-SNAPSHOT.jar
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- =================================================================== -->
@@ -38,68 +36,40 @@
 
 	<parent>
 		<groupId>org.ldp4j.framework</groupId>
-		<artifactId>ldp4j-framework</artifactId>
+		<artifactId>ldp4j-application</artifactId>
 		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<artifactId>ldp4j-application</artifactId>
-	<packaging>pom</packaging>
+	<artifactId>ldp4j-application-util</artifactId>
 
 	<!-- =================================================================== -->
 	<!--   MODULE INFORMATION                                                -->
 	<!-- =================================================================== -->
 
-	<name>LDP4j :: Framework :: Application</name>
-
-	<description>Parent for all the modules of the LDP4j application kernel</description>
+	<name>LDP4j :: Framework :: Application :: Utilities</name>
+	<description>LDP4j Application Implementation Utilities</description>
 
 	<!-- =================================================================== -->
 	<!--   BUILD SETTINGS                                                    -->
 	<!-- =================================================================== -->
 
-	<modules>
-		<module>bom</module>
-		<module>api</module>
-		<module>engine</module>
-		<module>data</module>
-		<module>util</module>
-		<module>examples</module>
-		<module>persistency</module>
-		<module>core</module>
-		<module>depchain</module>
-	</modules>
+	<dependencyManagement>
+		<dependencies>
+			<dependency>
+				<groupId>org.ldp4j.framework</groupId>
+				<artifactId>ldp4j-application-bom</artifactId>
+				<version>${project.version}</version>
+				<type>pom</type>
+				<scope>import</scope>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
 
 	<dependencies>
-		<!-- Default logger -->
 		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- Default unit testing frameworks-->
-		<dependency>
-			<groupId>org.hamcrest</groupId>
-			<artifactId>hamcrest-integration</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<scope>test</scope>
-		</dependency>
-
-		<!-- Default mocking frameworks -->
-		<dependency>
-			<groupId>org.mockito</groupId>
-			<artifactId>mockito-core</artifactId>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.jmockit</groupId>
-			<artifactId>jmockit</artifactId>
-			<scope>test</scope>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-api</artifactId>
 		</dependency>
 	</dependencies>
 

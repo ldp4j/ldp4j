@@ -489,7 +489,7 @@ public final class ConstraintReportTransformer {
 	}
 
 	private static URI ldp4jTerm(String term) {
-		return URI.create("http://www.ldp4j.org/vocab#"+term);
+		return URI.create("http://www.ldp4j.org/ns/constraints#"+term);
 	}
 
 	private static URI ldpTerm(String term) {

@@ -408,6 +408,16 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	@Override
+	public Namespaces applicationNamespaces() {
+		org.ldp4j.application.ext.Namespaces applicationNamespaces = this.applicationContext.applicationNamespaces();
+		Namespaces namespaces = new Namespaces();
+		for(String prefix:applicationNamespaces.getDeclaredPrefixes()) {
+			namespaces.addPrefix(prefix, applicationNamespaces.getNamespaceURI(prefix));
+		}
+		return namespaces;
+	}
+
+	@Override
 	public void startOperation() {
 		this.applicationContextOperation=
 			this.applicationContext.

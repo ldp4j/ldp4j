@@ -20,27 +20,23 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-engine:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-engine-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.context;
+package org.ldp4j.application.ext;
 
-import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
-import org.ldp4j.application.ext.Namespaces;
+import java.util.List;
+import java.util.Set;
 
-public interface ApplicationContext {
+public interface Namespaces {
 
-	String applicationName();
+	Set<String> getDeclaredPrefixes();
 
-	String applicationClassName();
+	String getNamespaceURI(String prefix);
 
-	Namespaces applicationNamespaces();
+	String getPrefix(String namespaceURI);
 
-	ApplicationContextOperation createOperation(HttpRequest request);
-
-	void registerApplicationLifecycleListener(ApplicationLifecycleListener listener);
-
-	void deregisterApplicationLifecycleListener(ApplicationLifecycleListener listener);
+	List<String> getPrefixes(String namespaceURI);
 
 }

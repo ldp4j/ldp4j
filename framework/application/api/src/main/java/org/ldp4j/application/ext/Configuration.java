@@ -26,6 +26,36 @@
  */
 package org.ldp4j.application.ext;
 
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
 public class Configuration {
+
+	private static final class NullNamespaces implements Namespaces {
+		@Override
+		public List<String> getPrefixes(String namespaceURI) {
+			return Collections.emptyList();
+		}
+
+		@Override
+		public String getPrefix(String namespaceURI) {
+			return null;
+		}
+
+		@Override
+		public String getNamespaceURI(String prefix) {
+			return null;
+		}
+
+		@Override
+		public Set<String> getDeclaredPrefixes() {
+			return Collections.emptySet();
+		}
+	}
+
+	public Namespaces namespaces() {
+		return new NullNamespaces();
+	}
 
 }

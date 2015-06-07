@@ -78,4 +78,6 @@ public interface OperationContext {
 	void startOperation();
 
 	void completeOperation();
+
+	Namespaces applicationNamespaces();
 }

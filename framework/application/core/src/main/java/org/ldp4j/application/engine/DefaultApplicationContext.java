@@ -58,6 +58,7 @@ import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.Modifiable;
+import org.ldp4j.application.ext.Namespaces;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -143,6 +144,8 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	private static Logger LOGGER=LoggerFactory.getLogger(DefaultApplicationContext.class);
 
 	private Application<Configuration> application;
+
+	private Configuration configuration;
 
 	private final DefaultPublicResourceFactory factory;
 
@@ -375,7 +378,8 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	void initialize(String applicationClassName) throws ApplicationContextCreationException {
 		try {
-			this.application = this.engine().applicationLifecycleService().initialize(applicationClassName);
+			this.application=this.engine().applicationLifecycleService().initialize(applicationClassName);
+			this.configuration=this.engine().applicationLifecycleService().configuration();
 		} catch (ApplicationContextCreationException e) {
 			String errorMessage = "Application '"+applicationClassName+"' initilization failed";
 			LOGGER.error(errorMessage,e);
@@ -405,6 +409,14 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	@Override
 	public String applicationClassName() {
 		return this.application.getClass().getName();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Namespaces applicationNamespaces() {
+		return this.configuration.namespaces();
 	}
 
 	/**

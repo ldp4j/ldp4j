@@ -77,6 +77,8 @@ public final class ApplicationLifecycleService implements Service {
 	private Application<?> application;
 	private ListenerManager<ApplicationLifecycleListener> listenerManager;
 
+	private Configuration configuration;
+
 	private ApplicationLifecycleService() {
 		this.listenerManager=ListenerManager.<ApplicationLifecycleListener>newInstance();
 		this.state=ApplicationState.UNDEFINED;
@@ -121,6 +123,7 @@ public final class ApplicationLifecycleService implements Service {
 			Application<T> application = helper.bootstrap();
 			newState=ApplicationState.AVAILABLE;
 			this.application = application;
+			this.configuration =helper.configuration();
 			LOGGER.info("Application '{}' ({}) initialized.",this.application.getName(),this.application.getClass().getCanonicalName());
 			return application;
 		} catch (ApplicationContextBootstrapException e) {
@@ -128,6 +131,13 @@ public final class ApplicationLifecycleService implements Service {
 		} finally {
 			notifyApplicationStateChange(newState);
 		}
+	}
+
+	public Configuration configuration() {
+		if(this.application==null) {
+			throw new IllegalStateException("Application not initialized yet");
+		}
+		return this.configuration;
 	}
 
 	public void shutdown() throws ApplicationShutdownException {
