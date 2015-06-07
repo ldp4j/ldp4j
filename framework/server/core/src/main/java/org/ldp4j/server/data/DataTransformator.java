@@ -129,32 +129,8 @@ public final class DataTransformator {
 		this.namespaces=new Namespaces(namespaces);
 	}
 
-	private ResourceResolver resourceResolver(String entity) throws IOException {
-		ResourceResolver resolver = this.resourceResolver;
-		if(!this.permanent) {
-			resolver=createSafeResolver(entity);
-		}
-		return resolver;
-	}
-
 	private URI baseEndpoint() {
 		return this.applicationBase.resolve(this.endpoint);
-	}
-
-	private ResourceResolver createSafeResolver(String entity) throws IOException {
-		URI endpoint = baseEndpoint();
-		try {
-			return
-				SafeResourceResolver.
-					builder().
-						withApplication(this.applicationBase).
-						withEndpoint(endpoint).
-						withAlternative(createAlternative(endpoint)).
-						withEntity(entity, this.mediaType).
-						build();
-		} catch (ContentTransformationException e) {
-			throw new IOException("Could not create safe resolver",e);
-		}
 	}
 
 	private URI createAlternative(URI endpoint) {
@@ -174,12 +150,37 @@ public final class DataTransformator {
 		}
 	}
 
-	private Context createContext() {
+	private DataSet surrogateUnmarshall(String entity, URI endpoint) throws ContentTransformationException {
+		TripleResolver tripleResolver=
+			TripleResolver.
+				builder().
+					withApplication(this.applicationBase).
+					withEndpoint(endpoint).
+					withAlternative(createAlternative(endpoint)).
+					withEntity(entity, this.mediaType).
+					build();
+
+		DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(endpoint));
+		ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet,endpoint);
+		for(TripleResolution tripleResolution:tripleResolver.tripleResolutions()) {
+			Triple triple=tripleResolution.triple();
+			Individual<?,?> individual=adapter.getIndividual(triple.getSubject(),tripleResolution.subjectResolution());
+			individual.
+				addValue(
+					triple.getPredicate().getIdentity(),
+					adapter.getValue(triple.getObject(),tripleResolution.objectResolution()));
+		}
+		return dataSet;
+	}
+
+	private DataSet permanentUnmarshall(String entity, URI endpoint) throws ContentTransformationException {
 		Context context =
 			ImmutableContext.
-				newInstance(baseEndpoint()).
+				newInstance(endpoint).
 					setNamespaces(this.namespaces);
-		return context;
+
+		Unmarshaller unmarshaller=MediaTypeSupport.newUnmarshaller(mediaType);
+		return unmarshaller.unmarshall(context,this.resourceResolver,entity);
 	}
 
 	public DataTransformator permanentEndpoint(URI endpoint) {
@@ -225,55 +226,20 @@ public final class DataTransformator {
 		return result;
 	}
 
-
-	public DataSet safeUnmarshall(String entity) throws IOException {
-		checkNotNull(entity,"Entity cannot be null");
-		checkNotNull(mediaType,"Media type cannot be null");
-		URI endpoint = baseEndpoint();
-		LOGGER.trace("Raw entity to unmarshall: \n{}",entity);
-		LOGGER.trace("Unmarshalling using base '{}'...",endpoint);
-		try {
-			TripleResolver tripleResolver=
-				TripleResolver.
-					builder().
-						withApplication(this.applicationBase).
-						withEndpoint(endpoint).
-						withAlternative(createAlternative(endpoint)).
-						withEntity(entity, this.mediaType).
-						build();
-
-			DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(endpoint));
-			ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet,endpoint);
-			for(TripleResolution tripleResolution:tripleResolver.tripleResolutions()) {
-				Triple triple=tripleResolution.triple();
-				Individual<?,?> individual=adapter.getIndividual(triple.getSubject(),tripleResolution.subjectResolution());
-				individual.
-					addValue(
-						triple.getPredicate().getIdentity(),
-						adapter.getValue(triple.getObject(),tripleResolution.objectResolution()));
-			}
-			LOGGER.trace("Unmarshalled data set: \n{}",dataSet);
-			return dataSet;
-		} catch (ContentTransformationException e) {
-			throw new IOException("Entity cannot be parsed as '"+mediaType+"'",e);
-		}
-	}
-
 	public DataSet unmarshall(String entity) throws IOException {
 		checkNotNull(entity,"Entity cannot be null");
 		checkNotNull(mediaType,"Media type cannot be null");
-
-		ResourceResolver resolver = resourceResolver(entity);
-
-		Context context = createContext();
-
-		Unmarshaller unmarshaller=MediaTypeSupport.newUnmarshaller(mediaType);
+		LOGGER.trace("Raw entity to unmarshall: \n{}",entity);
+		LOGGER.trace("Unmarshalling using base '{}'...",baseEndpoint());
 		try {
-			LOGGER.trace("Raw entity to unmarshall: \n{}",entity);
-			LOGGER.trace("Unmarshalling using base '{}'...",context.getBase());
-			DataSet dataSet=unmarshaller.unmarshall(context,resolver,entity);
-			LOGGER.trace("Unmarshalled data set: \n{}",dataSet);
-			return dataSet;
+			DataSet result=null;
+			if(this.permanent) {
+				result=permanentUnmarshall(entity,baseEndpoint());
+			} else {
+				result=surrogateUnmarshall(entity,baseEndpoint());
+			}
+			LOGGER.trace("Unmarshalled data set: \n{}",result);
+			return result;
 		} catch (ContentTransformationException e) {
 			throw new IOException("Entity cannot be parsed as '"+mediaType+"'",e);
 		}
@@ -282,7 +248,10 @@ public final class DataTransformator {
 	public String marshall(DataSet representation) throws IOException {
 		checkNotNull(representation,"Representation cannot be null");
 
-		Context context = createContext();
+		Context context =
+			ImmutableContext.
+				newInstance(baseEndpoint()).
+					setNamespaces(this.namespaces);
 
 		Marshaller marshaller=MediaTypeSupport.newMarshaller(mediaType);
 		try {
@@ -291,7 +260,7 @@ public final class DataTransformator {
 			LOGGER.trace("Marshalled entity: \n{}",rawEntity);
 			return rawEntity;
 		} catch (ContentTransformationException e) {
-			throw new IOException("Resource representation cannot be parsed as '"+mediaType+"' ",e);
+			throw new IOException("Resource representation cannot be serialized as '"+mediaType+"' ",e);
 		}
 	}
 

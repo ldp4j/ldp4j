@@ -117,6 +117,9 @@ final class ValueAdapter {
 	}
 
 	private Individual<?, ?> resolveURIRef(URIRef node) {
+		if(resolution!=null && resolution.descriptor().isTransient()) {
+			return dataSet.individual(resolution.realURI(),NewIndividual.class);
+		}
 		URI location = node.getIdentity();
 		for(URI identity:URIHelper.getParents(location)) {
 			ManagedIndividualId resourceId = resourceResolver.resolveLocation(identity);
@@ -131,11 +134,7 @@ final class ValueAdapter {
 			}
 		}
 		if(resolution!=null) {
-			if(resolution.descriptor().isTransient()) {
-				return dataSet.individual(resolution.realURI(),NewIndividual.class);
-			} else {
-				return dataSet.individual(location,ExternalIndividual.class);
-			}
+			return dataSet.individual(location,ExternalIndividual.class);
 		}
 		URI path = base.relativize(location);
 		if(!path.isAbsolute()) {
