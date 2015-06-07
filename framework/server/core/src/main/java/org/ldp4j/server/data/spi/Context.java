@@ -29,14 +29,11 @@ package org.ldp4j.server.data.spi;
 import java.net.URI;
 
 import org.ldp4j.rdf.Namespaces;
-import org.ldp4j.server.data.ResourceResolver;
 
 
 public interface Context {
 
 	URI getBase();
-
-	ResourceResolver getResourceResolver();
 
 	Namespaces getNamespaces();
 

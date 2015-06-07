@@ -125,7 +125,8 @@ public class SafeResourceResolverTest {
 			MediaTypeSupport.
 				newUnmarshaller(this.mediaType).
 					unmarshall(
-						ImmutableContext.newInstance(base,resolver),
+						ImmutableContext.newInstance(base),
+						resolver,
 						entity);
 	}
 

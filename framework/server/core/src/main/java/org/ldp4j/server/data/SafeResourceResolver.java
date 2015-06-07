@@ -183,8 +183,8 @@ final class SafeResourceResolver implements ResourceResolver {
 
 		private List<URI> externals(URI base) throws ContentTransformationException {
 			URITrackingResourceResolver resolver = new URITrackingResourceResolver();
-			Context context=ImmutableContext.newInstance(base,resolver);
-			unmarshaller().unmarshall(context,this.entity);
+			Context context=ImmutableContext.newInstance(base);
+			unmarshaller().unmarshall(context,resolver,this.entity);
 			return resolver.getURIs();
 		}
 

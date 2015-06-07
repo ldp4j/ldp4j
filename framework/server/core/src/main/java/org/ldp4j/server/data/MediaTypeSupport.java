@@ -57,9 +57,9 @@ final class MediaTypeSupport {
 			this.provider = provider;
 		}
 
-		public String marshall(Context context, DataSet content) throws ContentTransformationException {
+		public String marshall(Context context, ResourceResolver resourceResolver, DataSet content) throws ContentTransformationException {
 			checkNotNull(content,"Content cannot be null");
-			TripleSetBuilder tripleSetBuilder = new TripleSetBuilder(context.getResourceResolver(),context.getBase());
+			TripleSetBuilder tripleSetBuilder = new TripleSetBuilder(resourceResolver,context.getBase());
 			for(Individual<?,?> individual:content) {
 				tripleSetBuilder.generateTriples(individual);
 			}
@@ -82,11 +82,11 @@ final class MediaTypeSupport {
 			this.listeners=ListenerManager.newInstance();
 		}
 
-		public DataSet unmarshall(Context context, String content) throws ContentTransformationException {
+		public DataSet unmarshall(Context context, ResourceResolver resourceResolver, String content) throws ContentTransformationException {
 			checkNotNull(content,"Content cannot be null");
 			Iterable<Triple> triples=this.provider.unmarshallContent(context,content,this.targetMediaType);
 			final DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(context.getBase()));
-			final ValueAdapter adapter=new ValueAdapter(context.getResourceResolver(),dataSet,context.getBase());
+			final ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet,context.getBase());
 			for(final Triple triple:triples) {
 				this.listeners.notify(
 					new Notification<TripleListener>() {

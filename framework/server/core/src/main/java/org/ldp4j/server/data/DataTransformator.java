@@ -26,7 +26,9 @@
  */
 package org.ldp4j.server.data;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
 import java.net.URI;
@@ -122,26 +124,20 @@ public final class DataTransformator {
 		this.namespaces=new Namespaces(namespaces);
 	}
 
-	private Context createMarshallingContext() {
+	private ResourceResolver resourceResolver(String entity) throws IOException {
 		ResourceResolver resolver = this.resourceResolver;
-		URI transformationBase = this.applicationBase.resolve(this.endpoint);
-		Context context=
-			ImmutableContext.
-				newInstance(transformationBase, resolver).
-					setNamespaces(this.namespaces);
-		return context;
-	}
-
-	private Context createUnmarshallingContext(String entity) throws IOException {
-		ResourceResolver resolver = this.resourceResolver;
-		URI transformationBase = this.applicationBase.resolve(this.endpoint);
 		if(!this.permanent) {
-			resolver=createSafeResolver(entity,transformationBase);
+			resolver=createSafeResolver(entity);
 		}
-		return ImmutableContext.newInstance(transformationBase,resolver);
+		return resolver;
 	}
 
-	private ResourceResolver createSafeResolver(String entity, URI endpoint) throws IOException {
+	private URI baseEndpoint() {
+		return this.applicationBase.resolve(this.endpoint);
+	}
+
+	private ResourceResolver createSafeResolver(String entity) throws IOException {
+		URI endpoint = baseEndpoint();
 		try {
 			return
 				SafeResourceResolver.
@@ -171,6 +167,14 @@ public final class DataTransformator {
 		} catch (URISyntaxException e) {
 			throw new IllegalStateException("Alternative URI creation failed",e);
 		}
+	}
+
+	private Context createContext() {
+		Context context =
+			ImmutableContext.
+				newInstance(baseEndpoint()).
+					setNamespaces(this.namespaces);
+		return context;
 	}
 
 	public DataTransformator permanentEndpoint(URI endpoint) {
@@ -220,13 +224,15 @@ public final class DataTransformator {
 		checkNotNull(entity,"Entity cannot be null");
 		checkNotNull(mediaType,"Media type cannot be null");
 
-		Context context=createUnmarshallingContext(entity);
+		ResourceResolver resolver = resourceResolver(entity);
+
+		Context context = createContext();
 
 		Unmarshaller unmarshaller=MediaTypeSupport.newUnmarshaller(mediaType);
 		try {
 			LOGGER.trace("Raw entity to unmarshall: \n{}",entity);
 			LOGGER.trace("Unmarshalling using base '{}'...",context.getBase());
-			DataSet dataSet=unmarshaller.unmarshall(context, entity);
+			DataSet dataSet=unmarshaller.unmarshall(context,resolver,entity);
 			LOGGER.trace("Unmarshalled data set: \n{}",dataSet);
 			return dataSet;
 		} catch (ContentTransformationException e) {
@@ -236,12 +242,13 @@ public final class DataTransformator {
 
 	public String marshall(DataSet representation) throws IOException {
 		checkNotNull(representation,"Representation cannot be null");
-		Context context = createMarshallingContext();
+
+		Context context = createContext();
 
 		Marshaller marshaller=MediaTypeSupport.newMarshaller(mediaType);
 		try {
 			LOGGER.trace("Marshalling using base '{}'",context.getBase());
-			String rawEntity = marshaller.marshall(context,representation);
+			String rawEntity = marshaller.marshall(context,this.resourceResolver,representation);
 			LOGGER.trace("Marshalled entity: \n{}",rawEntity);
 			return rawEntity;
 		} catch (ContentTransformationException e) {
