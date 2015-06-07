@@ -44,11 +44,11 @@ import org.apache.http.impl.client.HttpClients;
 import org.apache.http.util.EntityUtils;
 import org.jboss.shrinkwrap.api.ShrinkWrap;
 import org.jboss.shrinkwrap.api.spec.JavaArchive;
+import org.ldp4j.server.data.impl.CoreRuntimeDelegate;
 import org.ldp4j.server.data.impl.JSONLDMediaTypeProvider;
 import org.ldp4j.server.data.impl.RDFXMLMediaTypeProvider;
-import org.ldp4j.server.data.impl.CoreRuntimeDelegate;
 import org.ldp4j.server.data.impl.TurtleMediaTypeProvider;
-import org.ldp4j.server.data.spi.IMediaTypeProvider;
+import org.ldp4j.server.data.spi.MediaTypeProvider;
 import org.ldp4j.server.data.spi.RuntimeDelegate;
 import org.slf4j.Logger;
 
@@ -73,7 +73,7 @@ public final class ServerFrontendTestHelper {
 	public void base(URL url) {
 		this.url = url;
 	}
-	
+
 	public void setLegacy(boolean legacy) {
 		this.legacy = legacy;
 	}
@@ -104,7 +104,7 @@ public final class ServerFrontendTestHelper {
 
 	public <T extends HttpUriRequest> T newRequest(String path, Class<? extends T> clazz) {
 		try {
-			return 
+			return
 				clazz.
 					getConstructor(URI.class).
 						newInstance(resourceLocation(path));
@@ -112,17 +112,17 @@ public final class ServerFrontendTestHelper {
 			throw new IllegalStateException("Could not create request",e);
 		}
 	}
-	
-	
+
+
 	public static class Metadata {
-		
+
 		public String body;
 		public String etag;
 		public String lastModified;
 		public String location;
-		
+
 	}
-	
+
 	public Metadata httpRequest(final HttpUriRequest request) throws Exception {
 		final Metadata metadata=new Metadata();
 		ResponseHandler<String> responseHandler = new ResponseHandler<String>() {
@@ -144,9 +144,9 @@ public final class ServerFrontendTestHelper {
 				}
 				return responseBody;
 			}
-			
+
 			private final String NL=System.getProperty("line.separator");
-			
+
 			private String logResponse(final HttpResponse response) throws IOException {
 				HttpEntity entity = response.getEntity();
 				String responseBody = entity != null ? EntityUtils.toString(entity) : null;
@@ -182,14 +182,24 @@ public final class ServerFrontendTestHelper {
 	}
 
 	public static JavaArchive getServerArchive() {
-		JavaArchive coreArchive= 
+		JavaArchive coreArchive=
 			ShrinkWrap.
 				create(JavaArchive.class,"ldp4j-server-core.jar").
 				addPackages(true, "org.ldp4j.server").
-				addAsResource(ClassLoader.getSystemResource("META-INF/web-fragment.xml"), "META-INF/web-fragment.xml").
-				addAsResource(ClassLoader.getSystemResource("beans.xml"), "beans.xml").
-				addAsServiceProvider(RuntimeDelegate.class, CoreRuntimeDelegate.class).
-				addAsServiceProvider(IMediaTypeProvider.class,TurtleMediaTypeProvider.class,RDFXMLMediaTypeProvider.class,JSONLDMediaTypeProvider.class);
+				addAsResource(
+					ClassLoader.getSystemResource("META-INF/web-fragment.xml"),
+					"META-INF/web-fragment.xml").
+				addAsResource(
+					ClassLoader.getSystemResource("beans.xml"),
+					"beans.xml").
+				addAsServiceProvider(
+					RuntimeDelegate.class,
+					CoreRuntimeDelegate.class).
+				addAsServiceProvider(
+					MediaTypeProvider.class,
+					TurtleMediaTypeProvider.class,
+					RDFXMLMediaTypeProvider.class,
+					JSONLDMediaTypeProvider.class);
 		return coreArchive;
 	}
 

@@ -38,11 +38,10 @@ import javax.ws.rs.core.MediaType;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.server.data.MediaTypeSupport.Unmarshaller;
 import org.ldp4j.server.data.ResolutionContext.ResolutionContextBuilder;
 import org.ldp4j.server.data.spi.ContentTransformationException;
-import org.ldp4j.server.data.spi.IMediaTypeProvider;
-import org.ldp4j.server.data.spi.RuntimeDelegate;
-import org.ldp4j.server.data.spi.IMediaTypeProvider.Unmarshaller;
+import org.ldp4j.server.data.spi.Context;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -134,7 +133,7 @@ final class SafeResourceResolver implements ResourceResolver {
 		private URI alternative;
 		private MediaType type;
 		private String entity;
-		private IMediaTypeProvider provider;
+		private Unmarshaller unmarshaller;
 
 		private SafeResourceResolverBuilder() {
 		}
@@ -184,27 +183,17 @@ final class SafeResourceResolver implements ResourceResolver {
 
 		private List<URI> externals(URI base) throws ContentTransformationException {
 			URITrackingResourceResolver resolver = new URITrackingResourceResolver();
-			Unmarshaller unmarshaller=
-				provider().
-					newUnmarshaller(
-						ImmutableContext.
-							newInstance(
-								base,
-								resolver
-							)
-						);
-			unmarshaller.unmarshall(this.entity, this.type);
+			Context context=ImmutableContext.newInstance(base,resolver);
+			unmarshaller().unmarshall(context,this.entity);
 			return resolver.getURIs();
 		}
 
-		private IMediaTypeProvider provider() {
-			if(this.provider==null) {
-				this.provider =
-					RuntimeDelegate.
-						getInstance().
-							getMediaTypeProvider(this.type);
+		private Unmarshaller unmarshaller() {
+			if(this.unmarshaller==null) {
+				this.unmarshaller=
+					MediaTypeSupport.newUnmarshaller(this.type);
 			}
-			return this.provider;
+			return this.unmarshaller;
 		}
 
 	}

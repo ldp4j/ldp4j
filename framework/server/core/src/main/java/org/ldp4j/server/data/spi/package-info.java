@@ -24,12 +24,13 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
+
 /**
- * <h1>LDP4j ServerComponentDirectory SPI</h1>
+ * <h1>LDP4j Server Frontend Data SPI</h1> <br />
  * <br />
- * <br />
- * The Service Provider Interfaces that is part of the <i>LDP4j ServerComponentDirectory</i>, which
- * provides the means for creating third party implementations or extensions of 
- * the <i>LDP4j ServerComponentDirectory</i>.
+ * The Service Provider Interfaces that is part of the <i>LDP4j Server Frontend
+ * Data</i> facilities, which provides the means for creating third party
+ * implementations or extensions of the <i>LDP4j Server Frontend Data</i>
+ * utility classes.
  */
 package org.ldp4j.server.data.spi;

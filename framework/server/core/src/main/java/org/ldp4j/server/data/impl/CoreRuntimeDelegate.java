@@ -27,63 +27,71 @@
 package org.ldp4j.server.data.impl;
 
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
 import java.util.ServiceLoader;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.ws.rs.core.MediaType;
 
-import org.ldp4j.server.data.spi.IMediaTypeProvider;
+import org.ldp4j.server.data.spi.MediaTypeProvider;
 import org.ldp4j.server.data.spi.RuntimeDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+
 public class CoreRuntimeDelegate extends RuntimeDelegate {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(CoreRuntimeDelegate.class);
-	
-	private final List<IMediaTypeProvider> providers=new CopyOnWriteArrayList<IMediaTypeProvider>();
-	private final Set<MediaType> mediaTypes=new HashSet<MediaType>();
-	
+
+	private final List<MediaTypeProvider> providers;
+	private final Set<MediaType> mediaTypes;
+
 	public CoreRuntimeDelegate() {
-		ServiceLoader<IMediaTypeProvider> loader=ServiceLoader.load(IMediaTypeProvider.class);
-		for(IMediaTypeProvider provider:loader) {
+		this.mediaTypes=Sets.newLinkedHashSet();
+		this.providers=Lists.newCopyOnWriteArrayList();
+		populateMediaTypeProviders();
+	}
+
+	private void populateMediaTypeProviders() {
+		ServiceLoader<MediaTypeProvider> loader=ServiceLoader.load(MediaTypeProvider.class);
+		for(MediaTypeProvider provider:loader) {
 			addMediaTypeProvider(provider);
 		}
 	}
-	
-	@Override
-	public Set<MediaType> getSupportedMediaTypes() {
-		return Collections.unmodifiableSet(mediaTypes);
+
+	private void addMediaTypeProvider(MediaTypeProvider provider) {
+		this.providers.add(provider);
+		this.mediaTypes.addAll(provider.supportedMediaTypes());
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug(
+				"Registered media type provider '"+
+				provider.getClass().getCanonicalName()+
+				"'. Extended media type support for: "+
+				provider.supportedMediaTypes());
+		}
 	}
 
 	@Override
-	public IMediaTypeProvider getMediaTypeProvider(MediaType mediaType) {
-		for(IMediaTypeProvider candidate:providers) {
+	public Set<MediaType> getSupportedMediaTypes() {
+		return Collections.unmodifiableSet(this.mediaTypes);
+	}
+
+	@Override
+	public MediaTypeProvider getMediaTypeProvider(MediaType mediaType) {
+		for(MediaTypeProvider candidate:this.providers) {
 			if(candidate.isSupported(mediaType)) {
 				return candidate;
 			}
 		}
 		return null;
 	}
-	
-	public void registerMediaTypeProvider(IMediaTypeProvider provider) {
+
+	@Override
+	public void registerMediaTypeProvider(MediaTypeProvider provider) {
 		if(provider!=null) {
 			addMediaTypeProvider(provider);
-		}
-	}
-
-	private void addMediaTypeProvider(IMediaTypeProvider provider) {
-		providers.add(provider);
-		mediaTypes.addAll(provider.getSupportedMediaTypes());
-		if(LOGGER.isDebugEnabled()) {
-			LOGGER.debug(
-				"Registered media type provider '"+
-				provider.getClass().getCanonicalName()+
-				"'. Extended media type support for: "+
-				provider.getSupportedMediaTypes());
 		}
 	}
 

@@ -51,10 +51,11 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.ldp4j.server.commands.Command;
 import org.ldp4j.server.commands.CommandDescription;
 import org.ldp4j.server.commands.CommandDescriptionUtil;
-import org.ldp4j.server.data.impl.RDFXMLMediaTypeProvider;
 import org.ldp4j.server.data.impl.CoreRuntimeDelegate;
+import org.ldp4j.server.data.impl.JSONLDMediaTypeProvider;
+import org.ldp4j.server.data.impl.RDFXMLMediaTypeProvider;
 import org.ldp4j.server.data.impl.TurtleMediaTypeProvider;
-import org.ldp4j.server.data.spi.IMediaTypeProvider;
+import org.ldp4j.server.data.spi.MediaTypeProvider;
 import org.ldp4j.server.data.spi.RuntimeDelegate;
 import org.slf4j.Logger;
 
@@ -192,7 +193,7 @@ public final class IntegrationTestHelper {
 				addAsResource(ClassLoader.getSystemResource("web-fragment.xml"), "META-INF/web-fragment.xml").
 				addAsResource(ClassLoader.getSystemResource("beans.xml"), "beans.xml").
 				addAsServiceProvider(RuntimeDelegate.class, CoreRuntimeDelegate.class).
-				addAsServiceProvider(IMediaTypeProvider.class,TurtleMediaTypeProvider.class,RDFXMLMediaTypeProvider.class);
+				addAsServiceProvider(MediaTypeProvider.class,TurtleMediaTypeProvider.class,RDFXMLMediaTypeProvider.class,JSONLDMediaTypeProvider.class);
 		return coreArchive;
 	}
 

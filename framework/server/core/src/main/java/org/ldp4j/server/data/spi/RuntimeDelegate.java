@@ -265,7 +265,9 @@ public abstract class RuntimeDelegate {
 
 	public abstract Set<MediaType> getSupportedMediaTypes();
 
-	public abstract IMediaTypeProvider getMediaTypeProvider(MediaType mediaType);
+	public abstract MediaTypeProvider getMediaTypeProvider(MediaType mediaType);
+
+	public abstract void registerMediaTypeProvider(MediaTypeProvider provider);
 
 	private static class DefaultRuntimeInstance extends RuntimeDelegate {
 
@@ -277,7 +279,12 @@ public abstract class RuntimeDelegate {
 		}
 
 		@Override
-		public IMediaTypeProvider getMediaTypeProvider(MediaType mediaType) {
+		public MediaTypeProvider getMediaTypeProvider(MediaType mediaType) {
+			throw new AssertionError(ERROR_MESSAGE);
+		}
+
+		@Override
+		public void registerMediaTypeProvider(MediaTypeProvider provider) {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 

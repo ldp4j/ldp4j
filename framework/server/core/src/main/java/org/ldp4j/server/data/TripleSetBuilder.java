@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.data.impl;
+package org.ldp4j.server.data;
 
 import static org.ldp4j.rdf.util.RDFModelDSL.blankNode;
 import static org.ldp4j.rdf.util.RDFModelDSL.literal;
@@ -63,7 +63,6 @@ import org.ldp4j.rdf.BlankNode;
 import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.URIRef;
 import org.ldp4j.rdf.util.TripleSet;
-import org.ldp4j.server.data.ResourceResolver;
 
 final class TripleSetBuilder {
 

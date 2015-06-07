@@ -46,9 +46,6 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.server.data.spi.ContentTransformationException;
-import org.ldp4j.server.data.spi.IMediaTypeProvider;
-import org.ldp4j.server.data.spi.RuntimeDelegate;
-import org.ldp4j.server.data.spi.IMediaTypeProvider.Unmarshaller;
 
 import com.google.common.collect.ImmutableMap;
 
@@ -56,12 +53,9 @@ public class SafeResourceResolverTest {
 
 	private MediaType mediaType;
 
-	private IMediaTypeProvider provider;
-
 	@Before
 	public void setUp() {
 		this.mediaType = new MediaType("text", "turtle");
-		this.provider = RuntimeDelegate.getInstance().getMediaTypeProvider(mediaType);
 	}
 
 	@Test
@@ -127,11 +121,12 @@ public class SafeResourceResolverTest {
 	}
 
 	private DataSet unmarshall(String entity, URI base, ResourceResolver resolver) throws ContentTransformationException {
-		return newUnmarshaller(base,resolver).unmarshall(entity, this.mediaType);
-	}
-
-	private Unmarshaller newUnmarshaller(URI base, ResourceResolver resolver) {
-		return this.provider.newUnmarshaller(ImmutableContext.newInstance(base,resolver));
+		return
+			MediaTypeSupport.
+				newUnmarshaller(this.mediaType).
+					unmarshall(
+						ImmutableContext.newInstance(base,resolver),
+						entity);
 	}
 
 	private String loadResource(String resourceName) {

@@ -172,8 +172,8 @@ public class TCKFApplication extends Application<Configuration> {
 				executorService.
 					scheduleAtFixedRate(
 						new TCKFDynamicResourceUpdater(this.dynamicResourceHandler,this.dynamicResourceName),
-						500, 3000,
-						TimeUnit.MILLISECONDS);
+						1, 15,
+						TimeUnit.SECONDS);
 			LOGGER.info("Initialization completed.");
 		} catch (WriteSessionException e) {
 			LOGGER.warn("Initialization failed.",e);
@@ -185,11 +185,13 @@ public class TCKFApplication extends Application<Configuration> {
 	public void shutdown() {
 		LOGGER.info("Shutting down application...");
 		this.executorService.shutdown();
-		while(this.executorService.isTerminated()) {
+		boolean finished=this.executorService.isTerminated();
+		while(!finished) {
 			try {
 				this.executorService.awaitTermination(100, TimeUnit.MILLISECONDS);
+				finished=this.executorService.isTerminated();
 			} catch (InterruptedException e) {
-				// Nothing to do here
+				finished=true;
 			}
 		}
 		LOGGER.info("Application terminated");

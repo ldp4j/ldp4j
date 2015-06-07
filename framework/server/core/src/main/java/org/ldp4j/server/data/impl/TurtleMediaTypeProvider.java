@@ -28,7 +28,6 @@ package org.ldp4j.server.data.impl;
 
 import java.io.IOException;
 import java.io.StringWriter;
-import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 
@@ -39,21 +38,16 @@ import org.ldp4j.rdf.impl.UnmarshallOptions;
 import org.ldp4j.server.data.spi.ContentTransformationException;
 import org.ldp4j.server.data.spi.Context;
 
-import com.google.common.collect.ImmutableSet;
-
 public class TurtleMediaTypeProvider extends AbstractMediaTypeProvider {
 
 	private static final MediaType MEDIA_TYPE = new MediaType("text","turtle");
 
-	private static final Set<MediaType> SUPPORTED_MEDIA_TYPES = ImmutableSet.<MediaType>builder().add(MEDIA_TYPE).build();
-
-	@Override
-	public Set<MediaType> getSupportedMediaTypes() {
-		return SUPPORTED_MEDIA_TYPES;
+	public TurtleMediaTypeProvider() {
+		super(MEDIA_TYPE);
 	}
-
+	
 	@Override
-	protected Iterable<Triple> doUnmarshallContent(Context context, String content, MediaType type) throws ContentTransformationException {
+	public Iterable<Triple> unmarshallContent(Context context, String content, MediaType type) throws ContentTransformationException {
 		try {
 			RDFContext rdfContext = RDFContext.createContext(context.getBase());
 			rdfContext.setOption(UnmarshallOptions.TRIPLE_ORDERING, UnmarshallOptions.Ordering.KEEP_TRIPLE_ORDER);
@@ -64,7 +58,7 @@ public class TurtleMediaTypeProvider extends AbstractMediaTypeProvider {
 	}
 
 	@Override
-	protected String doMarshallContent(Context context, Iterable<Triple> content, MediaType type) throws ContentTransformationException {
+	public String marshallContent(Context context, Iterable<Triple> content, MediaType type) throws ContentTransformationException {
 		try {
 			RDFContext rdfContext = RDFContext.createContext(context.getBase());
 			rdfContext.setNamespaces(context.getNamespaces());
