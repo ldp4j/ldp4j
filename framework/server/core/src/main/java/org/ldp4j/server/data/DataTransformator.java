@@ -28,23 +28,30 @@ package org.ldp4j.server.data;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.Iterator;
+import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
-import org.ldp4j.application.domain.RDFS;
+import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.vocabulary.LDP;
+import org.ldp4j.application.vocabulary.RDF;
+import org.ldp4j.application.vocabulary.RDFS;
 import org.ldp4j.rdf.Namespaces;
-import org.ldp4j.server.spi.ContentTransformationException;
-import org.ldp4j.server.spi.IMediaTypeProvider;
-import org.ldp4j.server.spi.IMediaTypeProvider.Marshaller;
-import org.ldp4j.server.spi.IMediaTypeProvider.Unmarshaller;
-import org.ldp4j.server.spi.RuntimeInstance;
+import org.ldp4j.rdf.Triple;
+import org.ldp4j.server.data.MediaTypeSupport.Marshaller;
+import org.ldp4j.server.data.MediaTypeSupport.Unmarshaller;
+import org.ldp4j.server.data.spi.ContentTransformationException;
+import org.ldp4j.server.data.spi.Context;
+import org.ldp4j.server.data.spi.RuntimeDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -69,7 +76,6 @@ public final class DataTransformator {
 	private boolean permanent;
 
 	private MediaType mediaType;
-	private IMediaTypeProvider provider;
 
 	private Namespaces namespaces;
 
@@ -94,13 +100,15 @@ public final class DataTransformator {
 		setApplicationBase(dataTransformation.applicationBase);
 		setEndpoint(dataTransformation.endpoint, dataTransformation.permanent);
 		setResourceResolver(dataTransformation.resourceResolver);
-		setMediaType(dataTransformation.mediaType, dataTransformation.provider);
+		setMediaType(dataTransformation.mediaType);
 		setNamespaces(dataTransformation.namespaces);
 	}
 
-	private void setMediaType(MediaType mediaType, IMediaTypeProvider provider) {
+	private void setMediaType(MediaType mediaType) {
+		if(!isSupported(mediaType)) {
+			throw new UnsupportedMediaTypeException("Unsupported media type '"+mediaType+"'",mediaType);
+		}
 		this.mediaType=mediaType;
-		this.provider=provider;
 	}
 
 	private void setResourceResolver(ResourceResolver resolver) {
@@ -120,50 +128,8 @@ public final class DataTransformator {
 		this.namespaces=new Namespaces(namespaces);
 	}
 
-	private static IMediaTypeProvider getProvider(MediaType mediaType) throws UnsupportedMediaTypeException {
-		IMediaTypeProvider provider =
-			RuntimeInstance.
-				getInstance().
-					getMediaTypeProvider(mediaType);
-
-		if(provider==null) {
-			throw new UnsupportedMediaTypeException("Unsupported media type '"+mediaType+"'",mediaType);
-		}
-		return provider;
-	}
-
-	private Context createMarshallingContext() {
-		ResourceResolver resolver = this.resourceResolver;
-		URI transformationBase = this.applicationBase.resolve(this.endpoint);
-		Context context=
-			ImmutableContext.
-				newInstance(transformationBase, resolver).
-					setNamespaces(this.namespaces);
-		return context;
-	}
-
-	private Context createUnmarshallingContext(String entity) throws IOException {
-		ResourceResolver resolver = this.resourceResolver;
-		URI transformationBase = this.applicationBase.resolve(this.endpoint);
-		if(!this.permanent) {
-			resolver=createSafeResolver(entity,transformationBase);
-		}
-		return ImmutableContext.newInstance(transformationBase,resolver);
-	}
-
-	private ResourceResolver createSafeResolver(String entity, URI endpoint) throws IOException {
-		try {
-			return
-				SafeResourceResolver.
-					builder().
-						withApplication(this.applicationBase).
-						withEndpoint(endpoint).
-						withAlternative(createAlternative(endpoint)).
-						withEntity(entity, this.mediaType).
-						build();
-		} catch (ContentTransformationException e) {
-			throw new IOException("Could not create safe resolver",e);
-		}
+	private URI baseEndpoint() {
+		return this.applicationBase.resolve(this.endpoint);
 	}
 
 	private URI createAlternative(URI endpoint) {
@@ -181,6 +147,39 @@ public final class DataTransformator {
 		} catch (URISyntaxException e) {
 			throw new IllegalStateException("Alternative URI creation failed",e);
 		}
+	}
+
+	private DataSet surrogateUnmarshall(String entity, URI endpoint) throws ContentTransformationException {
+		TripleResolver tripleResolver=
+			TripleResolver.
+				builder().
+					withApplication(this.applicationBase).
+					withEndpoint(endpoint).
+					withAlternative(createAlternative(endpoint)).
+					withEntity(entity, this.mediaType).
+					build();
+
+		DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(endpoint));
+		ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet);
+		for(TripleResolution tripleResolution:tripleResolver.tripleResolutions()) {
+			Triple triple=tripleResolution.triple();
+			Individual<?,?> individual=adapter.getIndividual(triple.getSubject(),tripleResolution.subjectResolution());
+			individual.
+				addValue(
+					triple.getPredicate().getIdentity(),
+					adapter.getValue(triple.getObject(),tripleResolution.objectResolution()));
+		}
+		return dataSet;
+	}
+
+	private DataSet permanentUnmarshall(String entity, URI endpoint) throws ContentTransformationException {
+		Context context =
+			ImmutableContext.
+				newInstance(endpoint).
+					setNamespaces(this.namespaces);
+
+		Unmarshaller unmarshaller=MediaTypeSupport.newUnmarshaller(mediaType);
+		return unmarshaller.unmarshall(context,this.resourceResolver,entity);
 	}
 
 	public DataTransformator permanentEndpoint(URI endpoint) {
@@ -202,7 +201,7 @@ public final class DataTransformator {
 	public DataTransformator mediaType(MediaType mediaType) throws UnsupportedMediaTypeException {
 		checkNotNull(mediaType,"Media type cannot be null");
 		DataTransformator result = new DataTransformator(this);
-		result.setMediaType(mediaType,getProvider(mediaType));
+		result.setMediaType(mediaType);
 		return result;
 	}
 
@@ -229,16 +228,17 @@ public final class DataTransformator {
 	public DataSet unmarshall(String entity) throws IOException {
 		checkNotNull(entity,"Entity cannot be null");
 		checkNotNull(mediaType,"Media type cannot be null");
-
-		Context context=createUnmarshallingContext(entity);
-
-		Unmarshaller unmarshaller=getProvider(mediaType).newUnmarshaller(context);
+		LOGGER.trace("Raw entity to unmarshall: \n{}",entity);
+		LOGGER.trace("Unmarshalling using base '{}'...",baseEndpoint());
 		try {
-			LOGGER.trace("Raw entity to unmarshall: \n{}",entity);
-			LOGGER.trace("Unmarshalling using base '{}'...",context.getBase());
-			DataSet dataSet=unmarshaller.unmarshall(entity, mediaType);
-			LOGGER.trace("Unmarshalled data set: \n{}",dataSet);
-			return dataSet;
+			DataSet result=null;
+			if(this.permanent) {
+				result=permanentUnmarshall(entity,baseEndpoint());
+			} else {
+				result=surrogateUnmarshall(entity,baseEndpoint());
+			}
+			LOGGER.trace("Unmarshalled data set: \n{}",result);
+			return result;
 		} catch (ContentTransformationException e) {
 			throw new IOException("Entity cannot be parsed as '"+mediaType+"'",e);
 		}
@@ -246,35 +246,47 @@ public final class DataTransformator {
 
 	public String marshall(DataSet representation) throws IOException {
 		checkNotNull(representation,"Representation cannot be null");
-		Context context = createMarshallingContext();
 
-		Marshaller marshaller=this.provider.newMarshaller(context);
+		Context context =
+			ImmutableContext.
+				newInstance(baseEndpoint()).
+					setNamespaces(this.namespaces);
+
+		Marshaller marshaller=MediaTypeSupport.newMarshaller(mediaType);
 		try {
 			LOGGER.trace("Marshalling using base '{}'",context.getBase());
-			String rawEntity = marshaller.marshall(representation, mediaType);
+			String rawEntity = marshaller.marshall(context,this.resourceResolver,representation);
 			LOGGER.trace("Marshalled entity: \n{}",rawEntity);
 			return rawEntity;
 		} catch (ContentTransformationException e) {
-			throw new IOException("Resource representation cannot be parsed as '"+mediaType+"' ",e);
+			throw new IOException("Resource representation cannot be serialized as '"+mediaType+"' ",e);
 		}
 	}
 
-	public static DataTransformator create(final URI applicationBase) {
+	public static Set<MediaType> supportedMediaTypes() {
+		return RuntimeDelegate.getInstance().getSupportedMediaTypes();
+	}
+
+	public static boolean isSupported(MediaType mediaType) {
+		checkNotNull(mediaType,"Media type cannot be null");
+		Set<MediaType> supportedMediaTypes = supportedMediaTypes();
+		checkState(supportedMediaTypes!=null,"Supported media types cannot be null");
+		boolean supported=false;
+		for(Iterator<MediaType> it=supportedMediaTypes.iterator();it.hasNext() && !supported;) {
+			supported=it.next().isCompatible(mediaType);
+		}
+		return supported;
+	}
+
+	public static DataTransformator create(URI applicationBase) {
 		checkNotNull(applicationBase,"Application base URI cannot be null");
 		checkArgument(applicationBase.isAbsolute() && !applicationBase.isOpaque(),"Application base URI must be absolute and hierarchical");
-		final MediaType mediaType=
-			Iterables.
-				getFirst(
-					RuntimeInstance.
-						getInstance().
-							getSupportedMediaTypes(),
-					null);
-		if(mediaType==null) {
-			throw new IllegalStateException("No media type providers are available");
-		}
-		final DataTransformator dataTransformation=new DataTransformator();
+		MediaType mediaType=Iterables.getFirst(supportedMediaTypes(),null);
+		checkState(mediaType!=null,"No media type providers are available");
+		DataTransformator dataTransformation=new DataTransformator();
 		dataTransformation.setApplicationBase(applicationBase);
-		dataTransformation.setMediaType(mediaType, getProvider(mediaType));
+		dataTransformation.setMediaType(mediaType);
 		return dataTransformation;
 	}
+
 }

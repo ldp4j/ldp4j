@@ -34,7 +34,7 @@ import java.util.Locale;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.server.spi.RuntimeInstance;
+import org.ldp4j.server.data.DataTransformator;
 
 public final class VariantUtils {
 
@@ -47,24 +47,22 @@ public final class VariantUtils {
 	}
 
 	public static List<Variant> defaultVariants() {
-		return 
+		return
 			VariantUtils.
 				createVariants(
-					RuntimeInstance.
-						getInstance().
-							getSupportedMediaTypes());
+					DataTransformator.supportedMediaTypes());
 	}
 
 	/**
 	 * Get a list of acceptable variants. Current implementation only leverages
 	 * media type for the specification of variants.
-	 * 
+	 *
 	 * @param mediaTypes
 	 *            The list of acceptable media types.
 	 * @return A list of acceptable variants.
 	 */
 	public static List<Variant> createVariants(MediaType... mediaTypes) {
-		List<Variant> variants = 
+		List<Variant> variants =
 			Variant.VariantListBuilder.
 				newInstance().
 					mediaTypes(mediaTypes).
@@ -80,7 +78,7 @@ public final class VariantUtils {
 	}
 
 	public static String toString(Variant v) {
-		return 
+		return
 			String.format(
 				getTemplate(v),
 				getMediaType(v),
@@ -101,7 +99,7 @@ public final class VariantUtils {
 	}
 
 	private static String getTemplate(Variant v) {
-		return 
+		return
 			v.getEncoding()!=null?
 				TEMPLATES[0]:
 				TEMPLATES[1];
@@ -131,5 +129,5 @@ public final class VariantUtils {
 		}
 		return mediaType;
 	}
-	
+
 }

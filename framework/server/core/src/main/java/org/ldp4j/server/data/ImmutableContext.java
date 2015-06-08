@@ -29,32 +29,26 @@ package org.ldp4j.server.data;
 import java.net.URI;
 
 import org.ldp4j.rdf.Namespaces;
+import org.ldp4j.server.data.spi.Context;
 
 
-public final class ImmutableContext implements Context {
+final class ImmutableContext implements Context {
 
 	private URI base;
-	private ResourceResolver resourceResolver;
 	private Namespaces namespaces;
 
-	private ImmutableContext(URI base, ResourceResolver resourceResolver, Namespaces namespaces) {
+	private ImmutableContext(URI base,Namespaces namespaces) {
 		this.base = base;
-		this.resourceResolver = resourceResolver;
 		this.namespaces = namespaces;
 	}
 
 	private ImmutableContext(ImmutableContext context) {
-		this(context.base,context.resourceResolver,context.namespaces);
+		this(context.base,context.namespaces);
 	}
 
 	@Override
 	public URI getBase() {
 		return this.base;
-	}
-
-	@Override
-	public ResourceResolver getResourceResolver() {
-		return this.resourceResolver;
 	}
 
 	@Override
@@ -68,20 +62,14 @@ public final class ImmutableContext implements Context {
 		return copy;
 	}
 
-	public ImmutableContext setResourceResolver(ResourceResolver resourceResolver) {
-		ImmutableContext copy=new ImmutableContext(this);
-		copy.resourceResolver=resourceResolver;
-		return copy;
-	}
-
 	public ImmutableContext setNamespaces(Namespaces namespaces) {
 		ImmutableContext copy=new ImmutableContext(this);
 		copy.namespaces=new Namespaces(namespaces);
 		return copy;
 	}
 
-	public static ImmutableContext newInstance(URI base, ResourceResolver resolver) {
-		return new ImmutableContext(base,resolver, new Namespaces());
+	public static ImmutableContext newInstance(URI base) {
+		return new ImmutableContext(base,new Namespaces());
 	}
 
 }

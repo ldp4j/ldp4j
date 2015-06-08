@@ -28,7 +28,7 @@ package org.ldp4j.server;
 
 import java.util.Date;
 
-import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.server.commands.xml.CreateEndpoint;
 import org.ldp4j.server.commands.xml.EndpointConfiguration.Capabilities;
 import org.ldp4j.server.commands.xml.EntityType;

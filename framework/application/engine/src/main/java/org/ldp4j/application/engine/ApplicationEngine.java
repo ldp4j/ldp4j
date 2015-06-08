@@ -539,6 +539,28 @@ public abstract class ApplicationEngine {
 		LISTENERS.deregisterListener(listener);
 	}
 
+	/**
+	 * Return an object of the specified type to allow access to the
+	 * provider-specific API. If the provider's ApplicationEngine implementation
+	 * does not support the specified class, the ApplicationEngineException is
+	 * thrown.
+	 *
+	 * @param clazz
+	 *            the class of the object to be returned. This is normally
+	 *            either the underlying {@code ApplicationEngine} implementation
+	 *            class or an interface that it implements.
+	 * @return an instance of the specified class
+	 * @throws ApplicationEngineException
+	 *             if the provider does not support the call
+	 */
+	public <T> T unwrap(Class<? extends T> clazz) throws ApplicationEngineException {
+		checkNotNull(clazz,"Target class cannot be null");
+		if(!clazz.isInstance(this)) {
+			throw new ApplicationEngineException("Application Engine implementation is not compatible with "+clazz.getCanonicalName());
+		}
+		return clazz.cast(this);
+	}
+
 	private static class DefaultApplicationEngine extends ApplicationEngine {
 
 		private static final String ERROR_MESSAGE=

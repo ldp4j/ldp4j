@@ -30,7 +30,7 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
 
-import org.ldp4j.application.domain.LDP;
+import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.Term;
 
 import com.google.common.base.Objects;

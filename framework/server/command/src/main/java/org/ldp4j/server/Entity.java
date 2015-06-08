@@ -26,25 +26,25 @@
  */
 package org.ldp4j.server;
 
+import java.io.IOException;
+import java.net.URI;
+
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.server.data.Context;
-import org.ldp4j.server.spi.ContentTransformationException;
-
 public interface Entity {
-	
+
 	boolean isEmpty();
-	
+
 	/**
-	 * 
+	 *
 	 * @param variant
 	 * @param context
 	 * @return
-	 * @throws ContentTransformationException 
+	 * @throws IOException
 	 * @throws UnsupportedMediaTypeException
 	 *             if the entity cannot be serialized to the specified media
 	 *             type.
 	 */
-	String serialize(Variant variant, Context context) throws ContentTransformationException;
+	String serialize(Variant variant, URI base, ResourceIndex index) throws IOException;
 
 }

@@ -30,8 +30,8 @@ import java.net.URI;
 
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.vocabulary.LDP;
+import org.ldp4j.application.vocabulary.RDF;
 import org.ldp4j.server.resources.MembershipAwareContainer;
 import org.ldp4j.server.resources.MembershipRelation;
 import org.ldp4j.server.resources.ResourceType;

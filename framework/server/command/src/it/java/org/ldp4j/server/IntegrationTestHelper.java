@@ -51,11 +51,12 @@ import org.jboss.shrinkwrap.api.spec.JavaArchive;
 import org.ldp4j.server.commands.Command;
 import org.ldp4j.server.commands.CommandDescription;
 import org.ldp4j.server.commands.CommandDescriptionUtil;
-import org.ldp4j.server.impl.RDFXMLMediaTypeProvider;
-import org.ldp4j.server.impl.RuntimeInstanceImpl;
-import org.ldp4j.server.impl.TurtleMediaTypeProvider;
-import org.ldp4j.server.spi.IMediaTypeProvider;
-import org.ldp4j.server.spi.RuntimeInstance;
+import org.ldp4j.server.data.impl.CoreRuntimeDelegate;
+import org.ldp4j.server.data.impl.JSONLDMediaTypeProvider;
+import org.ldp4j.server.data.impl.RDFXMLMediaTypeProvider;
+import org.ldp4j.server.data.impl.TurtleMediaTypeProvider;
+import org.ldp4j.server.data.spi.MediaTypeProvider;
+import org.ldp4j.server.data.spi.RuntimeDelegate;
 import org.slf4j.Logger;
 
 import com.google.common.base.Joiner;
@@ -191,8 +192,8 @@ public final class IntegrationTestHelper {
 				addPackages(true, "org.ldp4j.server").
 				addAsResource(ClassLoader.getSystemResource("web-fragment.xml"), "META-INF/web-fragment.xml").
 				addAsResource(ClassLoader.getSystemResource("beans.xml"), "beans.xml").
-				addAsServiceProvider(RuntimeInstance.class, RuntimeInstanceImpl.class).
-				addAsServiceProvider(IMediaTypeProvider.class,TurtleMediaTypeProvider.class,RDFXMLMediaTypeProvider.class);
+				addAsServiceProvider(RuntimeDelegate.class, CoreRuntimeDelegate.class).
+				addAsServiceProvider(MediaTypeProvider.class,TurtleMediaTypeProvider.class,RDFXMLMediaTypeProvider.class,JSONLDMediaTypeProvider.class);
 		return coreArchive;
 	}
 

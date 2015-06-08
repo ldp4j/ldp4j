@@ -33,10 +33,10 @@
 	xmlns="http://java.sun.com/xml/ns/javaee"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="
-		http://java.sun.com/xml/ns/javaee 
+		http://java.sun.com/xml/ns/javaee
 		http://www.oracle.com/webfolder/technetwork/jsc/xml/ns/javaee/web-fragment_3_0.xsd">
 
-	<display-name>LDP4j Server</display-name>
+	<display-name>LDP4j Server Frontend</display-name>
 
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
@@ -50,8 +50,8 @@
 	</listener>
 
 	<servlet>
-		<display-name>CXF Servlet</display-name>
-		<servlet-name>CXFServlet</servlet-name>
+		<display-name>LDP4j Frontend Server Servlet</display-name>
+		<servlet-name>LDP4jFrontendServerServlet</servlet-name>
 		<servlet-class>
 			org.apache.cxf.transport.servlet.CXFServlet
 		</servlet-class>
@@ -62,12 +62,12 @@
 		<init-param>
 			<param-name>static-resources-list</param-name>
 			<param-value>/index.html</param-value>
-		</init-param> 
+		</init-param>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>CXFServlet</servlet-name>
+		<servlet-name>LDP4jFrontendServerServlet</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
 

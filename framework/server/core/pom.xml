@@ -59,6 +59,7 @@
 		<version.org.apache.tomcat>7.0.20</version.org.apache.tomcat>
 		<version.org.eclipse.jdt.core.compiler>3.7</version.org.eclipse.jdt.core.compiler>
 		<spring.version>3.0.7.RELEASE</spring.version>
+		<spring.osgi.version>1.2.0</spring.osgi.version>
 		<reflections.version>0.9.8</reflections.version>
 		<httpcomponents.client.version>4.3.3</httpcomponents.client.version>
 	</properties>
@@ -108,6 +109,12 @@
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-depchain</artifactId>
 			<type>pom</type>
+			<exclusions>
+				<exclusion>
+					<groupId>xml-apis</groupId>
+					<artifactId>xml-apis</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -156,6 +163,40 @@
 			<version>${spring.version}</version>
 		</dependency>
 
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>${spring.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.felix</groupId>
+			<artifactId>org.osgi.core</artifactId>
+			<version>1.0.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.osgi</groupId>
+			<artifactId>spring-osgi-core</artifactId>
+			<version>${spring.osgi.version}</version>
+			<scope>test</scope>
+			<exclusions>
+				<exclusion>
+					<artifactId>
+						com.springsource.org.aopalliance
+					</artifactId>
+					<groupId>org.aopalliance</groupId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.osgi</groupId>
+			<artifactId>spring-osgi-io</artifactId>
+			<version>${spring.osgi.version}</version>
+			<scope>test</scope>
+		</dependency>
+
 		<!-- Required for testing -->
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
@@ -166,13 +207,6 @@
 			<groupId>org.ldp4j.commons</groupId>
 			<artifactId>ldp4j-commons-testing</artifactId>
 			<version>${project.version}</version>
-			<scope>test</scope>
-		</dependency>
-		<!-- TODO: Extract integration testing stuff to its own module -->
-		<dependency>
-			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-server-impl</artifactId>
-			<type>test-jar</type>
 			<scope>test</scope>
 		</dependency>
 
@@ -386,10 +420,8 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
 					<systemPropertyVariables>
-						<!-- org.ldp4j.testing.categories.logging.setup>true</org.ldp4j.testing.categories.logging.setup -->
-						<!-- org.ldp4j.testing.categories.logging.archive>true</org.ldp4j.testing.categories.logging.archive -->
-						<!-- org.ldp4j.server.bootstrap.logging.initialization>true</org.ldp4j.server.bootstrap.logging.initialization-->
-						<!-- org.ldp4j.server.bootstrap.logging.shutdown>true</org.ldp4j.server.bootstrap.logging.shutdown -->
+						<!-- org.ldp4j.testing.logging.setup>true</org.ldp4j.testing.logging.setup -->
+						<!-- org.ldp4j.testing.logging.archive>true</org.ldp4j.testing.logging.archive -->
 						<!-- org.ops4j.pax.url.mvn.localRepository>${settings.localRepository}</org.ops4j.pax.url.mvn.localRepository -->
 						<!-- org.ops4j.pax.url.mvn.settings>${basedir}/target/test-classes/settings.xml</org.ops4j.pax.url.mvn.settings -->
 						<arquillian.launch>tomcat-cluster</arquillian.launch>

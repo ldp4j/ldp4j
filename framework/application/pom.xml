@@ -63,6 +63,7 @@
 		<module>api</module>
 		<module>engine</module>
 		<module>data</module>
+		<module>util</module>
 		<module>examples</module>
 		<module>persistency</module>
 		<module>core</module>

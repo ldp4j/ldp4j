@@ -74,7 +74,9 @@ public class URIDescriberTest {
 	public void testDescribe() {
 		for(Entry<String, URIDescriptor> entry:candidateMap.entrySet()) {
 			URI candidate = URI.create(entry.getKey());
-			assertThat("Evaluation failed ["+candidate+"]",sut.describe(candidate),equalTo(entry.getValue()));
+			URIDescriptor result = sut.describe(candidate);
+			System.out.printf("%s.describe(%s): %s%n",sut,candidate,result);
+			assertThat("Evaluation failed ["+candidate+"]",result,equalTo(entry.getValue()));
 		}
 	}
 

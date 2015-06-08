@@ -26,6 +26,7 @@
  */
 package org.ldp4j.server.resources.impl;
 
+import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
 
@@ -37,30 +38,31 @@ import org.ldp4j.application.data.Individual;
 import org.ldp4j.server.Entity;
 import org.ldp4j.server.ResourceIndex;
 import org.ldp4j.server.UnsupportedMediaTypeException;
-import org.ldp4j.server.data.Context;
-import org.ldp4j.server.data.ImmutableContext;
-import org.ldp4j.server.spi.ContentTransformationException;
-import org.ldp4j.server.spi.IMediaTypeProvider;
-import org.ldp4j.server.spi.RuntimeInstance;
+import org.ldp4j.server.data.DataTransformator;
 
 public final class EntityFactory {
 
 	private static final class BaseEntity implements Entity {
 
 		private final DataSet dataSet;
+		private final URI applicationBase;
 
-		protected BaseEntity(DataSet dataSet) {
+		protected BaseEntity(DataSet dataSet, URI applicationBase) {
 			this.dataSet = dataSet;
+			this.applicationBase = applicationBase;
 		}
 
 		@Override
-		public String serialize(Variant variant, Context context) throws ContentTransformationException {
+		public String serialize(Variant variant, URI base, ResourceIndex index) throws IOException {
 			MediaType type = variant.getMediaType();
-			IMediaTypeProvider provider = RuntimeInstance.getInstance().getMediaTypeProvider(type);
-			if(provider!=null){
-				return provider.newMarshaller(context).marshall(dataSet, type);
-			}
-			throw new UnsupportedMediaTypeException("Could not serialize entity to '"+type+"'",type);
+			return
+				DataTransformator.
+					create(this.applicationBase).
+						enableResolution(index).
+						permanentEndpoint(base).
+						mediaType(type).
+						namespaces(null).
+						marshall(dataSet);
 		}
 
 		@Override
@@ -75,31 +77,43 @@ public final class EntityFactory {
 	}
 
 	private final ResourceIndex index;
+	private URI applicationBase;
 
-	public EntityFactory(ResourceIndex index) {
+	public EntityFactory(ResourceIndex index, URI applicationBase) {
 		if(index==null) {
 			throw new IllegalArgumentException("Object 'index' cannot be null");
 		}
+		if(applicationBase==null) {
+			throw new IllegalArgumentException("Object 'applicationBase' cannot be null");
+		}
 		this.index = index;
+		this.applicationBase = applicationBase;
 	}
-	
+
 	/**
-	 * 
+	 *
 	 * @param content
 	 * @param type
-	 * @param base 
+	 * @param base
 	 * @return
-	 * @throws ContentTransformationException 
+	 * @throws IOException
 	 * @throws UnsupportedMediaTypeException
 	 */
-	public Entity createEntity(final String content, final MediaType type, URI base) throws ContentTransformationException {
-		IMediaTypeProvider provider = RuntimeInstance.getInstance().getMediaTypeProvider(type);
-		if(provider==null){
-			throw new UnsupportedMediaTypeException("Could not create entity for unsupported media type '"+type+"'",type);
+	public Entity createEntity(final String content, final MediaType type, URI base) throws IOException {
+		try {
+			DataSet dataSet=
+				DataTransformator.
+					create(this.applicationBase).
+					enableResolution(index).
+					surrogateEndpoint(base).
+					mediaType(type).
+					unmarshall(content);
+			return createEntity(dataSet,this.applicationBase);
+		} catch (org.ldp4j.server.data.UnsupportedMediaTypeException e) {
+			throw new UnsupportedMediaTypeException("Could not create entity",type);
 		}
-		return createEntity(provider.newUnmarshaller(ImmutableContext.newInstance(base, index)).unmarshall(content,type));
 	}
-	
+
 	/**
 	 * Creates a new DelegatedSnapshot object.
 	 *
@@ -110,12 +124,12 @@ public final class EntityFactory {
 	 * @throws UnsupportedMediaTypeException the unsupported media type exception
 	 * @throws ContentTransformationException the content transformation exception
 	 */
-	public Entity createEntity(byte[] content, Charset charset, MediaType type, URI base) throws ContentTransformationException {
+	public Entity createEntity(byte[] content, Charset charset, MediaType type, URI base) throws IOException {
 		return createEntity(new String(content,charset),type,base);
 	}
 
-	public static Entity createEntity(DataSet content) {
-		return new BaseEntity(content);
+	public static Entity createEntity(DataSet content, URI applicationBase) {
+		return new BaseEntity(content,applicationBase);
 	}
-	
+
 }

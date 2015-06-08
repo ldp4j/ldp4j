@@ -60,9 +60,9 @@ import org.ldp4j.commons.testing.categories.HappyPath;
 import org.ldp4j.commons.testing.categories.LDP;
 import org.ldp4j.commons.testing.categories.Setup;
 import org.ldp4j.example.MyApplication;
-import org.ldp4j.server.ServerFrontendTestHelper;
-import org.ldp4j.server.ServerFrontendTestHelper.Metadata;
-import org.ldp4j.server.testing.TestingApplicationBuilder;
+import org.ldp4j.server.testing.ServerFrontendTestHelper;
+import org.ldp4j.server.testing.ServerFrontendWebAppBuilder;
+import org.ldp4j.server.testing.ServerFrontendTestHelper.Metadata;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -73,19 +73,19 @@ public class ServerFrontendITest {
 
 	private static ServerFrontendTestHelper HELPER;
 
-	private static final String EXAMPLE_BODY = 
+	private static final String EXAMPLE_BODY =
 		"@prefix sav : <http://test/vocab#> ."+NL+
 		"<> a sav:Inference ;"+NL+
 		"	sav:uses <dataSet1>, <vocabulary1> .";
-	
-	private static final String TEST_SUITE_BODY = 
+
+	private static final String TEST_SUITE_BODY =
 		"<> a <http://www.w3.org/ns/ldp#RDFSource> , <http://example.com/ns#Bug> ;"+NL+
 		"\t<http://example.com/ns#refersTo> <relativeResource> ;"+NL+
 		"\t<http://example.com/ns#severity> \"High\" ;"+NL+
 		"\t<http://purl.org/dc/terms/description>  \"Issues that need to be fixed.\" ;"+NL+
 		"\t<http://purl.org/dc/terms/title> \"Another bug to test.\" .";
 
-			 
+
 	private static final String DEPLOYMENT = "ldp4j-server-core";
 	private static final String CONTROL_PHRASE = "Hello from Tomcat 7.0.20 ("+DEPLOYMENT+")";
 	private static final Logger LOGGER=LoggerFactory.getLogger(ServerFrontendITest.class);
@@ -93,21 +93,20 @@ public class ServerFrontendITest {
 	@Deployment(name=DEPLOYMENT, testable=false)
 	@TargetsContainer("tomcat-7.0.20")
 	public static WebArchive createLinkedDataPlatformServerWar() {
-		return 
-			new TestingApplicationBuilder().
-				excludeMiddleware().
+		return
+			new ServerFrontendWebAppBuilder().
 				withControlPhrase(CONTROL_PHRASE).
 				withDeployableName(DEPLOYMENT.concat(".war")).
 				withWebXml("web.xml").
 				withPom("pom.xml").
 				build(ServerFrontendTestHelper.getServerArchive());
 	}
-	
+
 	@BeforeClass
 	public static void setUpClass() throws Exception {
 		HELPER=new ServerFrontendTestHelper(LOGGER);
 	}
-	
+
 	@AfterClass
 	public static void tearDownClass() throws Exception {
 		if(HELPER!=null) {
@@ -119,7 +118,7 @@ public class ServerFrontendITest {
 	public void setUp() {
 		HELPER.setLegacy(true);
 	}
-	
+
 	// -------------------------------------------------------------------------
 	// Deployment verification
 	// -------------------------------------------------------------------------
@@ -294,5 +293,5 @@ public class ServerFrontendITest {
 		HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
 		HELPER.httpRequest(get);
 	}
-	
+
 }

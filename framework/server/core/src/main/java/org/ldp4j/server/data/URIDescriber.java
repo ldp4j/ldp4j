@@ -34,8 +34,10 @@ import java.net.URI;
 import org.ldp4j.server.data.URIDescriptor.Scope;
 import org.ldp4j.server.data.URIDescriptor.Type;
 
+import com.google.common.base.Objects;
+
 final class URIDescriber {
-	
+
 	private static final String ANCESTOR_SEGMENT = "..";
 	private static final URI SELF_URI = URI.create("");
 	private final URI application;
@@ -81,7 +83,16 @@ final class URIDescriber {
 		}
 		return URIDescriptor.newDescriptor(scope, type);
 	}
-	
+
+	public String toString() {
+		return
+			Objects.
+				toStringHelper(getClass()).
+					add("application",this.application).
+					add("endpoint",this.endpoint).
+					toString();
+	}
+
 	static URIDescriber newInstance(URI application, URI endpoint) {
 		checkNotNull(application,"Application URI cannot be null");
 		checkNotNull(endpoint,"Endpoint URI cannot be null");

@@ -26,6 +26,10 @@
  */
 package org.ldp4j.server.data;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.notNullValue;
+
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
@@ -39,9 +43,6 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.data.RelativeIndividualId;
-
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
 
 public class DataTransformatorTest {
 
@@ -111,24 +112,19 @@ public class DataTransformatorTest {
 				surrogateEndpoint(URI.create("api/basic_container/")).
 				enableResolution(
 					new ResourceResolver() {
-
-					@Override
-					public URI resolveResource(ManagedIndividualId id) {
-						// TODO Auto-generated method stub
-						return null;
+						@Override
+						public URI resolveResource(ManagedIndividualId id) {
+							return null;
+						}
+						@Override
+						public ManagedIndividualId resolveLocation(URI path) {
+							return null;
+						}
 					}
-
-					@Override
-					public ManagedIndividualId resolveLocation(URI path) {
-						// TODO Auto-generated method stub
-						return null;
-					}
-				}).
+				).
 				mediaType(new MediaType("text","turtle"));
 
-		DataSet dataSet = sut.unmarshall(loadResource("/data/public-uri-clash.ttl"));
-		String data=sut.marshall(dataSet);
-		assertThat(data,notNullValue());
+		sut.unmarshall(loadResource("/data/public-uri-clash.ttl"));
 	}
 
 	@Test

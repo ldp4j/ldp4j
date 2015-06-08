@@ -84,7 +84,11 @@ public class URIResolverTest {
 	public void testResolve() {
 		for(int i=0;i<candidates.length;i++) {
 			String candidate = candidates[i];
-			assertThat("Resolution failed ["+i+"]",sut.resolve(endpoint.resolve(candidate), alternative.resolve(candidate)).toString(),equalTo(candidate));
+			URI erCandidate = endpoint.resolve(candidate);
+			URI arCandidate = alternative.resolve(candidate);
+			URI rCandidate = sut.resolve(erCandidate, arCandidate);
+			System.out.printf("<%s> %s.resolve(<%s>,<%s>): <%s>%n",candidate,sut,erCandidate,arCandidate,rCandidate);
+			assertThat("Resolution failed ["+i+"]",rCandidate.toString(),equalTo(candidate));
 		}
 	}
 

@@ -1,0 +1,3 @@
+org.ldp4j.server.data.impl.TurtleMediaTypeProvider
+org.ldp4j.server.data.impl.RDFXMLMediaTypeProvider
+org.ldp4j.server.data.impl.JSONLDMediaTypeProvider

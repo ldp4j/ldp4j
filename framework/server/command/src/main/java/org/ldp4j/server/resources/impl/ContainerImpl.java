@@ -33,8 +33,8 @@ import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.vocabulary.LDP;
+import org.ldp4j.application.vocabulary.RDF;
 import org.ldp4j.server.resources.Container;
 import org.ldp4j.server.resources.Resource;
 import org.ldp4j.server.resources.ResourceType;

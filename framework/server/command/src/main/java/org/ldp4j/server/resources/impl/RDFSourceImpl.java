@@ -27,8 +27,8 @@
 package org.ldp4j.server.resources.impl;
 
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.domain.LDP;
-import org.ldp4j.application.domain.RDF;
+import org.ldp4j.application.vocabulary.LDP;
+import org.ldp4j.application.vocabulary.RDF;
 import org.ldp4j.server.resources.RDFSource;
 import org.ldp4j.server.resources.ResourceType;
 

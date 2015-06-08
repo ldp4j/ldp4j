@@ -88,7 +88,7 @@ public final class ServerFrontend {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ServerFrontend.class);
 
-	public static final String PATH="/api";
+	public static final String PATH="/";
 
 	private static final String ENDPOINT_PATH_PARAM = "path";
 	private static final String ENDPOINT_PATH = "/{"+ENDPOINT_PATH_PARAM+":.*}";

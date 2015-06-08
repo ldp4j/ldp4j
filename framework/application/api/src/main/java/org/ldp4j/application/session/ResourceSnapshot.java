@@ -34,19 +34,23 @@ import org.ldp4j.application.ext.ResourceHandler;
 public interface ResourceSnapshot {
 
 	Name<?> name();
-	
+
+	String templateId();
+
+	Class<? extends ResourceHandler> handlerClass();
+
 	boolean isRoot();
-	
+
 	ResourceSnapshot parent();
 
 	Set<? extends AttachmentSnapshot> attachments();
-	
+
 	AttachmentSnapshot attachmentByResource(ResourceSnapshot resource);
 
 	AttachmentSnapshot attachmentById(String attachmentId);
 
 	<T extends ResourceSnapshot> T createAttachedResource(Class<? extends T> snapshotClass, String attachmentId, Name<?> name, Class<? extends ResourceHandler> handlerClass);
-	
+
 	boolean removeAttachment(AttachmentSnapshot attachment);
 
 	void accept(SnapshotVisitor visitor);

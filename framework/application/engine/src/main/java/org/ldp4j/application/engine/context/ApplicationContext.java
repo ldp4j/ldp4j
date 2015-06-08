@@ -27,12 +27,15 @@
 package org.ldp4j.application.engine.context;
 
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
+import org.ldp4j.application.ext.Namespaces;
 
 public interface ApplicationContext {
 
 	String applicationName();
 
 	String applicationClassName();
+
+	Namespaces applicationNamespaces();
 
 	ApplicationContextOperation createOperation(HttpRequest request);
 

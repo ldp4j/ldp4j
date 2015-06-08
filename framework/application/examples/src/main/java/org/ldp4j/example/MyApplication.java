@@ -55,7 +55,7 @@ public class MyApplication extends Application<Configuration> {
 	private static final String PERSON_CONTAINER_NAME    = "PersonContainer";
 	private static final String PERSON_RESOURCE_NAME     = "PersonResource";
 	private static final String RELATIVE_CONTAINER_NAME  = "RelativeContainer";
-	
+
 	public static final String ROOT_PERSON_RESOURCE_PATH  = "rootPersonResource/";
 	public static final String ROOT_PERSON_CONTAINER_PATH = "rootPersonContainer/";
 
@@ -64,7 +64,7 @@ public class MyApplication extends Application<Configuration> {
 	private final Name<String> personResourceName;
 	private final Name<String> personContainerName;
 	private final Name<String> relativeContainerName;
-	
+
 	public MyApplication() {
 		this.personResourceName = NamingScheme.getDefault().name(PERSON_RESOURCE_NAME);
 		this.personContainerName = NamingScheme.getDefault().name(PERSON_CONTAINER_NAME);

@@ -126,6 +126,8 @@ final class OperationContextImpl implements OperationContext {
 		this.headers=headers;
 		this.request=request;
 		this.entity = entity;
+		LOGGER.trace("Base.........: {}",base());
+		LOGGER.trace("Endpoint.....: {}",endpoint());
 	}
 
 	private Variant contentVariant() {
@@ -201,15 +203,12 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public URI base() {
-		String path=this.uriInfo.getPath();
-		String prefix="/"+path.substring(0,path.indexOf('/')+1);
-		return URI.create(this.uriInfo.getBaseUri().toString().concat(prefix));
+		return URI.create(this.uriInfo.getBaseUri().toString().concat("/"));
 	}
 
 	@Override
 	public String path() {
-		String path=this.uriInfo.getPath();
-		return path.substring(path.indexOf('/')+1);
+		return this.endpointPath;
 	}
 
 	@Override
@@ -406,6 +405,16 @@ final class OperationContextImpl implements OperationContext {
 			}
 		}
 		return result;
+	}
+
+	@Override
+	public Namespaces applicationNamespaces() {
+		org.ldp4j.application.ext.Namespaces applicationNamespaces = this.applicationContext.applicationNamespaces();
+		Namespaces namespaces = new Namespaces();
+		for(String prefix:applicationNamespaces.getDeclaredPrefixes()) {
+			namespaces.addPrefix(prefix, applicationNamespaces.getNamespaceURI(prefix));
+		}
+		return namespaces;
 	}
 
 	@Override

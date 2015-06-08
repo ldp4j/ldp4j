@@ -99,11 +99,11 @@
 		<commons.collections.version>3.2.1</commons.collections.version>
 		<commons.httpclient.version>3.1</commons.httpclient.version>
 		<commons.lang3.version>3.1</commons.lang3.version>
-		<hsqldb.version>2.2.9</hsqldb.version>
+		<hsqldb.version>2.3.2</hsqldb.version>
 		<jsr311.api.version>1.1.1</jsr311.api.version>
 		<jtidy.version>r938</jtidy.version>
-		<hibernate.version>4.1.7.Final</hibernate.version>
-		<dbunit.version>2.4.9</dbunit.version>
+		<hibernate.version>4.3.8.Final</hibernate.version>
+		<dbunit.version>2.5.0</dbunit.version>
 		<sesame.version>2.2.4</sesame.version>
 		<jaxb2-basics-runtime.version>0.6.3</jaxb2-basics-runtime.version>
 		<xalan.version>2.7.1</xalan.version>
@@ -1013,6 +1013,19 @@
 											<goal>
 												prepare-agent-integration
 											</goal>
+										</goals>
+									</pluginExecutionFilter>
+									<action>
+										<ignore></ignore>
+									</action>
+								</pluginExecution>
+								<pluginExecution>
+									<pluginExecutionFilter>
+										<groupId>org.apache.maven.plugins</groupId>
+										<artifactId>maven-enforcer-plugin</artifactId>
+										<versionRange>[1.0,)</versionRange>
+										<goals>
+											<goal>enforce</goal>
 										</goals>
 									</pluginExecutionFilter>
 									<action>
