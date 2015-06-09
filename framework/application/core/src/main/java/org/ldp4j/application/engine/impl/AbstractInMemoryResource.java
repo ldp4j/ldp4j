@@ -29,8 +29,8 @@ package org.ldp4j.application.engine.impl;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 abstract class AbstractInMemoryResource {
 
@@ -53,7 +53,7 @@ abstract class AbstractInMemoryResource {
 
 	protected ToStringHelper stringHelper() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues();
 	}

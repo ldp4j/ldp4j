@@ -28,7 +28,7 @@ package org.ldp4j.server.data;
 
 import java.net.URI;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 final class ResourceResolutionFactory {
 
@@ -60,7 +60,7 @@ final class ResourceResolutionFactory {
 		@Override
 		public String toString() {
 			return
-				Objects.
+				MoreObjects.
 					toStringHelper(getClass()).
 						omitNullValues().
 						add("resolvable",descriptor.isResolvable()).
@@ -91,7 +91,7 @@ final class ResourceResolutionFactory {
 		@Override
 		public String toString() {
 			return
-				Objects.
+				MoreObjects.
 					toStringHelper(getClass()).
 						toString();
 		}

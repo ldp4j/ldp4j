@@ -47,19 +47,19 @@ import static com.google.common.base.Preconditions.*;
 public final class Validator {
 
 	private final static Logger LOGGER=LoggerFactory.getLogger(Validator.class);
-	
+
 	private static final class ValidationReportImpl implements ValidationReport {
-	
+
 		private final List<ValidationLog> logs;
 		private final List<ValidationConstraint<?>> unchecked;
 		private boolean valid;
-		
+
 		private ValidationReportImpl() {
 			this.logs=Lists.newArrayList();
 			this.unchecked=Lists.newArrayList();
 			this.valid=true;
 		}
-		
+
 		@Override
 		public Collection<ValidationFailure> validationFailures() {
 			List<ValidationFailure> failures=Lists.newArrayList();
@@ -71,7 +71,7 @@ public final class Validator {
 			}
 			return Collections.unmodifiableList(failures);
 		}
-	
+
 		private void addValidationLog(ValidationLog log) {
 			checkNotNull(log,"Validation log cannot be null");
 			this.logs.add(log);
@@ -83,18 +83,18 @@ public final class Validator {
 			this.unchecked.add(constraint);
 			this.valid=false;
 		}
-	
+
 		@Override
 		public boolean isValid() {
 			return this.valid;
 		}
-		
+
 	}
 
 	private final Collection<ValidationConstraint<DataSet>> dataSetVC;
 	private final Collection<ValidationConstraint<Individual<?,?>>> individualVC;
 	private final Collection<ValidationConstraint<Property>> propertyVC;
-	
+
 	private final Set<ValidationConstraint<?>> checkedVC;
 
 	private Validator() {
@@ -103,7 +103,7 @@ public final class Validator {
 		this.propertyVC=Lists.newArrayList();
 		this.checkedVC=Sets.newIdentityHashSet();
 	}
-	
+
 	public ValidationReport validate(DataSet dataSet) {
 		checkNotNull(dataSet,"Data set cannot be null");
 		ValidationReportImpl report=new ValidationReportImpl();
@@ -131,7 +131,7 @@ public final class Validator {
 			}
 		}
 	}
-	
+
 	private void verifyValidationConstraints(ValidationReportImpl report) {
 		if(LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Started verifying validation constraints...");
@@ -182,7 +182,7 @@ public final class Validator {
 			}
 		}
 	}
-	
+
 	private <T> String format(T item) {
 		String result=item.toString();
 		if(item instanceof DataSet) {
@@ -194,7 +194,7 @@ public final class Validator {
 		}
 		return result;
 	}
-	
+
 	private void setDataSetValidationConstraints(Collection<ValidationConstraint<DataSet>> constraints) {
 		this.dataSetVC.addAll(constraints);
 	}
@@ -202,7 +202,7 @@ public final class Validator {
 	private void setIndividualValidationConstraints(Collection<ValidationConstraint<Individual<?,?>>> constraints) {
 		this.individualVC.addAll(constraints);
 	}
-	
+
 	private void setPropertyValidationConstraints(Collection<ValidationConstraint<Property>> constraints) {
 		this.propertyVC.addAll(constraints);
 	}
@@ -210,28 +210,25 @@ public final class Validator {
 	public static ValidatorBuilder builder() {
 		return new ValidatorBuilder();
 	}
-	
+
 	public static final class ValidatorBuilder {
-		
+
 		private final Validator helper;
-		
+
 		private ValidatorBuilder() {
 			this.helper=new Validator();
 		}
-		
-		@SuppressWarnings("unchecked")
+
 		public ValidatorBuilder withDataSetConstraint(ValidationConstraint<DataSet> constraints) {
 			this.helper.setDataSetValidationConstraints(Arrays.asList(constraints));
 			return this;
 		}
-		
-		@SuppressWarnings("unchecked")
+
 		public ValidatorBuilder withIndividualConstraint(ValidationConstraint<Individual<?,?>> constraints) {
 			this.helper.setIndividualValidationConstraints(Arrays.asList(constraints));
 			return this;
 		}
 
-		@SuppressWarnings("unchecked")
 		public ValidatorBuilder withPropertyConstraint(ValidationConstraint<Property> constraints) {
 			this.helper.setPropertyValidationConstraints(Arrays.asList(constraints));
 			return this;
@@ -240,7 +237,7 @@ public final class Validator {
 		public Validator build() {
 			return this.helper;
 		}
-		
+
 	}
-	
+
 }

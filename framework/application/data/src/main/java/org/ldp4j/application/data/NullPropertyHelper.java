@@ -30,7 +30,7 @@ import java.net.URI;
 
 import org.ldp4j.application.vocabulary.Term;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 final class NullPropertyHelper implements PropertyHelper {
 
@@ -86,7 +86,7 @@ final class NullPropertyHelper implements PropertyHelper {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("propertyId", this.propertyId).
 					toString();

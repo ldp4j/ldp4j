@@ -48,8 +48,8 @@ import org.ldp4j.application.ext.ResourceHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 class DelegatedResourceSnapshot implements ResourceSnapshot {
 
@@ -292,7 +292,7 @@ class DelegatedResourceSnapshot implements ResourceSnapshot {
 
 	protected ToStringHelper stringHelper() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("resourceId",this.resourceId).

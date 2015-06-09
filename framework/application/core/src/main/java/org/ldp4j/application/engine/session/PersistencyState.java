@@ -52,8 +52,8 @@ import org.ldp4j.application.session.ResourceSnapshot;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 abstract class PersistencyState {
 
@@ -615,7 +615,7 @@ abstract class PersistencyState {
 
 	@Override
 	public final String toString() {
-		ToStringHelper helper=Objects.toStringHelper(getClass());
+		ToStringHelper helper=MoreObjects.toStringHelper(getClass());
 		toString(helper);
 		return helper.toString();
 	}

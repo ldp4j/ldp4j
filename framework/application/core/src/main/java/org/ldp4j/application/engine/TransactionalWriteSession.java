@@ -34,7 +34,7 @@ import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 final class TransactionalWriteSession implements WriteSession {
 	private final Transaction transaction;
@@ -80,7 +80,7 @@ final class TransactionalWriteSession implements WriteSession {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("transaction",transaction).
 					add("delegate",delegate).

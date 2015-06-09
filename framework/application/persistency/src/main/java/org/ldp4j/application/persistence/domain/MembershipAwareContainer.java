@@ -34,7 +34,7 @@ import javax.persistence.*;
 
 import org.ldp4j.application.persistence.domain.Container;
 
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 /**
  * Entity implementation class for Entity: MembershipAwareContainer

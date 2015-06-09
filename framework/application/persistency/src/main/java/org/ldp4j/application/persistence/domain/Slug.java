@@ -36,7 +36,7 @@ import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 @Entity
 @IdClass(SlugId.class)
@@ -95,7 +95,7 @@ public class Slug {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("container",DomainHelper.identifyEntity(this.container)).

@@ -39,7 +39,7 @@ import javax.persistence.NamedQuery;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 @Entity
 @NamedQueries({
@@ -118,7 +118,7 @@ public class Failure {
 	@Override
 	public final String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("id",this.id).

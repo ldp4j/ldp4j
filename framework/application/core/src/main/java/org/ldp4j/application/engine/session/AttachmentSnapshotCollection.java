@@ -41,53 +41,54 @@ import org.ldp4j.application.data.Name;
 import org.ldp4j.application.engine.resource.Attachment;
 import org.ldp4j.application.engine.resource.Resource;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 final class AttachmentSnapshotCollection {
-	
+
 	static final class DelegatedAttachmentSnapshot implements AttachmentSnapshot {
-		
+
 		private final String id;
 		private final DelegatedResourceSnapshot resource;
-		
+
 		private DelegatedAttachmentSnapshot(String attachmentId, DelegatedResourceSnapshot resource) {
 			this.id = attachmentId;
 			this.resource = resource;
 		}
-		
+
 		@Override
 		public final String id() {
 			return id;
 		}
-	
+
 		@Override
 		public final DelegatedResourceSnapshot resource() {
 			return this.resource;
 		}
-	
+
 		@Override
 		public int hashCode() {
-			return 
+			return
 				System.identityHashCode(this.resource) +
 				Objects.hashCode(this.id);
 		}
-	
+
 		@Override
 		public boolean equals(Object obj) {
 			return this == obj;
 		}
-	
+
 		@Override
 		public String toString() {
-			return 
-				Objects.
+			return
+				MoreObjects.
 					toStringHelper(AttachmentSnapshot.class).
 						omitNullValues().
 						add("id", this.id).
 						add("resource.name()", this.resource.name()).
 						toString();
 		}
-	
+
 	}
 
 	public static enum Attachability {
@@ -102,21 +103,21 @@ final class AttachmentSnapshotCollection {
 		ALREADY_ATTACHED("Resource named %2$s already attached as %1$s"),
 		ATTACHMENT_COLLISION("A resource named %2$s is already attached and another resource is attached as %1$s");
 		;
-		
+
 		private final String message;
-	
+
 		Attachability(String message) {
 			this.message = message;
 		}
-		
+
 		public boolean canAttach() {
 			return false;
 		}
-		
+
 		String description(AttachmentSnapshot attachment) {
 			return String.format(message,attachment.id(),attachment.resource().name());
 		}
-		
+
 	}
 
 	private final Set<DelegatedAttachmentSnapshot> attachments;
@@ -128,13 +129,13 @@ final class AttachmentSnapshotCollection {
 		this.attachmentsByName=new LinkedHashMap<Name<?>, DelegatedAttachmentSnapshot>();
 		this.attachmentsById=new LinkedHashMap<String, DelegatedAttachmentSnapshot>();
 	}
-	
+
 	private void safeAttach(DelegatedAttachmentSnapshot attachment) {
 		attachments.add(attachment);
 		attachmentsByName.put(attachment.resource().name(),attachment);
 		attachmentsById.put(attachment.id(),attachment);
 	}
-	
+
 	void add(DelegatedAttachmentSnapshot attachment) {
 		checkNotNull(attachment,"Attachment snapshot cannot be null");
 		AttachmentSnapshotCollection.Attachability attachability = attachability(attachment.id(),attachment.resource().name());
@@ -151,7 +152,7 @@ final class AttachmentSnapshotCollection {
 		}
 		return result;
 	}
-	
+
 	Set<DelegatedAttachmentSnapshot> attachments() {
 		return Collections.unmodifiableSet(new LinkedHashSet<DelegatedAttachmentSnapshot>(attachments));
 	}
@@ -191,7 +192,7 @@ final class AttachmentSnapshotCollection {
 		}
 		return result;
 	}
-			
+
 	@Override
 	public String toString() {
 		return attachments.toString();

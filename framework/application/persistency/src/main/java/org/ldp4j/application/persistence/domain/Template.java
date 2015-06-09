@@ -43,8 +43,8 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.UniqueConstraint;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.Lists;
 
 @Entity
@@ -156,7 +156,7 @@ public abstract class Template implements Serializable {
 
 	@Override
 	public final String toString() {
-		ToStringHelper helper = Objects.toStringHelper(getClass()).omitNullValues();
+		ToStringHelper helper = MoreObjects.toStringHelper(getClass()).omitNullValues();
 		toString(helper);
 		return helper.toString();
 	}

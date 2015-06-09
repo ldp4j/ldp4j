@@ -26,6 +26,9 @@
  */
 package org.ldp4j.application.data.constraints;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.net.URI;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +37,7 @@ import java.util.Set;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Value;
 
-import com.google.common.base.Objects;
-
-import static com.google.common.base.Preconditions.*;
-
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
@@ -95,7 +95,7 @@ public final class Constraints {
 		@Override
 		public String toString() {
 			return
-				Objects.
+				MoreObjects.
 					toStringHelper(getClass()).
 						add("min", this.min).
 						add("max", this.max).
@@ -255,7 +255,7 @@ public final class Constraints {
 		@Override
 		public String toString() {
 			return
-				Objects.
+				MoreObjects.
 					toStringHelper(getClass()).
 						omitNullValues().
 						add("predicate", this.predicate).
@@ -368,7 +368,7 @@ public final class Constraints {
 		@Override
 		public String toString() {
 			return
-				Objects.
+				MoreObjects.
 					toStringHelper(getClass()).
 						omitNullValues().
 						add("label", this.label).
@@ -431,7 +431,7 @@ public final class Constraints {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("typeShapes", this.typeShapes).
 					add("nodeShapes", this.nodeShapes).

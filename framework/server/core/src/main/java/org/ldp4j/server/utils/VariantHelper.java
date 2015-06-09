@@ -43,7 +43,7 @@ public final class VariantHelper {
 	private VariantHelper(Collection<? extends Variant> supportedVariants2) {
 		this.supportedVariants = new ArrayList<Variant>(supportedVariants2);
 	}
-	
+
 	public boolean isSupported(Variant variant) {
 		boolean matched=false;
 		for(Iterator<Variant> it=supportedVariants.iterator();it.hasNext() && !matched;) {
@@ -63,23 +63,23 @@ public final class VariantHelper {
 
 	private static boolean isLanguageMatched(Locale supported, Locale required) {
 		String language = supported.getLanguage();
-		return 
-			"*".equals(language) || 
+		return
+			"*".equals(language) ||
 			language.equalsIgnoreCase(required.getLanguage());
 	}
 
 	private static boolean matches(Variant supported, Variant required) {
-		return 
-			hasMatchingMediaType(supported, required) && 
-			hasMatchingEncoding(supported, required) && 
+		return
+			hasMatchingMediaType(supported, required) &&
+			hasMatchingEncoding(supported, required) &&
 			hasMatchingLanguage(supported, required);
 	}
 
 	private static boolean hasMatchingEncoding(Variant supported, Variant required) {
 		String requiredEncoding = required.getEncoding();
 		String supportedEncoding = supported.getEncoding();
-		return 
-			requiredEncoding==null || 
+		return
+			requiredEncoding==null ||
 			supportedEncoding==null ||
 			supportedEncoding.equals(requiredEncoding);
 	}
@@ -87,17 +87,17 @@ public final class VariantHelper {
 	private static boolean hasMatchingLanguage(Variant supported, Variant required) {
 		Locale requiredLanguage = required.getLanguage();
 		Locale supportedLanguage = supported.getLanguage();
-		return 
-			requiredLanguage == null || 
-			supportedLanguage ==null || 
+		return
+			requiredLanguage == null ||
+			supportedLanguage ==null ||
 			isLanguageMatched(supportedLanguage, requiredLanguage);
 	}
 
 	private static boolean hasMatchingMediaType(Variant supported, Variant required) {
 		MediaType requiredMediaType = required.getMediaType();
 		MediaType supportedMediaType = supported.getMediaType();
-		return 
-			requiredMediaType == null || 
+		return
+			requiredMediaType == null ||
 			supportedMediaType == null ||
 			supportedMediaType.isCompatible(requiredMediaType);
 	}
@@ -105,8 +105,9 @@ public final class VariantHelper {
 	public static VariantHelper forVariants(Collection<? extends Variant> supportedVariants) {
 		return new VariantHelper(supportedVariants);
 	}
-	
-	public static <T extends Variant> VariantHelper forVariants(T... supportedVariants) {
+
+	@SafeVarargs
+	public final static <T extends Variant> VariantHelper forVariants(T... supportedVariants) {
 		return forVariants(Arrays.asList(supportedVariants));
 	}
 

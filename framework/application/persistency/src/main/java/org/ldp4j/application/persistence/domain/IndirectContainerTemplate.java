@@ -32,7 +32,7 @@ import java.net.URI;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 @Entity
 public class IndirectContainerTemplate extends MembershipAwareContainerTemplate implements Serializable {

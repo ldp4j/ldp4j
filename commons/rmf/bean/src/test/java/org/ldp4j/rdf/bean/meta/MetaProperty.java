@@ -38,12 +38,12 @@ import java.util.List;
 import org.ldp4j.rdf.bean.util.TypeUtils;
 
 public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnnotatedObject<T> {
-	
+
 	public static enum VariableScope {
 		TYPE,
 		METHOD
 		;
-	
+
 		@SuppressWarnings("unchecked")
 		static MetaProperty.VariableScope fromType(Type genericType) {
 			MetaProperty.VariableScope result=null;
@@ -60,7 +60,7 @@ public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnn
 	}
 
 	private static abstract class AbstractMetaProperty<T extends AnnotatedMember<?>> extends MetaProperty<T> {
-		
+
 		private final String name;
 		private final Class<?> type;
 		private final Type genericType;
@@ -68,6 +68,7 @@ public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnn
 		private final VariableScope scope;
 		private final AnnotatedClass<?> context;
 
+		@SafeVarargs
 		private AbstractMetaProperty(AnnotatedClass<?> context, String name, Class<?> type, Type genericType, Class<?> rawType, T... elements) {
 			this(context,name,type,genericType,rawType,Arrays.asList(elements));
 		}
@@ -127,11 +128,11 @@ public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnn
 			}
 			doSetValue(object,value);
 		}
-		
+
 		protected abstract void doSetValue(Object object, Object value);
 
 	}
-	
+
 	private static final class FieldMetaProperty extends AbstractMetaProperty<AnnotatedField> {
 
 		private final AnnotatedField field;
@@ -156,7 +157,7 @@ public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnn
 		public boolean isWritable() {
 			return field.isAccessible();
 		}
-		
+
 		@Override
 		protected void doSetValue(Object object, Object value) {
 			try {
@@ -177,7 +178,7 @@ public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnn
 		public AnnotatedField get() {
 			return field;
 		}
-		
+
 	}
 
 	private static final class MethodMetaProperty extends AbstractMetaProperty<AnnotatedMethod>  {
@@ -192,7 +193,7 @@ public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnn
 			this.actualGetter = actualGetter;
 			this.actualSetter = actualSetter;
 		}
-			
+
 		@Override
 		public Object getValue(Object object) {
 			try {
@@ -201,12 +202,12 @@ public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnn
 				throw new IllegalStateException(e);
 			}
 		}
-	
+
 		@Override
 		public boolean isWritable() {
 			return actualSetter!=null;
 		}
-		
+
 		@Override
 		protected void doSetValue(Object object, Object value) {
 			try {
@@ -236,72 +237,72 @@ public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnn
 		}
 
 	}
-	
+
 	private static final class RenamedMetaProperty<T extends AnnotatedMember<?>> extends MetaProperty<T> {
 		private final MetaProperty<T> delegate;
 		private final String newName;
-	
+
 		private RenamedMetaProperty(MetaProperty<T> delegate, String newName) {
 			super(delegate);
 			this.delegate = delegate;
 			this.newName = newName;
 		}
-	
+
 		@Override
 		public String getName() {
 			return newName;
 		}
-	
+
 		@Override
 		public VariableScope getTypeVariableScope() {
 			return getDelegate().getTypeVariableScope();
 		}
-	
+
 		@Override
 		public boolean isTypeVariable() {
 			return getDelegate().isTypeVariable();
 		}
-	
+
 		@Override
 		public Class<?> getRawType() {
 			return getDelegate().getRawType();
 		}
-	
+
 		@Override
 		public Type getGenericType() {
 			return getDelegate().getGenericType();
 		}
-	
+
 		@Override
 		public Class<?> getType() {
 			return getDelegate().getType();
 		}
-	
+
 		@Override
 		public AnnotatedClass<?> getContextType() {
 			return getDelegate().getContextType();
 		}
-	
+
 		@Override
 		public AnnotatedClass<?> getOwnerType() {
 			return getDelegate().getOwnerType();
 		}
-	
+
 		@Override
 		public Object getValue(Object object) {
 			return getDelegate().getValue(object);
 		}
-	
+
 		@Override
 		public boolean isWritable() {
 			return getDelegate().isWritable();
 		}
-	
+
 		@Override
 		public void setValue(Object object, Object value) {
 			getDelegate().setValue(object, value);
 		}
-	
+
 		@Override
 		public T get() {
 			return delegate.get();
@@ -336,7 +337,7 @@ public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnn
 	public abstract AnnotatedClass<?> getContextType();
 
 	public abstract AnnotatedClass<?> getOwnerType();
-	
+
 	public abstract Object getValue(Object object);
 
 	public abstract boolean isWritable();
@@ -373,7 +374,7 @@ public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnn
 	static MetaProperty<AnnotatedField> forField(AnnotatedClass<?> context, AnnotatedField field) {
 		return new FieldMetaProperty(context,field);
 	}
-	
+
 	static MetaProperty<AnnotatedMethod> forMethods(AnnotatedClass<?> context, List<AnnotatedMethod> methods) {
 		AnnotatedMethod actualGetter=methods.get(0);
 		String name=AnnotatedBeanUtils.getPropertyName(actualGetter);
@@ -381,7 +382,7 @@ public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnn
 		AnnotatedMethod actualSetter=AnnotatedBeanUtils.findSetter(context, name, rawType);
 		return new MethodMetaProperty(context,methods,name,rawType,actualGetter,actualSetter);
 	}
-	
+
 	static <T extends AnnotatedMember<?>> MetaProperty<T> rename(final String newName, final MetaProperty<T> property) {
 		return new RenamedMetaProperty<T>(property, newName);
 	}

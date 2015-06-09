@@ -27,6 +27,7 @@
 package org.ldp4j.server;
 
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 public final class MutableCapabilities implements Capabilities {
@@ -36,9 +37,9 @@ public final class MutableCapabilities implements Capabilities {
 	protected boolean patchable  = false;
 
 	public MutableCapabilities() {
-		
+
 	}
-	
+
 	public MutableCapabilities(boolean deletable, boolean modifiable, boolean patchable) {
 		this.deletable = deletable;
 		this.modifiable = modifiable;
@@ -89,8 +90,8 @@ public final class MutableCapabilities implements Capabilities {
 
 	@Override
 	public String toString() {
-		return 
-			Objects.
+		return
+			MoreObjects.
 				toStringHelper(MutableCapabilities.class).
 					add("deletable", deletable).
 					add("modifiable", modifiable).
@@ -102,9 +103,9 @@ public final class MutableCapabilities implements Capabilities {
 		boolean result = false;
 		if (obj instanceof MutableCapabilities) {
 			Capabilities typedObject = (Capabilities) obj;
-			result = 
+			result =
 				Objects.equal(this.isDeletable(), typedObject.isDeletable()) &&
-				Objects.equal(this.isModifiable(), typedObject.isModifiable()) && 
+				Objects.equal(this.isModifiable(), typedObject.isModifiable()) &&
 				Objects.equal(this.isPatchable(), typedObject.isPatchable());
 		}
 		return result;

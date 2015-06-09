@@ -44,7 +44,7 @@ import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceVisitor;
 import org.ldp4j.application.session.ResourceSnapshot;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 final class MemberCollection {
 
@@ -93,7 +93,7 @@ final class MemberCollection {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("members",this.members.keySet()).
 					toString();

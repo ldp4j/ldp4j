@@ -51,7 +51,7 @@ import org.ldp4j.application.ext.annotations.IndirectContainer;
 import org.ldp4j.application.ext.annotations.MembershipRelation;
 import org.ldp4j.application.ext.annotations.Resource;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
@@ -535,7 +535,7 @@ final class InMemoryTemplateLibrary implements TemplateLibrary {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("templates",this.context.registeredTemplates()).
 					toString();

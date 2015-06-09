@@ -26,11 +26,12 @@
  */
 package org.ldp4j.server.data;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.net.URI;
 
-import com.google.common.base.Objects;
-
-import static com.google.common.base.Preconditions.*;
+import com.google.common.base.MoreObjects;
 
 final class URIResolver {
 
@@ -78,7 +79,7 @@ final class URIResolver {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("endpoint",this.endpoint).
 					add("alternative", this.alternative).

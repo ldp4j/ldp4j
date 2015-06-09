@@ -28,7 +28,9 @@ package org.ldp4j.application.data;
 
 import java.net.URI;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+
 import static com.google.common.base.Preconditions.*;
 
 public final class RelativeIndividualId {
@@ -69,7 +71,7 @@ public final class RelativeIndividualId {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("parentId", this.parentId).

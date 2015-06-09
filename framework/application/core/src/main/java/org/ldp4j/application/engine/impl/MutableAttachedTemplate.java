@@ -31,6 +31,7 @@ import java.net.URI;
 import org.ldp4j.application.engine.template.AttachedTemplate;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
@@ -94,7 +95,7 @@ final class MutableAttachedTemplate implements AttachedTemplate {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("id", this.id).

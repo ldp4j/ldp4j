@@ -34,7 +34,7 @@ import java.net.URI;
 import org.ldp4j.server.data.URIDescriptor.Scope;
 import org.ldp4j.server.data.URIDescriptor.Type;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 final class URIDescriber {
 
@@ -86,7 +86,7 @@ final class URIDescriber {
 
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("application",this.application).
 					add("endpoint",this.endpoint).

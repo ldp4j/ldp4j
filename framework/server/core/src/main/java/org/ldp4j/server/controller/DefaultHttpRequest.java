@@ -36,7 +36,7 @@ import javax.ws.rs.core.UriInfo;
 
 import org.ldp4j.application.engine.context.HttpRequest;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
@@ -70,7 +70,7 @@ final class DefaultHttpRequest implements HttpRequest {
 		@Override
 		public String toString() {
 			return
-				Objects.
+				MoreObjects.
 					toStringHelper(Header.class).
 						add("name",this.name).
 						add("rawValue",this.rawValue).
@@ -140,7 +140,7 @@ final class DefaultHttpRequest implements HttpRequest {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(HttpRequest.class).
 					omitNullValues().
 					add("method",this.method).

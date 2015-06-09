@@ -33,7 +33,7 @@ import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.Slug;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 final class InMemorySlug implements Slug {
 
@@ -79,7 +79,7 @@ final class InMemorySlug implements Slug {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("containerId",this.containerId).
