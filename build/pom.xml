@@ -82,7 +82,7 @@
 		<slf4j.version>1.7.5</slf4j.version>
 		<hamcrest.version>1.3</hamcrest.version>
 		<jmockit.version>1.17</jmockit.version>
-		<jacoco.version>0.7.1.201405082137</jacoco.version>
+		<jacoco.version>0.7.5.201505241946</jacoco.version>
 		<mockito.version>1.9.5</mockito.version>
 		<junit.version>4.12</junit.version>
 		<guava.version>18.0</guava.version>
@@ -125,6 +125,34 @@
 		<openejb.version>4.5.1</openejb.version>
 		<openejb.jee6.api.version>6.0-4</openejb.jee6.api.version>
 		<git.tag>${project.version}</git.tag>
+
+		<!--  ============================================================   -->
+		<!--   Plugin version properties                                     -->
+		<!--  ============================================================   -->
+		<maven.dependency.plugin.version>2.10</maven.dependency.plugin.version>
+		<sonar.maven.plugin.version>5.1</sonar.maven.plugin.version>
+		<maven.resources.plugin.version>2.7</maven.resources.plugin.version>
+		<maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
+		<maven.jgit.buildnumber.plugin.version>1.2.10</maven.jgit.buildnumber.plugin.version>
+		<gmaven.plugin.version>1.0</gmaven.plugin.version>
+		<maven.source.plugin.version>2.4</maven.source.plugin.version>
+		<maven.war.plugin.version>2.6</maven.war.plugin.version>
+		<maven.jar.plugin.version>2.6</maven.jar.plugin.version>
+		<truezip.maven.plugin.version>1.2</truezip.maven.plugin.version>
+		<maven.release.plugin.version>2.5.2</maven.release.plugin.version>
+		<maven.scm.plugin.version>1.9.4</maven.scm.plugin.version>
+		<build.helper.maven.plugin.version>1.9.1</build.helper.maven.plugin.version>
+		<license.maven.plugin.version>2.11</license.maven.plugin.version>
+		<maven.javadoc.plugin.version>2.10.3</maven.javadoc.plugin.version>
+		<animal.sniffer.maven.plugin.version>1.14</animal.sniffer.maven.plugin.version>
+		<maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
+		<maven.failsafe.plugin.version>2.18.1</maven.failsafe.plugin.version>
+		<maven.project.info.reports.plugin.version>2.8</maven.project.info.reports.plugin.version>
+		<maven.jxr.plugin.version>2.5</maven.jxr.plugin.version>
+		<maven.pmd.plugin.version>3.4</maven.pmd.plugin.version>
+		<findbugs.maven.plugin.version>3.0.1</findbugs.maven.plugin.version>
+		<maven.checkstyle.plugin.version>2.15</maven.checkstyle.plugin.version>
+		<taglist.maven.plugin.version>2.4</taglist.maven.plugin.version>
 	</properties>
 
 	<dependencyManagement>
@@ -403,6 +431,7 @@
 			</dependency>
 
 		</dependencies>
+
 	</dependencyManagement>
 
 	<build>
@@ -413,538 +442,138 @@
 			</testResource>
 		</testResources>
 
-		<plugins>
-			<!-- ===================================== -->
-			<!-- Plugins for managing the construction -->
-			<!-- ===================================== -->
-
-			<!-- Extract configuration -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.5.1</version>
-				<executions>
-					<execution>
-						<id>unpack</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>unpack</goal>
-						</goals>
-						<configuration>
-							<artifactItems>
-								<artifactItem>
-									<groupId>org.ldp4j</groupId>
-									<artifactId>ldp4j-config</artifactId>
-									<version>${project.version}</version>
-									<type>jar</type>
-									<overWrite>false</overWrite>
-									<outputDirectory>${config.dir}</outputDirectory>
-								</artifactItem>
-							</artifactItems>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.sonar</groupId>
-				<artifactId>sonar-maven-plugin</artifactId>
-				<version>4.1.1</version>
-			</plugin>
-
-			<!-- Use UTF-8 encoding for resources -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-resources-plugin</artifactId>
-				<version>2.6</version>
-				<configuration>
-					<encoding>${source.encoding}</encoding>
-				</configuration>
-			</plugin>
-
-			<!-- Enforce JSE 6 compliance, and UTF-8 sources -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.1</version>
-				<configuration>
-					<encoding>${source.encoding}</encoding>
-					<source>${compiler.version}</source>
-					<target>${compiler.version}</target>
-					<verbose>false</verbose>
-					<showWarnings>false</showWarnings>
-				</configuration>
-			</plugin>
-
-			<!-- ================================== -->
-			<!-- Plugins for delivery configuration -->
-			<!-- ================================== -->
-
-			<!-- Prepare build information-->
-			<plugin>
-				<groupId>ru.concerteza.buildnumber</groupId>
-				<artifactId>maven-jgit-buildnumber-plugin</artifactId>
-				<version>1.2.8</version>
-				<executions>
-					<execution>
-						<id>git-buildnumber</id>
-						<goals>
-							<goal>extract-buildnumber</goal>
-						</goals>
-						<phase>validate</phase>
-						<configuration>
-							<runOnlyAtExecutionRoot>false</runOnlyAtExecutionRoot>
-							<javaScriptBuildnumberCallback>
-								shortRevision
-							</javaScriptBuildnumberCallback>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.groovy.maven</groupId>
-				<artifactId>gmaven-plugin</artifactId>
-				<version>1.0</version>
-				<executions>
-					<execution>
-						<id>buildNumber</id>
-						<phase>validate</phase>
-						<goals>
-							<goal>execute</goal>
-						</goals>
-						<configuration>
-							<color>true</color>
-							<source>
-								tag=project.properties.get('git.tag')
-								if(tag=='') {
-									tag=project.version
-								}
-								commitsCount=project.properties.get('git.commitsCount')
-								branch=project.properties.get('git.branch')
-								revision=project.properties.get('git.buildnumber')
-								buildNumber="${tag} build ${commitsCount} (${branch}@${revision})"
-								project.properties.setProperty('ldp4j.buildNumber',buildNumber)
-								println "Build number: " + buildNumber
-							</source>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- Deliver the sources together with the JARs-->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>2.2.1</version>
-				<executions>
-					<execution>
-						<id>attach-sources</id>
-						<phase>package</phase>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-						<configuration>
-							<archive>
-								<manifest>
-									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-								</manifest>
-								<manifestEntries>
-									<Implementation-Version>${ldp4j.buildNumber}</Implementation-Version>
-								</manifestEntries>
-								<manifestSections>
-									<manifestSection>
-										<name>Build</name>
-										<manifestEntries>
-											<Build-Tag>${git.tag}</Build-Tag>
-											<Build-Branch>${git.branch}</Build-Branch>
-											<Build-Revision>${git.revision}</Build-Revision>
-											<Build-Commit-Count>${git.commitsCount}</Build-Commit-Count>
-											<Build-Date>${maven.build.timestamp}</Build-Date>
-										</manifestEntries>
-									</manifestSection>
-								</manifestSections>
-							</archive>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- Deliver the sources together also when creating a WAR -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-war-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<failOnMissingWebXml>false</failOnMissingWebXml>
-					<attachClasses>true</attachClasses>
-					<webResources>
-						<resource>
-							<directory>${config.dir}${file.separator}legal</directory>
-							<filtering>true</filtering>
-							<includes>
-								<include>NOTICE</include>
-								<include>LICENSE</include>
-							</includes>
-						</resource>
-					</webResources>
-					<archive>
-					<manifest>
-						<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-					</manifest>
-					<manifestEntries>
-						<Implementation-Version>${ldp4j.buildNumber}</Implementation-Version>
-					</manifestEntries>
-					<manifestSections>
-						<manifestSection>
-							<name>Build</name>
-							<manifestEntries>
-								<Build-Tag>${git.tag}</Build-Tag>
-								<Build-Branch>${git.branch}</Build-Branch>
-								<Build-Revision>${git.revision}</Build-Revision>
-								<Build-Commit-Count>${git.commitsCount}</Build-Commit-Count>
-								<Build-Date>${maven.build.timestamp}</Build-Date>
-							</manifestEntries>
-						</manifestSection>
-					</manifestSections>
-					</archive>
-				</configuration>
-			</plugin>
-
-			<!-- Deliver the tests together with the JARs -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jar-plugin</artifactId>
-				<version>2.4</version>
-				<configuration>
-					<archive>
-						<manifest>
-							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
-						</manifest>
-						<manifestEntries>
-							<Implementation-Version>${ldp4j.buildNumber}</Implementation-Version>
-						</manifestEntries>
-						<manifestSections>
-							<manifestSection>
-								<name>Build</name>
-								<manifestEntries>
-									<Build-Tag>${git.tag}</Build-Tag>
-									<Build-Branch>${git.branch}</Build-Branch>
-									<Build-Revision>${git.revision}</Build-Revision>
-									<Build-Commit-Count>${git.commitsCount}</Build-Commit-Count>
-									<Build-Date>${maven.build.timestamp}</Build-Date>
-								</manifestEntries>
-							</manifestSection>
-						</manifestSections>
-					</archive>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-tests</id>
-						<phase>package</phase>
-						<goals>
-							<goal>test-jar</goal>
-						</goals>
-						<configuration>
-							<skipIfEmpty>true</skipIfEmpty>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- Include legal files in the sources artifact-->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>truezip-maven-plugin</artifactId>
-				<version>1.1</version>
-				<executions>
-					<execution>
-						<id>update-sources</id>
-						<goals>
-							<goal>copy</goal>
-						</goals>
-						<phase>package</phase>
-						<configuration>
-							<verbose>true</verbose>
-							<fileset>
-								<directory>${config.dir}${file.separator}legal</directory>
-								<includes>
-									<include>LICENSE</include>
-									<include>NOTICE</include>
-								</includes>
-								<outputDirectory>${src.archive}</outputDirectory>
-							</fileset>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- Enable on-demand release management -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-release-plugin</artifactId>
-				<version>2.4.2</version>
-				<configuration>
-					<username>${scm.username}</username>
-					<password>${scm.password}</password>
-					<resume>false</resume>
-				</configuration>
-			</plugin>
-
-			<!-- ===================== -->
-			<!-- Other utility plugins -->
-			<!-- ===================== -->
-
-			<!--
-				Using the scm:bootstrap a project can be build from a fresh copy
-				of the source in the scm repository.
-			-->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-scm-plugin</artifactId>
-				<version>1.9</version>
-				<configuration>
-					<goals>install</goals>
-				</configuration>
-			</plugin>
-
-			<!-- Include legal files in the binary artifacts -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>build-helper-maven-plugin</artifactId>
-				<version>1.8</version>
-				<executions>
-					<execution>
-						<id>install-legal-files</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>add-resource</goal>
-						</goals>
-						<configuration>
-							<resources>
-								<resource>
-									<directory>${config.dir}${file.separator}legal</directory>
-									<filtering>true</filtering>
-									<includes>
-										<include>NOTICE</include>
-										<include>LICENSE</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>install-test-legal-files</id>
-						<phase>generate-resources</phase>
-						<goals>
-							<goal>add-resource</goal>
-						</goals>
-						<configuration>
-							<resources>
-								<resource>
-									<directory>${config.dir}${file.separator}legal</directory>
-									<filtering>true</filtering>
-									<includes>
-										<include>NOTICE</include>
-										<include>LICENSE</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-					<execution>
-						<id>timestamp-property</id>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>timestamp-property</goal>
-						</goals>
-						<configuration>
-							<name>currentYear</name>
-							<pattern>yyyy</pattern>
-							<units>year</units>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- License maintenance -->
-			<plugin>
-				<groupId>com.mycila</groupId>
-				<artifactId>license-maven-plugin</artifactId>
-				<version>2.6</version>
-				<configuration>
-					<header>${config.dir}${file.separator}legal${file.separator}header.txt</header>
-					<aggregate>true</aggregate>
-					<mapping>
-						<rdf>XML_STYLE</rdf>
-						<owl>XML_STYLE</owl>
-						<sparql>SCRIPT_STYLE</sparql>
-						<xslt>XML_STYLE</xslt>
-						<cfg>SCRIPT_STYLE</cfg>
-						<ttl>SCRIPT_STYLE</ttl>
-						<cmd>CMD_STYLE</cmd>
-						<xjb>XML_STYLE</xjb>
-						<cat>XML_STYLE</cat>
-					</mapping>
-					<includes>
-						<include>pom.xml</include>
-						<include>**/pom.xml</include>
-						<include>src/**</include>
-						<include>target/generated-sources/**</include>
-					</includes>
-					<excludes>
-						<exclude>src/main/resources/transactions/**/*</exclude>
-						<exclude>target/**</exclude>
-						<exclude>**/*.bak</exclude>
-					</excludes>
-					<useDefaultExcludes>true</useDefaultExcludes>
-					<encoding>${source.encoding}</encoding>
-					<strictCheck>true</strictCheck>
-					<properties>
-						<url>${license.project.url}</url>
-						<duration>${license.project.duration}</duration>
-						<owner>${license.project.owner}</owner>
-						<project>${license.project.name}</project>
-						<inceptionYear>${license.project.inceptionYear}</inceptionYear>
-						<organizationUrl>${license.organization.url}</organizationUrl>
-						<organizationName>${license.organization.name}</organizationName>
-						<bundle>${license.bundle}</bundle>
-						<artifact>${license.artifact}</artifact>
-					</properties>
-					<headerDefinitions>
-						<headerDefinition>${config.dir}${file.separator}legal${file.separator}cmd_header.xml</headerDefinition>
-					</headerDefinitions>
-				</configuration>
-				<executions>
-					<execution>
-						<id>update-licenses</id>
-						<phase>process-sources</phase>
-						<goals>
-							<goal>format</goal>
-						</goals>
-					</execution>
-					<execution>
-						<id>check-licenses</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.1</version>
-				<configuration>
-					<show>public</show>
-					<nohelp>false</nohelp>
-					<keywords>true</keywords>
-					<bottom><![CDATA[<br/>Copyright (C) ${license.project.duration}, <a href="${project.organization.url}">${project.organization.name}<a>]]></bottom>
-					<windowtitle>${license.project.name} ${project.version}</windowtitle>
-					<sourcetab>2</sourcetab>
-					<quiet>true</quiet>
-				</configuration>
-				<executions>
-					<execution>
-						<id>attach-javadocs</id>
-						<goals>
-							<goal>jar</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- Enforce at least Sun Java  1.6 compliance -->
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>animal-sniffer-maven-plugin</artifactId>
-				<version>1.11</version>
-				<executions>
-					<execution>
-						<id>signature-check</id>
-						<phase>verify</phase>
-						<goals>
-							<goal>check</goal>
-						</goals>
-						<configuration>
-							<signature>
-								<groupId>org.codehaus.mojo.signature</groupId>
-								<artifactId>java16-sun</artifactId>
-								<version>1.10</version>
-							</signature>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<!-- ===================== -->
-			<!-- Testing plugins       -->
-			<!-- ===================== -->
-
-			<plugin>
-				<groupId>org.jacoco</groupId>
-				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>${jacoco.version}</version>
-				<executions>
-					<execution>
-						<id>default-prepare-agent</id>
-						<phase>initialize</phase>
-						<goals>
-							<goal>prepare-agent</goal>
-						</goals>
-						<configuration>
-							<includes>
-								<include>${config.jacoco.includes}</include>
-							</includes>
-							<destFile>${sonar.jacoco.reportPath}</destFile>
-							<propertyName>jacoco.agent.ut.arg</propertyName>
-						</configuration>
-					</execution>
-					<execution>
-						<id>default-report</id>
-						<phase>site</phase>
-						<goals>
-							<goal>report</goal>
-						</goals>
-						<configuration>
-							<dataFile>${sonar.jacoco.reportPath}</dataFile>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<version>2.17</version>
-				<dependencies>
-					<dependency>
-						<groupId>org.jacoco</groupId>
-						<artifactId>org.jacoco.agent</artifactId>
-						<version>${jacoco.version}</version>
-						<classifier>runtime</classifier>
-					</dependency>
-				</dependencies>
-				<executions>
-					<execution>
-						<id>default-test</id>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<configuration>
-							<excludes>
-								<exclude>**/*ITest.java</exclude>
-							</excludes>
-							<argLine>${jacoco.agent.ut.arg}</argLine>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-		</plugins>
-
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!-- ===================================== -->
+				<!-- Plugins for managing the construction -->
+				<!-- ===================================== -->
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>${maven.dependency.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.sonar</groupId>
+					<artifactId>sonar-maven-plugin</artifactId>
+					<version>${sonar.maven.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>${maven.resources.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${maven.compiler.plugin.version}</version>
+				</plugin>
+
+				<!-- ================================== -->
+				<!-- Plugins for delivery configuration -->
+				<!-- ================================== -->
+
+				<plugin>
+					<groupId>ru.concerteza.buildnumber</groupId>
+					<artifactId>maven-jgit-buildnumber-plugin</artifactId>
+					<version>${maven.jgit.buildnumber.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.groovy.maven</groupId>
+					<artifactId>gmaven-plugin</artifactId>
+					<version>${gmaven.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${maven.source.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>${maven.war.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>${maven.jar.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>truezip-maven-plugin</artifactId>
+					<version>${truezip.maven.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>${maven.release.plugin.version}</version>
+				</plugin>
+
+				<!-- ===================== -->
+				<!-- Other utility plugins -->
+				<!-- ===================== -->
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-scm-plugin</artifactId>
+					<version>${maven.scm.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>${build.helper.maven.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>com.mycila</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>${license.maven.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${maven.javadoc.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>animal-sniffer-maven-plugin</artifactId>
+					<version>${animal.sniffer.maven.plugin.version}</version>
+				</plugin>
+
+				<!-- ===================== -->
+				<!-- Testing plugins       -->
+				<!-- ===================== -->
+
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>${jacoco.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${maven.surefire.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>${maven.failsafe.plugin.version}</version>
+				</plugin>
+
+				<!--This plugin's configuration is used to store Eclipse m2e settings
+				only. It has no influence on the Maven build itself.-->
 				<plugin>
 					<groupId>org.eclipse.m2e</groupId>
 					<artifactId>lifecycle-mapping</artifactId>
@@ -1033,6 +662,518 @@
 				</plugin>
 			</plugins>
 		</pluginManagement>
+
+		<plugins>
+			<!-- ===================================== -->
+			<!-- Plugins for managing the construction -->
+			<!-- ===================================== -->
+
+			<!-- Extract configuration -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>unpack</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.ldp4j</groupId>
+									<artifactId>ldp4j-config</artifactId>
+									<version>${project.version}</version>
+									<type>jar</type>
+									<overWrite>false</overWrite>
+									<outputDirectory>${config.dir}</outputDirectory>
+								</artifactItem>
+							</artifactItems>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.sonar</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+			</plugin>
+
+			<!-- Use UTF-8 encoding for resources -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-resources-plugin</artifactId>
+				<configuration>
+					<encoding>${source.encoding}</encoding>
+				</configuration>
+			</plugin>
+
+			<!-- Enforce Jave SE 7 compliance, and UTF-8 sources -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-compiler-plugin</artifactId>
+				<configuration>
+					<encoding>${source.encoding}</encoding>
+					<source>${compiler.version}</source>
+					<target>${compiler.version}</target>
+					<verbose>false</verbose>
+					<showWarnings>false</showWarnings>
+				</configuration>
+			</plugin>
+
+			<!-- ================================== -->
+			<!-- Plugins for delivery configuration -->
+			<!-- ================================== -->
+
+			<!-- Prepare build information-->
+			<plugin>
+				<groupId>ru.concerteza.buildnumber</groupId>
+				<artifactId>maven-jgit-buildnumber-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>git-buildnumber</id>
+						<goals>
+							<goal>extract-buildnumber</goal>
+						</goals>
+						<phase>validate</phase>
+						<configuration>
+							<runOnlyAtExecutionRoot>false</runOnlyAtExecutionRoot>
+							<javaScriptBuildnumberCallback>
+								shortRevision
+							</javaScriptBuildnumberCallback>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.groovy.maven</groupId>
+				<artifactId>gmaven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>buildNumber</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>execute</goal>
+						</goals>
+						<configuration>
+							<color>true</color>
+							<source>
+								tag=project.properties.get('git.tag')
+								if(tag=='') {
+									tag=project.version
+								}
+								commitsCount=project.properties.get('git.commitsCount')
+								branch=project.properties.get('git.branch')
+								revision=project.properties.get('git.buildnumber')
+								buildNumber="${tag} build ${commitsCount} (${branch}@${revision})"
+								project.properties.setProperty('ldp4j.buildNumber',buildNumber)
+								println "Build number: " + buildNumber
+							</source>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Deliver the sources together with the JARs-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<phase>package</phase>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<archive>
+								<manifest>
+									<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+								</manifest>
+								<manifestEntries>
+									<Implementation-Version>${ldp4j.buildNumber}</Implementation-Version>
+								</manifestEntries>
+								<manifestSections>
+									<manifestSection>
+										<name>Build</name>
+										<manifestEntries>
+											<Build-Tag>${git.tag}</Build-Tag>
+											<Build-Branch>${git.branch}</Build-Branch>
+											<Build-Revision>${git.revision}</Build-Revision>
+											<Build-Commit-Count>${git.commitsCount}</Build-Commit-Count>
+											<Build-Date>${maven.build.timestamp}</Build-Date>
+										</manifestEntries>
+									</manifestSection>
+								</manifestSections>
+							</archive>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Deliver the sources together also when creating a WAR -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-war-plugin</artifactId>
+				<configuration>
+					<failOnMissingWebXml>false</failOnMissingWebXml>
+					<attachClasses>true</attachClasses>
+					<webResources>
+						<resource>
+							<directory>${config.dir}${file.separator}legal</directory>
+							<filtering>true</filtering>
+							<includes>
+								<include>NOTICE</include>
+								<include>LICENSE</include>
+							</includes>
+						</resource>
+					</webResources>
+					<archive>
+					<manifest>
+						<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+					</manifest>
+					<manifestEntries>
+						<Implementation-Version>${ldp4j.buildNumber}</Implementation-Version>
+					</manifestEntries>
+					<manifestSections>
+						<manifestSection>
+							<name>Build</name>
+							<manifestEntries>
+								<Build-Tag>${git.tag}</Build-Tag>
+								<Build-Branch>${git.branch}</Build-Branch>
+								<Build-Revision>${git.revision}</Build-Revision>
+								<Build-Commit-Count>${git.commitsCount}</Build-Commit-Count>
+								<Build-Date>${maven.build.timestamp}</Build-Date>
+							</manifestEntries>
+						</manifestSection>
+					</manifestSections>
+					</archive>
+				</configuration>
+			</plugin>
+
+			<!-- Deliver the tests together with the JARs -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jar-plugin</artifactId>
+				<configuration>
+					<archive>
+						<manifest>
+							<addDefaultImplementationEntries>true</addDefaultImplementationEntries>
+						</manifest>
+						<manifestEntries>
+							<Implementation-Version>${ldp4j.buildNumber}</Implementation-Version>
+						</manifestEntries>
+						<manifestSections>
+							<manifestSection>
+								<name>Build</name>
+								<manifestEntries>
+									<Build-Tag>${git.tag}</Build-Tag>
+									<Build-Branch>${git.branch}</Build-Branch>
+									<Build-Revision>${git.revision}</Build-Revision>
+									<Build-Commit-Count>${git.commitsCount}</Build-Commit-Count>
+									<Build-Date>${maven.build.timestamp}</Build-Date>
+								</manifestEntries>
+							</manifestSection>
+						</manifestSections>
+					</archive>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-tests</id>
+						<phase>package</phase>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+						<configuration>
+							<skipIfEmpty>true</skipIfEmpty>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Include legal files in the sources artifact-->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>truezip-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>update-sources</id>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<phase>package</phase>
+						<configuration>
+							<verbose>true</verbose>
+							<fileset>
+								<directory>${config.dir}${file.separator}legal</directory>
+								<includes>
+									<include>LICENSE</include>
+									<include>NOTICE</include>
+								</includes>
+								<outputDirectory>${src.archive}</outputDirectory>
+							</fileset>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Enable on-demand release management -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-release-plugin</artifactId>
+				<configuration>
+					<username>${scm.username}</username>
+					<password>${scm.password}</password>
+					<resume>false</resume>
+				</configuration>
+			</plugin>
+
+			<!-- ===================== -->
+			<!-- Other utility plugins -->
+			<!-- ===================== -->
+
+			<!--
+				Using the scm:bootstrap a project can be build from a fresh copy
+				of the source in the scm repository.
+			-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-scm-plugin</artifactId>
+				<configuration>
+					<goals>install</goals>
+				</configuration>
+			</plugin>
+
+			<!-- Include legal files in the binary artifacts -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>install-legal-files</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>add-resource</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>${config.dir}${file.separator}legal</directory>
+									<filtering>true</filtering>
+									<includes>
+										<include>NOTICE</include>
+										<include>LICENSE</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>install-test-legal-files</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>add-resource</goal>
+						</goals>
+						<configuration>
+							<resources>
+								<resource>
+									<directory>${config.dir}${file.separator}legal</directory>
+									<filtering>true</filtering>
+									<includes>
+										<include>NOTICE</include>
+										<include>LICENSE</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>timestamp-property</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>timestamp-property</goal>
+						</goals>
+						<configuration>
+							<name>currentYear</name>
+							<pattern>yyyy</pattern>
+							<units>year</units>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- License maintenance -->
+			<plugin>
+				<groupId>com.mycila</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<configuration>
+					<header>${config.dir}${file.separator}legal${file.separator}header.txt</header>
+					<aggregate>true</aggregate>
+					<mapping>
+						<rdf>XML_STYLE</rdf>
+						<owl>XML_STYLE</owl>
+						<sparql>SCRIPT_STYLE</sparql>
+						<xslt>XML_STYLE</xslt>
+						<cfg>SCRIPT_STYLE</cfg>
+						<ttl>SCRIPT_STYLE</ttl>
+						<cmd>CMD_STYLE</cmd>
+						<xjb>XML_STYLE</xjb>
+						<cat>XML_STYLE</cat>
+					</mapping>
+					<includes>
+						<include>pom.xml</include>
+						<include>**/pom.xml</include>
+						<include>src/**</include>
+						<include>target/generated-sources/**</include>
+					</includes>
+					<excludes>
+						<exclude>src/main/resources/transactions/**/*</exclude>
+						<exclude>target/**</exclude>
+						<exclude>**/*.bak</exclude>
+					</excludes>
+					<useDefaultExcludes>true</useDefaultExcludes>
+					<encoding>${source.encoding}</encoding>
+					<strictCheck>true</strictCheck>
+					<properties>
+						<url>${license.project.url}</url>
+						<duration>${license.project.duration}</duration>
+						<owner>${license.project.owner}</owner>
+						<project>${license.project.name}</project>
+						<inceptionYear>${license.project.inceptionYear}</inceptionYear>
+						<organizationUrl>${license.organization.url}</organizationUrl>
+						<organizationName>${license.organization.name}</organizationName>
+						<bundle>${license.bundle}</bundle>
+						<artifact>${license.artifact}</artifact>
+					</properties>
+					<headerDefinitions>
+						<headerDefinition>${config.dir}${file.separator}legal${file.separator}cmd_header.xml</headerDefinition>
+					</headerDefinitions>
+				</configuration>
+				<executions>
+					<execution>
+						<id>update-licenses</id>
+						<phase>process-sources</phase>
+						<goals>
+							<goal>format</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>check-licenses</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<show>public</show>
+					<nohelp>false</nohelp>
+					<keywords>true</keywords>
+					<bottom><![CDATA[<br/>Copyright (C) ${license.project.duration}, <a href="${project.organization.url}">${project.organization.name}<a>]]></bottom>
+					<windowtitle>${license.project.name} ${project.version}</windowtitle>
+					<sourcetab>2</sourcetab>
+					<quiet>true</quiet>
+				</configuration>
+				<executions>
+					<execution>
+						<id>attach-javadocs</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- Enforce at least Java  1.7 compliance -->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>animal-sniffer-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>signature-check</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>check</goal>
+						</goals>
+						<configuration>
+							<signature>
+								<groupId>org.codehaus.mojo.signature</groupId>
+								<artifactId>java17</artifactId>
+								<version>1.0</version>
+							</signature>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- ===================== -->
+			<!-- Testing plugins       -->
+			<!-- ===================== -->
+
+			<plugin>
+				<groupId>org.jacoco</groupId>
+				<artifactId>jacoco-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>default-prepare-agent</id>
+						<phase>initialize</phase>
+						<goals>
+							<goal>prepare-agent</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>${config.jacoco.includes}</include>
+							</includes>
+							<destFile>${sonar.jacoco.reportPath}</destFile>
+							<propertyName>jacoco.agent.ut.arg</propertyName>
+						</configuration>
+					</execution>
+					<execution>
+						<id>default-report</id>
+						<phase>site</phase>
+						<goals>
+							<goal>report</goal>
+						</goals>
+						<configuration>
+							<dataFile>${sonar.jacoco.reportPath}</dataFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<dependencies>
+					<dependency>
+						<groupId>org.jacoco</groupId>
+						<artifactId>org.jacoco.agent</artifactId>
+						<version>${jacoco.version}</version>
+						<classifier>runtime</classifier>
+					</dependency>
+				</dependencies>
+				<executions>
+					<execution>
+						<id>default-test</id>
+						<goals>
+							<goal>test</goal>
+						</goals>
+						<configuration>
+							<excludes>
+								<exclude>**/*ITest.java</exclude>
+							</excludes>
+							<argLine>${jacoco.agent.ut.arg}</argLine>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+
 	</build>
 
 	<profiles>
@@ -1070,12 +1211,13 @@
 						<filtering>true</filtering>
 					</testResource>
 				</testResources>
+
 				<plugins>
 					<!-- Add integration test sources -->
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>
-						<version>1.8</version>
+						<version>${build.helper.maven.plugin.version}</version>
 						<executions>
 							<execution>
 								<id>add-it-sources</id>
@@ -1127,7 +1269,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-failsafe-plugin</artifactId>
-						<version>2.17</version>
+						<version>${maven.failsafe.plugin.version}</version>
 						<executions>
 							<execution>
 								<id>integration-test-execution</id>
@@ -1169,7 +1311,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-surefire-report-plugin</artifactId>
-						<version>${surefire.version}</version>
+						<version>${maven.surefire.plugin.version}</version>
 						<reportSets>
 							<reportSet>
 								<id>integration-testing-report</id>
@@ -1189,7 +1331,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-javadoc-plugin</artifactId>
-						<version>2.9</version>
+						<version>${maven.javadoc.plugin.version}</version>
 						<configuration>
 							<encoding>${source.encoding}</encoding>
 						</configuration>
@@ -1223,14 +1365,14 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-project-info-reports-plugin</artifactId>
-				<version>2.6</version>
+				<version>${maven.project.info.reports.plugin.version}</version>
 			</plugin>
 
 			<!-- Include browsable source code -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jxr-plugin</artifactId>
-				<version>2.4</version>
+				<version>${maven.jxr.plugin.version}</version>
 				<configuration>
 					<windowTitle>${license.project.name} ${project.version} Reference</windowTitle>
 					<excludes>
@@ -1245,7 +1387,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.9.1</version>
+				<version>${maven.javadoc.plugin.version}</version>
 				<configuration>
 					<show>public</show>
 					<nohelp>false</nohelp>
@@ -1259,7 +1401,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-pmd-plugin</artifactId>
-				<version>3.0.1</version>
+				<version>${maven.pmd.plugin.version}</version>
 				<configuration>
 					<linkXref>true</linkXref>
 					<sourceEncoding>utf-8</sourceEncoding>
@@ -1273,7 +1415,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>findbugs-maven-plugin</artifactId>
-				<version>2.5.3</version>
+				<version>${findbugs.maven.plugin.version}</version>
 				<configuration>
 					<effort>Max</effort>
 					<threshold>Low</threshold>
@@ -1285,7 +1427,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-checkstyle-plugin</artifactId>
-				<version>2.11</version>
+				<version>${maven.checkstyle.plugin.version}</version>
 				<configuration>
 					<configLocation>${basedir}${file.separator}src${file.separator}quality${file.separator}checkstyle.xml</configLocation>
 				</configuration>
@@ -1303,7 +1445,7 @@
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>taglist-maven-plugin</artifactId>
-				<version>2.4</version>
+				<version>${taglist.maven.plugin.version}</version>
 				<configuration>
 					<encoding>UTF-8</encoding>
 					<sourceFileLocale>en</sourceFileLocale>
@@ -1332,7 +1474,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-report-plugin</artifactId>
-				<version>2.16</version>
+				<version>${maven.surefire.plugin.version}</version>
 			</plugin>
 
 			<!-- Include Codecoverage Peport -->
