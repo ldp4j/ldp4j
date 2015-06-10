@@ -10,7 +10,6 @@ notifications:
 before_install :
  - git fetch --unshallow # we need a full clone for the build
  - git checkout ${TRAVIS_BRANCH} # we need to be on the HEAD of the target branch
- - gpg2 --keyserver hkp://pool.sks-keyservers.net --recv-keys 16377F5A
 script: "if [ ${TRAVIS_PULL_REQUEST} = 'false' ]; then mvn deploy -Dossrh --settings config/target/classes/ci/settings.xml; else mvn clean verify; fi"
 env:
   global:
