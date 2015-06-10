@@ -200,9 +200,10 @@
 			</modules>
 		</profile>
 		<profile>
+			<id>gpg</id>
 			<activation>
 				<property>
-					<name>ci.gpg.secretKeyring</name>
+					<name>gpg.secretKeyring</name>
 				</property>
 			</activation>
 			<build>
@@ -218,10 +219,6 @@
 								<goals>
 									<goal>sign</goal>
 								</goals>
-								<configuration>
-									<publicKeyring>${ci.gpg.publicKeyring}</publicKeyring>
-									<secretKeyring>${ci.gpg.secretKeyring}</secretKeyring>
-								</configuration>
 							</execution>
 						</executions>
 					</plugin>
