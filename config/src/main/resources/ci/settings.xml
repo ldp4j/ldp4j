@@ -48,7 +48,7 @@
 			<properties>
 				<gpg.executable>gpg</gpg.executable>
 				<gpg.defaultKeyring>false</gpg.defaultKeyring>
-				<gpg.keyname>16377F5A</gpg.keyname>
+				<gpg.keyname>${env.KEYNAME}</gpg.keyname>
 				<gpg.passphrase>${env.ENCRYPTION_PASSWORD}</gpg.passphrase>
 				<gpg.publicKeyring>${codebase.directory}${file.separator}local.pubring.gpg</gpg.publicKeyring>
 				<gpg.secretKeyring>${codebase.directory}${file.separator}local.secring.gpg</gpg.secretKeyring>
