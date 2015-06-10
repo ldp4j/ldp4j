@@ -92,7 +92,9 @@
 		<sonar.jdbc.password>sonar</sonar.jdbc.password>
 
 		<!-- PLUGIN VERSIONS -->
-		<maven.enforver.plugin.version>1.4</maven.enforver.plugin.version>
+		<maven.enforcer.plugin.version>1.4</maven.enforcer.plugin.version>
+		<maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
+		<nexus.staging.maven.plugin.version>1.6.3</nexus.staging.maven.plugin.version>
 	</properties>
 
 	<build>
@@ -102,7 +104,7 @@
 				<inherited>true</inherited>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>${maven.enforver.plugin.version}</version>
+				<version>${maven.enforcer.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>enforce-maven-3</id>
@@ -197,97 +199,117 @@
 				<module>dist</module>
 			</modules>
 		</profile>
-			<profile>
-				<id>travis-ossrh</id>
-				<activation>
-					<property>
-						<name>ossrh</name>
-					</property>
-				</activation>
-				<distributionManagement>
-					<snapshotRepository>
-						<id>ossrh</id>
-						<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-					</snapshotRepository>
-				</distributionManagement>
-				<build>
-					<plugins>
-						<plugin>
-							<groupId>org.sonatype.plugins</groupId>
-							<artifactId>nexus-staging-maven-plugin</artifactId>
-							<version>1.6.3</version>
-							<extensions>true</extensions>
-							<configuration>
-								<serverId>ossrh</serverId>
-								<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-								<autoReleaseAfterClose>false</autoReleaseAfterClose>
-							</configuration>
-						</plugin>
-					</plugins>
-				</build>
-			</profile>
-		</profiles>
+		<profile>
+			<activation>
+				<property>
+					<name>gpg.passphrase</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${maven.gpg.plugin.version}</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>travis-ossrh</id>
+			<activation>
+				<property>
+					<name>ossrh</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>${nexus.staging.maven.plugin.version}</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<autoReleaseAfterClose>false</autoReleaseAfterClose>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<!-- =================================================================== -->
 	<!--   ENVIRONMENT SETTINGS                                              -->
 	<!-- =================================================================== -->
 
 	<prerequisites>
-		<maven>3.0.4</maven>
+		<maven>3.2.3</maven>
 	</prerequisites>
 
-  <mailingLists>
-    <mailingList>
-      <name>LDP4j Commits List</name>
-      <subscribe>ldp4j-commits+subscribe@googlegroups.com</subscribe>
-      <unsubscribe>ldp4j-commits+unsubscribe@googlegroups.com</unsubscribe>
-      <post>ldp4j-commits@googlegroups.com</post>
-      <archive>https://groups.google.com/d/forum/ldp4j-commits</archive>
-    </mailingList>
-    <mailingList>
-      <name>LDP4j Developer List</name>
-      <subscribe>ldp4j-dev+subscribe@googlegroups.com</subscribe>
-      <unsubscribe>ldp4j-dev+unsubscribe@googlegroups.com</unsubscribe>
-      <post>ldp4j-dev@googlegroups.com</post>
-      <archive>https://groups.google.com/d/forum/ldp4j-dev</archive>
-    </mailingList>
-    <mailingList>
-      <name>LDP4j User List</name>
-      <subscribe>ldp4j-user+subscribe@googlegroups.com</subscribe>
-      <unsubscribe>ldp4j-user+unsubscribe@googlegroups.com</unsubscribe>
-      <post>ldp4j-user@googlegroups.com</post>
-      <archive>https://groups.google.com/d/forum/ldp4j-user</archive>
-    </mailingList>
-  </mailingLists>
+	<mailingLists>
+		<mailingList>
+			<name>LDP4j Commits List</name>
+			<subscribe>ldp4j-commits+subscribe@googlegroups.com</subscribe>
+			<unsubscribe>ldp4j-commits+unsubscribe@googlegroups.com</unsubscribe>
+			<post>ldp4j-commits@googlegroups.com</post>
+			<archive>https://groups.google.com/d/forum/ldp4j-commits</archive>
+		</mailingList>
+		<mailingList>
+			<name>LDP4j Developer List</name>
+			<subscribe>ldp4j-dev+subscribe@googlegroups.com</subscribe>
+			<unsubscribe>ldp4j-dev+unsubscribe@googlegroups.com</unsubscribe>
+			<post>ldp4j-dev@googlegroups.com</post>
+			<archive>https://groups.google.com/d/forum/ldp4j-dev</archive>
+		</mailingList>
+		<mailingList>
+			<name>LDP4j User List</name>
+			<subscribe>ldp4j-user+subscribe@googlegroups.com</subscribe>
+			<unsubscribe>ldp4j-user+unsubscribe@googlegroups.com</unsubscribe>
+			<post>ldp4j-user@googlegroups.com</post>
+			<archive>https://groups.google.com/d/forum/ldp4j-user</archive>
+		</mailingList>
+	</mailingLists>
 
-<!--
-  <issueManagement>
-    <system>jira</system>
-    <url>http://issues.apache.org/jira/browse/OPENEJB</url>
-  </issueManagement>
--->
-<!--
-  <ciManagement>
-    <system>bamboo</system>
-    <url>http://bamboo.oeg-upm.net/</url>
-    <notifiers>
-      <notifier>
-        <configuration>
-          <address>ldp4j-commits@googlegroups.com</address>
-        </configuration>
-      </notifier>
-    </notifiers>
-  </ciManagement>
--->
-<!--
-  <distributionManagement>
-    <site>
-      <id>ldp4j-website</id>
-      <url>scp://delicias.dia.fi.upm.es/ldp4j/maven</url>
-    </site>
-  </distributionManagement>
--->
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/ldp4j/ldp4j/issues</url>
+	</issueManagement>
 
-  <scm>
+	<ciManagement>
+		<system>Travis-CI</system>
+		<url>https://travis-ci.org/ldp4j/ldp4j</url>
+		<notifiers>
+			<notifier>
+				<configuration>
+					<address>ldp4j-dev@googlegroups.com</address>
+				</configuration>
+			</notifier>
+		</notifiers>
+	</ciManagement>
+
+	<distributionManagement>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<scm>
 		<connection>scm:git:git://git@github.com:ldp4j/ldp4j.git</connection>
 		<developerConnection>scm:git:ssh://github.com/ldp4j/ldp4j.git</developerConnection>
 		<url>git://github.com/ldp4j/ldp4j.git</url>
