@@ -12,7 +12,7 @@ before_install:
 - openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in config/src/main/resources/ci/pubring.gpg.enc -out local.pubring.gpg -d
 - git fetch --unshallow
 - git checkout ${TRAVIS_BRANCH}
-script: if [ ${TRAVIS_PULL_REQUEST} = 'false' ]; then mvn deploy -Dossrh -Dcodebase.directory=`pwd` --settings config/target/classes/ci/settings.xml; else mvn clean verify -Dcodebase.directory=`pwd`; fi
+script: if [ ${TRAVIS_PULL_REQUEST} = 'false' ]; then mvn deploy -Dossrh -Dcodebase.directory=`pwd` --settings config/src/main/resources/ci/settings.xml; else mvn clean verify -Dcodebase.directory=`pwd` --settings config/src/main/resources/ci/settings.xml; fi
 env:
   global:
   - secure: huXk6otUYsg6kfy+pLJDQSGJLThOuoh6cfmu0USsf2Hc4xlSa7tXYroagO+GL43EkmtpziMf8S7bnaQNPvuj2pA/4ZFAgks6o8GMrvefR6ssWyDKtFdP3k/0d/gvYPj0+CnNELXq1+govjjwWlqy0c57HszgvrbI+4ZcExyW6vY=
