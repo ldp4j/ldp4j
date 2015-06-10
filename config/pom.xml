@@ -147,7 +147,6 @@
 							<exclude>target/**</exclude>
 							<exclude>**/*.bak</exclude>
 							<exclude>src/main/resources/legal/**</exclude>
-							<exclude>src/main/resources/ci/**.gpg</exclude>
 							<exclude>src/main/resources/ci/**.enc</exclude>
 						</excludes>
 						<useDefaultExcludes>true</useDefaultExcludes>
