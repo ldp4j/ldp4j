@@ -34,16 +34,22 @@
 			<password>${env.CI_DEPLOY_PASSWORD}</password>
 		</server>
 	</servers>
-<!--
 	<profile>
 		<id>ossrh</id>
 		<activation>
-			<activeByDefault>true</activeByDefault>
+			<property>
+				<name>codebase.directory</name>
+			</property>
+			<file>
+				<exists>${codebase.directory}${file.separator}local.secring.gpg</exists>
+			</file>
 		</activation>
 		<properties>
-			<gpg.executable>gpg2</gpg.executable>
-			<gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+			<gpg.executable>gpg</gpg.executable>
+			<gpg.passphrase>${env.ENCRYPTION_PASSWORD}</gpg.passphrase>
+			<gpg.keyname>16377F5A</gpg.keyname>
+			<ci.gpg.publicKeyring>${codebase.directory}${file.separator}local.pubring.gpg</ci.gpg.publicKeyring>
+			<ci.gpg.secretKeyring>${codebase.directory}${file.separator}local.secring.gpg</ci.gpg.secretKeyring>
 		</properties>
 	</profile>
- -->
 </settings>

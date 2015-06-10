@@ -202,7 +202,7 @@
 		<profile>
 			<activation>
 				<property>
-					<name>gpg.passphrase</name>
+					<name>ci.gpg.secretKeyring</name>
 				</property>
 			</activation>
 			<build>
@@ -218,6 +218,10 @@
 								<goals>
 									<goal>sign</goal>
 								</goals>
+								<configuration>
+									<publicKeyring>${ci.gpg.publicKeyring}</publicKeyring>
+									<secretKeyring>${ci.gpg.secretKeyring}</secretKeyring>
+								</configuration>
 							</execution>
 						</executions>
 					</plugin>
