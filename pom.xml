@@ -94,7 +94,7 @@
 		<animal.sniffer.maven.plugin.version>1.14</animal.sniffer.maven.plugin.version>
 		<build.helper.maven.plugin.version>1.9.1</build.helper.maven.plugin.version>
 		<findbugs.maven.plugin.version>3.0.1</findbugs.maven.plugin.version>
-		<jacoco.maven.version.plugin>0.7.4.201502262128</jacoco.maven.version.plugin>
+		<jacoco.maven.plugin.version>0.7.4.201502262128</jacoco.maven.plugin.version>
 		<gmaven.plugin.version>1.0</gmaven.plugin.version>
 		<org.codehaus.gmaven.gmaven.plugin.version>1.5</org.codehaus.gmaven.gmaven.plugin.version>
 		<mycila.license.maven.plugin.version>2.11</mycila.license.maven.plugin.version>
@@ -309,7 +309,7 @@
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>${jacoco.maven.version.plugin}</version>
+					<version>${jacoco.maven.plugin.version}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>

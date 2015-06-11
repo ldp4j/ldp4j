@@ -1061,7 +1061,7 @@
 					<plugin>
 						<groupId>org.jacoco</groupId>
 						<artifactId>jacoco-maven-plugin</artifactId>
-						<version>${jacoco.version}</version>
+						<version>${jacoco.maven.plugin.version}</version>
 						<executions>
 							<execution>
 								<id>default-prepare-agent-integration</id>
@@ -1305,7 +1305,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>${jacoco.version}</version>
+				<version>${jacoco.maven.plugin.version}</version>
 				<configuration>
 					<dataFile>${sonar.jacoco.reportPath}</dataFile>
 				</configuration>
