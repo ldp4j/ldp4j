@@ -83,7 +83,7 @@
 		<slf4j.version>1.7.12</slf4j.version>
 		<hamcrest.version>1.3</hamcrest.version>
 		<jmockit.version>1.17</jmockit.version>
-		<jacoco.version>0.7.5.201505241946</jacoco.version>
+		<jacoco.version>0.7.4.201502262128</jacoco.version>
 		<mockito.version>1.9.5</mockito.version>
 		<junit.version>4.12</junit.version>
 		<guava.version>18.0</guava.version>
@@ -516,11 +516,6 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<groupId>org.codehaus.sonar</groupId>
-				<artifactId>sonar-maven-plugin</artifactId>
-			</plugin>
-
 			<!-- Use UTF-8 encoding for resources -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
@@ -748,6 +743,14 @@
 					<username>${scm.username}</username>
 					<password>${scm.password}</password>
 					<resume>false</resume>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<configuration>
+					<createChecksum>true</createChecksum>
 				</configuration>
 			</plugin>
 

@@ -80,16 +80,13 @@
 		<jacoco.it.file>jacoco-it.exec</jacoco.it.file>
 
 		<sonar.language>java</sonar.language>
+<!--
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+ -->
 		<sonar.junit.reportsPath>${project.build.directory}${file.separator}surefire-reports</sonar.junit.reportsPath>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 		<sonar.jacoco.reportPath>${coverage.reports.dir}${file.separator}${jacoco.ut.file}</sonar.jacoco.reportPath>
 		<sonar.jacoco.itReportPath>${coverage.reports.dir}${file.separator}${jacoco.it.file}</sonar.jacoco.itReportPath>
-
-		<!-- TODO: Make these properties configurable via environment specific properties -->
-		<sonar.jdbc.url>jdbc:h2:tcp://localhost:9092/sonar</sonar.jdbc.url>
-		<sonar.jdbc.username>sonar</sonar.jdbc.username>
-		<sonar.jdbc.password>sonar</sonar.jdbc.password>
 
 		<!--  ============================================================   -->
 		<!--   Plugin version properties                                     -->
@@ -97,6 +94,7 @@
 		<animal.sniffer.maven.plugin.version>1.14</animal.sniffer.maven.plugin.version>
 		<build.helper.maven.plugin.version>1.9.1</build.helper.maven.plugin.version>
 		<findbugs.maven.plugin.version>3.0.1</findbugs.maven.plugin.version>
+		<jacoco.maven.version.plugin>0.7.4.201502262128</jacoco.maven.version.plugin>
 		<gmaven.plugin.version>1.0</gmaven.plugin.version>
 		<org.codehaus.gmaven.gmaven.plugin.version>1.5</org.codehaus.gmaven.gmaven.plugin.version>
 		<mycila.license.maven.plugin.version>2.11</mycila.license.maven.plugin.version>
@@ -124,7 +122,7 @@
 		<maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
 		<maven.war.plugin.version>2.6</maven.war.plugin.version>
 		<nexus.staging.maven.plugin.version>1.6.3</nexus.staging.maven.plugin.version>
-		<sonar.maven.plugin.version>5.1</sonar.maven.plugin.version>
+		<sonar.maven.plugin.version>2.5</sonar.maven.plugin.version>
 		<taglist.maven.plugin.version>2.4</taglist.maven.plugin.version>
 		<truezip.maven.plugin.version>1.2</truezip.maven.plugin.version>
 	</properties>
@@ -174,12 +172,6 @@
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-compiler-plugin</artifactId>
 					<version>${maven.compiler.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.codehaus.sonar</groupId>
-					<artifactId>sonar-maven-plugin</artifactId>
-					<version>${sonar.maven.plugin.version}</version>
 				</plugin>
 
 				<plugin>
@@ -317,141 +309,12 @@
 				<plugin>
 					<groupId>org.jacoco</groupId>
 					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>${jacoco.version}</version>
+					<version>${jacoco.maven.version.plugin}</version>
 				</plugin>
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-failsafe-plugin</artifactId>
 					<version>${maven.failsafe.plugin.version}</version>
-				</plugin>
-
-				<!--This plugin's configuration is used to store Eclipse m2e settings
-				only. It has no influence on the Maven build itself.-->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.apache.maven.plugins
-										</groupId>
-										<artifactId>
-											maven-dependency-plugin
-										</artifactId>
-										<versionRange>
-											[2.5.1,)
-										</versionRange>
-										<goals>
-											<goal>unpack</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.mojo
-										</groupId>
-										<artifactId>
-											build-helper-maven-plugin
-										</artifactId>
-										<versionRange>[1.7,)</versionRange>
-										<goals>
-											<goal>
-												timestamp-property
-											</goal>
-											<goal>
-												reserve-network-port
-											</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.jacoco
-										</groupId>
-										<artifactId>
-											jacoco-maven-plugin
-										</artifactId>
-										<versionRange>
-											[0.6.4.201312101107,)
-										</versionRange>
-										<goals>
-											<goal>
-												prepare-agent-integration
-											</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-enforcer-plugin</artifactId>
-										<versionRange>[1.0,)</versionRange>
-										<goals>
-											<goal>enforce</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.groovy.maven
-										</groupId>
-										<artifactId>
-											gmaven-plugin
-										</artifactId>
-										<versionRange>
-											[1.0,)
-										</versionRange>
-										<goals>
-											<goal>execute</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											ru.concerteza.buildnumber
-										</groupId>
-										<artifactId>
-											maven-jgit-buildnumber-plugin
-										</artifactId>
-										<versionRange>
-											[1.2.8,)
-										</versionRange>
-										<goals>
-											<goal>
-												extract-buildnumber
-											</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -471,6 +334,146 @@
 			<modules>
 				<module>dist</module>
 			</modules>
+		</profile>
+		<profile>
+			<id>only-eclipse</id>
+			<activation>
+				<property>
+					<name>m2e.version</name>
+				</property>
+			</activation>
+			<build>
+				<pluginManagement>
+					<plugins>
+						<plugin>
+							<groupId>org.eclipse.m2e</groupId>
+							<artifactId>lifecycle-mapping</artifactId>
+							<version>1.0.0</version>
+							<configuration>
+								<lifecycleMappingMetadata>
+									<pluginExecutions>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>
+													org.apache.maven.plugins
+												</groupId>
+												<artifactId>
+													maven-dependency-plugin
+												</artifactId>
+												<versionRange>
+													[2.5.1,)
+												</versionRange>
+												<goals>
+													<goal>unpack</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore></ignore>
+											</action>
+										</pluginExecution>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>
+													org.codehaus.mojo
+												</groupId>
+												<artifactId>
+													build-helper-maven-plugin
+												</artifactId>
+												<versionRange>[1.7,)</versionRange>
+												<goals>
+													<goal>
+														timestamp-property
+													</goal>
+													<goal>
+														reserve-network-port
+													</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore></ignore>
+											</action>
+										</pluginExecution>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>
+													org.jacoco
+												</groupId>
+												<artifactId>
+													jacoco-maven-plugin
+												</artifactId>
+												<versionRange>
+													[0.6.4.201312101107,)
+												</versionRange>
+												<goals>
+													<goal>
+														prepare-agent-integration
+													</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore></ignore>
+											</action>
+										</pluginExecution>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>org.apache.maven.plugins</groupId>
+												<artifactId>maven-enforcer-plugin</artifactId>
+												<versionRange>[1.0,)</versionRange>
+												<goals>
+													<goal>enforce</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore></ignore>
+											</action>
+										</pluginExecution>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>
+													org.codehaus.groovy.maven
+												</groupId>
+												<artifactId>
+													gmaven-plugin
+												</artifactId>
+												<versionRange>
+													[1.0,)
+												</versionRange>
+												<goals>
+													<goal>execute</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore></ignore>
+											</action>
+										</pluginExecution>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>
+													ru.concerteza.buildnumber
+												</groupId>
+												<artifactId>
+													maven-jgit-buildnumber-plugin
+												</artifactId>
+												<versionRange>
+													[1.2.8,)
+												</versionRange>
+												<goals>
+													<goal>
+														extract-buildnumber
+													</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore></ignore>
+											</action>
+										</pluginExecution>
+									</pluginExecutions>
+								</lifecycleMappingMetadata>
+							</configuration>
+						</plugin>
+					</plugins>
+				</pluginManagement>
+			</build>
 		</profile>
 		<profile>
 			<id>gpg</id>
