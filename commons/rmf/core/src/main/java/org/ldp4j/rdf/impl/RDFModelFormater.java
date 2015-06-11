@@ -223,7 +223,7 @@ final class RDFModelFormater {
 	}
 
 	private RDFFormat getFormat() {
-		return RDFFormat.forMIMEType(format.getMime(), RDFFormat.TURTLE);
+		return Rio.getWriterFormatForMIMEType(format.getMime(), RDFFormat.TURTLE);
 	}
 
 	private void populateRepository(Iterable<Triple> triples, RDFHandler handler) throws RDFHandlerException {
@@ -245,7 +245,7 @@ final class RDFModelFormater {
 			result=new TurtlePrettyPrinter(new MemValueFactory().createURI(baseURI.toString()),writer);
 		} else {
 			RDFWriterRegistry registry=RDFWriterRegistry.getInstance();
-			RDFFormat rawFormat=RDFFormat.forMIMEType(format.getMime(),RDFFormat.RDFXML);
+			RDFFormat rawFormat=Rio.getWriterFormatForMIMEType(format.getMime(),RDFFormat.RDFXML);
 			RDFWriterFactory factory=registry.get(rawFormat);
 			result=factory.getWriter(writer);
 			if(format.equals(Format.JSON_LD)) {
