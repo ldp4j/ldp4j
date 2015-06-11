@@ -65,7 +65,6 @@
 		<license.organization.url>${project.organization.url}</license.organization.url>
 		<license.artifact>${project.groupId}:${project.artifactId}:${project.version}</license.artifact>
 		<license.bundle>${project.build.finalName}.${project.packaging}</license.bundle>
-
 	</properties>
 
 	<build>
@@ -74,7 +73,6 @@
 				<plugin>
 					<groupId>org.apache.maven.plugins</groupId>
 					<artifactId>maven-resources-plugin</artifactId>
-					<version>2.6</version>
 					<configuration>
 						<encoding>${source.encoding}</encoding>
 					</configuration>
@@ -84,7 +82,6 @@
 				<plugin>
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>1.8</version>
 					<executions>
 						<execution>
 							<id>install-legal-files</id>
@@ -124,7 +121,6 @@
 				<plugin>
 					<groupId>com.mycila</groupId>
 					<artifactId>license-maven-plugin</artifactId>
-					<version>2.6</version>
 					<configuration>
 						<header>${config.dir}${file.separator}legal${file.separator}header.txt</header>
 						<aggregate>true</aggregate>

@@ -75,10 +75,11 @@
 
 		<!-- Reporting -->
 		<project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+
 		<!--  ============================================================   -->
 		<!--   Dependency version properties                                 -->
 		<!--  ============================================================   -->
-		<!-- Dependencies -->
+
 		<slf4j.version>1.7.12</slf4j.version>
 		<hamcrest.version>1.3</hamcrest.version>
 		<jmockit.version>1.17</jmockit.version>
@@ -131,34 +132,6 @@
 		<openejb.version>4.5.1</openejb.version>
 		<openejb.jee6.api.version>6.0-4</openejb.jee6.api.version>
 		<git.tag>${project.version}</git.tag>
-
-		<!--  ============================================================   -->
-		<!--   Plugin version properties                                     -->
-		<!--  ============================================================   -->
-		<maven.dependency.plugin.version>2.10</maven.dependency.plugin.version>
-		<sonar.maven.plugin.version>5.1</sonar.maven.plugin.version>
-		<maven.resources.plugin.version>2.7</maven.resources.plugin.version>
-		<maven.compiler.plugin.version>3.1</maven.compiler.plugin.version>
-		<maven.jgit.buildnumber.plugin.version>1.2.10</maven.jgit.buildnumber.plugin.version>
-		<gmaven.plugin.version>1.0</gmaven.plugin.version>
-		<maven.source.plugin.version>2.4</maven.source.plugin.version>
-		<maven.war.plugin.version>2.6</maven.war.plugin.version>
-		<maven.jar.plugin.version>2.6</maven.jar.plugin.version>
-		<truezip.maven.plugin.version>1.2</truezip.maven.plugin.version>
-		<maven.release.plugin.version>2.5.2</maven.release.plugin.version>
-		<maven.scm.plugin.version>1.9.4</maven.scm.plugin.version>
-		<build.helper.maven.plugin.version>1.9.1</build.helper.maven.plugin.version>
-		<license.maven.plugin.version>2.11</license.maven.plugin.version>
-		<maven.javadoc.plugin.version>2.10.3</maven.javadoc.plugin.version>
-		<animal.sniffer.maven.plugin.version>1.14</animal.sniffer.maven.plugin.version>
-		<maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
-		<maven.failsafe.plugin.version>2.18.1</maven.failsafe.plugin.version>
-		<maven.project.info.reports.plugin.version>2.8</maven.project.info.reports.plugin.version>
-		<maven.jxr.plugin.version>2.5</maven.jxr.plugin.version>
-		<maven.pmd.plugin.version>3.4</maven.pmd.plugin.version>
-		<findbugs.maven.plugin.version>3.0.1</findbugs.maven.plugin.version>
-		<maven.checkstyle.plugin.version>2.15</maven.checkstyle.plugin.version>
-		<taglist.maven.plugin.version>2.4</taglist.maven.plugin.version>
 	</properties>
 
 	<dependencyManagement>
@@ -243,21 +216,21 @@
 				<artifactId>httpclient</artifactId>
 				<version>${httpclient.version}</version>
 			</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient-cache</artifactId>
-			<version>${httpclient.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpmime</artifactId>
-			<version>${httpclient.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>fluent-hc</artifactId>
-			<version>${httpclient.version}</version>
-		</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpclient-cache</artifactId>
+				<version>${httpclient.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>httpmime</artifactId>
+				<version>${httpclient.version}</version>
+			</dependency>
+			<dependency>
+				<groupId>org.apache.httpcomponents</groupId>
+				<artifactId>fluent-hc</artifactId>
+				<version>${httpclient.version}</version>
+			</dependency>
 			<dependency>
 				<groupId>org.apache.cxf</groupId>
 				<artifactId>cxf-rt-frontend-jaxrs</artifactId>
@@ -499,9 +472,7 @@
 				<classifier>${tomee.classifier}</classifier>
 				<type>zip</type>
 			</dependency>
-
 		</dependencies>
-
 	</dependencyManagement>
 
 	<build>
@@ -512,226 +483,6 @@
 			</testResource>
 		</testResources>
 
-		<pluginManagement>
-			<plugins>
-				<!-- ===================================== -->
-				<!-- Plugins for managing the construction -->
-				<!-- ===================================== -->
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-dependency-plugin</artifactId>
-					<version>${maven.dependency.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.codehaus.sonar</groupId>
-					<artifactId>sonar-maven-plugin</artifactId>
-					<version>${sonar.maven.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-resources-plugin</artifactId>
-					<version>${maven.resources.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-compiler-plugin</artifactId>
-					<version>${maven.compiler.plugin.version}</version>
-				</plugin>
-
-				<!-- ================================== -->
-				<!-- Plugins for delivery configuration -->
-				<!-- ================================== -->
-
-				<plugin>
-					<groupId>ru.concerteza.buildnumber</groupId>
-					<artifactId>maven-jgit-buildnumber-plugin</artifactId>
-					<version>${maven.jgit.buildnumber.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.codehaus.groovy.maven</groupId>
-					<artifactId>gmaven-plugin</artifactId>
-					<version>${gmaven.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-source-plugin</artifactId>
-					<version>${maven.source.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-war-plugin</artifactId>
-					<version>${maven.war.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-jar-plugin</artifactId>
-					<version>${maven.jar.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>truezip-maven-plugin</artifactId>
-					<version>${truezip.maven.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-release-plugin</artifactId>
-					<version>${maven.release.plugin.version}</version>
-				</plugin>
-
-				<!-- ===================== -->
-				<!-- Other utility plugins -->
-				<!-- ===================== -->
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-scm-plugin</artifactId>
-					<version>${maven.scm.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>build-helper-maven-plugin</artifactId>
-					<version>${build.helper.maven.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>com.mycila</groupId>
-					<artifactId>license-maven-plugin</artifactId>
-					<version>${license.maven.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-javadoc-plugin</artifactId>
-					<version>${maven.javadoc.plugin.version}</version>
-				</plugin>
-
-				<plugin>
-					<groupId>org.codehaus.mojo</groupId>
-					<artifactId>animal-sniffer-maven-plugin</artifactId>
-					<version>${animal.sniffer.maven.plugin.version}</version>
-				</plugin>
-
-				<!-- ===================== -->
-				<!-- Testing plugins       -->
-				<!-- ===================== -->
-
-				<plugin>
-					<groupId>org.jacoco</groupId>
-					<artifactId>jacoco-maven-plugin</artifactId>
-					<version>${jacoco.version}</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-surefire-plugin</artifactId>
-					<version>${maven.surefire.plugin.version}</version>
-				</plugin>
-				<plugin>
-					<groupId>org.apache.maven.plugins</groupId>
-					<artifactId>maven-failsafe-plugin</artifactId>
-					<version>${maven.failsafe.plugin.version}</version>
-				</plugin>
-
-				<!--This plugin's configuration is used to store Eclipse m2e settings
-				only. It has no influence on the Maven build itself.-->
-				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.apache.maven.plugins
-										</groupId>
-										<artifactId>
-											maven-dependency-plugin
-										</artifactId>
-										<versionRange>
-											[2.5.1,)
-										</versionRange>
-										<goals>
-											<goal>unpack</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.mojo
-										</groupId>
-										<artifactId>
-											build-helper-maven-plugin
-										</artifactId>
-										<versionRange>[1.7,)</versionRange>
-										<goals>
-											<goal>
-												timestamp-property
-											</goal>
-											<goal>
-												reserve-network-port
-											</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.jacoco
-										</groupId>
-										<artifactId>
-											jacoco-maven-plugin
-										</artifactId>
-										<versionRange>
-											[0.6.4.201312101107,)
-										</versionRange>
-										<goals>
-											<goal>
-												prepare-agent-integration
-											</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>org.apache.maven.plugins</groupId>
-										<artifactId>maven-enforcer-plugin</artifactId>
-										<versionRange>[1.0,)</versionRange>
-										<goals>
-											<goal>enforce</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
-				</plugin>
-			</plugins>
-		</pluginManagement>
 
 		<plugins>
 			<!-- ===================================== -->
