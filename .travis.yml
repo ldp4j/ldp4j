@@ -19,10 +19,6 @@ script:
   -Dcoverage.reports.dir=`pwd`/target/all 
   --settings config/src/main/resources/ci/settings.xml;else mvn clean verify -Dcodebase.directory=`pwd` 
   --settings config/src/main/resources/ci/settings.xml; fi
-after_success:
-- if [ ${TRAVIS_PULL_REQUEST} = 'false' ]; then mvn sonar:sonar -Dcodebase.directory=`pwd`
-  -Dcoverage.reports.dir=`pwd`/target/all 
-  --settings config/src/main/resources/ci/settings.xml; else mvn clean; fi
 env:
   global:
   - secure: huXk6otUYsg6kfy+pLJDQSGJLThOuoh6cfmu0USsf2Hc4xlSa7tXYroagO+GL43EkmtpziMf8S7bnaQNPvuj2pA/4ZFAgks6o8GMrvefR6ssWyDKtFdP3k/0d/gvYPj0+CnNELXq1+govjjwWlqy0c57HszgvrbI+4ZcExyW6vY=

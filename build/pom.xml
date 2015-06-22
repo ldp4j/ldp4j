@@ -131,6 +131,7 @@
  -->
 		<openejb.version>4.5.1</openejb.version>
 		<openejb.jee6.api.version>6.0-4</openejb.jee6.api.version>
+		<sonar.java.plugin.version>2.4</sonar.java.plugin.version>
 		<git.tag>${project.version}</git.tag>
 	</properties>
 
@@ -992,6 +993,12 @@
 								<exclude>**/*ITest.java</exclude>
 							</excludes>
 							<argLine>${jacoco.agent.ut.arg}</argLine>
+							<properties>
+								<property>
+									<name>listener</name>
+									<value>org.sonar.java.jacoco.JUnitListener</value>
+								</property>
+							</properties>
 						</configuration>
 					</execution>
 				</executions>
@@ -999,6 +1006,15 @@
 		</plugins>
 
 	</build>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.codehaus.sonar-plugins.java</groupId>
+			<artifactId>sonar-jacoco-listeners</artifactId>
+			<version>${sonar.java.plugin.version}</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 	<profiles>
 
@@ -1110,6 +1126,12 @@
 									<failIfNoSpecifiedTests>false</failIfNoSpecifiedTests>
 									<failIfNoTests>false</failIfNoTests>
 									<argLine>${jacoco.agent.it.arg}</argLine>
+									<properties>
+										<property>
+											<name>listener</name>
+											<value>org.sonar.java.jacoco.JUnitListener</value>
+										</property>
+									</properties>
 								</configuration>
 							</execution>
 							<execution>
