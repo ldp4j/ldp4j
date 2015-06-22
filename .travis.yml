@@ -1,17 +1,32 @@
 language: java
 jdk:
-  - oraclejdk7
+- oraclejdk7
 notifications:
   email:
     recipients:
-      - ldp4j-commits@googlegroups.com
+    - ldp4j-commits@googlegroups.com
     on_success: always
     on_failure: always
-before_install :
- - git fetch --unshallow # we need a full clone for the build
- - git checkout ${TRAVIS_BRANCH} # we need to be on the HEAD of the target branch
-script: "if [ ${TRAVIS_PULL_REQUEST} = 'false' ]; then mvn deploy -Dossrh --settings config/target/classes/ci/settings.xml; else mvn clean verify; fi"
+before_install:
+- openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in config/src/main/resources/ci/secring.gpg.enc
+  -out local.secring.gpg -d
+- openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in config/src/main/resources/ci/pubring.gpg.enc
+  -out local.pubring.gpg -d
+- git fetch --unshallow
+- git checkout ${TRAVIS_BRANCH}
+script:
+- if [ ${TRAVIS_PULL_REQUEST} = 'false' ]; then mvn deploy -Dossrh -Dcodebase.directory=`pwd`
+  -Dcoverage.reports.dir=`pwd`/target/all 
+  --settings config/src/main/resources/ci/settings.xml;else mvn clean verify -Dcodebase.directory=`pwd` 
+  --settings config/src/main/resources/ci/settings.xml; fi
 env:
   global:
-   - secure: "huXk6otUYsg6kfy+pLJDQSGJLThOuoh6cfmu0USsf2Hc4xlSa7tXYroagO+GL43EkmtpziMf8S7bnaQNPvuj2pA/4ZFAgks6o8GMrvefR6ssWyDKtFdP3k/0d/gvYPj0+CnNELXq1+govjjwWlqy0c57HszgvrbI+4ZcExyW6vY="
-   - secure: "jkRsbfTTfgV/HhyCN0GNJF9Y80jmAg8W3sHZkPA/8Kb1p0B9Q4KGDEhtfE5mUZ0dhgT2IYdzmhC2MwxTEx76WjJmRNQX6XXnInQvuZaR2uD7RGIVbDUdcnw4XV4wF6BLg5fb5TBNCXTfdv3GVmK5rBQ+YlBYtK2fW2O3RRXiH+k="
+  - secure: huXk6otUYsg6kfy+pLJDQSGJLThOuoh6cfmu0USsf2Hc4xlSa7tXYroagO+GL43EkmtpziMf8S7bnaQNPvuj2pA/4ZFAgks6o8GMrvefR6ssWyDKtFdP3k/0d/gvYPj0+CnNELXq1+govjjwWlqy0c57HszgvrbI+4ZcExyW6vY=
+  - secure: jkRsbfTTfgV/HhyCN0GNJF9Y80jmAg8W3sHZkPA/8Kb1p0B9Q4KGDEhtfE5mUZ0dhgT2IYdzmhC2MwxTEx76WjJmRNQX6XXnInQvuZaR2uD7RGIVbDUdcnw4XV4wF6BLg5fb5TBNCXTfdv3GVmK5rBQ+YlBYtK2fW2O3RRXiH+k=
+  - secure: VlrAHctmLKu62J5RMQwExWgfeEYXy9uOh4u2ySYlYDorc/ORkTaH+RBxl0yJAMj0kP3dNRjWRDw+Mco/m0MT/7FMjO7KWWwYR7RqjDEmcKvPCFPhBDNEsPgHNT52NwtaJ6nP977U4MDJc3dt6RJMBU1RR6AtfqSSLg3+EmP16vI=
+  - secure: U3PyECq3RbzVwD59UqvGvyqUUI1uYySoIQu19PR+Ar9WxH5cp0Gtp+M2L9a4f4eQDtX1ol1CtQWNPBAklUuN4O9MH9SOm7sDMitbeYeau2UNP8xZ+PjqJgPAV0AaZCNHpALXaGIQn1teQJgFx+Ixxgou/hd1DqumHYxZCj14GIU=
+  - secure: GFTwJLQUy5LcXerh6o9MVaiNwx9m4RdacI9o9gvq/9uLdz4cdgtdbVIujLkap12w0WUO5rR31MNIkXBvQHC6VFN1AWd24scenYy1Zm4+tyHshdF9fXOhNCR6jDCCKrLvIl2Gt+VnY/WPvdWJHiJJTyMbkB3qq2qxKu3SgElIa5M=
+  - secure: kB1xDD0uoAzk/PZxaePaj/Mf6GtcJEJ4W31XlAp/kud1WLAjRplqCBK4yM9VjwUHilAa4wVqfybL1fbR+5/qHUmkuQ9EZWEBAm0ZBoZDNX8R+RD3oM0NKSFcNTU4B07/4N/TxRWl2bXfnM1AbLw4btrfIb/zEOev3Xdcbg49Tlo=
+  - secure: JnK1Qi2Qcu94yOVZFh5K6IyAsq/VC8YIwmNxRof26ui/8UgebUBscZXkU8C/erMi7g2sYzUQHUuK9dECDY5X937HQkl1K8ggiQoCbeiAZ7Yapt1AZwwXYE6Usbu9Ive+R2yFlvi49CfT45YUbd/XtwCxaB7Ds+zkXjyEeLN0VcQ=
+  - secure: KUKGMjLeUZlxrJa/eaKri43/jt8riwcdNqBfMlBa2smDpP8cBb7w8ScCJjhJvT3cYE12XXLWWD3iCr9gntxFTTyQzZ8FfeGMJEYoCxfYUnFnP6Hp7w9sKBtJ62jClqQKVnlXKAip0oFV0kocVOf5rVQPMEH38nIITObla3lN2WM=
+  - secure: U9jMDdTYjwmHG8f4q/VLYojfpGfVSvKBl5yPmungpyBzC5zYoZmpd9sBADv81QpwydYXyY99ZY4NImqqBX9lfvfHGOUVFly3JI5QXri/vN66o5LF8OVp3C86lFy+kJ82uUSjqED8crOWpzFepI5jCF17aMSCAyru/nha2ediq48=

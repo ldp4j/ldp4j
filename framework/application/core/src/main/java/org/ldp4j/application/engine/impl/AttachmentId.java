@@ -30,6 +30,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.ldp4j.application.engine.resource.ResourceId;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 final class AttachmentId {
@@ -70,7 +71,7 @@ final class AttachmentId {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("id", this.id).
 					add("resourceId", this.resourceId).

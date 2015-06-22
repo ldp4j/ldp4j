@@ -30,7 +30,7 @@ import java.net.URI;
 
 import org.ldp4j.application.engine.resource.Resource;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 public final class WriteSessionConfiguration {
 
@@ -64,7 +64,7 @@ public final class WriteSessionConfiguration {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper("WriteSessionConfiguration").
 					omitNullValues().
 					add("target",this.target).

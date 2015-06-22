@@ -58,10 +58,7 @@
 		<sesame.version>2.7.9</sesame.version>
 		<version.org.apache.tomcat>7.0.20</version.org.apache.tomcat>
 		<version.org.eclipse.jdt.core.compiler>3.7</version.org.eclipse.jdt.core.compiler>
-		<spring.version>3.0.7.RELEASE</spring.version>
-		<spring.osgi.version>1.2.0</spring.osgi.version>
 		<reflections.version>0.9.8</reflections.version>
-		<httpcomponents.client.version>4.3.3</httpcomponents.client.version>
 	</properties>
 
 	<dependencyManagement>
@@ -160,26 +157,22 @@
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-web</artifactId>
-			<version>${spring.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework</groupId>
 			<artifactId>spring-context</artifactId>
-			<version>${spring.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.felix</groupId>
 			<artifactId>org.osgi.core</artifactId>
-			<version>1.0.0</version>
 			<scope>test</scope>
 		</dependency>
 
 		<dependency>
 			<groupId>org.springframework.osgi</groupId>
 			<artifactId>spring-osgi-core</artifactId>
-			<version>${spring.osgi.version}</version>
 			<scope>test</scope>
 			<exclusions>
 				<exclusion>
@@ -193,7 +186,6 @@
 		<dependency>
 			<groupId>org.springframework.osgi</groupId>
 			<artifactId>spring-osgi-io</artifactId>
-			<version>${spring.osgi.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -214,25 +206,21 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient</artifactId>
-			<version>${httpcomponents.client.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpclient-cache</artifactId>
-			<version>${httpcomponents.client.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>httpmime</artifactId>
-			<version>${httpcomponents.client.version}</version>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.httpcomponents</groupId>
 			<artifactId>fluent-hc</artifactId>
-			<version>${httpcomponents.client.version}</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -376,7 +364,6 @@
 			<plugin>
 				<groupId>org.codehaus.groovy.maven</groupId>
 				<artifactId>gmaven-plugin</artifactId>
-				<version>1.0</version>
 				<executions>
 					<execution>
 						<id>update-categories</id>

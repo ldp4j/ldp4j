@@ -30,10 +30,10 @@ import static com.google.common.base.Preconditions.checkState;
 
 import org.ldp4j.application.engine.resource.Resource;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 abstract class ParentState {
-	
+
 	private static final class OrphanState extends ParentState {
 
 		@Override
@@ -55,7 +55,7 @@ abstract class ParentState {
 		private PersistentParentState(Resource child) {
 			this.child = child;
 		}
-		
+
 		@Override
 		boolean isRoot(DelegatedResourceSnapshot ctx) {
 			return this.child.isRoot();
@@ -68,18 +68,18 @@ abstract class ParentState {
 			ctx.setParentState(ParentState.childOf(parent));
 			return parent;
 		}
-		
-		@Override 
+
+		@Override
 		public String toString() {
-			return 
-				Objects.
+			return
+				MoreObjects.
 					toStringHelper(getClass()).
 						add("child.id()", this.child.id()).
 						toString();
 		}
 
 	}
-	
+
 	private static class SessionParentState extends ParentState {
 
 		private final DelegatedResourceSnapshot resource;
@@ -87,7 +87,7 @@ abstract class ParentState {
 		private SessionParentState(DelegatedResourceSnapshot parent) {
 			this.resource = parent;
 		}
-		
+
 		@Override
 		boolean isRoot(DelegatedResourceSnapshot ctx) {
 			return this.resource==null;
@@ -98,11 +98,11 @@ abstract class ParentState {
 			checkState(!isRoot(ctx),"Resource %s does not have parent",ctx.name());
 			return this.resource;
 		}
-		
-		@Override 
+
+		@Override
 		public String toString() {
-			return 
-				Objects.
+			return
+				MoreObjects.
 					toStringHelper(getClass()).
 						add("resource.name()", this.resource.name()).
 						toString();
@@ -113,9 +113,9 @@ abstract class ParentState {
 	}
 
 	abstract boolean isRoot(DelegatedResourceSnapshot ctx);
-	
+
 	abstract DelegatedResourceSnapshot parent(DelegatedResourceSnapshot ctx);
-	
+
 	static ParentState orphan() {
 		return new OrphanState();
 	}

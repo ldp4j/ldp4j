@@ -42,7 +42,7 @@ import org.apache.commons.io.IOUtils;
 import org.ldp4j.persistence.testing.Population;
 import org.ldp4j.persistence.testing.Population.Replacement;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Maps;
@@ -109,7 +109,7 @@ public final class PopulationBuilder {
 		@Override
 		public String toString() {
 			return
-				Objects.
+				MoreObjects.
 					toStringHelper(Replacement.class).
 						omitNullValues().
 						add("oldValue",this.oldValue).

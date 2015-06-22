@@ -40,8 +40,9 @@ import org.ldp4j.application.engine.template.AttachedTemplate;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.ext.ResourceHandler;
 
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
 import com.google.common.base.Optional;
 
 public abstract class AbstractMutableTemplate<T extends ResourceHandler> implements ResourceTemplate {
@@ -151,7 +152,7 @@ public abstract class AbstractMutableTemplate<T extends ResourceHandler> impleme
 
 	protected ToStringHelper stringHelper() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("id",this.id).

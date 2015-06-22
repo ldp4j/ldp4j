@@ -28,6 +28,7 @@ package org.ldp4j.application.engine.constraints;
 
 import org.ldp4j.application.engine.resource.ResourceId;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 import static com.google.common.base.Preconditions.*;
@@ -76,7 +77,7 @@ public final class ConstraintReportId {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("resourceId",this.resourceId).
 					add("constraintsId",this.constraintsId).

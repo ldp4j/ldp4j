@@ -31,10 +31,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 public final class ResourceId {
-	
+
 	private final String templateId;
 	private final Name<?> name;
 
@@ -42,7 +43,7 @@ public final class ResourceId {
 		this.name = name;
 		this.templateId = templateId;
 	}
-	
+
 	public Name<?> name() {
 		return this.name;
 	}
@@ -67,17 +68,17 @@ public final class ResourceId {
 		}
 		return result;
 	}
-	
+
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("name", this.name()).
 					add("templateId", this.templateId()).
 					toString();
 	}
-	
+
 	public static ResourceId createId(Name<?> name, ResourceTemplate template) {
 		checkNotNull(name,"Resource name cannot be null");
 		checkNotNull(template,"Template cannot be null");

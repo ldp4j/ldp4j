@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> 
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- =================================================================== -->
@@ -80,16 +80,51 @@
 		<jacoco.it.file>jacoco-it.exec</jacoco.it.file>
 
 		<sonar.language>java</sonar.language>
+<!--
 		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
+ -->
 		<sonar.junit.reportsPath>${project.build.directory}${file.separator}surefire-reports</sonar.junit.reportsPath>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 		<sonar.jacoco.reportPath>${coverage.reports.dir}${file.separator}${jacoco.ut.file}</sonar.jacoco.reportPath>
 		<sonar.jacoco.itReportPath>${coverage.reports.dir}${file.separator}${jacoco.it.file}</sonar.jacoco.itReportPath>
 
-		<!-- TODO: Make these properties configurable via environment specific properties -->
-		<sonar.jdbc.url>jdbc:h2:tcp://localhost:9092/sonar</sonar.jdbc.url>
-		<sonar.jdbc.username>sonar</sonar.jdbc.username>
-		<sonar.jdbc.password>sonar</sonar.jdbc.password>
+		<!--  ============================================================   -->
+		<!--   Plugin version properties                                     -->
+		<!--  ============================================================   -->
+		<animal.sniffer.maven.plugin.version>1.14</animal.sniffer.maven.plugin.version>
+		<build.helper.maven.plugin.version>1.9.1</build.helper.maven.plugin.version>
+		<findbugs.maven.plugin.version>3.0.1</findbugs.maven.plugin.version>
+		<jacoco.maven.plugin.version>0.7.4.201502262128</jacoco.maven.plugin.version>
+		<gmaven.plugin.version>1.0</gmaven.plugin.version>
+		<org.codehaus.gmaven.gmaven.plugin.version>1.5</org.codehaus.gmaven.gmaven.plugin.version>
+		<mycila.license.maven.plugin.version>2.11</mycila.license.maven.plugin.version>
+		<codehaus.license.maven.plugin.version>1.8</codehaus.license.maven.plugin.version>
+		<maven.assembly.plugin.version>2.5.5</maven.assembly.plugin.version>
+		<maven.checkstyle.plugin.version>2.15</maven.checkstyle.plugin.version>
+		<maven.clean.plugin.version>2.6</maven.clean.plugin.version>
+		<maven.compiler.plugin.version>3.3</maven.compiler.plugin.version>
+		<maven.dependency.plugin.version>2.10</maven.dependency.plugin.version>
+		<maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
+		<maven.enforcer.plugin.version>1.4</maven.enforcer.plugin.version>
+		<maven.failsafe.plugin.version>2.18.1</maven.failsafe.plugin.version>
+		<maven.gpg.plugin.version>1.6</maven.gpg.plugin.version>
+		<maven.install.plugin.version>2.5.2</maven.install.plugin.version>
+		<maven.jar.plugin.version>2.6</maven.jar.plugin.version>
+		<maven.javadoc.plugin.version>2.10.3</maven.javadoc.plugin.version>
+		<maven.jgit.buildnumber.plugin.version>1.2.10</maven.jgit.buildnumber.plugin.version>
+		<maven.jxr.plugin.version>2.5</maven.jxr.plugin.version>
+		<maven.pmd.plugin.version>3.4</maven.pmd.plugin.version>
+		<maven.project.info.reports.plugin.version>2.8</maven.project.info.reports.plugin.version>
+		<maven.release.plugin.version>2.5.2</maven.release.plugin.version>
+		<maven.resources.plugin.version>2.7</maven.resources.plugin.version>
+		<maven.scm.plugin.version>1.9.4</maven.scm.plugin.version>
+		<maven.source.plugin.version>2.4</maven.source.plugin.version>
+		<maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
+		<maven.war.plugin.version>2.6</maven.war.plugin.version>
+		<nexus.staging.maven.plugin.version>1.6.3</nexus.staging.maven.plugin.version>
+		<sonar.maven.plugin.version>2.5</sonar.maven.plugin.version>
+		<taglist.maven.plugin.version>2.4</taglist.maven.plugin.version>
+		<truezip.maven.plugin.version>1.2</truezip.maven.plugin.version>
 	</properties>
 
 	<build>
@@ -99,7 +134,7 @@
 				<inherited>true</inherited>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-enforcer-plugin</artifactId>
-				<version>1.3.1</version>
+				<version>${maven.enforcer.plugin.version}</version>
 				<executions>
 					<execution>
 						<id>enforce-maven-3</id>
@@ -109,10 +144,10 @@
 						<configuration>
 							<rules>
 								<requireMavenVersion>
-									<version>[3.0.4,)</version>
+									<version>[3.2.3,)</version>
 								</requireMavenVersion>
 								<requireJavaVersion>
-									<version>1.6</version>
+									<version>1.7</version>
 								</requireJavaVersion>
 							</rules>
 							<fail>true</fail>
@@ -123,57 +158,163 @@
 		</plugins>
 		<pluginManagement>
 			<plugins>
-				<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+				<!-- ===================================== -->
+				<!-- Plugins for managing the construction -->
+				<!-- ===================================== -->
+
 				<plugin>
-					<groupId>org.eclipse.m2e</groupId>
-					<artifactId>lifecycle-mapping</artifactId>
-					<version>1.0.0</version>
-					<configuration>
-						<lifecycleMappingMetadata>
-							<pluginExecutions>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											org.codehaus.groovy.maven
-										</groupId>
-										<artifactId>
-											gmaven-plugin
-										</artifactId>
-										<versionRange>
-											[1.0,)
-										</versionRange>
-										<goals>
-											<goal>execute</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-								<pluginExecution>
-									<pluginExecutionFilter>
-										<groupId>
-											ru.concerteza.buildnumber
-										</groupId>
-										<artifactId>
-											maven-jgit-buildnumber-plugin
-										</artifactId>
-										<versionRange>
-											[1.2.8,)
-										</versionRange>
-										<goals>
-											<goal>
-												extract-buildnumber
-											</goal>
-										</goals>
-									</pluginExecutionFilter>
-									<action>
-										<ignore></ignore>
-									</action>
-								</pluginExecution>
-							</pluginExecutions>
-						</lifecycleMappingMetadata>
-					</configuration>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-dependency-plugin</artifactId>
+					<version>${maven.dependency.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-compiler-plugin</artifactId>
+					<version>${maven.compiler.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-resources-plugin</artifactId>
+					<version>${maven.resources.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>build-helper-maven-plugin</artifactId>
+					<version>${build.helper.maven.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>com.mycila</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>${mycila.license.maven.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-surefire-plugin</artifactId>
+					<version>${maven.surefire.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-jar-plugin</artifactId>
+					<version>${maven.jar.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-clean-plugin</artifactId>
+					<version>${maven.clean.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-install-plugin</artifactId>
+					<version>${maven.install.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-deploy-plugin</artifactId>
+					<version>${maven.deploy.plugin.version}</version>
+				</plugin>
+
+				<!-- ================================== -->
+				<!-- Plugins for delivery configuration -->
+				<!-- ================================== -->
+
+				<plugin>
+					<groupId>ru.concerteza.buildnumber</groupId>
+					<artifactId>maven-jgit-buildnumber-plugin</artifactId>
+					<version>${maven.jgit.buildnumber.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.groovy.maven</groupId>
+					<artifactId>gmaven-plugin</artifactId>
+					<version>${gmaven.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.gmaven</groupId>
+					<artifactId>gmaven-plugin</artifactId>
+					<version>${org.codehaus.gmaven.gmaven.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-source-plugin</artifactId>
+					<version>${maven.source.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-war-plugin</artifactId>
+					<version>${maven.war.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>truezip-maven-plugin</artifactId>
+					<version>${truezip.maven.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-release-plugin</artifactId>
+					<version>${maven.release.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-assembly-plugin</artifactId>
+					<version>${maven.assembly.plugin.version}</version>
+				</plugin>
+
+				<!-- ===================== -->
+				<!-- Other utility plugins -->
+				<!-- ===================== -->
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-scm-plugin</artifactId>
+					<version>${maven.scm.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-javadoc-plugin</artifactId>
+					<version>${maven.javadoc.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>animal-sniffer-maven-plugin</artifactId>
+					<version>${animal.sniffer.maven.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>license-maven-plugin</artifactId>
+					<version>${codehaus.license.maven.plugin.version}</version>
+				</plugin>
+
+				<!-- ===================== -->
+				<!-- Testing plugins       -->
+				<!-- ===================== -->
+
+				<plugin>
+					<groupId>org.jacoco</groupId>
+					<artifactId>jacoco-maven-plugin</artifactId>
+					<version>${jacoco.maven.plugin.version}</version>
+				</plugin>
+				<plugin>
+					<groupId>org.apache.maven.plugins</groupId>
+					<artifactId>maven-failsafe-plugin</artifactId>
+					<version>${maven.failsafe.plugin.version}</version>
 				</plugin>
 			</plugins>
 		</pluginManagement>
@@ -194,100 +335,257 @@
 				<module>dist</module>
 			</modules>
 		</profile>
-			<profile>
-				<id>travis-ossrh</id>
-				<activation>
-					<property>
-						<name>ossrh</name>
-					</property>
-				</activation>
-				<distributionManagement>
-					<snapshotRepository>
-						<id>ossrh</id>
-						<url>https://oss.sonatype.org/content/repositories/snapshots</url>
-					</snapshotRepository>
-				</distributionManagement>
-				<build>
+		<profile>
+			<id>only-eclipse</id>
+			<activation>
+				<property>
+					<name>m2e.version</name>
+				</property>
+			</activation>
+			<build>
+				<pluginManagement>
 					<plugins>
 						<plugin>
-							<groupId>org.sonatype.plugins</groupId>
-							<artifactId>nexus-staging-maven-plugin</artifactId>
-							<version>1.6.3</version>
-							<extensions>true</extensions>
+							<groupId>org.eclipse.m2e</groupId>
+							<artifactId>lifecycle-mapping</artifactId>
+							<version>1.0.0</version>
 							<configuration>
-								<serverId>ossrh</serverId>
-								<nexusUrl>https://oss.sonatype.org/</nexusUrl>
-								<autoReleaseAfterClose>false</autoReleaseAfterClose>
+								<lifecycleMappingMetadata>
+									<pluginExecutions>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>
+													org.apache.maven.plugins
+												</groupId>
+												<artifactId>
+													maven-dependency-plugin
+												</artifactId>
+												<versionRange>
+													[2.5.1,)
+												</versionRange>
+												<goals>
+													<goal>unpack</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore></ignore>
+											</action>
+										</pluginExecution>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>
+													org.codehaus.mojo
+												</groupId>
+												<artifactId>
+													build-helper-maven-plugin
+												</artifactId>
+												<versionRange>[1.7,)</versionRange>
+												<goals>
+													<goal>
+														timestamp-property
+													</goal>
+													<goal>
+														reserve-network-port
+													</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore></ignore>
+											</action>
+										</pluginExecution>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>
+													org.jacoco
+												</groupId>
+												<artifactId>
+													jacoco-maven-plugin
+												</artifactId>
+												<versionRange>
+													[0.6.4.201312101107,)
+												</versionRange>
+												<goals>
+													<goal>
+														prepare-agent-integration
+													</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore></ignore>
+											</action>
+										</pluginExecution>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>org.apache.maven.plugins</groupId>
+												<artifactId>maven-enforcer-plugin</artifactId>
+												<versionRange>[1.0,)</versionRange>
+												<goals>
+													<goal>enforce</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore></ignore>
+											</action>
+										</pluginExecution>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>
+													org.codehaus.groovy.maven
+												</groupId>
+												<artifactId>
+													gmaven-plugin
+												</artifactId>
+												<versionRange>
+													[1.0,)
+												</versionRange>
+												<goals>
+													<goal>execute</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore></ignore>
+											</action>
+										</pluginExecution>
+										<pluginExecution>
+											<pluginExecutionFilter>
+												<groupId>
+													ru.concerteza.buildnumber
+												</groupId>
+												<artifactId>
+													maven-jgit-buildnumber-plugin
+												</artifactId>
+												<versionRange>
+													[1.2.8,)
+												</versionRange>
+												<goals>
+													<goal>
+														extract-buildnumber
+													</goal>
+												</goals>
+											</pluginExecutionFilter>
+											<action>
+												<ignore></ignore>
+											</action>
+										</pluginExecution>
+									</pluginExecutions>
+								</lifecycleMappingMetadata>
 							</configuration>
 						</plugin>
 					</plugins>
-				</build>
-			</profile>
-		</profiles>
+				</pluginManagement>
+			</build>
+		</profile>
+		<profile>
+			<id>gpg</id>
+			<activation>
+				<property>
+					<name>gpg.secretKeyring</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.apache.maven.plugins</groupId>
+						<artifactId>maven-gpg-plugin</artifactId>
+						<version>${maven.gpg.plugin.version}</version>
+						<executions>
+							<execution>
+								<id>sign-artifacts</id>
+								<phase>verify</phase>
+								<goals>
+									<goal>sign</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+		<profile>
+			<id>travis-ossrh</id>
+			<activation>
+				<property>
+					<name>ossrh</name>
+				</property>
+			</activation>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.sonatype.plugins</groupId>
+						<artifactId>nexus-staging-maven-plugin</artifactId>
+						<version>${nexus.staging.maven.plugin.version}</version>
+						<extensions>true</extensions>
+						<configuration>
+							<serverId>ossrh</serverId>
+							<nexusUrl>https://oss.sonatype.org/</nexusUrl>
+							<autoReleaseAfterClose>false</autoReleaseAfterClose>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 	<!-- =================================================================== -->
 	<!--   ENVIRONMENT SETTINGS                                              -->
 	<!-- =================================================================== -->
 
-	<prerequisites>
-		<maven>3.0.4</maven>
-	</prerequisites>
+	<mailingLists>
+		<mailingList>
+			<name>LDP4j Commits List</name>
+			<subscribe>ldp4j-commits+subscribe@googlegroups.com</subscribe>
+			<unsubscribe>ldp4j-commits+unsubscribe@googlegroups.com</unsubscribe>
+			<post>ldp4j-commits@googlegroups.com</post>
+			<archive>https://groups.google.com/d/forum/ldp4j-commits</archive>
+		</mailingList>
+		<mailingList>
+			<name>LDP4j Developer List</name>
+			<subscribe>ldp4j-dev+subscribe@googlegroups.com</subscribe>
+			<unsubscribe>ldp4j-dev+unsubscribe@googlegroups.com</unsubscribe>
+			<post>ldp4j-dev@googlegroups.com</post>
+			<archive>https://groups.google.com/d/forum/ldp4j-dev</archive>
+		</mailingList>
+		<mailingList>
+			<name>LDP4j User List</name>
+			<subscribe>ldp4j-user+subscribe@googlegroups.com</subscribe>
+			<unsubscribe>ldp4j-user+unsubscribe@googlegroups.com</unsubscribe>
+			<post>ldp4j-user@googlegroups.com</post>
+			<archive>https://groups.google.com/d/forum/ldp4j-user</archive>
+		</mailingList>
+	</mailingLists>
 
-  <mailingLists>
-    <mailingList>
-      <name>LDP4j Commits List</name>
-      <subscribe>ldp4j-commits+subscribe@googlegroups.com</subscribe>
-      <unsubscribe>ldp4j-commits+unsubscribe@googlegroups.com</unsubscribe>
-      <post>ldp4j-commits@googlegroups.com</post>
-      <archive>https://groups.google.com/d/forum/ldp4j-commits</archive>
-    </mailingList>
-    <mailingList>
-      <name>LDP4j Developer List</name>
-      <subscribe>ldp4j-dev+subscribe@googlegroups.com</subscribe>
-      <unsubscribe>ldp4j-dev+unsubscribe@googlegroups.com</unsubscribe>
-      <post>ldp4j-dev@googlegroups.com</post>
-      <archive>https://groups.google.com/d/forum/ldp4j-dev</archive>
-    </mailingList>
-    <mailingList>
-      <name>LDP4j User List</name>
-      <subscribe>ldp4j-user+subscribe@googlegroups.com</subscribe>
-      <unsubscribe>ldp4j-user+unsubscribe@googlegroups.com</unsubscribe>
-      <post>ldp4j-user@googlegroups.com</post>
-      <archive>https://groups.google.com/d/forum/ldp4j-user</archive>
-    </mailingList>
-  </mailingLists>
+	<issueManagement>
+		<system>GitHub</system>
+		<url>https://github.com/ldp4j/ldp4j/issues</url>
+	</issueManagement>
 
-<!--
-  <issueManagement>
-    <system>jira</system>
-    <url>http://issues.apache.org/jira/browse/OPENEJB</url>
-  </issueManagement>
--->
-<!--  
-  <ciManagement>
-    <system>bamboo</system>
-    <url>http://bamboo.oeg-upm.net/</url>
-    <notifiers>
-      <notifier>
-        <configuration>
-          <address>ldp4j-commits@googlegroups.com</address>
-        </configuration>
-      </notifier>
-    </notifiers>
-  </ciManagement>
--->
-<!--
-  <distributionManagement>
-    <site>
-      <id>ldp4j-website</id>
-      <url>scp://delicias.dia.fi.upm.es/ldp4j/maven</url>
-    </site>
-  </distributionManagement>
--->	
- 
-  <scm>
+	<ciManagement>
+		<system>Travis-CI</system>
+		<url>https://travis-ci.org/ldp4j/ldp4j</url>
+		<notifiers>
+			<notifier>
+				<configuration>
+					<address>ldp4j-dev@googlegroups.com</address>
+				</configuration>
+			</notifier>
+		</notifiers>
+	</ciManagement>
+
+	<distributionManagement>
+		<repository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+		</repository>
+		<snapshotRepository>
+			<id>ossrh</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots</url>
+		</snapshotRepository>
+	</distributionManagement>
+
+	<scm>
 		<connection>scm:git:git://git@github.com:ldp4j/ldp4j.git</connection>
 		<developerConnection>scm:git:ssh://github.com/ldp4j/ldp4j.git</developerConnection>
 		<url>git://github.com/ldp4j/ldp4j.git</url>
 	</scm>
-	
+
 </project>

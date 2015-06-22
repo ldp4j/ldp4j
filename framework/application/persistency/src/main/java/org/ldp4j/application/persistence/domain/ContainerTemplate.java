@@ -32,7 +32,7 @@ import javax.persistence.*;
 
 import org.ldp4j.application.persistence.domain.RDFSourceTemplate;
 
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 @MappedSuperclass
 public abstract class ContainerTemplate extends RDFSourceTemplate implements Serializable {

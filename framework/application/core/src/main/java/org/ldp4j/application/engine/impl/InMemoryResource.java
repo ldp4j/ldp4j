@@ -54,8 +54,8 @@ import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateIntrospector;
 import org.ldp4j.application.engine.template.TemplateVisitor;
 
-import com.google.common.base.Objects;
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 class InMemoryResource extends AbstractInMemoryResource implements Resource {
 
@@ -105,7 +105,7 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		@Override
 		public String toString() {
 			return
-				Objects.
+				MoreObjects.
 					toStringHelper(getClass()).
 						omitNullValues().
 						add("id", id()).

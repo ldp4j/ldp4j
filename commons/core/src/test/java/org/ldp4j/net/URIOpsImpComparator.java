@@ -65,7 +65,6 @@ public final class URIOpsImpComparator {
 			return resolved.equals(expected);
 		}
 
-		@SuppressWarnings("unchecked")
 		public void roundtrip(String rawBase, String rawTarget) {
 			T base=wrap(rawBase);
 			T target=wrap(rawTarget);
@@ -104,13 +103,15 @@ public final class URIOpsImpComparator {
 			}
 		}
 
-		private void registerFailure(T base, T target, RuntimeException e, Stage stage, T... prev) {
+		@SafeVarargs
+		private final void registerFailure(T base, T target, RuntimeException e, Stage stage, T... prev) {
 			errors++;
 			showFail(base,target,e,stage,prev);
 			failTest(base,target,stage.description+" failed: "+e.getMessage());
 		}
 
-		private void showFail(T base, T target, RuntimeException e, Stage stage, T... prev) {
+		@SafeVarargs
+		private final void showFail(T base, T target, RuntimeException e, Stage stage, T... prev) {
 			switch(stage) {
 			case RELATIVIZATION:
 				System.out.printf("[%s] <%s> : <%s> --[REL]--> ERROR",getClass().getSimpleName(),base,target);
@@ -127,7 +128,8 @@ public final class URIOpsImpComparator {
 			System.out.printf(" (%s)%n",e.getMessage());
 		}
 
-		private void showTest(T base, T target, T... parts) {
+		@SafeVarargs
+		private final void showTest(T base, T target, T... parts) {
 			System.out.printf("[%s] <%s> : <%s> --[REL]--> <%s> --[RES]--> %s != %s%n",getClass().getSimpleName(),base,target,parts[0],parts[1],parts[2]);
 		}
 

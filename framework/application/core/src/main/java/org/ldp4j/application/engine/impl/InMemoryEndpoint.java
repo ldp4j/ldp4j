@@ -26,15 +26,15 @@
  */
 package org.ldp4j.application.engine.impl;
 
+import static com.google.common.base.Preconditions.checkState;
+
 import java.util.Date;
 
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.resource.ResourceId;
 
-import com.google.common.base.Objects;
-
-import static com.google.common.base.Preconditions.*;
+import com.google.common.base.MoreObjects;
 
 final class InMemoryEndpoint implements Endpoint {
 
@@ -107,7 +107,7 @@ final class InMemoryEndpoint implements Endpoint {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("id",this.id).

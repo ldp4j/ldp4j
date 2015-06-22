@@ -43,7 +43,7 @@ import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 import javax.persistence.UniqueConstraint;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 @Entity
 @Table(
@@ -156,7 +156,7 @@ public class Endpoint implements Serializable {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("id",this.id).

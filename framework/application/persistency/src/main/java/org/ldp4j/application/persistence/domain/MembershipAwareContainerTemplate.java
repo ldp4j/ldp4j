@@ -34,7 +34,7 @@ import javax.persistence.*;
 import org.ldp4j.application.ext.annotations.MembershipRelation;
 import org.ldp4j.application.persistence.domain.ContainerTemplate;
 
-import com.google.common.base.Objects.ToStringHelper;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 @MappedSuperclass
 public abstract class MembershipAwareContainerTemplate extends ContainerTemplate implements Serializable {

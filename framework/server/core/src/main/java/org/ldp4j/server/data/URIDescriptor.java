@@ -26,7 +26,7 @@
  */
 package org.ldp4j.server.data;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 final class URIDescriptor {
 
@@ -120,7 +120,7 @@ final class URIDescriptor {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("scope",this.scope).
 					add("type",this.type).

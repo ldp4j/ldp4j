@@ -35,14 +35,15 @@ import java.util.List;
 import java.util.Set;
 
 public final class Collector<S> {
-	
+
 	private final List<S> base;
 
 	private Collector() {
 		this.base = new ArrayList<S>();
 	}
 
-	public Collector<S> collect(S... elements) {
+	@SafeVarargs
+	public final Collector<S> collect(S... elements) {
 		this.base.addAll(Arrays.asList(elements));
 		return this;
 	}

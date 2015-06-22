@@ -27,12 +27,19 @@
 package org.ldp4j.application.persistence.domain;
 
 import java.io.Serializable;
-import java.lang.String;
 import java.net.URI;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.GeneratedValue;
+import javax.persistence.Id;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToOne;
+import javax.persistence.Table;
+import javax.persistence.UniqueConstraint;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 /**
  * This entity reflects an association class, that is, state of the relationship
@@ -131,7 +138,7 @@ public class TemplateAttachment implements Serializable {
 	@Override
 	public final String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("id",this.id).

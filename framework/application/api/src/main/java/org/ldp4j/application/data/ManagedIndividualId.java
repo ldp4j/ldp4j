@@ -28,7 +28,9 @@ package org.ldp4j.application.data;
 
 import java.net.URI;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
+
 import static com.google.common.base.Preconditions.*;
 
 public final class ManagedIndividualId {
@@ -76,7 +78,7 @@ public final class ManagedIndividualId {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("name", this.name).

@@ -41,7 +41,7 @@ import org.ldp4j.application.engine.resource.ResourceVisitor;
 import org.ldp4j.application.engine.resource.Slug;
 import org.ldp4j.application.engine.template.ContainerTemplate;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
@@ -77,7 +77,7 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 		@Override
 		public String toString() {
 			return
-				Objects.
+				MoreObjects.
 					toStringHelper(getClass()).
 						add("number",this.number).
 						add("containerId",this.containerId).

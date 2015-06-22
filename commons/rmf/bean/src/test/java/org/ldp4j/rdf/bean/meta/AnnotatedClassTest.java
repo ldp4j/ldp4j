@@ -30,6 +30,7 @@ package org.ldp4j.rdf.bean.meta;
 import java.util.Collection;
 import java.util.Set;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ldp4j.rdf.bean.util.TypeUtils;
 import org.slf4j.Logger;
@@ -82,13 +83,14 @@ public class AnnotatedClassTest {
 		LOGGER.trace("\t- Generic return type: {}",TypeUtils.toString(method.getGenericReturnType()));
 		LOGGER.trace("\t- Raw return type....: {}",method.getRawReturnType().getCanonicalName());
 	}
-	
+
 	@Test
 	public void testMetaClass$simple() {
 		processSimpleClass(BaseClass.class);
 		processSimpleClass(Redef.class);
 	}
 
+	@Ignore("Case not valid in Java SE 7")
 	@Test
 	public void testMetaClass$parameterized() {
 		processParameterizedClass(BaseParameterizedType.class);
@@ -99,52 +101,52 @@ public class AnnotatedClassTest {
 class AnnotatedClassHarness {
 
 	public static class GenericClass<S extends Comparable<S>> {
-		
+
 	}
-	
+
 	public static class Mixin<R extends Number, S extends Comparable<S>> extends GenericClass<S> {
-		
+
 	}
-	
+
 	public static class Redef<S extends Comparable<S>> extends Mixin<Integer,S> {
-		
+
 	}
-	
+
 	public static class BaseClass extends Redef<String> {
-		
+
 	}
 
 	public static class GenericParameterizedClass<S extends Collection<?>> {
-		
+
 		public <T> T get() {
 			return null;
 		}
-		
+
 		public <T> T[] array() {
 			return null;
 		}
 	}
-	
-	public static class MixinParameterizedClass<R extends Number, S extends Collection<R>> extends GenericParameterizedClass<S> {
-		
-		public <T extends Comparable<T>> T get() {
-			return null;
-		}
 
-		public <T extends Comparable<T>> T[] array() {
-			return null;
-		}
+	public static class MixinParameterizedClass<R extends Number, S extends Collection<R>> extends GenericParameterizedClass<S> {
+
+//		public <T extends Comparable<T>> T get() {
+//			return null;
+//		}
+
+//		public <T extends Comparable<T>> T[] array() {
+//			return null;
+//		}
 	}
 
 	public static class BaseParameterizedType extends MixinParameterizedClass<Integer,Set<Integer>> {
-		
-		public <T extends Number> T get() {
-			return null;
-		}
 
-		public <T extends Number> T[] array() {
-			return null;
-		}
+//		public <T extends Number> T get() {
+//			return null;
+//		}
+//
+//		public <T extends Number> T[] array() {
+//			return null;
+//		}
 
 	}
 

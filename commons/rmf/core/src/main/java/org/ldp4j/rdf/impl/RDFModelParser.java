@@ -267,8 +267,8 @@ final class RDFModelParser {
 
 	private TripleProducer getProducer(String content) {
 		RDFFormat format =
-			RDFFormat.
-				forMIMEType(
+			Rio.
+				getParserFormatForMIMEType(
 					this.format.getMime(),
 					RDFFormat.TURTLE);
 		TripleProducer producer=null;

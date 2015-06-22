@@ -29,7 +29,7 @@ package org.ldp4j.application.engine.impl;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.Transaction;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 
 final class InMemoryTransaction implements Transaction {
 
@@ -196,7 +196,7 @@ final class InMemoryTransaction implements Transaction {
 
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("id", this.id).
 					add("state",this.state).

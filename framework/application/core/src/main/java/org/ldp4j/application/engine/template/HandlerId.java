@@ -31,6 +31,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
 final class HandlerId {
@@ -81,7 +82,7 @@ final class HandlerId {
 	@Override
 	public String toString() {
 		return
-			Objects.
+			MoreObjects.
 				toStringHelper(getClass()).
 					add("className", this.className).
 					add("systemHashCode", this.systemHashCode).

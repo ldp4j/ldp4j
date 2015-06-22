@@ -39,7 +39,7 @@ import org.ldp4j.server.data.spi.ContentTransformationException;
 import org.ldp4j.server.data.spi.MediaTypeProvider;
 import org.ldp4j.server.data.spi.RuntimeDelegate;
 
-import com.google.common.base.Objects;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
@@ -80,7 +80,7 @@ final class TripleResolver {
 			@Override
 			public String toString() {
 				return
-					Objects.
+					MoreObjects.
 						toStringHelper(getClass()).
 							omitNullValues().
 							add("triple",this.triple).
