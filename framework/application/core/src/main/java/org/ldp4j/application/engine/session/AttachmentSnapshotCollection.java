@@ -99,9 +99,6 @@ final class AttachmentSnapshotCollection {
 			}
 		},
 		ID_ALREADY_USED("AttachmentSnapshot identifier %1$s already used"),
-		RESOURCE_NAME_ALREADY_USED("Resource name %2$s already used"),
-		ALREADY_ATTACHED("Resource named %2$s already attached as %1$s"),
-		ATTACHMENT_COLLISION("A resource named %2$s is already attached and another resource is attached as %1$s");
 		;
 
 		private final String message;
@@ -115,7 +112,7 @@ final class AttachmentSnapshotCollection {
 		}
 
 		String description(AttachmentSnapshot attachment) {
-			return String.format(message,attachment.id(),attachment.resource().name());
+			return String.format(this.message,attachment.id(),attachment.resource().name());
 		}
 
 	}
@@ -173,22 +170,10 @@ final class AttachmentSnapshotCollection {
 
 	Attachability attachability(String attachmentId, Name<?> name) {
 		Attachability result=null;
-		AttachmentSnapshot aBN=attachmentsByName.get(name);
-		AttachmentSnapshot aBI=attachmentsById.get(attachmentId);
-		if(aBN==aBI) {
-			if(aBN==null) {
-				result=Attachability.ATTACHABLE;
-			} else {
-				result=Attachability.ALREADY_ATTACHED;
-			}
+		if(this.attachmentsById.containsKey(attachmentId)) {
+			result=Attachability.ID_ALREADY_USED;
 		} else {
-			if(aBN!=null) {
-				result=Attachability.RESOURCE_NAME_ALREADY_USED;
-			} else if(aBI!=null) {
-				result=Attachability.ID_ALREADY_USED;
-			} else {
-				result=Attachability.ATTACHMENT_COLLISION;
-			}
+			result=Attachability.ATTACHABLE;
 		}
 		return result;
 	}
