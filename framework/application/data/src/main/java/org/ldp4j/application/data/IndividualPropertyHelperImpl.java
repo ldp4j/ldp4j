@@ -41,61 +41,121 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 		this.pHelper = pHelper;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> T firstValue(Class<? extends T> aClazz) {
 		return this.pHelper.firstValue(aClazz);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz) {
 		return this.pHelper.firstIndividual(clazz);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public IndividualHelper firstIndividual() {
 		return this.pHelper.firstIndividual();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Set<URI> types() {
 		return this.iHelper.types();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PropertyHelper property(URI propertyId) {
 		return this.iHelper.property(propertyId);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PropertyHelper property(String propertyId) {
 		return this.iHelper.property(propertyId);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PropertyHelper property(Term property) {
 		return this.iHelper.property(property);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> IndividualPropertyHelper withLiteral(T rawValue) {
 		return this.pHelper.withLiteral(rawValue);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> IndividualPropertyHelper withIndividual(Name<?> id) {
 		return this.pHelper.withIndividual(id);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId) {
+		return this.pHelper.withIndividual(id,managerId);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, URI path) {
+		return this.pHelper.withIndividual(id,managerId,path);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, String path) {
+		return this.pHelper.withIndividual(id,managerId,path);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> IndividualPropertyHelper withIndividual(URI id) {
 		return this.pHelper.withIndividual(id);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> IndividualPropertyHelper withIndividual(String id) {
 		return this.pHelper.withIndividual(id);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> IndividualPropertyHelper withIndividual(Term id) {
 		return this.pHelper.withIndividual(id);

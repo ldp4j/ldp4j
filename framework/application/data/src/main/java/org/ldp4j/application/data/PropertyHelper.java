@@ -38,14 +38,65 @@ public interface PropertyHelper {
 
 	<T, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz);
 
+	/**
+	 * Add a literal value
+	 * @param id The literal value to be added
+	 * @return A helper for the current individual and property
+	 */
 	<T> IndividualPropertyHelper withLiteral(T rawValue);
 
+	/**
+	 * Add a local individual value
+	 * @param id The name of the individual to add
+	 * @return A helper for the current individual and property
+	 */
 	<T> IndividualPropertyHelper withIndividual(Name<?> id);
 
+	/**
+	 * Add a managed individual value
+	 * @param id The name of the individual to add
+	 * @param managerId The identifier of the handler that manages the resource
+	 * @return A helper for the current individual and property
+	 */
+	<T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId);
+
+	/**
+	 * Add a relative individual value
+	 * @param id The name of the individual to parent individual
+	 * @param managerId The identifier of the handler that manages the parent resource
+	 * @param path The relative path for the individual to be added
+	 * @return A helper for the current individual and property
+	 */
+	<T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, URI path);
+
+	/**
+	 * Add a relative individual value
+	 * @param id The name of the individual to parent individual
+	 * @param managerId The identifier of the handler that manages the parent resource
+	 * @param path The relative path for the individual to be added
+	 * @return A helper for the current individual and property
+	 */
+	<T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, String path);
+
+	/**
+	 * Add a external individual value
+	 * @param id The identifier of the individual to add
+	 * @return A helper for the current individual and property
+	 */
 	<T> IndividualPropertyHelper withIndividual(URI id);
 
+	/**
+	 * Add a external individual value
+	 * @param id The identifier of the individual to add
+	 * @return A helper for the current individual and property
+	 */
 	<T> IndividualPropertyHelper withIndividual(String id);
 
+	/**
+	 * Add a external individual value
+	 * @param id The identifier of the individual to add
+	 * @return A helper for the current individual and property
+	 */
 	<T> IndividualPropertyHelper withIndividual(Term id);
 
 }

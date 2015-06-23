@@ -43,46 +43,97 @@ final class NullPropertyHelper implements PropertyHelper {
 		this.iph = new IndividualPropertyHelperImpl(new NullIndividualHelper(), this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> T firstValue(Class<? extends T> aClazz) {
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public IndividualHelper firstIndividual() {
 		return new NullIndividualHelper();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz) {
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> IndividualPropertyHelper withLiteral(T rawValue) {
 		return new IndividualPropertyHelperImpl(new NullIndividualHelper(), this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> IndividualPropertyHelper withIndividual(Name<?> id) {
 		return this.iph;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId) {
+		return this.iph;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, URI path) {
+		return this.iph;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, String path) {
+		return this.iph;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> IndividualPropertyHelper withIndividual(URI id) {
 		return new IndividualPropertyHelperImpl(new NullIndividualHelper(), this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> IndividualPropertyHelper withIndividual(String id) {
 		return new IndividualPropertyHelperImpl(new NullIndividualHelper(), this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> IndividualPropertyHelper withIndividual(Term id) {
 		return new IndividualPropertyHelperImpl(new NullIndividualHelper(), this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return

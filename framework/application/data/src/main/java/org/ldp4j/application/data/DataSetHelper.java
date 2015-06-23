@@ -32,7 +32,7 @@ public abstract class DataSetHelper {
 
 	public static final URI SELF = URI.create("");
 
-	public static interface TripleProcessor<T> extends DataSetHelper.TripleConsumer {
+	public static interface TripleProcessor<T> extends TripleConsumer {
 
 		T getResult();
 
@@ -49,11 +49,6 @@ public abstract class DataSetHelper {
 	DataSetHelper() {
 	}
 
-	@Deprecated
-	public static DataSetHelper newInstance(DataSet dataSet) {
-		return new DataSetHelperImpl(dataSet);
-	}
-
 	public abstract <T, S extends Individual<T, S>> S replace(Object from, T to, Class<? extends S> clazz);
 
 	public abstract ManagedIndividual manage(ManagedIndividualId id) throws DataSetModificationException;
@@ -63,6 +58,8 @@ public abstract class DataSetHelper {
 	public abstract Individual<?, ?> relative(URI path);
 
 	public abstract IndividualHelper managedIndividual(Name<?> name, String managerId);
+
+	public abstract IndividualHelper relativeIndividual(Name<?> name, String managerId, URI path);
 
 	public abstract IndividualHelper localIndividual(Name<?> name);
 

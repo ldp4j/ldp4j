@@ -185,6 +185,9 @@ final class DataSetHelperImpl extends DataSetHelper {
 		return this.dataSet.individualOfId(path);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public IndividualHelper managedIndividual(Name<?> name, String managerId) {
 		ManagedIndividualId individualId = ManagedIndividualId.createId(name,managerId);
@@ -192,6 +195,20 @@ final class DataSetHelperImpl extends DataSetHelper {
 		return new IndividualHelperImpl(individual);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public IndividualHelper relativeIndividual(Name<?> name, String managerId, URI path) {
+		ManagedIndividualId parentId = ManagedIndividualId.createId(name,managerId);
+		RelativeIndividualId individualId=RelativeIndividualId.createId(parentId, path);
+		RelativeIndividual individual = this.dataSet.individual(individualId, RelativeIndividual.class);
+		return new IndividualHelperImpl(individual);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public IndividualHelper localIndividual(Name<?> name) {
 		@SuppressWarnings("rawtypes")
