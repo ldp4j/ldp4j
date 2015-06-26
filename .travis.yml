@@ -1,3 +1,8 @@
+sudo: false
+cache:
+  directories:
+  - $HOME/.m2/repository
+  - $HOME/.sonar
 language: java
 jdk:
 - oraclejdk7
@@ -14,11 +19,18 @@ before_install:
   -out local.pubring.gpg -d
 - git fetch --unshallow
 - git checkout ${TRAVIS_BRANCH}
+install:
+- /bin/true
 script:
-- if [ ${TRAVIS_PULL_REQUEST} = 'false' ]; then mvn deploy -Dossrh -Dcodebase.directory=`pwd`
-  -Dcoverage.reports.dir=`pwd`/target/all 
-  --settings config/src/main/resources/ci/settings.xml;else mvn clean verify -Dcodebase.directory=`pwd` 
-  --settings config/src/main/resources/ci/settings.xml; fi
+- if [ ${TRAVIS_BRANCH} == 'master' ] && [ ${TRAVIS_PULL_REQUEST} = 'false' ];
+  then mvn deploy -Dossrh -Dcodebase.directory=`pwd` -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;
+  else mvn verify --settings config/src/main/resources/ci/settings.xml;
+  fi
+- if [ ${TRAVIS_PULL_REQUEST} = 'false' ];
+  then mvn sonar:sonar -Dcoverage.reports.dir=`pwd`/target/all -Dsonar.branch=$TRAVIS_BRANCH;
+  fi
+- mkdir /tmp/cache-trick
+- mv $HOME/.m2/repository/org/ldp4j /tmp/cache-trick/
 env:
   global:
   - secure: huXk6otUYsg6kfy+pLJDQSGJLThOuoh6cfmu0USsf2Hc4xlSa7tXYroagO+GL43EkmtpziMf8S7bnaQNPvuj2pA/4ZFAgks6o8GMrvefR6ssWyDKtFdP3k/0d/gvYPj0+CnNELXq1+govjjwWlqy0c57HszgvrbI+4ZcExyW6vY=
