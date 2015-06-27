@@ -52,6 +52,16 @@
 				<gpg.passphrase>${env.ENCRYPTION_PASSWORD}</gpg.passphrase>
 				<gpg.publicKeyring>${codebase.directory}${file.separator}local.pubring.gpg</gpg.publicKeyring>
 				<gpg.secretKeyring>${codebase.directory}${file.separator}local.secring.gpg</gpg.secretKeyring>
+			</properties>
+		</profile>
+		<profile>
+			<id>sonar</id>
+			<activation>
+				<property>
+					<name>sonar.branch</name>
+				</property>
+			</activation>
+			<properties>
 				<sonar.jdbc.url>jdbc:mysql://${env.SONARQUBE_JDBC_HOST}:${env.SONARQUBE_JDBC_PORT}/${env.SONARQUBE_JDBC_SCHEMA}?useUnicode=true&amp;characterEncoding=utf8&amp;rewriteBatchedStatements=true&amp;useConfigs=maxPerformance</sonar.jdbc.url>
 				<sonar.jdbc.username>${env.SONARQUBE_JDBC_USERNAME}</sonar.jdbc.username>
 				<sonar.jdbc.password>${env.SONARQUBE_JDBC_PASSWORD}</sonar.jdbc.password>
