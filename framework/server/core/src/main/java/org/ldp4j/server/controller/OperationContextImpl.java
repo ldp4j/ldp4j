@@ -126,6 +126,8 @@ final class OperationContextImpl implements OperationContext {
 		this.headers=headers;
 		this.request=request;
 		this.entity = entity;
+		LOGGER.trace("Host.........: {}",headers.getHeaderString(HttpHeaders.HOST));
+		LOGGER.trace("Request uri..: {}",this.uriInfo.getRequestUri());
 		LOGGER.trace("Base.........: {}",base());
 		LOGGER.trace("Endpoint.....: {}",endpoint());
 	}
@@ -203,7 +205,7 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public URI base() {
-		return URI.create(this.uriInfo.getBaseUri().toString().concat("/"));
+		return URI.create(this.uriInfo.getBaseUri().toString().concat("/")).normalize();
 	}
 
 	@Override

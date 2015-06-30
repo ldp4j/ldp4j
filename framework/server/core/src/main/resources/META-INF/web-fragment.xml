@@ -55,6 +55,11 @@
 		<servlet-class>
 			org.apache.cxf.transport.servlet.CXFServlet
 		</servlet-class>
+		<!-- See https://issues.apache.org/jira/browse/CXF-5068 -->
+		<init-param>
+			<param-name>disable-address-updates</param-name>
+			<param-value>true</param-value>
+		</init-param>
 		<init-param>
 			<param-name>static-welcome-file</param-name>
 			<param-value>/index.html</param-value>
