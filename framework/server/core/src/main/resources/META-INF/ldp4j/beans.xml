@@ -50,7 +50,7 @@
 		<property name="ignoreResourceNotFound" value="true"/>
 		<property name="locations">
 			<list>
-				<value>classpath:META-INF/ldp4j-server-frontend.cfg</value>
+				<value>classpath:META-INF/ldp4j/frontend.cfg</value>
 				<value>classpath:ldp4j-server-frontend.cfg</value>
 				<value>file:ldp4j-server-frontend.cfg</value>
 			</list>

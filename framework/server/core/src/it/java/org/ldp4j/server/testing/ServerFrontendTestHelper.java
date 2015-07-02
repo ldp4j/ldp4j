@@ -190,8 +190,11 @@ public final class ServerFrontendTestHelper {
 					ClassLoader.getSystemResource("META-INF/web-fragment.xml"),
 					"META-INF/web-fragment.xml").
 				addAsResource(
-					ClassLoader.getSystemResource("beans.xml"),
-					"beans.xml").
+					ClassLoader.getSystemResource("META-INF/ldp4j/beans.xml"),
+					"META-INF/ldp4j/beans.xml").
+				addAsResource(
+					ClassLoader.getSystemResource("META-INF/ldp4j/frontend.cfg"),
+					"META-INF/ldp4j/frontend.cfg").
 				addAsServiceProvider(
 					RuntimeDelegate.class,
 					CoreRuntimeDelegate.class).

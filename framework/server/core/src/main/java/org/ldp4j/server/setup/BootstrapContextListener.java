@@ -39,6 +39,7 @@ import javax.servlet.ServletContextAttributeListener;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
 import javax.servlet.ServletRegistration;
+import javax.servlet.ServletRegistration.Dynamic;
 import javax.servlet.SessionCookieConfig;
 import javax.servlet.SessionTrackingMode;
 import javax.servlet.annotation.WebListener;
@@ -203,6 +204,20 @@ public final class BootstrapContextListener implements ServletContextListener {
 						new BootstrapServletContextAttributeListener()
 					);
 		}
+
+		LOGGER.info("Registering CXF servlet...");
+		Dynamic dynamic =
+			sce.
+				getServletContext().
+					addServlet("LDP4jFrontendServerServlet","org.apache.cxf.transport.servlet.CXFServlet");
+		dynamic.addMapping("/*");
+		/** See https://issues.apache.org/jira/browse/CXF-5068 */
+		dynamic.setInitParameter("disable-address-updates","true");
+		/** Required for testing */
+		dynamic.setInitParameter("static-welcome-file","/index.html");
+		dynamic.setInitParameter("static-resources-list","/index.html");
+		dynamic.setLoadOnStartup(1);
+		LOGGER.info("CXF servlet registered.");
 
 		if(isEnabled(SERVER_INITIALIZATION_LOGGING)) {
 			LOGGER.info(dumpContext("Context initialization started",sce.getServletContext()));

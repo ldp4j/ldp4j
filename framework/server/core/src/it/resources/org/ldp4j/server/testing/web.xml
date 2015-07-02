@@ -55,6 +55,7 @@
 		</listener-class>
 	</listener>
 
+<!-- 
 	<servlet>
 		<display-name>CXF Servlet</display-name>
 		<servlet-name>CXFServlet</servlet-name>
@@ -76,5 +77,6 @@
 		<servlet-name>CXFServlet</servlet-name>
 		<url-pattern>/*</url-pattern>
 	</servlet-mapping>
+ -->
 
 </web-app>

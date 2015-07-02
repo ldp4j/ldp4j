@@ -40,7 +40,7 @@
 
 	<context-param>
 		<param-name>contextConfigLocation</param-name>
-		<param-value>classpath:beans.xml</param-value>
+		<param-value>classpath:META-INF/ldp4j/beans.xml</param-value>
 	</context-param>
 
 	<listener>
@@ -48,32 +48,5 @@
 			org.springframework.web.context.ContextLoaderListener
 		</listener-class>
 	</listener>
-
-	<servlet>
-		<display-name>LDP4j Frontend Server Servlet</display-name>
-		<servlet-name>LDP4jFrontendServerServlet</servlet-name>
-		<servlet-class>
-			org.apache.cxf.transport.servlet.CXFServlet
-		</servlet-class>
-		<!-- See https://issues.apache.org/jira/browse/CXF-5068 -->
-		<init-param>
-			<param-name>disable-address-updates</param-name>
-			<param-value>true</param-value>
-		</init-param>
-		<init-param>
-			<param-name>static-welcome-file</param-name>
-			<param-value>/index.html</param-value>
-		</init-param>
-		<init-param>
-			<param-name>static-resources-list</param-name>
-			<param-value>/index.html</param-value>
-		</init-param>
-		<load-on-startup>1</load-on-startup>
-	</servlet>
-
-	<servlet-mapping>
-		<servlet-name>LDP4jFrontendServerServlet</servlet-name>
-		<url-pattern>/*</url-pattern>
-	</servlet-mapping>
 
 </web-fragment>
