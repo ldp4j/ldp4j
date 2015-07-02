@@ -196,6 +196,10 @@ public abstract class ApplicationEngine {
 		}
 	}
 
+	public synchronized ApplicationEngineState state() {
+		return this.state;
+	}
+
 	public synchronized final void start() throws ApplicationEngineLifecycleException {
 		if(ApplicationEngineState.STARTED.equals(this.state)) {
 			return;

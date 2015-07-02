@@ -53,8 +53,13 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 
 	@Override
 	public boolean isOffline() {
-		// TODO Auto-generated method stub
-		return false;
+		boolean result=false;
+		try {
+			result=!applicationEngine().state().isStarted();
+		} catch (ApplicationEngineException e) {
+			// NOTHING TO DO
+		}
+		return result;
 	}
 
 	@Override
