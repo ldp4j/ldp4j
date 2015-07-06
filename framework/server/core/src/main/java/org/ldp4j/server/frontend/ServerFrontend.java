@@ -112,7 +112,18 @@ public final class ServerFrontend {
 	}
 
 	private ApplicationContext currentContext() {
-		return (ApplicationContext)this.context.getAttribute(LDP4J_APPLICATION_CONTEXT);
+		ApplicationContext currentContext = (ApplicationContext)this.context.getAttribute(LDP4J_APPLICATION_CONTEXT);
+		if(currentContext==null) {
+			Response failure =
+				Response.
+					serverError().
+					type(MediaType.TEXT_PLAIN).
+					language(Locale.ENGLISH).
+					entity("Application is not available").
+					build();
+			throw new WebApplicationException(failure);
+		}
+		return currentContext;
 	}
 
 	private OperationContextBuilder newOperationBuilder(HttpMethod operation) {
