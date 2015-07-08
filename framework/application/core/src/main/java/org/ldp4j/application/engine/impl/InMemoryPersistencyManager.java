@@ -50,7 +50,6 @@ import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.engine.template.BasicContainerTemplate;
 import org.ldp4j.application.engine.template.ContainerTemplate;
 import org.ldp4j.application.engine.template.DirectContainerTemplate;
-import org.ldp4j.application.engine.template.ImmutableTemplateFactory;
 import org.ldp4j.application.engine.template.IndirectContainerTemplate;
 import org.ldp4j.application.engine.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.engine.template.ResourceTemplate;
@@ -60,76 +59,21 @@ import org.ldp4j.application.ext.ResourceHandler;
 
 final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 
-	private final class ImmutableTemplateLibrary implements TemplateLibrary {
-
-		@Override
-		public ResourceTemplate findByHandler(Class<? extends ResourceHandler> handlerClass) {
-			return templateOfHandler(handlerClass);
-		}
-
-		@Override
-		public ResourceTemplate findById(String templateId) {
-			return templateOfId(templateId);
-		}
-
-		@Override
-		public boolean contains(ResourceTemplate template) {
-			return InMemoryPersistencyManager.this.templateLibrary.contains(template);
-		}
-
-		@Override
-		public void accept(final TemplateVisitor visitor) {
-			InMemoryPersistencyManager.this.templateLibrary.accept(
-				new TemplateVisitor() {
-					@Override
-					public void visitResourceTemplate(ResourceTemplate template) {
-						ImmutableTemplateFactory.newImmutable(template).accept(visitor);
-					}
-					@Override
-					public void visitContainerTemplate(ContainerTemplate template) {
-						ImmutableTemplateFactory.newImmutable(template).accept(visitor);
-					}
-					@Override
-					public void visitBasicContainerTemplate(BasicContainerTemplate template) {
-						ImmutableTemplateFactory.newImmutable(template).accept(visitor);
-					}
-					@Override
-					public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
-						ImmutableTemplateFactory.newImmutable(template).accept(visitor);
-					}
-					@Override
-					public void visitDirectContainerTemplate(DirectContainerTemplate template) {
-						ImmutableTemplateFactory.newImmutable(template).accept(visitor);
-					}
-					@Override
-					public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
-						ImmutableTemplateFactory.newImmutable(template).accept(visitor);
-					}
-				}
-			);
-		}
-	}
-
 	private final InMemoryResourceRepository resourceRepository;
 	private final InMemoryEndpointRepository endpointRepository;
-	private final InMemoryTemplateLibrary templateLibrary;
 	private final InMemoryConstraintReportRepository constraintReportRepository;
 
 	private final ThreadLocal<InMemoryTransaction> currentTransaction;
 	private final AtomicLong transactionCounter;
 
+	private TemplateLibrary templateLibrary;
+
 	InMemoryPersistencyManager() {
 		this.resourceRepository=new InMemoryResourceRepository();
 		this.endpointRepository=new InMemoryEndpointRepository();
 		this.constraintReportRepository=new InMemoryConstraintReportRepository();
-		this.templateLibrary=new InMemoryTemplateLibrary();
 		this.currentTransaction=new ThreadLocal<InMemoryTransaction>();
 		this.transactionCounter=new AtomicLong();
-	}
-
-	private Class<? extends ResourceHandler> toResourceHandlerClass(Class<?> targetClass) {
-		checkArgument(ResourceHandler.class.isAssignableFrom(targetClass),"Class '%s' does not implement '%s'",targetClass.getCanonicalName(),ResourceHandler.class.getCanonicalName());
-		return targetClass.asSubclass(ResourceHandler.class);
 	}
 
 	private ResourceTemplate findTemplate(String id) {
@@ -184,7 +128,7 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 				}
 			);
 		InMemoryResource resource = result.get();
-		resource.setPersistencyManager(this);
+		resource.setTemplateLibrary(this.templateLibrary);
 		return resource;
 	}
 
@@ -202,25 +146,26 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		return transaction;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public ResourceTemplate registerHandler(Class<?> targetClass) {
-		return ImmutableTemplateFactory.newImmutable(this.templateLibrary.registerHandler(targetClass));
+	public void useTemplates(TemplateLibrary library) {
+		this.templateLibrary=library;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public boolean isHandlerRegistered(Class<?> handlerClass) {
-		return this.templateLibrary.findByHandler(toResourceHandlerClass(handlerClass))!=null;
-	}
-
-	@Override
-	public TemplateLibrary exportTemplates() {
-		return new ImmutableTemplateLibrary();
-	}
-
 	public Resource createResource(String templateId, Name<?> resourceId, Resource parent) {
 		return createResource(findTemplate(templateId),resourceId,parent);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public <T extends Resource> T createResource(String templateId, Name<?> resourceId, Resource parent, Class<? extends T> expectedResourceClass) {
 		ResourceTemplate template=
 			findInstantiableTemplate(
@@ -230,6 +175,9 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		return expectedResourceClass.cast(newResource);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Endpoint createEndpoint(Resource resource, String path, EntityTag entityTag, Date creationDate) {
 		checkNotNull(resource,"Endpoint's resource cannot be null");
@@ -238,47 +186,74 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		return new InMemoryEndpoint(this.endpointRepository.nextIdentifier(),path,resource.id(),creationDate,entityTag);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T extends Resource> T resourceOfId(ResourceId id, Class<? extends T> expectedResourceClass) {
 		return this.resourceRepository.resourceById(id, expectedResourceClass);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Resource resourceOfId(ResourceId id) {
 		return this.resourceRepository.resourceOfId(id);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Container containerOfId(ResourceId id) {
 		return this.resourceRepository.containerOfId(id);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Endpoint endpointOfPath(String path) {
 		return this.endpointRepository.endpointOfPath(path);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Endpoint endpointOfResource(ResourceId id) {
 		return this.endpointRepository.endpointOfResource(id);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void add(Resource resource) {
 		this.resourceRepository.add(resource);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void add(Endpoint endpoint) {
 		this.endpointRepository.add(endpoint);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void remove(Resource resource) {
 		this.resourceRepository.remove(resource);
 		this.constraintReportRepository.removeByResource(resource);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void remove(Endpoint endpoint, Date deletionDate) {
 		checkArgument(endpoint instanceof InMemoryEndpoint);
@@ -286,6 +261,9 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		((InMemoryEndpoint)endpoint).delete(deletionDate);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void init() throws LifecycleException {
 		this.resourceRepository.init();
@@ -293,6 +271,9 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		this.endpointRepository.init();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void shutdown() throws LifecycleException {
 		this.endpointRepository.shutdown();
@@ -300,18 +281,27 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		this.resourceRepository.shutdown();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ResourceTemplate templateOfHandler(Class<? extends ResourceHandler> handlerClass) {
 		checkNotNull(handlerClass,"Resource handler cannot be null");
-		return ImmutableTemplateFactory.newImmutable(this.templateLibrary.findByHandler(handlerClass));
+		return this.templateLibrary.findByHandler(handlerClass);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ResourceTemplate templateOfId(String templateId) {
 		checkNotNull(templateId,"Template identifier cannot be null");
-		return ImmutableTemplateFactory.newImmutable(this.templateLibrary.findById(templateId));
+		return this.templateLibrary.findById(templateId);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T extends ResourceTemplate> T templateOfId(String templateId, Class<? extends T> templateClass) {
 		checkNotNull(templateClass,"Template class cannot be null");
@@ -325,17 +315,26 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		return templateClass.cast(found);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ConstraintReport createConstraintReport(final Resource resource, final Constraints constraints, final Date date, final HttpRequest request) {
 		return new InMemoryConstraintReport(resource.id(), date, request, constraints);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void add(ConstraintReport report) {
 		checkArgument(report instanceof InMemoryConstraintReport);
 		this.constraintReportRepository.add((InMemoryConstraintReport)report);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ConstraintReport constraintReportOfId(ConstraintReportId id) {
 		return this.constraintReportRepository.constraintReportOfId(id);

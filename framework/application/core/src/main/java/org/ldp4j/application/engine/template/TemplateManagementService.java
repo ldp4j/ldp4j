@@ -26,10 +26,10 @@
  */
 package org.ldp4j.application.engine.template;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.List;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.Service;
@@ -38,7 +38,7 @@ import org.ldp4j.application.ext.ResourceHandler;
 
 public final class TemplateManagementService implements Service {
 
-	private static class TemplateManagementServiceBuilder extends ServiceBuilder<TemplateManagementService> {
+	private static final class TemplateManagementServiceBuilder extends ServiceBuilder<TemplateManagementService> {
 
 		private TemplateManagementServiceBuilder() {
 			super(TemplateManagementService.class);
@@ -50,43 +50,118 @@ public final class TemplateManagementService implements Service {
 
 	}
 
+	private interface ServiceState {
+
+		void configure(List<Class<?>> handlerClasses, List<ResourceHandler> handlers) throws TemplateManagementServiceConfigurationException;
+
+		TemplateLibrary templateLibrary();
+
+		<T extends ResourceHandler> T getHandler(Class<? extends T> handlerClass);
+
+	}
+
+	private final class ConfiguredServiceState implements ServiceState {
+
+		private final TemplateManager manager;
+
+		private ConfiguredServiceState(TemplateManager manager) {
+			this.manager = manager;
+		}
+
+		@Override
+		public void configure(List<Class<?>> handlerClasses,List<ResourceHandler> handlers) throws TemplateManagementServiceConfigurationException {
+			throw new IllegalStateException("Template management service is already configured");
+		}
+
+		@Override
+		public TemplateLibrary templateLibrary() {
+			return this.manager.templateLibrary();
+		}
+
+		@Override
+		public <T extends ResourceHandler> T getHandler(Class<? extends T> handlerClass) {
+			ResourceTemplate template=templateLibrary().findByHandler(handlerClass);
+			return this.manager.getHandler(handlerClass, template);
+		}
+
+	}
+
+	private final class NewServiceState implements ServiceState {
+
+		private NewServiceState() {
+		}
+
+		@Override
+		public void configure(List<Class<?>> handlerClasses,List<ResourceHandler> handlers) throws TemplateManagementServiceConfigurationException {
+			TemplateManager manager=
+				TemplateManager.
+					builder().
+						withHandlerClasses(handlerClasses).
+						withHandlers(handlers).
+						build();
+			TemplateManagementService.this.updateState(manager);
+		}
+
+		@Override
+		public TemplateLibrary templateLibrary() {
+			throw new IllegalStateException("Template management service has not been configured yet");
+		}
+
+		@Override
+		public <T extends ResourceHandler> T getHandler(Class<? extends T> handlerClass) {
+			throw new IllegalStateException("Template management service has not been configured yet");
+		}
+
+	}
+
 	private final PersistencyManager persistencyManager;
 
-	private final Lock read;
-	private final Lock write;
-
-	private TemplateManager manager=null;
+	private final AtomicReference<ServiceState> state;
 
 	private TemplateManagementService(PersistencyManager persistencyManager) {
-		this.persistencyManager = persistencyManager;
-		ReadWriteLock lock=new ReentrantReadWriteLock();
-		this.read=lock.readLock();
-		this.write=lock.writeLock();
+		this.persistencyManager=persistencyManager;
+		this.state=new AtomicReference<ServiceState>(new NewServiceState());
+	}
+
+	private void updateState(TemplateManager manager) {
+		if(!this.state.compareAndSet(this.state.get(),new ConfiguredServiceState(manager))) {
+			throw new IllegalStateException("Template management service is already configured");
+		}
+		this.persistencyManager.useTemplates(manager.templateLibrary());
+	}
+
+	private ServiceState getState() {
+		return this.state.get();
 	}
 
 	public void configure(List<Class<?>> handlerClasses, List<ResourceHandler> handlers) throws TemplateManagementServiceConfigurationException {
-		write.lock();
-		try {
-			this.manager=
-				TemplateManager.
-						builder().
-							withPersistencyManager(this.persistencyManager).
-							withHandlerClasses(handlerClasses).
-							withHandlers(handlers).
-							build();
-		} finally {
-			write.unlock();
+		getState().configure(handlerClasses, handlers);
+	}
+
+	public ResourceTemplate templateOfHandler(Class<? extends ResourceHandler> handlerClass) {
+		checkNotNull(handlerClass,"Resource handler cannot be null");
+		return ImmutableTemplateFactory.newImmutable(getState().templateLibrary().findByHandler(handlerClass));
+	}
+
+	public ResourceTemplate templateOfId(String templateId) {
+		checkNotNull(templateId,"Template identifier cannot be null");
+		return ImmutableTemplateFactory.newImmutable(getState().templateLibrary().findById(templateId));
+	}
+
+	public <T extends ResourceTemplate> T templateOfId(String templateId, Class<? extends T> templateClass) {
+		checkNotNull(templateClass,"Template class cannot be null");
+		ResourceTemplate found = templateOfId(templateId);
+		if(found==null) {
+			return null;
+		} else if(!templateClass.isInstance(found)) {
+			// TODO: Define a specialized runtime exception
+			throw new IllegalArgumentException("Cannot cast template '"+templateId+"' to '"+templateClass.getCanonicalName()+"' ("+found.getClass().getCanonicalName()+")");
 		}
+		return templateClass.cast(found);
 	}
 
 	public <T extends ResourceHandler> T getHandler(Class<? extends T> handlerClass) {
-		read.lock();
-		try {
-			ResourceTemplate template=this.persistencyManager.templateOfHandler(handlerClass);
-			return this.manager.getHandler(handlerClass, template);
-		} finally {
-			read.unlock();
-		}
+		return getState().getHandler(handlerClass);
 	}
 
 	public static ServiceBuilder<TemplateManagementService> serviceBuilder() {

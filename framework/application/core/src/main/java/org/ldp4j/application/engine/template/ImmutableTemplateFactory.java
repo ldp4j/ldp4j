@@ -36,7 +36,7 @@ import org.ldp4j.application.ext.annotations.MembershipRelation;
 
 import com.google.common.base.Optional;
 
-public final class ImmutableTemplateFactory {
+final class ImmutableTemplateFactory {
 
 	private static class ResourceTemplateWrapper<T extends ResourceTemplate> implements ResourceTemplate {
 
@@ -234,7 +234,7 @@ public final class ImmutableTemplateFactory {
 	private ImmutableTemplateFactory() {
 	}
 
-	public static <T extends ResourceTemplate> ResourceTemplate newImmutable(ResourceTemplate template) {
+	static <T extends ResourceTemplate> ResourceTemplate newImmutable(ResourceTemplate template) {
 		TemplateCreator creator = new TemplateCreator();
 		template.accept(creator);
 		return creator.getCreatedTemplate();

@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.impl;
+package org.ldp4j.application.engine.template;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -38,10 +38,6 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
-import org.ldp4j.application.engine.spi.TemplateCreationException;
-import org.ldp4j.application.engine.template.ResourceTemplate;
-import org.ldp4j.application.engine.template.TemplateLibrary;
-import org.ldp4j.application.engine.template.TemplateVisitor;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.ext.annotations.Attachment;
@@ -55,7 +51,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
-final class InMemoryTemplateLibrary implements TemplateLibrary {
+final class MutableTemplateLibrary implements TemplateLibrary {
 
 	private static interface TemplateRegistry {
 
@@ -435,7 +431,7 @@ final class InMemoryTemplateLibrary implements TemplateLibrary {
 		public ResourceTemplate resolve(Class<? extends ResourceHandler> targetClass) {
 			ResourceTemplate template = this.templatesByHandler.get(HandlerId.createId(targetClass));
 			if(template==null) {
-				template=InMemoryTemplateLibrary.this.loadTemplates(targetClass,this);
+				template=MutableTemplateLibrary.this.loadTemplates(targetClass,this);
 			}
 			return template;
 		}
@@ -469,7 +465,7 @@ final class InMemoryTemplateLibrary implements TemplateLibrary {
 
 	private final TemplateLoaderContext context;
 
-	InMemoryTemplateLibrary() {
+	MutableTemplateLibrary() {
 		this.context=new TemplateLoaderContext();
 	}
 
@@ -502,7 +498,11 @@ final class InMemoryTemplateLibrary implements TemplateLibrary {
 		return found.toTemplate(annotations.get(found),targetClass,ctx,ctx);
 	}
 
-	ResourceTemplate registerHandler(Class<?> targetClass) {
+	public boolean isHandlerRegistered(Class<?> handlerClass) {
+		return findByHandler(toResourceHandlerClass(handlerClass))!=null;
+	}
+
+	public ResourceTemplate registerHandler(Class<?> targetClass) {
 		Class<? extends ResourceHandler> handlerClass=toResourceHandlerClass(targetClass);
 		checkArgument(!this.context.isRegistered(handlerClass),"Handler '%s' is already registered",handlerClass.getCanonicalName());
 		return loadTemplates(handlerClass,this.context);

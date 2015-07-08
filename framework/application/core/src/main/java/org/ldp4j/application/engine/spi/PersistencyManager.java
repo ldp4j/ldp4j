@@ -46,11 +46,7 @@ public interface PersistencyManager {
 
 	Transaction currentTransaction();
 
-	ResourceTemplate registerHandler(Class<?> clazz) throws TemplateCreationException;
-
-	boolean isHandlerRegistered(Class<?> handlerClass);
-
-	TemplateLibrary exportTemplates();
+	void useTemplates(TemplateLibrary library);
 
 	Endpoint createEndpoint(Resource resource, String path, EntityTag entityTag, Date lastModified);
 

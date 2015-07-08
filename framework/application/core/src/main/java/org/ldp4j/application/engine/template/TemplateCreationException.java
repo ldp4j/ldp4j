@@ -24,21 +24,26 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.impl;
+package org.ldp4j.application.engine.template;
 
-import org.ldp4j.application.engine.template.DirectContainerTemplate;
-import org.ldp4j.application.engine.template.TemplateVisitor;
-import org.ldp4j.application.ext.ContainerHandler;
+public class TemplateCreationException extends RuntimeException {
 
-final class MutableDirectContainerTemplate extends MutableMembershipAwareContainerTemplate implements DirectContainerTemplate {
+	private static final long serialVersionUID = -5575973583406973695L;
 
-	MutableDirectContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
-		super(id, handlerClass);
+	private final String templateId;
+
+	public TemplateCreationException(String templateId, String message, Throwable t) {
+		super(message,t);
+		this.templateId = templateId;
 	}
 
-	@Override
-	public void accept(TemplateVisitor visitor) {
-		visitor.visitDirectContainerTemplate(this);
+	public TemplateCreationException(String templateId, String message) {
+		super(message);
+		this.templateId = templateId;
+	}
+
+	public final String templateId() {
+		return templateId;
 	}
 
 }

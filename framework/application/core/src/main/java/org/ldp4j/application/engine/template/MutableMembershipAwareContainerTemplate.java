@@ -24,31 +24,55 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.impl;
+package org.ldp4j.application.engine.template;
 
 import java.net.URI;
 
-import org.ldp4j.application.engine.template.IndirectContainerTemplate;
-import org.ldp4j.application.engine.template.TemplateVisitor;
 import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.ext.annotations.MembershipRelation;
+import org.ldp4j.application.vocabulary.LDP;
 
-final class MutableIndirectContainerTemplate extends MutableMembershipAwareContainerTemplate implements IndirectContainerTemplate {
+class MutableMembershipAwareContainerTemplate extends MutableContainerTemplate implements MembershipAwareContainerTemplate {
 
-	private final URI insertedContentRelation;
+	private static final MembershipRelation DEFAULT_MEMBERSHIP_RELATION = MembershipRelation.HAS_MEMBER;
+	private static final URI DEFAULT_MEMBERSHIP_PREDICATE = LDP.MEMBER.as(URI.class);
 
-	MutableIndirectContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass, URI insertedContentRelation) {
+	private URI membershipPredicate=DEFAULT_MEMBERSHIP_PREDICATE;
+	private MembershipRelation membershipRelation=DEFAULT_MEMBERSHIP_RELATION;
+
+	MutableMembershipAwareContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
 		super(id, handlerClass);
-		this.insertedContentRelation = insertedContentRelation;
+	}
+
+	void setMembershipPredicate(URI membershipPredicate) {
+		if(membershipPredicate==null) {
+			this.membershipPredicate=DEFAULT_MEMBERSHIP_PREDICATE;
+		} else {
+			this.membershipPredicate=membershipPredicate;
+		}
+	}
+
+	void setMembershipRelation(MembershipRelation membershipRelation) {
+		if(membershipRelation==null) {
+			this.membershipRelation=DEFAULT_MEMBERSHIP_RELATION;
+		} else {
+			this.membershipRelation=membershipRelation;
+		}
 	}
 
 	@Override
 	public void accept(TemplateVisitor visitor) {
-		visitor.visitIndirectContainerTemplate(this);
+		visitor.visitMembershipAwareContainerTemplate(this);
 	}
 
 	@Override
-	public URI insertedContentRelation() {
-		return this.insertedContentRelation;
+	public URI membershipPredicate() {
+		return this.membershipPredicate;
+	}
+
+	@Override
+	public MembershipRelation membershipRelation() {
+		return this.membershipRelation;
 	}
 
 }

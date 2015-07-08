@@ -147,7 +147,7 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		} else {
 			newResource=new InMemoryContainer(resourceId,this.id);
 		}
-		newResource.setPersistencyManager(getPersistencyManager());
+		newResource.setTemplateLibrary(getTemplateLibrary());
 		return newResource;
 	}
 

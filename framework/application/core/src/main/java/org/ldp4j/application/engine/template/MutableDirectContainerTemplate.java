@@ -24,21 +24,19 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.impl;
+package org.ldp4j.application.engine.template;
 
-import org.ldp4j.application.engine.template.BasicContainerTemplate;
-import org.ldp4j.application.engine.template.TemplateVisitor;
 import org.ldp4j.application.ext.ContainerHandler;
 
-final class MutableBasicContainerTemplate extends MutableContainerTemplate implements BasicContainerTemplate {
+final class MutableDirectContainerTemplate extends MutableMembershipAwareContainerTemplate implements DirectContainerTemplate {
 
-	MutableBasicContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
+	MutableDirectContainerTemplate(String id, Class<? extends ContainerHandler> handlerClass) {
 		super(id, handlerClass);
 	}
 
 	@Override
 	public void accept(TemplateVisitor visitor) {
-		visitor.visitBasicContainerTemplate(this);
+		visitor.visitDirectContainerTemplate(this);
 	}
 
 }

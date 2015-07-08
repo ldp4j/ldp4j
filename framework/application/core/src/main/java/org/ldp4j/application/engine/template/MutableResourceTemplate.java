@@ -24,38 +24,19 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.impl;
+package org.ldp4j.application.engine.template;
 
-import org.ldp4j.application.engine.resource.ResourceId;
-import org.ldp4j.application.engine.template.ResourceTemplate;
-import org.ldp4j.application.engine.template.TemplateLibrary;
+import org.ldp4j.application.ext.ResourceHandler;
 
-import com.google.common.base.MoreObjects;
-import com.google.common.base.MoreObjects.ToStringHelper;
-import static com.google.common.base.Preconditions.*;
+public final class MutableResourceTemplate extends AbstractMutableTemplate<ResourceHandler> {
 
-abstract class AbstractInMemoryResource {
-
-	private TemplateLibrary templateLibrary;
-
-	final void setTemplateLibrary(TemplateLibrary templateLibrary) {
-		this.templateLibrary = templateLibrary;
+	public MutableResourceTemplate(String id, Class<? extends ResourceHandler> handlerClass) {
+		super(id, handlerClass);
 	}
 
-	final TemplateLibrary getTemplateLibrary() {
-		checkState(this.templateLibrary!=null,"Template library has not been initialized yet");
-		return this.templateLibrary;
-	}
-
-	final ResourceTemplate getTemplate(ResourceId resourceId) {
-		return getTemplateLibrary().findById(resourceId.templateId());
-	}
-
-	protected ToStringHelper stringHelper() {
-		return
-			MoreObjects.
-				toStringHelper(getClass()).
-					omitNullValues();
+	@Override
+	public void accept(TemplateVisitor visitor) {
+		visitor.visitResourceTemplate(this);
 	}
 
 }

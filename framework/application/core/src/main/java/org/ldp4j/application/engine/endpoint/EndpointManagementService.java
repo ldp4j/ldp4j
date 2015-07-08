@@ -88,6 +88,8 @@ public final class EndpointManagementService implements Service {
 
 	}
 
+	private static Logger LOGGER=LoggerFactory.getLogger(EndpointManagementService.class);
+
 	private static final int MAX_ENDPOINT_CREATION_FAILURE = 3;
 
 	private final PersistencyManager persistencyManager;
@@ -171,8 +173,6 @@ public final class EndpointManagementService implements Service {
 		}
 		return slugPath;
 	}
-
-	private static Logger LOGGER=LoggerFactory.getLogger(EndpointManagementService.class);
 
 	private Endpoint createEndpoint(Resource resource, String relativePath, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
 		String candidatePath=relativePath;
