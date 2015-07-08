@@ -38,6 +38,7 @@ import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.template.ResourceTemplate;
+import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.setup.Environment;
 import org.slf4j.Logger;
@@ -80,7 +81,7 @@ final class EnvironmentImpl implements Environment {
 			if(this.handlerClass==null) {
 				throw new ApplicationConfigurationException("No handler class specified for resource '"+this.resourceName+"'");
 			}
-			this.template = EnvironmentImpl.this.persistencyManager.templateOfHandler(handlerClass);
+			this.template = EnvironmentImpl.this.templateManagementService.templateOfHandler(handlerClass);
 			if(this.template==null) {
 				throw new ApplicationConfigurationException("Unknown resource handler '"+this.handlerClass.getCanonicalName()+"' specified for resource '"+this.resourceName+"'");
 			}
@@ -98,7 +99,10 @@ final class EnvironmentImpl implements Environment {
 
 	private final PersistencyManager persistencyManager;
 
-	EnvironmentImpl(PersistencyManager persistencyManager) {
+	private final TemplateManagementService templateManagementService;
+
+	EnvironmentImpl(TemplateManagementService templateManagementService, PersistencyManager persistencyManager) {
+		this.templateManagementService = templateManagementService;
 		this.candidates=Lists.newArrayList();
 		this.persistencyManager = persistencyManager;
 	}
@@ -141,7 +145,7 @@ final class EnvironmentImpl implements Environment {
 	}
 
 	private Class<? extends ResourceHandler> resolveHandler(ResourceId resourceId) {
-		ResourceTemplate template = this.persistencyManager.templateOfId(resourceId.templateId());
+		ResourceTemplate template = this.templateManagementService.templateOfId(resourceId.templateId());
 		return template!=null?template.handlerClass():null;
 	}
 

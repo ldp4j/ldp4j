@@ -36,7 +36,6 @@ import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceVisitor;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateIntrospector;
 import org.ldp4j.application.ext.ContainerHandler;
@@ -45,16 +44,14 @@ import org.ldp4j.application.ext.ResourceHandler;
 final class SnapshotFactory {
 
 	private final DelegatedWriteSession session;
-	private final PersistencyManager persistencyManager;
 
-	private SnapshotFactory(PersistencyManager persistencyManager, DelegatedWriteSession session) {
-		this.persistencyManager = persistencyManager;
+	private SnapshotFactory(DelegatedWriteSession session) {
 		this.session = session;
 	}
 
 	private ResourceTemplate getTemplate(ResourceId resourceId) {
 		checkNotNull(resourceId,"Resource identifier cannot be null");
-		ResourceTemplate template = this.persistencyManager.templateOfId(resourceId.templateId());
+		ResourceTemplate template = this.session.loadTemplate(resourceId.templateId());
 		checkArgument(template!=null,"Could not find template for resource '%s'",resourceId);
 		return template;
 	}
@@ -124,8 +121,8 @@ final class SnapshotFactory {
 		return snapshotClass.cast(tmp);
 	}
 
-	static SnapshotFactory newInstance(PersistencyManager persistencyManager, DelegatedWriteSession session) {
-		return new SnapshotFactory(persistencyManager,session);
+	static SnapshotFactory newInstance(DelegatedWriteSession session) {
+		return new SnapshotFactory(session);
 	}
 
 

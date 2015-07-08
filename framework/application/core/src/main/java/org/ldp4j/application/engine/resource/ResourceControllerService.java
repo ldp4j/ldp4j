@@ -29,7 +29,6 @@ package org.ldp4j.application.engine.resource;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.session.WriteSessionService;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.Service;
 import org.ldp4j.application.engine.spi.ServiceBuilder;
 import org.ldp4j.application.engine.template.ResourceTemplate;
@@ -47,7 +46,6 @@ public class ResourceControllerService implements Service {
 		public ResourceControllerService build() {
 			return
 				new ResourceControllerService(
-					persistencyManager(),
 					service(WriteSessionService.class),
 					service(TemplateManagementService.class));
 		}
@@ -56,16 +54,14 @@ public class ResourceControllerService implements Service {
 
 	private final WriteSessionService writeSessionService;
 	private final TemplateManagementService templateManagementService;
-	private final PersistencyManager persistencyManager;
 
-	private ResourceControllerService(PersistencyManager persistencyManager, WriteSessionService writeSessionService, TemplateManagementService templateManagementService) {
-		this.persistencyManager = persistencyManager;
+	private ResourceControllerService(WriteSessionService writeSessionService, TemplateManagementService templateManagementService) {
 		this.writeSessionService=writeSessionService;
 		this.templateManagementService = templateManagementService;
 	}
 
 	private <T extends Resource> Adapter adapter(T resource, WriteSessionConfiguration configuration) {
-		ResourceTemplate template=this.persistencyManager.templateOfId(resource.id().templateId());
+		ResourceTemplate template=this.templateManagementService.templateOfId(resource.id().templateId());
 		Class<? extends ResourceHandler> handlerClass = template.handlerClass();
 		ResourceHandler delegate=this.templateManagementService.getHandler(handlerClass);
 		return AdapterFactory.newAdapter(resource,delegate,this.writeSessionService,configuration);

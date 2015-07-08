@@ -38,9 +38,7 @@ import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
-import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateLibrary;
-import org.ldp4j.application.ext.ResourceHandler;
 
 public interface PersistencyManager {
 
@@ -71,12 +69,6 @@ public interface PersistencyManager {
 	Resource resourceOfId(ResourceId id);
 
 	Container containerOfId(ResourceId id);
-
-	ResourceTemplate templateOfHandler(Class<? extends ResourceHandler> handlerClass);
-
-	ResourceTemplate templateOfId(String templateId);
-
-	<T extends ResourceTemplate> T templateOfId(String templateId, Class<? extends T> templateClass);
 
 	ConstraintReport createConstraintReport(Resource resource, Constraints constraints, Date date, HttpRequest request);
 

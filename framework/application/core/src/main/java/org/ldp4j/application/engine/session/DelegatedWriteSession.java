@@ -49,7 +49,6 @@ import org.ldp4j.application.data.RelativeIndividual;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.session.UnitOfWork.EventHandler;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.template.BasicContainerTemplate;
 import org.ldp4j.application.engine.template.ContainerTemplate;
 import org.ldp4j.application.engine.template.DirectContainerTemplate;
@@ -130,30 +129,27 @@ final class DelegatedWriteSession implements WriteSession {
 	private final Map<ResourceId,DelegatedResourceSnapshot> resourceCache;
 
 	private final WriteSessionConfiguration configuration;
-
-	private final PersistencyManager persistencyManager;
 	private final WriteSessionService writeSessionService;
 
 	private final SnapshotFactory snapshotFactory;
 
 	private volatile Status status;
 
-	protected DelegatedWriteSession(WriteSessionConfiguration configuration, PersistencyManager persistencyManager, WriteSessionService writeSessionService) {
+	protected DelegatedWriteSession(WriteSessionConfiguration configuration, WriteSessionService writeSessionService) {
 		this.configuration = configuration;
-		this.persistencyManager = persistencyManager;
 		this.writeSessionService = writeSessionService;
 		UnitOfWork.
 			getCurrent().
 				setEventHandler(new MembershipAwareContainerTargetCollector());
 		this.status=Status.ACTIVE;
 		this.resourceCache=new LinkedHashMap<ResourceId,DelegatedResourceSnapshot>();
-		this.snapshotFactory=SnapshotFactory.newInstance(this.persistencyManager, this);
+		this.snapshotFactory=SnapshotFactory.newInstance(this);
 	}
 
 	private DelegatedResourceSnapshot resolveResource(ResourceId resourceId, ResourceTemplate template) {
 		DelegatedResourceSnapshot resource=this.resourceCache.get(resourceId);
 		if(resource==null) {
-			Resource delegate=this.persistencyManager.resourceOfId(resourceId, Resource.class);
+			Resource delegate=this.writeSessionService.persistencyManager().resourceOfId(resourceId, Resource.class);
 			if(delegate!=null) {
 				resource=snapshotFactory.newPersistent(delegate,template);
 				resource.setSession(this);
@@ -166,7 +162,7 @@ final class DelegatedWriteSession implements WriteSession {
 	private <S extends ResourceSnapshot> S find(
 			Class<? extends S> snapshotClass,
 			ResourceId resourceId) {
-		ResourceTemplate template=DelegatedWriteSession.this.persistencyManager.templateOfId(resourceId.templateId());
+		ResourceTemplate template=loadTemplate(resourceId.templateId());
 		checkArgument(template!=null,"Unknown template '%s' ",resourceId.templateId());
 		checkArgument(areCompatible(snapshotClass,template),"Cannot wrap an object managed by '%s' with an snapshot of type '%s'",resourceId.templateId(),snapshotClass.getCanonicalName());
 		DelegatedResourceSnapshot resource = resolveResource(resourceId, template);
@@ -267,11 +263,11 @@ final class DelegatedWriteSession implements WriteSession {
 	}
 
 	ResourceTemplate loadTemplate(String templateId) {
-		return this.persistencyManager.templateOfId(templateId);
+		return this.writeSessionService.templateManagementService().templateOfId(templateId);
 	}
 
 	Resource loadResource(ResourceId resourceId) {
-		return this.persistencyManager.resourceOfId(resourceId,Resource.class);
+		return this.writeSessionService.persistencyManager().resourceOfId(resourceId,Resource.class);
 	}
 
 	DelegatedResourceSnapshot resolveResource(ResourceId resourceId) {
@@ -333,7 +329,7 @@ final class DelegatedWriteSession implements WriteSession {
 		checkNotNull(name,RESOURCE_NAME_CANNOT_BE_NULL);
 		checkNotNull(handlerClass,"Resource handler class cannot be null");
 		checkArgument(!ContainerSnapshot.class.isAssignableFrom(snapshotClass) || ContainerHandler.class.isAssignableFrom(handlerClass),"Incompatible snapshot and handler classes ('%s' instances are not handled by '%s')",snapshotClass.getCanonicalName(),handlerClass.getCanonicalName());
-		ResourceTemplate template=this.persistencyManager.templateOfHandler(handlerClass);
+		ResourceTemplate template=this.writeSessionService.templateManagementService().templateOfHandler(handlerClass);
 		checkArgument(template!=null,"Handler class '%s' is not associated to any existing template",handlerClass.getCanonicalName());
 		checkArgument(areCompatible(snapshotClass,template),"Cannot wrap an object managed by '%s' with an snapshot of type '%s'",handlerClass.getCanonicalName(),snapshotClass.getCanonicalName());
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,this.status);

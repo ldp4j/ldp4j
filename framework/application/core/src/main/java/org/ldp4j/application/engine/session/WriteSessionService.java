@@ -41,6 +41,7 @@ import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.Service;
 import org.ldp4j.application.engine.spi.ServiceBuilder;
+import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
@@ -60,6 +61,7 @@ public final class WriteSessionService implements Service {
 			return
 				new WriteSessionService(
 					persistencyManager(),
+					service(TemplateManagementService.class),
 					service(EndpointManagementService.class));
 		}
 
@@ -96,15 +98,18 @@ public final class WriteSessionService implements Service {
 	private final PersistencyManager persistencyManager;
 	private final EndpointManagementService endpointManagementService;
 
-	private WriteSessionService(PersistencyManager persistencyManager, EndpointManagementService endointManagementService) {
+	private final TemplateManagementService templateManagementService;
+
+	private WriteSessionService(PersistencyManager persistencyManager, TemplateManagementService templateManagementService, EndpointManagementService endointManagementService) {
 		this.persistencyManager = persistencyManager;
+		this.templateManagementService = templateManagementService;
 		this.endpointManagementService = endointManagementService;
 	}
 
 	public WriteSession createSession(WriteSessionConfiguration configuration) {
 		UnitOfWork.newCurrent();
 		logLifecycleMessage("Created write session: %s",configuration);
-		return new DelegatedWriteSession(configuration,this.persistencyManager,this);
+		return new DelegatedWriteSession(configuration,this);
 	}
 
 	public void terminateSession(WriteSession writeSession) {
@@ -152,6 +157,14 @@ public final class WriteSessionService implements Service {
 		logLifecycleMessage("Rolling back session...");
 		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date(),session));
 		this.persistencyManager.currentTransaction().rollback();
+	}
+
+	PersistencyManager persistencyManager() {
+		return this.persistencyManager;
+	}
+
+	TemplateManagementService templateManagementService() {
+		return this.templateManagementService;
 	}
 
 	private void logLifecycleMessage(String msg, Object... args) {

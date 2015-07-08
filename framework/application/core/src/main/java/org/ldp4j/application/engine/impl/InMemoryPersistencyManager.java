@@ -55,7 +55,6 @@ import org.ldp4j.application.engine.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateLibrary;
 import org.ldp4j.application.engine.template.TemplateVisitor;
-import org.ldp4j.application.ext.ResourceHandler;
 
 final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 
@@ -78,7 +77,7 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 
 	private ResourceTemplate findTemplate(String id) {
 		checkNotNull(id,"TemplateId identifier cannot be null");
-		ResourceTemplate result = this.templateOfId(id);
+		ResourceTemplate result = this.templateLibrary.findById(id);
 		if(result==null) {
 			throw new IllegalStateException("Could not find template '"+id+"'");
 		}
@@ -136,6 +135,9 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		this.currentTransaction.set(null);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Transaction currentTransaction() {
 		InMemoryTransaction transaction=this.currentTransaction.get();
@@ -279,40 +281,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		this.endpointRepository.shutdown();
 		this.constraintReportRepository.shutdown();
 		this.resourceRepository.shutdown();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ResourceTemplate templateOfHandler(Class<? extends ResourceHandler> handlerClass) {
-		checkNotNull(handlerClass,"Resource handler cannot be null");
-		return this.templateLibrary.findByHandler(handlerClass);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ResourceTemplate templateOfId(String templateId) {
-		checkNotNull(templateId,"Template identifier cannot be null");
-		return this.templateLibrary.findById(templateId);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public <T extends ResourceTemplate> T templateOfId(String templateId, Class<? extends T> templateClass) {
-		checkNotNull(templateClass,"Template class cannot be null");
-		ResourceTemplate found = templateOfId(templateId);
-		if(found==null) {
-			return null;
-		} else if(!templateClass.isInstance(found)) {
-			// TODO: Define a specialized runtime exception
-			throw new IllegalArgumentException("Cannot cast template '"+templateId+"' to '"+templateClass.getCanonicalName()+"' ("+found.getClass().getCanonicalName()+")");
-		}
-		return templateClass.cast(found);
 	}
 
 	/**

@@ -43,6 +43,7 @@ import org.ldp4j.application.engine.spi.ServiceBuilder;
 import org.ldp4j.application.engine.template.AttachedTemplate;
 import org.ldp4j.application.engine.template.ContainerTemplate;
 import org.ldp4j.application.engine.template.ResourceTemplate;
+import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.engine.util.ListenerManager;
 import org.ldp4j.application.engine.util.Notification;
 import org.slf4j.Logger;
@@ -83,7 +84,10 @@ public final class EndpointManagementService implements Service {
 		}
 
 		public EndpointManagementService build() {
-			return new EndpointManagementService(persistencyManager());
+			return
+				new EndpointManagementService(
+					service(TemplateManagementService.class),
+					persistencyManager());
 		}
 
 	}
@@ -92,11 +96,13 @@ public final class EndpointManagementService implements Service {
 
 	private static final int MAX_ENDPOINT_CREATION_FAILURE = 3;
 
+	private final TemplateManagementService templateManagementService;
 	private final PersistencyManager persistencyManager;
 	private final ListenerManager<EndpointLifecycleListener> listenerManager;
 
 
-	private EndpointManagementService(PersistencyManager persistencyManager) {
+	private EndpointManagementService(TemplateManagementService templateManagementService, PersistencyManager persistencyManager) {
+		this.templateManagementService = templateManagementService;
 		this.persistencyManager = persistencyManager;
 		this.listenerManager=ListenerManager.<EndpointLifecycleListener>newInstance();
 	}
@@ -130,7 +136,7 @@ public final class EndpointManagementService implements Service {
 			return null;
 		}
 		Endpoint endpoint=getResourceEndpoint(parent.id());
-		ResourceTemplate parentTemplate=this.persistencyManager.templateOfId(parent.id().templateId());
+		ResourceTemplate parentTemplate=this.templateManagementService.templateOfId(parent.id().templateId());
 		AttachedTemplate attachedTemplate = parentTemplate.attachedTemplate(attachment.id());
 		return
 			PathBuilder.
@@ -145,7 +151,7 @@ public final class EndpointManagementService implements Service {
 		Member member = parent.findMember(child.id());
 		if(member!=null) {
 			Endpoint endpoint=getResourceEndpoint(parent.id());
-			ContainerTemplate parentTemplate=this.persistencyManager.templateOfId(parent.id().templateId(),ContainerTemplate.class);
+			ContainerTemplate parentTemplate=this.templateManagementService.templateOfId(parent.id().templateId(),ContainerTemplate.class);
 			if(parentTemplate==null) {
 				throw new IllegalStateException("Could not find template resource '"+parent+"'");
 			}

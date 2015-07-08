@@ -242,7 +242,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		try {
 			WriteSessionConfiguration config=
 				DefaultApplicationContextHelper.
-					create(this.engine().persistencyManager()).
+					create(this.engine().templateManagementService()).
 						createConfiguration(resource);
 			return this.engine().resourceControllerService().getResource(resource,config);
 		} catch (Exception e) {
@@ -275,7 +275,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		try {
 			WriteSessionConfiguration config=
 				DefaultApplicationContextHelper.
-					create(this.engine().persistencyManager()).
+					create(this.engine().templateManagementService()).
 						createConfiguration(resource,dataSet,desiredPath);
 			return this.engine().resourceControllerService().createResource(resource,dataSet,config);
 		} catch (FeatureExecutionException e) {
@@ -299,7 +299,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		try {
 			WriteSessionConfiguration config=
 				DefaultApplicationContextHelper.
-					create(this.engine().persistencyManager()).
+					create(this.engine().templateManagementService()).
 						createConfiguration(resource);
 			this.engine().resourceControllerService().deleteResource(resource,config);
 		} catch (Exception e) {
@@ -319,7 +319,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		try {
 			WriteSessionConfiguration config=
 				DefaultApplicationContextHelper.
-					create(this.engine().persistencyManager()).
+					create(this.engine().templateManagementService()).
 						createConfiguration(resource);
 			this.engine().resourceControllerService().updateResource(resource,dataSet,config);
 		} catch (FeatureExecutionException e) {
@@ -373,7 +373,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	}
 
 	ResourceTemplate resourceTemplate(Resource resource) {
-		return this.engine().persistencyManager().templateOfId(resource.id().templateId());
+		return this.engine().templateManagementService().templateOfId(resource.id().templateId());
 	}
 
 	void initialize(String applicationClassName) throws ApplicationContextCreationException {

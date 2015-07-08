@@ -45,18 +45,19 @@ import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.FeatureException;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.template.TemplateIntrospector;
+import org.ldp4j.application.engine.template.TemplateManagementService;
 
 import com.google.common.collect.Lists;
 
 final class DefaultApplicationContextHelper {
 
 	private static final URI NEW_RESOURCE_SURROGATE_ID = URI.create("");
-	private PersistencyManager persistencyManager;
 
-	private DefaultApplicationContextHelper(PersistencyManager persistencyManager) {
-		this.persistencyManager = persistencyManager;
+	private final TemplateManagementService templateManagementService;
+
+	private DefaultApplicationContextHelper(TemplateManagementService templateManagementService) {
+		this.templateManagementService = templateManagementService;
 	}
 
 	WriteSessionConfiguration createConfiguration(Resource resource) {
@@ -81,7 +82,7 @@ final class DefaultApplicationContextHelper {
 		TemplateIntrospector introspector=
 			TemplateIntrospector.
 				newInstance(
-					this.persistencyManager.
+					this.templateManagementService.
 						templateOfId(container.id().templateId()));
 		if(!introspector.isIndirectContainer()) {
 			return null;
@@ -148,8 +149,8 @@ final class DefaultApplicationContextHelper {
 		return indirectIdentities;
 	}
 
-	static DefaultApplicationContextHelper create(PersistencyManager persistencyManager) {
-		return new DefaultApplicationContextHelper(persistencyManager);
+	static DefaultApplicationContextHelper create(TemplateManagementService templateManagementService) {
+		return new DefaultApplicationContextHelper(templateManagementService);
 	}
 
 }
