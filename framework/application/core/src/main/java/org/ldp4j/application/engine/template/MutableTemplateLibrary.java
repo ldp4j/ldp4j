@@ -429,7 +429,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 
 		@Override
 		public ResourceTemplate resolve(Class<? extends ResourceHandler> targetClass) {
-			ResourceTemplate template = this.templatesByHandler.get(HandlerId.createId(targetClass));
+			ResourceTemplate template = retrieve(targetClass);
 			if(template==null) {
 				template=MutableTemplateLibrary.this.loadTemplates(targetClass,this);
 			}
@@ -438,7 +438,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 
 		@Override
 		public void register(Class<? extends ResourceHandler> handlerClass, ResourceTemplate template) {
-			ResourceTemplate previousTemplate = this.templatesByHandler.get(HandlerId.createId(handlerClass));
+			ResourceTemplate previousTemplate = retrieve(handlerClass);
 			if(previousTemplate!=null) {
 				if(template==previousTemplate) {
 					return;
@@ -451,6 +451,10 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 			}
 			this.templatesByHandler.put(HandlerId.createId(handlerClass), template);
 			this.templatesById.put(template.id(), template);
+		}
+
+		private ResourceTemplate retrieve(Class<? extends ResourceHandler> handlerClass) {
+			return this.templatesByHandler.get(HandlerId.createId(handlerClass));
 		}
 
 		private ResourceTemplate resolve(String templateId) {
@@ -498,11 +502,11 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 		return found.toTemplate(annotations.get(found),targetClass,ctx,ctx);
 	}
 
-	public boolean isHandlerRegistered(Class<?> handlerClass) {
+	boolean isHandlerRegistered(Class<?> handlerClass) {
 		return findByHandler(toResourceHandlerClass(handlerClass))!=null;
 	}
 
-	public ResourceTemplate registerHandler(Class<?> targetClass) {
+	ResourceTemplate registerHandler(Class<?> targetClass) {
 		Class<? extends ResourceHandler> handlerClass=toResourceHandlerClass(targetClass);
 		checkArgument(!this.context.isRegistered(handlerClass),"Handler '%s' is already registered",handlerClass.getCanonicalName());
 		return loadTemplates(handlerClass,this.context);
@@ -510,7 +514,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 
 	@Override
 	public ResourceTemplate findByHandler(Class<? extends ResourceHandler> handlerClass) {
-		return this.context.resolve(handlerClass);
+		return this.context.retrieve(handlerClass);
 	}
 
 	@Override
@@ -521,7 +525,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 	@Override
 	public boolean contains(ResourceTemplate template) {
 		checkNotNull(template,"Template cannot be null");
-		return this.context.resolve(template.handlerClass())!=null;
+		return findByHandler(template.handlerClass())!=null;
 	}
 
 	@Override

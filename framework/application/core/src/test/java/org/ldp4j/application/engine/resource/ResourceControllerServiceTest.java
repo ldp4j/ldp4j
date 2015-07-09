@@ -76,9 +76,10 @@ public class ResourceControllerServiceTest {
 		Transaction transaction = RuntimeDelegate.getInstance().getTransactionManager().currentTransaction();
 		transaction.begin();
 
-		T resource=persistencyManager.createResource(templateId,resourceName,null,clazz);
+		Resource newResource=this.persistencyManager.createResource(this.tms.templateOfId(templateId),resourceName);
+		T resource=clazz.cast(newResource);
 		RuntimeDelegate.getInstance().getResourceRepository().add(resource);
-		Endpoint endpoint=persistencyManager.createEndpoint(resource,path,new EntityTag(path),new Date());
+		Endpoint endpoint=this.persistencyManager.createEndpoint(resource,path,new EntityTag(path),new Date());
 		RuntimeDelegate.getInstance().getEndpointRepository().add(endpoint);
 
 		transaction.commit();
@@ -302,7 +303,7 @@ public class ResourceControllerServiceTest {
 		final DataSet initialData = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
 
 		// BEGIN initialization
-		final Container resource = publishResource(Container.class,BookContainerHandler.ID, resourceName, resourcePath);
+		final Container resource = publishResource(Container.class,BookContainerHandler.ID,resourceName,resourcePath);
 
 		NameProvider nameProvider = NameProvider.create(resourceName);
 		final Name<String> id = NamingScheme.getDefault().name("book1");

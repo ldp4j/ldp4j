@@ -28,7 +28,6 @@ package org.ldp4j.application.engine.lifecycle;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Map.Entry;
 
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.engine.ApplicationConfigurationException;
@@ -67,14 +66,21 @@ final class EnvironmentImpl implements Environment {
 			this.path = path;
 		}
 
-		ResourceId resourceId() {
-			return ResourceId.createId(this.resourceName, this.template.id());
+		Name<?> name() {
+			return this.resourceName;
 		}
 
 		String path() {
 			return path;
 		}
 
+		ResourceTemplate template() {
+			return this.template;
+		}
+
+		ResourceId resourceId() {
+			return ResourceId.createId(this.resourceName, this.template.id());
+		}
 
 		void validate() throws ApplicationConfigurationException {
 			if(this.resourceName==null) {
@@ -83,7 +89,7 @@ final class EnvironmentImpl implements Environment {
 			if(this.handlerClass==null) {
 				throw new ApplicationConfigurationException("No handler class specified for resource '"+this.resourceName+"'");
 			}
-			this.template = EnvironmentImpl.this.templateManagementService.templateOfHandler(handlerClass);
+			this.template = EnvironmentImpl.this.templateManagementService.templateOfHandler(this.handlerClass);
 			if(this.template==null) {
 				throw new ApplicationConfigurationException("Unknown resource handler '"+this.handlerClass.getCanonicalName()+"' specified for resource '"+this.resourceName+"'");
 			}
@@ -110,8 +116,8 @@ final class EnvironmentImpl implements Environment {
 		this.templateManagementService = templateManagementService;
 		this.resourceRepository = resourceRepository;
 		this.endpointRepository = endpointRepository;
-		this.candidates=Lists.newArrayList();
 		this.persistencyManager = persistencyManager;
+		this.candidates=Lists.newArrayList();
 	}
 
 	@Override
@@ -121,19 +127,42 @@ final class EnvironmentImpl implements Environment {
 	}
 
 	void configureRootResources() throws ApplicationConfigurationException {
-		BiMap<ResourceId, String> rootResources = getRootResourceMap();
-		for(Entry<ResourceId, String> entry:rootResources.entrySet()) {
-			publish(Resource.class,entry.getKey(),entry.getValue());
-			LOGGER.debug("Published resource '"+entry.getKey()+"' at '"+entry.getValue()+"'");
+		validateRootResources();
+		for(RootResource entry:this.candidates) {
+			publish(entry);
+			LOGGER.debug("Published resource '"+entry.resourceId()+"' at '"+entry.path()+"'");
 		}
 	}
 
-	private BiMap<ResourceId, String> getRootResourceMap() throws ApplicationConfigurationException {
+	private void publish(RootResource rootResource) throws ApplicationConfigurationException {
+		ResourceId resourceId = rootResource.resourceId();
+		String path = rootResource.path();
+
+		Resource prevResource = this.resourceRepository.resourceById(resourceId,Resource.class);
+		Endpoint prevEndpoint = this.endpointRepository.endpointOfPath(path);
+
+		if(prevEndpoint!=null && !prevEndpoint.resourceId().equals(resourceId)) {
+			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+" cannot be published at '"+path+"' as that path is already in use by a resource "+toString(prevEndpoint.resourceId()));
+		}
+
+		if(prevEndpoint==null && prevResource!=null) {
+			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+" cannot be published at '"+path+"' as it is already published at '"+this.endpointRepository.endpointOfResource(resourceId).path()+"'");
+		}
+
+		if(prevResource==null && prevEndpoint==null) {
+			Resource resource=this.persistencyManager.createResource(rootResource.template(),rootResource.name());
+			this.resourceRepository.add(resource);
+			Endpoint endpoint=this.persistencyManager.createEndpoint(resource,path,new EntityTag(path),new Date());
+			this.endpointRepository.add(endpoint);
+		}
+
+	}
+
+	private void validateRootResources() throws ApplicationConfigurationException {
 		BiMap<ResourceId,String> rootResourceMap=HashBiMap.create();
 		for(RootResource candidateResource:this.candidates) {
 			addPublication(rootResourceMap,candidateResource);
 		}
-		return rootResourceMap;
 	}
 
 	private void addPublication(final BiMap<ResourceId, String> rootResourceMap, RootResource candidateResource) throws ApplicationConfigurationException {
@@ -163,27 +192,6 @@ final class EnvironmentImpl implements Environment {
 		} else {
 			return String.format("named '%s' of unknown template '%s'",resourceId.name(),resourceId.templateId());
 		}
-	}
-
-	private <T extends Resource> void publish(Class<? extends T> clazz, ResourceId resourceId, String path) throws ApplicationConfigurationException {
-		Resource prevResource = this.resourceRepository.resourceById(resourceId,Resource.class);
-		Endpoint prevEndpoint = this.endpointRepository.endpointOfPath(path);
-
-		if(prevEndpoint!=null && !prevEndpoint.resourceId().equals(resourceId)) {
-			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+" cannot be published at '"+path+"' as that path is already in use by a resource "+toString(prevEndpoint.resourceId()));
-		}
-
-		if(prevEndpoint==null && prevResource!=null) {
-			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+" cannot be published at '"+path+"' as it is already published at '"+this.endpointRepository.endpointOfResource(resourceId).path()+"'");
-		}
-
-		if(prevResource==null && prevEndpoint==null) {
-			T resource=this.persistencyManager.createResource(resourceId.templateId(),resourceId.name(),null,clazz);
-			this.resourceRepository.add(resource);
-			Endpoint endpoint=this.persistencyManager.createEndpoint(resource,path,new EntityTag(path),new Date());
-			this.endpointRepository.add(endpoint);
-		}
-
 	}
 
 }

@@ -26,10 +26,10 @@
  */
 package org.ldp4j.application.engine.impl;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
@@ -38,7 +38,6 @@ import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.lifecycle.Managed;
-import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceRepository;
@@ -55,6 +54,74 @@ import org.ldp4j.application.engine.transaction.TransactionManager;
 
 final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 
+	private final class RootResourceCreator implements TemplateVisitor {
+
+		private final ResourceId id;
+		private InMemoryResource resource;
+
+		private RootResourceCreator(ResourceId id) {
+			this.id = id;
+		}
+
+		private InMemoryResource createdResource() {
+			return this.resource;
+		}
+
+		private void createResource(InMemoryResource resource) {
+			this.resource=resource;
+			this.resource.setTemplateLibrary(InMemoryPersistencyManager.this.templateLibrary);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void visitResourceTemplate(ResourceTemplate template) {
+			createResource(new InMemoryResource(id,null));
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void visitContainerTemplate(ContainerTemplate template) {
+			createResource(new InMemoryContainer(id,null));
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void visitBasicContainerTemplate(BasicContainerTemplate template) {
+			visitContainerTemplate(template);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
+			visitContainerTemplate(template);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void visitDirectContainerTemplate(DirectContainerTemplate template) {
+			visitContainerTemplate(template);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
+			visitContainerTemplate(template);
+		}
+
+	}
+
 	private final InMemoryResourceRepository resourceRepository;
 	private final InMemoryEndpointRepository endpointRepository;
 	private final InMemoryConstraintReportRepository constraintReportRepository;
@@ -67,62 +134,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		this.endpointRepository=new InMemoryEndpointRepository();
 		this.constraintReportRepository=new InMemoryConstraintReportRepository();
 		this.transactionManager = new InMemoryTransactionManager();
-	}
-
-	private ResourceTemplate findTemplate(String id) {
-		checkNotNull(id,"TemplateId identifier cannot be null");
-		ResourceTemplate result = this.templateLibrary.findById(id);
-		if(result==null) {
-			throw new IllegalStateException("Could not find template '"+id+"'");
-		}
-		return result;
-	}
-
-	private <T extends Resource> ResourceTemplate findInstantiableTemplate(String templateId, boolean requireContainer) {
-		ResourceTemplate template = findTemplate(templateId);
-		if(!(template instanceof ContainerTemplate) && requireContainer) {
-			throw new IllegalStateException("Cannot create a container from non-container template '"+template.id()+"'");
-		}
-		return template;
-	}
-
-	private InMemoryResource createResource(ResourceTemplate template, Name<?> resourceId, Resource parent) {
-		checkNotNull(resourceId,"ResourceSnapshot identifier cannot be null");
-		final ResourceId parentId=parent!=null?parent.id():null;
-		final ResourceId id=ResourceId.createId(resourceId, template);
-		final AtomicReference<InMemoryResource> result=new AtomicReference<InMemoryResource>();
-		template.
-			accept(
-				new TemplateVisitor() {
-					@Override
-					public void visitResourceTemplate(ResourceTemplate template) {
-						result.set(new InMemoryResource(id,parentId));
-					}
-					@Override
-					public void visitContainerTemplate(ContainerTemplate template) {
-						result.set(new InMemoryContainer(id,parentId));
-					}
-					@Override
-					public void visitBasicContainerTemplate(BasicContainerTemplate template) {
-						visitContainerTemplate(template);
-					}
-					@Override
-					public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
-						visitContainerTemplate(template);
-					}
-					@Override
-					public void visitDirectContainerTemplate(DirectContainerTemplate template) {
-						visitContainerTemplate(template);
-					}
-					@Override
-					public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
-						visitContainerTemplate(template);
-					}
-				}
-			);
-		InMemoryResource resource = result.get();
-		resource.setTemplateLibrary(this.templateLibrary);
-		return resource;
 	}
 
 	ResourceRepository resourceRepository() {
@@ -153,21 +164,14 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Resource createResource(String templateId, Name<?> resourceId, Resource parent) {
-		return createResource(findTemplate(templateId),resourceId,parent);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public <T extends Resource> T createResource(String templateId, Name<?> resourceId, Resource parent, Class<? extends T> expectedResourceClass) {
-		ResourceTemplate template=
-			findInstantiableTemplate(
-				templateId,
-				Container.class.isAssignableFrom(expectedResourceClass));
-		Resource newResource = createResource(template,resourceId,parent);
-		return expectedResourceClass.cast(newResource);
+	public Resource createResource(ResourceTemplate template, Name<?> name) {
+		checkNotNull(name,"Resource name cannot be null");
+		checkArgument(this.templateLibrary.contains(template),"Unknown template "+template);
+		RootResourceCreator creator=
+			new RootResourceCreator(
+				ResourceId.createId(name,template));
+		template.accept(creator);
+		return creator.createdResource();
 	}
 
 	/**

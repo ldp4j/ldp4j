@@ -122,16 +122,19 @@ public class WriteSessionTest {
 
 	private Transaction transaction;
 
+	private TemplateManagementService templateManagementService;
+
 	@Before
 	public void setUp() throws Exception {
 		RuntimeDelegate.setInstance(new InMemoryRuntimeDelegate());
-		RuntimeDelegate.
+		templateManagementService = RuntimeDelegate.
 			getInstance().
 				getServiceRegistry().
-					getService(TemplateManagementService.class).
-						configure(
-							Lists.<Class<?>>newArrayList(),
-							Arrays.<ResourceHandler>asList(new PersonHandler()));
+					getService(TemplateManagementService.class);
+		templateManagementService.
+			configure(
+				Lists.<Class<?>>newArrayList(),
+				Arrays.<ResourceHandler>asList(new PersonHandler()));
 		persistencyManager=
 			RuntimeDelegate.
 				getInstance().
@@ -150,7 +153,7 @@ public class WriteSessionTest {
 
 	@Test
 	public void testSession() throws WriteSessionException {
-		org.ldp4j.application.engine.resource.Resource rootResource = initialize();
+		Resource rootResource = initialize();
 
 		// BEGIN First interaction
 		prepareSession(Action.PUT, rootResource);
@@ -233,13 +236,20 @@ public class WriteSessionTest {
 		assertUnavailable(myWife, ResourceSnapshot.class,PersonHandler.class);
 	}
 
-	private org.ldp4j.application.engine.resource.Resource initialize() {
-		Transaction transaction = RuntimeDelegate.getInstance().getTransactionManager().currentTransaction();
+	private Resource initialize() {
+		Transaction transaction=
+			RuntimeDelegate.
+				getInstance().
+					getTransactionManager().
+						currentTransaction();
 		transaction.begin();
 		try {
-			uow = UnitOfWork.newCurrent();
-			org.ldp4j.application.engine.resource.Resource rootResource=persistencyManager.createResource("personTemplate",name("me"),null);
-			Endpoint rootEndpoint=persistencyManager.createEndpoint(rootResource,"root",new EntityTag("root"),new Date());
+			this.uow = UnitOfWork.newCurrent();
+			Resource rootResource=
+				this.persistencyManager.createResource(
+					this.templateManagementService.templateOfId("personTemplate"),
+					name("me"));
+			Endpoint rootEndpoint=this.persistencyManager.createEndpoint(rootResource,"root",new EntityTag("root"),new Date());
 			RuntimeDelegate.getInstance().getResourceRepository().add(rootResource);
 			RuntimeDelegate.getInstance().getEndpointRepository().add(rootEndpoint);
 			UnitOfWork.setCurrent(null);
@@ -283,12 +293,12 @@ public class WriteSessionTest {
 
 	private void deleteResource(ResourceSnapshot resource) {
 		LOGGER.debug("--> Requested deletion of "+resource.name());
-		sut.delete(resource);
+		this.sut.delete(resource);
 		LOGGER.debug("--> Completed deletion of "+resource.name());
 	}
 
 	private void assertUnavailable(ResourceSnapshot resource, Class<? extends ResourceSnapshot> clazz, Class<? extends ResourceHandler> handlerClass) {
-		ResourceSnapshot found = sut.find(clazz,resource.name(),handlerClass);
+		ResourceSnapshot found=this.sut.find(clazz,resource.name(),handlerClass);
 		assertThat(found,nullValue());
 	}
 
@@ -297,7 +307,7 @@ public class WriteSessionTest {
 		if(clazz==ContainerSnapshot.class) {
 			delegatedClass=DelegatedContainerSnapshot.class;
 		}
-		ResourceSnapshot found = sut.find(clazz,resource.name(),handlerClass);
+		ResourceSnapshot found=this.sut.find(clazz,resource.name(),handlerClass);
 		assertThat(found,notNullValue());
 		assertThat(found,instanceOf(clazz));
 		assertThat(found,instanceOf(delegatedClass));
@@ -311,9 +321,9 @@ public class WriteSessionTest {
 
 	private void terminateSession(Action action, ResourceSnapshot resource) throws WriteSessionException {
 		logAction(Stage.TERMINATION,action,resource);
-		uow.accept(new UnitOfWorkInspector());
-		sut.saveChanges();
-		writeSessionService.terminateSession(sut);
+		this.uow.accept(new UnitOfWorkInspector());
+		this.sut.saveChanges();
+		this.writeSessionService.terminateSession(this.sut);
 		assertThat(transaction.isCompleted(),equalTo(true));
 	}
 
@@ -321,7 +331,7 @@ public class WriteSessionTest {
 		logAction(Stage.PREPARATION,action,snapshot);
 		Resource resource=
 			this.persistencyManager.
-				createResource(snapshot.templateId(), snapshot.name(), null);
+				createResource(this.templateManagementService.templateOfId(snapshot.templateId()), snapshot.name());
 		doPrepareSession(resource);
 	}
 
