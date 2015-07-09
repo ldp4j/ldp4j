@@ -35,6 +35,7 @@ import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.engine.ApplicationContextCreationException;
 import org.ldp4j.application.engine.constraints.ConstraintReport;
 import org.ldp4j.application.engine.constraints.ConstraintReportId;
+import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
 import org.ldp4j.application.engine.constraints.ConstraintReportTransformer;
 import org.ldp4j.application.engine.context.ApplicationContext;
 import org.ldp4j.application.engine.context.ApplicationContextException;
@@ -50,6 +51,7 @@ import org.ldp4j.application.engine.resource.FeatureExecutionException;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
+import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateIntrospector;
@@ -155,8 +157,11 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	private final ThreadLocal<DefaultApplicationOperation> currentOperation;
 
+	private final ConstraintReportRepository constraintReportRepository;
+
 	DefaultApplicationContext(DefaultApplicationEngine engine) {
 		this.engine=engine;
+		this.constraintReportRepository=RuntimeDelegate.getInstance().getConstraintReportRepository();
 		this.factory=DefaultPublicResourceFactory.newInstance(this);
 		this.operationController=new ApplicationContextOperationController();
 		this.currentOperation=new ThreadLocal<DefaultApplicationOperation>();
@@ -218,7 +223,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 					error.getConstraints(),
 					new Date(),
 					currentRequest());
-		this.engine().persistencyManager().add(report);
+		this.constraintReportRepository.add(report);
 		LOGGER.debug("Constraint validation failed. Registered constraint report {}",report.id());
 		error.setConstraintsId(report.id().failureId());
 	}
@@ -332,6 +337,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	DataSet getConstraintReport(Endpoint endpoint, String constraintsId) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
+		// TODO: Check if it is really necessary
 		Resource resource = this.engine().persistencyManager().resourceOfId(resourceId,Resource.class);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
@@ -340,11 +346,10 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 
 		ConstraintReport report=
-			this.engine().
-				persistencyManager().
-					constraintReportOfId(
-						ConstraintReportId.
-							create(resource.id(),constraintsId));
+			this.constraintReportRepository.
+				constraintReportOfId(
+					ConstraintReportId.
+						create(resource.id(),constraintsId));
 		if(report==null) {
 			return null;
 		}

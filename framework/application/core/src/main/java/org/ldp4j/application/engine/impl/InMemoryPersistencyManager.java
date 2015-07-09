@@ -34,8 +34,7 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.engine.constraints.ConstraintReport;
-import org.ldp4j.application.engine.constraints.ConstraintReportId;
+import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
@@ -131,6 +130,10 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 
 	void disposeTransaction(InMemoryTransaction transaction) {
 		this.currentTransaction.set(null);
+	}
+
+	ConstraintReportRepository constraintReportRepository() {
+		return this.constraintReportRepository;
 	}
 
 	/**
@@ -259,22 +262,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		checkArgument(endpoint instanceof InMemoryEndpoint);
 		this.endpointRepository.remove(endpoint);
 		((InMemoryEndpoint)endpoint).delete(deletionDate);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void add(ConstraintReport report) {
-		this.constraintReportRepository.add((InMemoryConstraintReport)report);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ConstraintReport constraintReportOfId(ConstraintReportId id) {
-		return this.constraintReportRepository.constraintReportOfId(id);
 	}
 
 	/**
