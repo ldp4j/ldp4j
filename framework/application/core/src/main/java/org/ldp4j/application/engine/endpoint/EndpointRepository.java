@@ -34,8 +34,6 @@ public interface EndpointRepository {
 
 	Endpoint endpointOfResource(ResourceId id);
 
-	long nextIdentifier();
-
 	void add(Endpoint endpoint);
 
 }

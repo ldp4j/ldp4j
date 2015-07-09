@@ -177,8 +177,8 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	public Endpoint createEndpoint(Resource resource, String path, EntityTag entityTag, Date creationDate) {
 		checkNotNull(resource,"Endpoint's resource cannot be null");
 		checkNotNull(entityTag,"Endpoint's entity tag cannot be null");
-		checkNotNull(creationDate,"Endpoint's Last modified data cannot be null");
-		return new InMemoryEndpoint(this.endpointRepository.nextIdentifier(),path,resource.id(),creationDate,entityTag);
+		checkNotNull(creationDate,"Endpoint's last modified data cannot be null");
+		return new InMemoryEndpoint(path,resource.id(),creationDate,entityTag);
 	}
 
 	/**

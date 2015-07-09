@@ -26,9 +26,8 @@
  */
 package org.ldp4j.application.engine.impl;
 
-import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -38,31 +37,20 @@ import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.lifecycle.Managed;
 import org.ldp4j.application.engine.resource.ResourceId;
 
+import com.google.common.collect.Maps;
+
 final class InMemoryEndpointRepository implements Managed, EndpointRepository {
 
-	private final AtomicLong counter=new AtomicLong();
+	private final Map<String,Endpoint> endpointsByPath=Maps.newLinkedHashMap();
+	private final Map<ResourceId,Endpoint> endpointsByResourceName=Maps.newLinkedHashMap();
 
-	private ReadWriteLock lock=new ReentrantReadWriteLock();
-	private final Map<Long,Endpoint> endpointsById=new HashMap<Long,Endpoint>();
-	private final Map<String,Long> endpointsByPath=new HashMap<String,Long>();
-	private final Map<ResourceId,Long> endpointsByResourceName=new HashMap<ResourceId,Long>();
+	private final Lock readLock;
+	private final Lock writeLock;
 
 	InMemoryEndpointRepository() {
-	}
-
-	private Endpoint endpointOfId(Long id) {
-		if(id==null) {
-			return null;
-		}
-		return endpointsById.get(id);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public long nextIdentifier() {
-		return counter.incrementAndGet();
+		ReadWriteLock lock=new ReentrantReadWriteLock();
+		this.readLock = lock.readLock();
+		this.writeLock = lock.writeLock();
 	}
 
 	/**
@@ -70,11 +58,11 @@ final class InMemoryEndpointRepository implements Managed, EndpointRepository {
 	 */
 	@Override
 	public Endpoint endpointOfPath(String path) {
-		lock.readLock().lock();
+		this.readLock.lock();
 		try {
-			return endpointOfId(endpointsByPath.get(path));
+			return this.endpointsByPath.get(path);
 		} finally {
-			lock.readLock().unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -83,15 +71,15 @@ final class InMemoryEndpointRepository implements Managed, EndpointRepository {
 	 */
 	@Override
 	public Endpoint endpointOfResource(ResourceId id) {
-		lock.readLock().lock();
+		this.readLock.lock();
 		try {
-			Endpoint endpoint = endpointOfId(endpointsByResourceName.get(id));
+			Endpoint endpoint = this.endpointsByResourceName.get(id);
 			if(endpoint!=null && endpoint.deleted()!=null) {
 				endpoint=null;
 			}
 			return endpoint;
 		} finally {
-			lock.readLock().unlock();
+			this.readLock.unlock();
 		}
 	}
 
@@ -100,23 +88,19 @@ final class InMemoryEndpointRepository implements Managed, EndpointRepository {
 	 */
 	@Override
 	public void add(Endpoint endpoint) {
-		lock.writeLock().lock();
+		this.writeLock.lock();
 		try {
-			if(endpointsById.containsKey(endpoint.id())) {
-				throw new IllegalArgumentException("An endpoint with id '"+endpoint.id()+"' already exists");
-			}
-			if(endpointsByPath.containsKey(endpoint.path())) {
+			if(this.endpointsByPath.containsKey(endpoint.path())) {
 				throw new IllegalArgumentException("An endpoint with path '"+endpoint.path()+"' already exists");
 			}
 			Endpoint other=endpointOfResource(endpoint.resourceId());
 			if(other!=null) {
 				throw new IllegalArgumentException("An endpoint with resource name '"+endpoint.resourceId()+"' already exists ("+other+")");
 			}
-			endpointsById.put(endpoint.id(), endpoint);
-			endpointsByPath.put(endpoint.path(), endpoint.id());
-			endpointsByResourceName.put(endpoint.resourceId(), endpoint.id());
+			this.endpointsByPath.put(endpoint.path(), endpoint);
+			this.endpointsByResourceName.put(endpoint.resourceId(),endpoint);
 		} finally {
-			lock.writeLock().unlock();
+			this.writeLock.unlock();
 		}
 	}
 
@@ -133,13 +117,12 @@ final class InMemoryEndpointRepository implements Managed, EndpointRepository {
 	 */
 	@Override
 	public void shutdown() throws LifecycleException {
-		lock.writeLock().lock();
+		this.writeLock.lock();
 		try {
-			endpointsById.clear();
-			endpointsByPath.clear();
-			endpointsByResourceName.clear();
+			this.endpointsByPath.clear();
+			this.endpointsByResourceName.clear();
 		} finally {
-			lock.writeLock().unlock();
+			this.writeLock.unlock();
 		}
 	}
 

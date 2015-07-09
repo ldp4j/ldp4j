@@ -38,7 +38,6 @@ import com.google.common.base.MoreObjects;
 
 final class InMemoryEndpoint implements Endpoint {
 
-	private final long id;
 	private final String path;
 	private final Date created;
 
@@ -47,21 +46,12 @@ final class InMemoryEndpoint implements Endpoint {
 	private Date lastModified;
 	private Date deleted;
 
-	InMemoryEndpoint(long id, String path, ResourceId resourceId, Date created, EntityTag entityTag) {
-		this.id = id;
+	InMemoryEndpoint(String path, ResourceId resourceId, Date created, EntityTag entityTag) {
 		this.path = path;
 		this.resourceId = resourceId;
 		this.created = created;
 		this.entityTag = entityTag;
 		this.lastModified = created;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public long id() {
-		return id;
 	}
 
 	/**
@@ -141,7 +131,6 @@ final class InMemoryEndpoint implements Endpoint {
 			MoreObjects.
 				toStringHelper(getClass()).
 					omitNullValues().
-					add("id",this.id).
 					add("path",this.path).
 					add("created",this.created).
 					add("deleted",this.deleted).

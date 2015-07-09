@@ -33,8 +33,6 @@ import org.ldp4j.application.engine.resource.ResourceId;
 
 public interface Endpoint {
 
-	long id();
-
 	ResourceId resourceId();
 
 	String path();
