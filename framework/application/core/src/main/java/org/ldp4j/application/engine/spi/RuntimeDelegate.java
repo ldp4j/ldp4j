@@ -38,6 +38,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
 import org.ldp4j.application.engine.endpoint.EndpointManagementService;
+import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleService;
 import org.ldp4j.application.engine.resource.ResourceControllerService;
 import org.ldp4j.application.engine.session.WriteSessionService;
@@ -294,6 +295,11 @@ public abstract class RuntimeDelegate {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
+		@Override
+		public EndpointRepository getEndpointRepository() {
+			throw new AssertionError(ERROR_MESSAGE);
+		}
+
 	}
 
 	private void initialize() {
@@ -321,6 +327,8 @@ public abstract class RuntimeDelegate {
 	}
 
 	public abstract PersistencyManager getPersistencyManager();
+
+	public abstract EndpointRepository getEndpointRepository();
 
 	public abstract ConstraintReportRepository getConstraintReportRepository();
 

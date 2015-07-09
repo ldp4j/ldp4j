@@ -26,7 +26,6 @@
  */
 package org.ldp4j.application.engine.impl;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
@@ -37,6 +36,7 @@ import org.ldp4j.application.data.Name;
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.endpoint.Endpoint;
+import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.lifecycle.Managed;
 import org.ldp4j.application.engine.resource.Container;
@@ -136,6 +136,10 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		return this.constraintReportRepository;
 	}
 
+	EndpointRepository endpointRepository() {
+		return this.endpointRepository;
+	}
+
 	/**
 	 * {@inheritDoc}
 	 */
@@ -217,32 +221,8 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Endpoint endpointOfPath(String path) {
-		return this.endpointRepository.endpointOfPath(path);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Endpoint endpointOfResource(ResourceId id) {
-		return this.endpointRepository.endpointOfResource(id);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public void add(Resource resource) {
 		this.resourceRepository.add(resource);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void add(Endpoint endpoint) {
-		this.endpointRepository.add(endpoint);
 	}
 
 	/**
@@ -252,16 +232,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	public void remove(Resource resource) {
 		this.resourceRepository.remove(resource);
 		this.constraintReportRepository.removeByResource(resource);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void remove(Endpoint endpoint, Date deletionDate) {
-		checkArgument(endpoint instanceof InMemoryEndpoint);
-		this.endpointRepository.remove(endpoint);
-		((InMemoryEndpoint)endpoint).delete(deletionDate);
 	}
 
 	/**

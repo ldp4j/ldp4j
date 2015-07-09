@@ -241,7 +241,7 @@ public class WriteSessionTest {
 			org.ldp4j.application.engine.resource.Resource rootResource=persistencyManager.createResource("personTemplate",name("me"),null);
 			Endpoint rootEndpoint=persistencyManager.createEndpoint(rootResource,"root",new EntityTag("root"),new Date());
 			persistencyManager.add(rootResource);
-			persistencyManager.add(rootEndpoint);
+			RuntimeDelegate.getInstance().getEndpointRepository().add(rootEndpoint);
 			UnitOfWork.setCurrent(null);
 			transaction.commit();
 			return rootResource;

@@ -45,6 +45,7 @@ import org.ldp4j.application.engine.context.Capabilities;
 import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.endpoint.Endpoint;
+import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.FeatureExecutionException;
@@ -157,11 +158,13 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	private final ThreadLocal<DefaultApplicationOperation> currentOperation;
 
+	private final EndpointRepository endpointRepository;
 	private final ConstraintReportRepository constraintReportRepository;
 
 	DefaultApplicationContext(DefaultApplicationEngine engine) {
 		this.engine=engine;
 		this.constraintReportRepository=RuntimeDelegate.getInstance().getConstraintReportRepository();
+		this.endpointRepository=RuntimeDelegate.getInstance().getEndpointRepository();
 		this.factory=DefaultPublicResourceFactory.newInstance(this);
 		this.operationController=new ApplicationContextOperationController();
 		this.currentOperation=new ThreadLocal<DefaultApplicationOperation>();
@@ -264,7 +267,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	}
 
 	Endpoint resolveResource(ResourceId id) {
-		return this.engine().persistencyManager().endpointOfResource(id);
+		return this.endpointRepository.endpointOfResource(id);
 	}
 
 	Resource createResource(Endpoint endpoint, DataSet dataSet, String desiredPath) throws ApplicationExecutionException {

@@ -34,6 +34,7 @@ import org.ldp4j.application.data.Name;
 import org.ldp4j.application.engine.ApplicationConfigurationException;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.endpoint.Endpoint;
+import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.spi.PersistencyManager;
@@ -101,8 +102,11 @@ final class EnvironmentImpl implements Environment {
 
 	private final TemplateManagementService templateManagementService;
 
-	EnvironmentImpl(TemplateManagementService templateManagementService, PersistencyManager persistencyManager) {
+	private final EndpointRepository endpointRepository;
+
+	EnvironmentImpl(TemplateManagementService templateManagementService, PersistencyManager persistencyManager, EndpointRepository endpointRepository) {
 		this.templateManagementService = templateManagementService;
+		this.endpointRepository = endpointRepository;
 		this.candidates=Lists.newArrayList();
 		this.persistencyManager = persistencyManager;
 	}
@@ -160,21 +164,21 @@ final class EnvironmentImpl implements Environment {
 
 	private <T extends Resource> void publish(Class<? extends T> clazz, ResourceId resourceId, String path) throws ApplicationConfigurationException {
 		Resource prevResource = this.persistencyManager.resourceOfId(resourceId);
-		Endpoint prevEndpoint = this.persistencyManager.endpointOfPath(path);
+		Endpoint prevEndpoint = this.endpointRepository.endpointOfPath(path);
 
 		if(prevEndpoint!=null && !prevEndpoint.resourceId().equals(resourceId)) {
 			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+" cannot be published at '"+path+"' as that path is already in use by a resource "+toString(prevEndpoint.resourceId()));
 		}
 
 		if(prevEndpoint==null && prevResource!=null) {
-			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+" cannot be published at '"+path+"' as it is already published at '"+this.persistencyManager.endpointOfResource(resourceId).path()+"'");
+			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+" cannot be published at '"+path+"' as it is already published at '"+this.endpointRepository.endpointOfResource(resourceId).path()+"'");
 		}
 
 		if(prevResource==null && prevEndpoint==null) {
 			T resource=this.persistencyManager.createResource(resourceId.templateId(),resourceId.name(),null,clazz);
 			this.persistencyManager.add(resource);
 			Endpoint endpoint=this.persistencyManager.createEndpoint(resource,path,new EntityTag(path),new Date());
-			this.persistencyManager.add(endpoint);
+			this.endpointRepository.add(endpoint);
 		}
 
 	}

@@ -27,6 +27,7 @@
 package org.ldp4j.application.engine.impl;
 
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
+import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.ServiceRegistry;
@@ -41,19 +42,36 @@ public final class InMemoryRuntimeDelegate extends RuntimeDelegate {
 		this.persistencyManager= new InMemoryPersistencyManager();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ServiceRegistry getServiceRegistry() {
 		return this.serviceRegistry;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public PersistencyManager getPersistencyManager() {
 		return this.persistencyManager;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ConstraintReportRepository getConstraintReportRepository() {
 		return this.persistencyManager.constraintReportRepository();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public EndpointRepository getEndpointRepository() {
+		return this.persistencyManager.endpointRepository();
 	}
 
 }

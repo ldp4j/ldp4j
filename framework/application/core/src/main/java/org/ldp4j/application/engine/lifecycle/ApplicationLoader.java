@@ -125,11 +125,15 @@ final class ApplicationLoader<T extends Configuration> {
 	}
 
 	private void setup(Application<T> application) throws ApplicationConfigurationException {
-		BootstrapImpl<T> bootstrap=new BootstrapImpl<T>(this.configuration,templateManagementService());
+		BootstrapImpl<T> bootstrap=
+			new BootstrapImpl<T>(
+				this.configuration,
+				templateManagementService());
 		EnvironmentImpl environment=
 			new EnvironmentImpl(
 				templateManagementService(),
-				persistencyManager()
+				persistencyManager(),
+				RuntimeDelegate.getInstance().getEndpointRepository()
 			);
 		try {
 			application.setup(environment,bootstrap);

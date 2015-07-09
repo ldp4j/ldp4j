@@ -85,7 +85,11 @@ final class InMemoryEndpointRepository implements Managed, EndpointRepository {
 	public Endpoint endpointOfResource(ResourceId id) {
 		lock.readLock().lock();
 		try {
-			return endpointOfId(endpointsByResourceName.get(id));
+			Endpoint endpoint = endpointOfId(endpointsByResourceName.get(id));
+			if(endpoint!=null && endpoint.deleted()!=null) {
+				endpoint=null;
+			}
+			return endpoint;
 		} finally {
 			lock.readLock().unlock();
 		}
@@ -117,8 +121,9 @@ final class InMemoryEndpointRepository implements Managed, EndpointRepository {
 			if(endpointsByPath.containsKey(endpoint.path())) {
 				throw new IllegalArgumentException("An endpoint with path '"+endpoint.path()+"' already exists");
 			}
-			if(endpointsByResourceName.containsKey(endpoint.resourceId())) {
-				throw new IllegalArgumentException("An endpoint with resource name '"+endpoint.resourceId()+"' already exists");
+			Endpoint other=endpointOfResource(endpoint.resourceId());
+			if(other!=null) {
+				throw new IllegalArgumentException("An endpoint with resource name '"+endpoint.resourceId()+"' already exists ("+other+")");
 			}
 			endpointsById.put(endpoint.id(), endpoint);
 			endpointsByPath.put(endpoint.path(), endpoint.id());

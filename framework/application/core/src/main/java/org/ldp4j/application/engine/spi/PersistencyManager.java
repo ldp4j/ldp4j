@@ -48,17 +48,9 @@ public interface PersistencyManager {
 
 	<T extends Resource> T createResource(String templateId, Name<?> resourceId, Resource parent, Class<? extends T> expectedResourceClass);
 
-	void add(Endpoint endpoint);
-
 	void add(Resource resource);
 
-	void remove(Endpoint endpoint, Date deletionDate);
-
 	void remove(Resource resource);
-
-	Endpoint endpointOfPath(String path);
-
-	Endpoint endpointOfResource(ResourceId id);
 
 	<T extends Resource> T resourceOfId(ResourceId id, Class<? extends T> expectedResourceClass);
 

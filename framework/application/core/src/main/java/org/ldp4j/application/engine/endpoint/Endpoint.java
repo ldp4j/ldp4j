@@ -49,4 +49,6 @@ public interface Endpoint {
 
 	void modify(EntityTag newEntityTag, Date newLastModified);
 
+	void delete(Date deletionDate);
+
 }

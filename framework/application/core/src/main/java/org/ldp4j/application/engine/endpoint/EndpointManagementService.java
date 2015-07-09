@@ -38,6 +38,7 @@ import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.Slug;
 import org.ldp4j.application.engine.spi.PersistencyManager;
+import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.Service;
 import org.ldp4j.application.engine.spi.ServiceBuilder;
 import org.ldp4j.application.engine.template.AttachedTemplate;
@@ -100,10 +101,13 @@ public final class EndpointManagementService implements Service {
 	private final PersistencyManager persistencyManager;
 	private final ListenerManager<EndpointLifecycleListener> listenerManager;
 
+	private final EndpointRepository endpointRepository;
+
 
 	private EndpointManagementService(TemplateManagementService templateManagementService, PersistencyManager persistencyManager) {
 		this.templateManagementService = templateManagementService;
 		this.persistencyManager = persistencyManager;
+		this.endpointRepository=RuntimeDelegate.getInstance().getEndpointRepository();
 		this.listenerManager=ListenerManager.<EndpointLifecycleListener>newInstance();
 	}
 
@@ -189,7 +193,7 @@ public final class EndpointManagementService implements Service {
 				String resourcePath = calculateResourcePath(resource,candidatePath);
 				LOGGER.debug("({}) Trying resource path {} ",repetitions,resourcePath);
 				Endpoint newEndpoint = this.persistencyManager.createEndpoint(resource,resourcePath,entityTag,lastModified);
-				this.persistencyManager.add(newEndpoint);
+				this.endpointRepository.add(newEndpoint);
 				return newEndpoint;
 			} catch (EndpointNotFoundException e) {
 				throw new EndpointCreationException("Could not calculate path for resource '"+resource.id()+"'",e);
@@ -213,7 +217,7 @@ public final class EndpointManagementService implements Service {
 
 	public Endpoint getResourceEndpoint(ResourceId resourceId) throws EndpointNotFoundException {
 		checkNotNull(resourceId,"Resource identifier cannot be null");
-		Endpoint endpoint = this.persistencyManager.endpointOfResource(resourceId);
+		Endpoint endpoint = this.endpointRepository.endpointOfResource(resourceId);
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resourceId);
 		}
@@ -222,7 +226,7 @@ public final class EndpointManagementService implements Service {
 
 	public Endpoint resolveEndpoint(String path) {
 		checkNotNull(path,"Path cannot be null");
-		return this.persistencyManager.endpointOfPath(path);
+		return this.endpointRepository.endpointOfPath(path);
 	}
 
 	/**
@@ -252,7 +256,7 @@ public final class EndpointManagementService implements Service {
 		checkNotNull(resource,"Resource cannot be null");
 		checkNotNull(entityTag,"Entity tag cannot be null");
 		checkNotNull(lastModified,"Last modified cannot be null");
-		Endpoint endpoint = this.persistencyManager.endpointOfResource(resource.id());
+		Endpoint endpoint = this.endpointRepository.endpointOfResource(resource.id());
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resource.id());
 		}
@@ -262,11 +266,11 @@ public final class EndpointManagementService implements Service {
 
 	public Endpoint deleteResourceEndpoint(Resource resource, Date deletionDate) throws EndpointNotFoundException {
 		checkNotNull(resource,"Resource cannot be null");
-		Endpoint endpoint = this.persistencyManager.endpointOfResource(resource.id());
+		Endpoint endpoint = this.endpointRepository.endpointOfResource(resource.id());
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resource.id());
 		}
-		this.persistencyManager.remove(endpoint,deletionDate);
+		endpoint.delete(deletionDate);
 		this.listenerManager.notify(new EndpointDeletionNotification(endpoint));
 		return endpoint;
 	}

@@ -52,8 +52,10 @@ import org.jboss.shrinkwrap.api.spec.WebArchive;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.experimental.categories.Category;
+import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.ldp4j.commons.testing.categories.DEBUG;
 import org.ldp4j.commons.testing.categories.HappyPath;
@@ -114,6 +116,9 @@ public class ServerFrontendITest {
 		}
 	}
 
+	@Rule
+	public TestName testName=new TestName();
+
 	@Before
 	public void setUp() {
 		HELPER.setLegacy(true);
@@ -144,28 +149,32 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-//		DEBUG.class,
 		LDP.class,
 		HappyPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
 	public void testEnhancedGet(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpGet.class));
+		LOGGER.info("Completed {}",testName.getMethodName());
 	}
+
 	@Test
 	@Category({
-//		DEBUG.class,
 		LDP.class,
 		HappyPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
 	public void testEnhancedHead(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpHead.class));
+		LOGGER.info("Completed {}",testName.getMethodName());
 	}
+
 	@Test
 	@Category({
 		LDP.class,
@@ -173,22 +182,25 @@ public class ServerFrontendITest {
 	})
 	@OperateOnDeployment(DEPLOYMENT)
 	public void testEnhancedOptions(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpOptions.class));
+		LOGGER.info("Completed {}",testName.getMethodName());
 	}
 
 	@Test
 	@Category({
-//		DEBUG.class,
 		LDP.class,
 		HappyPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
 	public void testEnhancedDelete(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 		HELPER.httpRequest(HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpDelete.class));
+		LOGGER.info("Completed {}",testName.getMethodName());
 	}
 
 	@Test
@@ -198,6 +210,7 @@ public class ServerFrontendITest {
 	})
 	@OperateOnDeployment(DEPLOYMENT)
 	public void testEnhancedPut(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpGet.class);
@@ -210,6 +223,7 @@ public class ServerFrontendITest {
 		Metadata getResponse=HELPER.httpRequest(get);
 		put.addHeader(HttpHeaders.IF_MATCH,getResponse.etag);
 		HELPER.httpRequest(put);
+		LOGGER.info("Completed {}",testName.getMethodName());
 	}
 
 	@Test
@@ -220,6 +234,7 @@ public class ServerFrontendITest {
 	})
 	@OperateOnDeployment(DEPLOYMENT)
 	public void testClientResourceSimulation(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 		String relativeContainerPath = MyApplication.ROOT_PERSON_RESOURCE_PATH.concat("relatives/");
@@ -264,16 +279,17 @@ public class ServerFrontendITest {
 		HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
 		HELPER.httpRequest(get);
 		HELPER.httpRequest(rcGet);
+		LOGGER.info("Completed {}",testName.getMethodName());
 	}
 
 	@Test
 	@Category({
-//		DEBUG.class,
 		LDP.class,
 		HappyPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
 	public void testClientContainerSimulation(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH,HttpGet.class);
@@ -292,6 +308,7 @@ public class ServerFrontendITest {
 		HELPER.httpRequest(HELPER.newRequest(path,HttpDelete.class));
 		HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
 		HELPER.httpRequest(get);
+		LOGGER.info("Completed {}",testName.getMethodName());
 	}
 
 }

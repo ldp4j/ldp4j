@@ -56,41 +56,65 @@ final class InMemoryEndpoint implements Endpoint {
 		this.lastModified = created;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long id() {
 		return id;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String path() {
 		return path;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Date created() {
 		return this.created;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Date deleted() {
 		return this.deleted;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public EntityTag entityTag() {
 		return this.entityTag;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Date lastModified() {
 		return this.lastModified;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ResourceId resourceId() {
 		return this.resourceId;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void modify(EntityTag newEntityTag, Date newLastModified) {
 		checkState(this.deleted==null,"Endpoint is already deleted");
@@ -98,12 +122,19 @@ final class InMemoryEndpoint implements Endpoint {
 		this.lastModified=new Date(newLastModified.getTime());
 	}
 
-	void delete(Date deleted) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void delete(Date deleted) {
 		checkState(this.deleted==null,"Endpoint is already deleted");
 		this.deleted=deleted;
 		this.resourceId=null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return

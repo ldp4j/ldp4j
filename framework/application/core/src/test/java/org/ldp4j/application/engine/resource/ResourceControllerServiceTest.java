@@ -79,7 +79,7 @@ public class ResourceControllerServiceTest {
 		T resource=persistencyManager.createResource(templateId,resourceName,null,clazz);
 		persistencyManager.add(resource);
 		Endpoint endpoint=persistencyManager.createEndpoint(resource,path,new EntityTag(path),new Date());
-		persistencyManager.add(endpoint);
+		RuntimeDelegate.getInstance().getEndpointRepository().add(endpoint);
 
 		transaction.commit();
 		return resource;
