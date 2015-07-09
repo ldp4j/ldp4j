@@ -44,6 +44,7 @@ import org.ldp4j.application.engine.resource.ResourceControllerService;
 import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.template.TemplateManagementService;
+import org.ldp4j.application.engine.transaction.TransactionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -306,6 +307,11 @@ public abstract class RuntimeDelegate {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
+		@Override
+		public TransactionManager getTransactionManager() {
+			throw new AssertionError(ERROR_MESSAGE);
+		}
+
 	}
 
 	private void initialize() {
@@ -333,6 +339,8 @@ public abstract class RuntimeDelegate {
 	}
 
 	public abstract PersistencyManager getPersistencyManager();
+
+	public abstract TransactionManager getTransactionManager();
 
 	public abstract ResourceRepository getResourceRepository();
 

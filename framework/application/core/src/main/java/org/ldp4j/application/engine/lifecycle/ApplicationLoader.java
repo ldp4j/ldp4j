@@ -33,8 +33,9 @@ import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.ServiceRegistry;
-import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.engine.template.TemplateManagementService;
+import org.ldp4j.application.engine.transaction.Transaction;
+import org.ldp4j.application.engine.transaction.TransactionManager;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.ApplicationInitializationException;
 import org.ldp4j.application.ext.ApplicationSetupException;
@@ -45,17 +46,23 @@ import org.ldp4j.application.session.WriteSession;
 final class ApplicationLoader<T extends Configuration> {
 
 	private final Class<? extends Application<T>> appClass;
+	private final TransactionManager transactionManager;
+
 	private WriteSessionService writeSessionService;
 	private TemplateManagementService templateManagementService;
 	private PersistencyManager persistencyManager;
+
 	private T configuration;
 
 	private ApplicationLoader(Class<? extends Application<T>> appClass) {
 		this.appClass=appClass;
 
-		this.persistencyManager=RuntimeDelegate.getInstance().getPersistencyManager();
+		RuntimeDelegate instance = RuntimeDelegate.getInstance();
 
-		ServiceRegistry serviceRegistry = RuntimeDelegate.getInstance().getServiceRegistry();
+		this.transactionManager=instance.getTransactionManager();
+		this.persistencyManager=instance.getPersistencyManager();
+
+		ServiceRegistry serviceRegistry=instance.getServiceRegistry();
 		this.writeSessionService=serviceRegistry.getService(WriteSessionService.class);
 		this.templateManagementService=serviceRegistry.getService(TemplateManagementService.class);
 	}
@@ -106,7 +113,7 @@ final class ApplicationLoader<T extends Configuration> {
 	}
 
 	private void initialize(Application<T> application) throws ApplicationConfigurationException {
-		Transaction transaction=this.persistencyManager().currentTransaction();
+		Transaction transaction=this.transactionManager.currentTransaction();
 		transaction.begin();
 		try {
 			WriteSession session = writeSessionService().createSession(WriteSessionConfiguration.builder().build());

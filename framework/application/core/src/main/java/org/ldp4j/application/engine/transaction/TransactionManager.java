@@ -24,24 +24,10 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.spi;
+package org.ldp4j.application.engine.transaction;
 
-import java.util.Date;
+public interface TransactionManager {
 
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.engine.context.EntityTag;
-import org.ldp4j.application.engine.endpoint.Endpoint;
-import org.ldp4j.application.engine.resource.Resource;
-import org.ldp4j.application.engine.template.TemplateLibrary;
-
-public interface PersistencyManager {
-
-	void useTemplates(TemplateLibrary library);
-
-	Endpoint createEndpoint(Resource resource, String path, EntityTag entityTag, Date lastModified);
-
-	Resource createResource(String templateId, Name<?> resourceId, Resource parent);
-
-	<T extends Resource> T createResource(String templateId, Name<?> resourceId, Resource parent, Class<? extends T> expectedResourceClass);
+	Transaction currentTransaction();
 
 }

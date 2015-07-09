@@ -52,8 +52,8 @@ import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.session.UnitOfWork.Visitor;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
-import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.engine.template.TemplateManagementService;
+import org.ldp4j.application.engine.transaction.Transaction;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.session.ContainerSnapshot;
@@ -234,7 +234,7 @@ public class WriteSessionTest {
 	}
 
 	private org.ldp4j.application.engine.resource.Resource initialize() {
-		Transaction transaction = persistencyManager.currentTransaction();
+		Transaction transaction = RuntimeDelegate.getInstance().getTransactionManager().currentTransaction();
 		transaction.begin();
 		try {
 			uow = UnitOfWork.newCurrent();
@@ -331,7 +331,7 @@ public class WriteSessionTest {
 	}
 
 	private void doPrepareSession(org.ldp4j.application.engine.resource.Resource resource) {
-		this.transaction=this.persistencyManager.currentTransaction();
+		this.transaction=RuntimeDelegate.getInstance().getTransactionManager().currentTransaction();
 		this.transaction.begin();
 		this.sut =
 			this.writeSessionService.createSession(

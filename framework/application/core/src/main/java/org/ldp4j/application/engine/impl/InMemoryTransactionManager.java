@@ -24,24 +24,36 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.spi;
+package org.ldp4j.application.engine.impl;
 
-import java.util.Date;
+import java.util.concurrent.atomic.AtomicLong;
 
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.engine.context.EntityTag;
-import org.ldp4j.application.engine.endpoint.Endpoint;
-import org.ldp4j.application.engine.resource.Resource;
-import org.ldp4j.application.engine.template.TemplateLibrary;
+import org.ldp4j.application.engine.transaction.Transaction;
+import org.ldp4j.application.engine.transaction.TransactionManager;
 
-public interface PersistencyManager {
+final class InMemoryTransactionManager implements TransactionManager {
 
-	void useTemplates(TemplateLibrary library);
+	private final ThreadLocal<InMemoryTransaction> currentTransaction;
+	private final AtomicLong transactionCounter;
 
-	Endpoint createEndpoint(Resource resource, String path, EntityTag entityTag, Date lastModified);
+	public InMemoryTransactionManager() {
+		this.currentTransaction=new ThreadLocal<InMemoryTransaction>();
+		this.transactionCounter=new AtomicLong();
+	}
 
-	Resource createResource(String templateId, Name<?> resourceId, Resource parent);
+	@Override
+	public Transaction currentTransaction() {
+		InMemoryTransaction transaction=this.currentTransaction.get();
+		if(transaction==null) {
+			transaction=new InMemoryTransaction(this.transactionCounter.getAndIncrement(),this);
+			this.currentTransaction.set(transaction);
+		}
+		return transaction;
+	}
 
-	<T extends Resource> T createResource(String templateId, Name<?> resourceId, Resource parent, Class<? extends T> expectedResourceClass);
+	void disposeTransaction(InMemoryTransaction transaction) {
+		// TODO: Double check we are not sharing transactions among threads
+		this.currentTransaction.remove();
+	}
 
 }

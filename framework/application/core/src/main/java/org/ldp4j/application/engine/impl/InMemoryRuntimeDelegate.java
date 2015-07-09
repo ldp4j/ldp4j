@@ -32,6 +32,7 @@ import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.ServiceRegistry;
+import org.ldp4j.application.engine.transaction.TransactionManager;
 
 public final class InMemoryRuntimeDelegate extends RuntimeDelegate {
 
@@ -81,6 +82,11 @@ public final class InMemoryRuntimeDelegate extends RuntimeDelegate {
 	@Override
 	public ResourceRepository getResourceRepository() {
 		return this.persistencyManager.resourceRepository();
+	}
+
+	@Override
+	public TransactionManager getTransactionManager() {
+		return this.persistencyManager.transactionManager();
 	}
 
 }

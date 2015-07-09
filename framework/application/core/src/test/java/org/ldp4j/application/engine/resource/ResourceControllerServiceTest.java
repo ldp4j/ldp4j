@@ -56,8 +56,8 @@ import org.ldp4j.application.engine.resource.ResourceControllerService;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
-import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.engine.template.TemplateManagementService;
+import org.ldp4j.application.engine.transaction.Transaction;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.example.BookContainerHandler;
 import org.ldp4j.example.BookHandler;
@@ -73,7 +73,7 @@ public class ResourceControllerServiceTest {
 	private PersistencyManager persistencyManager;
 
 	private <T extends Resource> T publishResource(Class<? extends T> clazz, String templateId, Name<?> resourceName, String path) {
-		Transaction transaction = persistencyManager.currentTransaction();
+		Transaction transaction = RuntimeDelegate.getInstance().getTransactionManager().currentTransaction();
 		transaction.begin();
 
 		T resource=persistencyManager.createResource(templateId,resourceName,null,clazz);
@@ -168,7 +168,7 @@ public class ResourceControllerServiceTest {
 
 
 	public <T> T transactional(Callable<T> callable) throws Exception {
-		Transaction transaction = persistencyManager.currentTransaction();
+		Transaction transaction = RuntimeDelegate.getInstance().getTransactionManager().currentTransaction();
 		transaction.begin();
 		try {
 			return callable.call();

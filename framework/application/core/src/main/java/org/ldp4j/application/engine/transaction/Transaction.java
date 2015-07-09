@@ -24,11 +24,12 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.spi;
+package org.ldp4j.application.engine.transaction;
+
 
 public interface Transaction {
 
-	PersistencyManager manager();
+	TransactionManager manager();
 
 	void begin();
 

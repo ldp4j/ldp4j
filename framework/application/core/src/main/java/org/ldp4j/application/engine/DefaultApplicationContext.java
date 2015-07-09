@@ -54,9 +54,10 @@ import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
-import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateIntrospector;
+import org.ldp4j.application.engine.transaction.Transaction;
+import org.ldp4j.application.engine.transaction.TransactionManager;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.ext.Deletable;
@@ -116,15 +117,14 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	private final class ApplicationContextOperationController {
 
-		private ApplicationContextOperationController() {
-		}
+		private final TransactionManager transactionManager;
 
-		private Transaction currentTransaction() {
-			return engine().persistencyManager().currentTransaction();
+		private ApplicationContextOperationController() {
+			this.transactionManager = RuntimeDelegate.getInstance().getTransactionManager();
 		}
 
 		public Transaction beginTransaction() {
-			Transaction transaction = currentTransaction();
+			Transaction transaction = this.transactionManager.currentTransaction();
 			transaction.begin();
 			LOGGER.
 				info("Started transaction {}.{},",

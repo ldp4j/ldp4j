@@ -45,6 +45,7 @@ import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.ServiceRegistry;
 import org.ldp4j.application.engine.template.TemplateManagementService;
+import org.ldp4j.application.engine.transaction.TransactionManager;
 import org.ldp4j.application.ext.ApplicationShutdownException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -63,7 +64,10 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 	private TemplateManagementService templateManagementService;
 	private ResourceControllerService resourceControllerService;
 
+	private TransactionManager transactionManager;
+
 	public DefaultApplicationEngine() {
+		this.transactionManager=RuntimeDelegate.getInstance().getTransactionManager();
 	}
 
 	private static <T> T checkNotNull(T object, String message) {
@@ -229,6 +233,10 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 	@Override
 	protected ApplicationContextManager<DefaultApplicationContext> applicationContextManager() {
 		return new DefaultApplicationContextManager(this);
+	}
+
+	TransactionManager transactionManager() {
+		return this.transactionManager;
 	}
 
 }

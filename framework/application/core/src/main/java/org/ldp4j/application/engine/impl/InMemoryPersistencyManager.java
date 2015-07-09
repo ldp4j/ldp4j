@@ -29,7 +29,6 @@ package org.ldp4j.application.engine.impl;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Date;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.data.Name;
@@ -44,7 +43,6 @@ import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.spi.PersistencyManager;
-import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.engine.template.BasicContainerTemplate;
 import org.ldp4j.application.engine.template.ContainerTemplate;
 import org.ldp4j.application.engine.template.DirectContainerTemplate;
@@ -53,15 +51,14 @@ import org.ldp4j.application.engine.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateLibrary;
 import org.ldp4j.application.engine.template.TemplateVisitor;
+import org.ldp4j.application.engine.transaction.TransactionManager;
 
 final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 
 	private final InMemoryResourceRepository resourceRepository;
 	private final InMemoryEndpointRepository endpointRepository;
 	private final InMemoryConstraintReportRepository constraintReportRepository;
-
-	private final ThreadLocal<InMemoryTransaction> currentTransaction;
-	private final AtomicLong transactionCounter;
+	private final InMemoryTransactionManager transactionManager;
 
 	private TemplateLibrary templateLibrary;
 
@@ -69,8 +66,7 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		this.resourceRepository=new InMemoryResourceRepository();
 		this.endpointRepository=new InMemoryEndpointRepository();
 		this.constraintReportRepository=new InMemoryConstraintReportRepository();
-		this.currentTransaction=new ThreadLocal<InMemoryTransaction>();
-		this.transactionCounter=new AtomicLong();
+		this.transactionManager = new InMemoryTransactionManager();
 	}
 
 	private ResourceTemplate findTemplate(String id) {
@@ -129,10 +125,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		return resource;
 	}
 
-	void disposeTransaction(InMemoryTransaction transaction) {
-		this.currentTransaction.set(null);
-	}
-
 	ResourceRepository resourceRepository() {
 		return this.resourceRepository;
 	}
@@ -145,17 +137,8 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		return this.constraintReportRepository;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Transaction currentTransaction() {
-		InMemoryTransaction transaction=this.currentTransaction.get();
-		if(transaction==null) {
-			transaction=new InMemoryTransaction(this.transactionCounter.getAndIncrement(),this);
-			this.currentTransaction.set(transaction);
-		}
-		return transaction;
+	TransactionManager transactionManager() {
+		return this.transactionManager;
 	}
 
 	/**

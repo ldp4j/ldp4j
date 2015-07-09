@@ -28,7 +28,7 @@ package org.ldp4j.application.engine;
 
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.engine.spi.Transaction;
+import org.ldp4j.application.engine.transaction.Transaction;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;

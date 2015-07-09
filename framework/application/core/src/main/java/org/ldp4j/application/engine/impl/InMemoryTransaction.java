@@ -26,8 +26,8 @@
  */
 package org.ldp4j.application.engine.impl;
 
-import org.ldp4j.application.engine.spi.PersistencyManager;
-import org.ldp4j.application.engine.spi.Transaction;
+import org.ldp4j.application.engine.transaction.Transaction;
+import org.ldp4j.application.engine.transaction.TransactionManager;
 
 import com.google.common.base.MoreObjects;
 
@@ -84,13 +84,13 @@ final class InMemoryTransaction implements Transaction {
 
 		@Override
 		public TransactionState commit() {
-			persistencyManager.disposeTransaction(InMemoryTransaction.this);
+			transactionManager.disposeTransaction(InMemoryTransaction.this);
 			return new CompletedTransactionState("commited");
 		}
 
 		@Override
 		public TransactionState rollback() {
-			persistencyManager.disposeTransaction(InMemoryTransaction.this);
+			transactionManager.disposeTransaction(InMemoryTransaction.this);
 			return new CompletedTransactionState("rolledback");
 		}
 
@@ -150,13 +150,13 @@ final class InMemoryTransaction implements Transaction {
 
 	}
 
-	private final InMemoryPersistencyManager persistencyManager;
+	private final InMemoryTransactionManager transactionManager;
 	private final long id;
 	private TransactionState state;
 
-	InMemoryTransaction(long id, InMemoryPersistencyManager persistencyManager) {
+	InMemoryTransaction(long id, InMemoryTransactionManager persistencyManager) {
 		this.id = id;
-		this.persistencyManager = persistencyManager;
+		this.transactionManager = persistencyManager;
 		this.state=new PendingTransactionState();
 	}
 
@@ -165,8 +165,8 @@ final class InMemoryTransaction implements Transaction {
 	}
 
 	@Override
-	public PersistencyManager manager() {
-		return this.persistencyManager;
+	public TransactionManager manager() {
+		return this.transactionManager;
 	}
 
 	@Override
@@ -200,7 +200,7 @@ final class InMemoryTransaction implements Transaction {
 				toStringHelper(getClass()).
 					add("id", this.id).
 					add("state",this.state).
-					add("persistencyManager",this.persistencyManager).
+					add("persistencyManager",this.transactionManager).
 					toString();
 
 	}

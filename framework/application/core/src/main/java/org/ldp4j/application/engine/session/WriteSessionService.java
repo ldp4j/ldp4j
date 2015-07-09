@@ -40,11 +40,11 @@ import org.ldp4j.application.engine.endpoint.EndpointNotFoundException;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceRepository;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.Service;
 import org.ldp4j.application.engine.spi.ServiceBuilder;
 import org.ldp4j.application.engine.template.TemplateManagementService;
+import org.ldp4j.application.engine.transaction.TransactionManager;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
@@ -63,7 +63,6 @@ public final class WriteSessionService implements Service {
 		public WriteSessionService build() {
 			return
 				new WriteSessionService(
-					persistencyManager(),
 					service(TemplateManagementService.class),
 					service(EndpointManagementService.class));
 		}
@@ -98,18 +97,19 @@ public final class WriteSessionService implements Service {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(WriteSessionService.class);
 
-	private final PersistencyManager persistencyManager;
 	private final EndpointManagementService endpointManagementService;
 
 	private final TemplateManagementService templateManagementService;
 
 	private final ResourceRepository resourceRepository;
 
-	private WriteSessionService(PersistencyManager persistencyManager, TemplateManagementService templateManagementService, EndpointManagementService endointManagementService) {
-		this.persistencyManager = persistencyManager;
+	private final TransactionManager transactionManager;
+
+	private WriteSessionService(TemplateManagementService templateManagementService, EndpointManagementService endointManagementService) {
 		this.templateManagementService = templateManagementService;
 		this.endpointManagementService = endointManagementService;
 		this.resourceRepository=RuntimeDelegate.getInstance().getResourceRepository();
+		this.transactionManager=RuntimeDelegate.getInstance().getTransactionManager();
 	}
 
 	public WriteSession createSession(WriteSessionConfiguration configuration) {
@@ -156,13 +156,13 @@ public final class WriteSessionService implements Service {
 	void commitSession(DelegatedWriteSession session) {
 		logLifecycleMessage("Commiting session...");
 		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date(),session));
-		this.persistencyManager.currentTransaction().commit();
+		this.transactionManager.currentTransaction().commit();
 	}
 
 	void rollbackSession(DelegatedWriteSession session) {
 		logLifecycleMessage("Rolling back session...");
 		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date(),session));
-		this.persistencyManager.currentTransaction().rollback();
+		this.transactionManager.currentTransaction().rollback();
 	}
 
 	Resource resourceOfId(ResourceId resourceId) {

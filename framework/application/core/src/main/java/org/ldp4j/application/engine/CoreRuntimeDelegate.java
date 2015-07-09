@@ -29,8 +29,8 @@ package org.ldp4j.application.engine;
 import org.ldp4j.application.ApplicationContextException;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.session.WriteSessionService;
-import org.ldp4j.application.engine.spi.PersistencyManager;
-import org.ldp4j.application.engine.spi.Transaction;
+import org.ldp4j.application.engine.transaction.Transaction;
+import org.ldp4j.application.engine.transaction.TransactionManager;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.spi.RuntimeDelegate;
 
@@ -47,8 +47,8 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 		return applicationEngine().writeSessionService();
 	}
 
-	private PersistencyManager persistencyManager() throws ApplicationEngineException {
-		return applicationEngine().persistencyManager();
+	private TransactionManager transactionManager() throws ApplicationEngineException {
+		return applicationEngine().transactionManager();
 	}
 
 	@Override
@@ -71,7 +71,7 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 						WriteSessionConfiguration.
 							builder().
 								build());
-			Transaction transaction=persistencyManager().currentTransaction();
+			Transaction transaction=transactionManager().currentTransaction();
 			if(!transaction.isStarted()) {
 				transaction.begin();
 			}
