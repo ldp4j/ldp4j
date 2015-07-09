@@ -33,11 +33,12 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.ldp4j.application.engine.endpoint.Endpoint;
+import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.lifecycle.Managed;
 import org.ldp4j.application.engine.resource.ResourceId;
 
-final class InMemoryEndpointRepository implements Managed {
+final class InMemoryEndpointRepository implements Managed, EndpointRepository {
 
 	private final AtomicLong counter=new AtomicLong();
 
@@ -56,11 +57,19 @@ final class InMemoryEndpointRepository implements Managed {
 		return endpointsById.get(id);
 	}
 
-	long nextIdentifier() {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public long nextIdentifier() {
 		return counter.incrementAndGet();
 	}
 
-	Endpoint endpointOfPath(String path) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Endpoint endpointOfPath(String path) {
 		lock.readLock().lock();
 		try {
 			return endpointOfId(endpointsByPath.get(path));
@@ -69,7 +78,11 @@ final class InMemoryEndpointRepository implements Managed {
 		}
 	}
 
-	Endpoint endpointOfResource(ResourceId id) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Endpoint endpointOfResource(ResourceId id) {
 		lock.readLock().lock();
 		try {
 			return endpointOfId(endpointsByResourceName.get(id));
@@ -78,18 +91,24 @@ final class InMemoryEndpointRepository implements Managed {
 		}
 	}
 
-	void remove(Endpoint endpoint) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void remove(Endpoint endpoint) {
 		lock.writeLock().lock();
 		try {
-//			endpointsById.remove(endpoint.id());
-//			endpointsByPath.remove(endpoint.path());
 			endpointsByResourceName.remove(endpoint.resourceId());
 		} finally {
 			lock.writeLock().unlock();
 		}
 	}
 
-	void add(Endpoint endpoint) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void add(Endpoint endpoint) {
 		lock.writeLock().lock();
 		try {
 			if(endpointsById.containsKey(endpoint.id())) {
@@ -109,11 +128,17 @@ final class InMemoryEndpointRepository implements Managed {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void init() throws LifecycleException {
 		// Nothing to do
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void shutdown() throws LifecycleException {
 		lock.writeLock().lock();

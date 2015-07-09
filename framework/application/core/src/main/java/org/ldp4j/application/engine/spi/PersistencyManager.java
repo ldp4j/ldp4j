@@ -29,11 +29,9 @@ package org.ldp4j.application.engine.spi;
 import java.util.Date;
 
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.engine.constraints.ConstraintReport;
 import org.ldp4j.application.engine.constraints.ConstraintReportId;
 import org.ldp4j.application.engine.context.EntityTag;
-import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
@@ -69,8 +67,6 @@ public interface PersistencyManager {
 	Resource resourceOfId(ResourceId id);
 
 	Container containerOfId(ResourceId id);
-
-	ConstraintReport createConstraintReport(Resource resource, Constraints constraints, Date date, HttpRequest request);
 
 	void add(ConstraintReport report);
 

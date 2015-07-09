@@ -31,15 +31,21 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.net.URI;
 import java.util.Collections;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.ldp4j.application.data.constraints.Constraints;
+import org.ldp4j.application.engine.constraints.ConstraintReport;
+import org.ldp4j.application.engine.constraints.ConstraintReportId;
+import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.resource.Attachment;
 import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
@@ -56,6 +62,8 @@ import org.ldp4j.application.engine.template.TemplateVisitor;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
 
 class InMemoryResource extends AbstractInMemoryResource implements Resource {
 
@@ -121,6 +129,7 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 	private final Map<ResourceId, AttachmentId> attachmentsByResourceId;
 	private final VersionGenerator versionGenerator;
 
+	private final Map<String,ConstraintReportId> reports;
 
 	private final ResourceId id;
 	private final ResourceId parentId;
@@ -134,6 +143,7 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		this.attachmentsById=new LinkedHashMap<String,AttachmentId>();
 		this.attachmentsByResourceId=new LinkedHashMap<ResourceId,AttachmentId>();
 		this.versionGenerator = new VersionGenerator();
+		this.reports=Maps.newLinkedHashMap();
 	}
 
 	protected InMemoryResource(ResourceId id) {
@@ -149,6 +159,16 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		}
 		newResource.setTemplateLibrary(getTemplateLibrary());
 		return newResource;
+	}
+
+	private synchronized ConstraintReportId nextConstraintReportId() {
+		String failureId=null;
+		do {
+			failureId=UUID.randomUUID().toString();
+		} while(this.reports.containsKey(failureId));
+		ConstraintReportId reportId=ConstraintReportId.create(this.id, failureId);
+		this.reports.put(failureId, reportId);
+		return reportId;
 	}
 
 	private boolean areCompatible(final Class<? extends Resource> clazz, ResourceTemplate template) {
@@ -257,6 +277,31 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 	@Override
 	public void accept(ResourceVisitor visitor) {
 		visitor.visitResource(this);
+	}
+
+	@Override
+	public ConstraintReport addConstraintReport(Constraints constraints, Date date, HttpRequest request) {
+		ConstraintReportId reportId = nextConstraintReportId();
+		return new InMemoryConstraintReport(reportId,date, request, constraints);
+	}
+
+	@Override
+	public Set<ConstraintReportId> constraintReports() {
+		Set<ConstraintReportId> currentReports=null;
+		synchronized(this) {
+			currentReports=ImmutableSet.copyOf(this.reports.values());
+		}
+		return currentReports;
+	}
+
+	@Override
+	public void removeFailure(ConstraintReport report) {
+		if(report!=null) {
+			String failureId = report.id().failureId();
+			synchronized(this) {
+				this.reports.remove(failureId);
+			}
+		}
 	}
 
 	@Override

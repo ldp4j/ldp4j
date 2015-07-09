@@ -217,7 +217,7 @@ public final class ConstraintReportTransformer {
 	private ConstraintReportTransformer(Resource resource, ConstraintReport report) {
 		this.report = report;
 		ManagedIndividualId tId = ManagedIndividualId.createId(resource.id().name(), resource.id().templateId());
-		ManagedIndividualId rId = ManagedIndividualId.createId(URI.create("?ldp:constrainedBy="+report.id().constraintsId()), tId);
+		ManagedIndividualId rId = ManagedIndividualId.createId(URI.create("?ldp:constrainedBy="+report.id().failureId()), tId);
 		this.dataset=DataSetFactory.createDataSet(rId.name());
 		this.constraintReport= dataset.individual(rId, ManagedIndividual.class);
 		this.targetResource = dataset.individual(tId, ManagedIndividual.class);
@@ -297,7 +297,7 @@ public final class ConstraintReportTransformer {
 		Constraints constraints = this.report.getConstraints();
 		LOGGER.debug("Populating constraints: {}",constraints);
 		reportInd().addValue(vocabularyTerm(RDF.TYPE), externalIndividual(ldp4jTerm("ConstraintReport")));
-		reportInd().addValue(ldp4jTerm("failureId"), literal(this.report.id().constraintsId()));
+		reportInd().addValue(ldp4jTerm("failureId"), literal(this.report.id().failureId()));
 		reportInd().addValue(ldp4jTerm("failureDate"), literal(dateTime(this.report.getDate())));
 		reportInd().addValue(ldp4jTerm("failureRequest"), requestInd());
 

@@ -29,12 +29,12 @@ package org.ldp4j.application.engine.impl;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
-import java.util.UUID;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.ldp4j.application.engine.constraints.ConstraintReport;
 import org.ldp4j.application.engine.constraints.ConstraintReportId;
+import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.lifecycle.Managed;
 import org.ldp4j.application.engine.resource.Resource;
@@ -44,83 +44,97 @@ import com.google.common.collect.LinkedHashMultimap;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
-final class InMemoryConstraintReportRepository implements Managed {
+final class InMemoryConstraintReportRepository implements Managed, ConstraintReportRepository {
 
 	private final ReadWriteLock lock=new ReentrantReadWriteLock();
-	private final Multimap<ResourceId, String> constraintIds;
+	private final Multimap<ResourceId, String> failureIds;
 	private final Map<ConstraintReportId,ConstraintReport> reports;
 
 	InMemoryConstraintReportRepository() {
 		this.reports=Maps.newLinkedHashMap();
-		this.constraintIds=LinkedHashMultimap.create();
+		this.failureIds=LinkedHashMultimap.create();
 	}
 
-	private String nextConstraintsId(ResourceId resourceId) {
-		String constraintId=null;
-		do {
-			constraintId=UUID.randomUUID().toString();
-		} while(this.constraintIds.get(resourceId).contains(constraintId));
-		this.constraintIds.put(resourceId, constraintId);
-		return constraintId;
-	}
-
-	ConstraintReport constraintReportOfId(ConstraintReportId id) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ConstraintReport constraintReportOfId(ConstraintReportId id) {
 		checkNotNull(id,"Constraint report identifier cannot be null");
-		lock.readLock().lock();
+		this.lock.readLock().lock();
 		try {
 			return this.reports.get(id);
 		} finally {
-			lock.readLock().unlock();
+			this.lock.readLock().unlock();
 		}
 	}
 
-	void add(InMemoryConstraintReport report) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void add(ConstraintReport report) {
 		checkNotNull(report,"Constraint report cannot be null");
 		this.lock.writeLock().lock();
 		try {
-			report.setConstraintsId(nextConstraintsId(report.resourceId()));
-			this.reports.put(report.id(),report);
+			ConstraintReportId id = report.id();
+			this.failureIds.put(id.resourceId(),id.failureId());
+			this.reports.put(id,report);
 		} finally {
 			this.lock.writeLock().unlock();
 		}
 	}
 
-	void remove(ConstraintReport report) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void remove(ConstraintReport report) {
 		checkNotNull(report,"Constraint report cannot be null");
 		this.lock.writeLock().lock();
 		try {
 			ConstraintReportId reportId = report.id();
-			this.constraintIds.remove(reportId.resourceId(),reportId.constraintsId());
+			this.failureIds.remove(reportId.resourceId(),reportId.failureId());
 			this.reports.remove(reportId);
 		} finally {
 			this.lock.writeLock().unlock();
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public void init() throws LifecycleException {
-		// Nothing to do
-	}
-
-	@Override
-	public void shutdown() throws LifecycleException {
-		this.lock.writeLock().lock();
-		try {
-			this.reports.clear();
-		} finally {
-			this.lock.writeLock().unlock();
-		}
-	}
-
 	public void removeByResource(Resource resource) {
 		checkNotNull(resource,"Resource cannot be null");
 		this.lock.writeLock().lock();
 		try {
 			ResourceId resourceId = resource.id();
-			for(String constraintsId:this.constraintIds.get(resourceId)) {
+			for(String constraintsId:this.failureIds.get(resourceId)) {
 				this.reports.remove(ConstraintReportId.create(resourceId, constraintsId));
 			}
-			this.constraintIds.removeAll(resourceId);
+			this.failureIds.removeAll(resourceId);
+		} finally {
+			this.lock.writeLock().unlock();
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void init() throws LifecycleException {
+		// Nothing to do
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void shutdown() throws LifecycleException {
+		this.lock.writeLock().lock();
+		try {
+			this.reports.clear();
 		} finally {
 			this.lock.writeLock().unlock();
 		}

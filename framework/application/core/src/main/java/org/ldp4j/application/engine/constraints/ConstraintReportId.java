@@ -36,30 +36,24 @@ import static com.google.common.base.Preconditions.*;
 public final class ConstraintReportId {
 
 	private final ResourceId resourceId;
-	private final String constraintsId;
+	private final String failureId;
 
-	private ConstraintReportId(ResourceId resourceId, String constraintsId) {
+	private ConstraintReportId(ResourceId resourceId, String failureId) {
 		this.resourceId = resourceId;
-		this.constraintsId = constraintsId;
+		this.failureId = failureId;
 	}
 
 	public ResourceId resourceId() {
-		return resourceId;
+		return this.resourceId;
 	}
 
-	public String constraintsId() {
-		return this.constraintsId;
-	}
-
-	public static ConstraintReportId create(ResourceId resourceId, String constraintsId) {
-		checkNotNull(resourceId,"Resource identifier cannot be null");
-		checkNotNull(constraintsId,"Constraints identifier cannot be null");
-		return new ConstraintReportId(resourceId,constraintsId);
+	public String failureId() {
+		return this.failureId;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(this.resourceId,this.constraintsId);
+		return Objects.hashCode(this.resourceId,this.failureId);
 	}
 
 	@Override
@@ -69,7 +63,7 @@ public final class ConstraintReportId {
 			ConstraintReportId that=(ConstraintReportId)obj;
 			result=
 				Objects.equal(this.resourceId,that.resourceId) &&
-				Objects.equal(this.constraintsId,that.constraintsId);
+				Objects.equal(this.failureId,that.failureId);
 		}
 		return result;
 	}
@@ -80,8 +74,14 @@ public final class ConstraintReportId {
 			MoreObjects.
 				toStringHelper(getClass()).
 					add("resourceId",this.resourceId).
-					add("constraintsId",this.constraintsId).
+					add("failureId",this.failureId).
 					toString();
+	}
+
+	public static ConstraintReportId create(ResourceId resourceId, String failureId) {
+		checkNotNull(resourceId,"Resource identifier cannot be null");
+		checkNotNull(failureId,"Failure identifier cannot be null");
+		return new ConstraintReportId(resourceId,failureId);
 	}
 
 }

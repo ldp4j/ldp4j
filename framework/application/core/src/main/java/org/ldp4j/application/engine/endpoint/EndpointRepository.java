@@ -24,47 +24,20 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.impl;
+package org.ldp4j.application.engine.endpoint;
 
-import java.util.Date;
+import org.ldp4j.application.engine.resource.ResourceId;
 
-import org.ldp4j.application.data.constraints.Constraints;
-import org.ldp4j.application.engine.constraints.ConstraintReport;
-import org.ldp4j.application.engine.constraints.ConstraintReportId;
-import org.ldp4j.application.engine.context.HttpRequest;
+public interface EndpointRepository {
 
-final class InMemoryConstraintReport implements ConstraintReport {
+	Endpoint endpointOfPath(String path);
 
-	private final ConstraintReportId id;
-	private final Date date;
-	private final HttpRequest request;
-	private final Constraints constraints;
+	Endpoint endpointOfResource(ResourceId id);
 
-	InMemoryConstraintReport(ConstraintReportId id, Date date, HttpRequest request, Constraints constraints) {
-		this.id=id;
-		this.date = date;
-		this.request = request;
-		this.constraints = constraints;
-	}
+	long nextIdentifier();
 
-	@Override
-	public ConstraintReportId id() {
-		return this.id;
-	}
+	void remove(Endpoint endpoint);
 
-	@Override
-	public Date getDate() {
-		return this.date;
-	}
-
-	@Override
-	public HttpRequest getRequest() {
-		return this.request;
-	}
-
-	@Override
-	public Constraints getConstraints() {
-		return this.constraints;
-	}
+	void add(Endpoint endpoint);
 
 }

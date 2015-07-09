@@ -213,16 +213,14 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	// TODO: How do we do this transactionally
 	private void registerConstraintReport(Resource resource, InvalidContentException error) {
 		ConstraintReport report=
-			this.engine().
-				persistencyManager().
-					createConstraintReport(
-						resource,
-						error.getConstraints(),
-						new Date(),
-						currentRequest());
+			resource.
+				addConstraintReport(
+					error.getConstraints(),
+					new Date(),
+					currentRequest());
 		this.engine().persistencyManager().add(report);
 		LOGGER.debug("Constraint validation failed. Registered constraint report {}",report.id());
-		error.setConstraintsId(report.id().constraintsId());
+		error.setConstraintsId(report.id().failureId());
 	}
 
 	private HttpRequest currentRequest() {

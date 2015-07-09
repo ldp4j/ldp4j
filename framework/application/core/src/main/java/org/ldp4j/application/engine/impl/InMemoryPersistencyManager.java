@@ -34,11 +34,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.engine.constraints.ConstraintReport;
 import org.ldp4j.application.engine.constraints.ConstraintReportId;
 import org.ldp4j.application.engine.context.EntityTag;
-import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.lifecycle.Managed;
@@ -267,6 +265,22 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 	 * {@inheritDoc}
 	 */
 	@Override
+	public void add(ConstraintReport report) {
+		this.constraintReportRepository.add((InMemoryConstraintReport)report);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public ConstraintReport constraintReportOfId(ConstraintReportId id) {
+		return this.constraintReportRepository.constraintReportOfId(id);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public void init() throws LifecycleException {
 		this.resourceRepository.init();
 		this.constraintReportRepository.init();
@@ -281,31 +295,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		this.endpointRepository.shutdown();
 		this.constraintReportRepository.shutdown();
 		this.resourceRepository.shutdown();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ConstraintReport createConstraintReport(final Resource resource, final Constraints constraints, final Date date, final HttpRequest request) {
-		return new InMemoryConstraintReport(resource.id(), date, request, constraints);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void add(ConstraintReport report) {
-		checkArgument(report instanceof InMemoryConstraintReport);
-		this.constraintReportRepository.add((InMemoryConstraintReport)report);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ConstraintReport constraintReportOfId(ConstraintReportId id) {
-		return this.constraintReportRepository.constraintReportOfId(id);
 	}
 
 }

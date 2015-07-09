@@ -38,9 +38,10 @@ import org.ldp4j.application.engine.lifecycle.Managed;
 import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.resource.ResourceVisitor;
 
-final class InMemoryResourceRepository implements Managed {
+final class InMemoryResourceRepository implements Managed, ResourceRepository {
 
 	private final ReadWriteLock lock=new ReentrantReadWriteLock();
 	private final Map<ResourceId,Resource> resources=new LinkedHashMap<ResourceId,Resource>();
@@ -62,7 +63,11 @@ final class InMemoryResourceRepository implements Managed {
 		}
 	}
 
-	<T extends Resource> T resourceById(ResourceId id, Class<? extends T> expectedResourceClass) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public <T extends Resource> T resourceById(ResourceId id, Class<? extends T> expectedResourceClass) {
 		checkNotNull(expectedResourceClass,"Expected resource class cannot be null");
 		Resource found=find(id);
 		if(expectedResourceClass.isInstance(found)) {
@@ -71,7 +76,11 @@ final class InMemoryResourceRepository implements Managed {
 		return null;
 	}
 
-	Resource resourceOfId(ResourceId id) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Resource resourceOfId(ResourceId id) {
 		lock.readLock().lock();
 		try {
 			return resources.get(id);
@@ -80,7 +89,11 @@ final class InMemoryResourceRepository implements Managed {
 		}
 	}
 
-	Container containerOfId(ResourceId id) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public Container containerOfId(ResourceId id) {
 		lock.readLock().lock();
 		try {
 			return containers.get(id);
@@ -89,7 +102,11 @@ final class InMemoryResourceRepository implements Managed {
 		}
 	}
 
-	void add(Resource resource) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void add(Resource resource) {
 		checkNotNull(resource,"Resource cannot be null");
 		lock.writeLock().lock();
 		try {
@@ -111,7 +128,11 @@ final class InMemoryResourceRepository implements Managed {
 		}
 	}
 
-	void remove(Resource resource) {
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void remove(Resource resource) {
 		checkNotNull(resource,"Resource cannot be null");
 		lock.writeLock().lock();
 		try {
@@ -122,11 +143,17 @@ final class InMemoryResourceRepository implements Managed {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void init() throws LifecycleException {
 		// Nothing to do
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void shutdown() throws LifecycleException {
 		lock.writeLock().lock();
@@ -137,4 +164,5 @@ final class InMemoryResourceRepository implements Managed {
 			lock.writeLock().unlock();
 		}
 	}
+
 }

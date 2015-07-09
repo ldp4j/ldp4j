@@ -27,7 +27,13 @@
 package org.ldp4j.application.engine.resource;
 
 import java.net.URI;
+import java.util.Date;
 import java.util.Set;
+
+import org.ldp4j.application.data.constraints.Constraints;
+import org.ldp4j.application.engine.constraints.ConstraintReport;
+import org.ldp4j.application.engine.constraints.ConstraintReportId;
+import org.ldp4j.application.engine.context.HttpRequest;
 
 public interface Resource {
 
@@ -52,5 +58,11 @@ public interface Resource {
 	Set<? extends Attachment> attachments();
 
 	void accept(ResourceVisitor visitor);
+
+	ConstraintReport addConstraintReport(Constraints constraints, Date date, HttpRequest request);
+
+	Set<ConstraintReportId> constraintReports();
+
+	void removeFailure(ConstraintReport report);
 
 }
