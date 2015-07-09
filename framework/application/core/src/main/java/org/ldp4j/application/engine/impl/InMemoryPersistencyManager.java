@@ -42,6 +42,7 @@ import org.ldp4j.application.engine.lifecycle.Managed;
 import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.Transaction;
 import org.ldp4j.application.engine.template.BasicContainerTemplate;
@@ -132,12 +133,16 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		this.currentTransaction.set(null);
 	}
 
-	ConstraintReportRepository constraintReportRepository() {
-		return this.constraintReportRepository;
+	ResourceRepository resourceRepository() {
+		return this.resourceRepository;
 	}
 
 	EndpointRepository endpointRepository() {
 		return this.endpointRepository;
+	}
+
+	ConstraintReportRepository constraintReportRepository() {
+		return this.constraintReportRepository;
 	}
 
 	/**
@@ -191,47 +196,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 		checkNotNull(entityTag,"Endpoint's entity tag cannot be null");
 		checkNotNull(creationDate,"Endpoint's Last modified data cannot be null");
 		return new InMemoryEndpoint(this.endpointRepository.nextIdentifier(),path,resource.id(),creationDate,entityTag);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public <T extends Resource> T resourceOfId(ResourceId id, Class<? extends T> expectedResourceClass) {
-		return this.resourceRepository.resourceById(id, expectedResourceClass);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Resource resourceOfId(ResourceId id) {
-		return this.resourceRepository.resourceOfId(id);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Container containerOfId(ResourceId id) {
-		return this.resourceRepository.containerOfId(id);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void add(Resource resource) {
-		this.resourceRepository.add(resource);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void remove(Resource resource) {
-		this.resourceRepository.remove(resource);
-		this.constraintReportRepository.removeByResource(resource);
 	}
 
 	/**

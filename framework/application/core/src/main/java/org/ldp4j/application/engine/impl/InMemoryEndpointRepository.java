@@ -99,19 +99,6 @@ final class InMemoryEndpointRepository implements Managed, EndpointRepository {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void remove(Endpoint endpoint) {
-		lock.writeLock().lock();
-		try {
-			endpointsByResourceName.remove(endpoint.resourceId());
-		} finally {
-			lock.writeLock().unlock();
-		}
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
 	public void add(Endpoint endpoint) {
 		lock.writeLock().lock();
 		try {

@@ -77,7 +77,7 @@ public class ResourceControllerServiceTest {
 		transaction.begin();
 
 		T resource=persistencyManager.createResource(templateId,resourceName,null,clazz);
-		persistencyManager.add(resource);
+		RuntimeDelegate.getInstance().getResourceRepository().add(resource);
 		Endpoint endpoint=persistencyManager.createEndpoint(resource,path,new EntityTag(path),new Date());
 		RuntimeDelegate.getInstance().getEndpointRepository().add(endpoint);
 
@@ -172,10 +172,14 @@ public class ResourceControllerServiceTest {
 		transaction.begin();
 		try {
 			return callable.call();
+		} catch(Exception e) {
+			e.printStackTrace();
+			throw e;
 		} finally {
 			try {
 				assertThat(transaction.isCompleted(),equalTo(true));
 			} catch (Exception e) {
+				e.printStackTrace();
 				transaction.rollback();
 			}
 		}

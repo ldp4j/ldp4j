@@ -51,6 +51,7 @@ import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.FeatureExecutionException;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.Transaction;
@@ -158,13 +159,16 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	private final ThreadLocal<DefaultApplicationOperation> currentOperation;
 
+	private final ResourceRepository resourceRepository;
 	private final EndpointRepository endpointRepository;
 	private final ConstraintReportRepository constraintReportRepository;
 
+
 	DefaultApplicationContext(DefaultApplicationEngine engine) {
 		this.engine=engine;
-		this.constraintReportRepository=RuntimeDelegate.getInstance().getConstraintReportRepository();
+		this.resourceRepository=RuntimeDelegate.getInstance().getResourceRepository();
 		this.endpointRepository=RuntimeDelegate.getInstance().getEndpointRepository();
+		this.constraintReportRepository=RuntimeDelegate.getInstance().getConstraintReportRepository();
 		this.factory=DefaultPublicResourceFactory.newInstance(this);
 		this.operationController=new ApplicationContextOperationController();
 		this.currentOperation=new ThreadLocal<DefaultApplicationOperation>();
@@ -237,9 +241,13 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return result.getRequest();
 	}
 
+	private Resource loadResource(ResourceId resourceId) {
+		return this.resourceRepository.resourceById(resourceId,Resource.class);
+	}
+
 	DataSet getResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Resource resource = this.engine().persistencyManager().resourceOfId(resourceId,Resource.class);
+		Resource resource = loadResource(resourceId);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
@@ -258,12 +266,11 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	}
 
 	void registerContentFailure(Endpoint endpoint, InvalidContentException error) {
-		ResourceId resourceId=endpoint.resourceId();
-		registerConstraintReport(this.engine().persistencyManager().resourceOfId(resourceId),error);
+		registerConstraintReport(loadResource(endpoint.resourceId()),error);
 	}
 
 	Resource resolveResource(Endpoint endpoint) {
-		return this.engine().persistencyManager().resourceOfId(endpoint.resourceId(), Resource.class);
+		return loadResource(endpoint.resourceId());
 	}
 
 	Endpoint resolveResource(ResourceId id) {
@@ -272,7 +279,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	Resource createResource(Endpoint endpoint, DataSet dataSet, String desiredPath) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Container resource = this.engine().persistencyManager().resourceOfId(resourceId,Container.class);
+		Container resource = this.resourceRepository.containerOfId(resourceId);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find container for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
@@ -296,7 +303,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	void deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Resource resource = this.engine().persistencyManager().resourceOfId(resourceId,Resource.class);
+		Resource resource = loadResource(resourceId);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find container for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
@@ -316,7 +323,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	void modifyResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
-		Resource resource = this.engine().persistencyManager().resourceOfId(resourceId,Resource.class);
+		Resource resource = loadResource(resourceId);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);
@@ -341,7 +348,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	DataSet getConstraintReport(Endpoint endpoint, String constraintsId) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		// TODO: Check if it is really necessary
-		Resource resource = this.engine().persistencyManager().resourceOfId(resourceId,Resource.class);
+		Resource resource = loadResource(resourceId);
 		if(resource==null) {
 			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
 			LOGGER.error(errorMessage);

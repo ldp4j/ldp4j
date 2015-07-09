@@ -31,9 +31,7 @@ import java.util.Date;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.endpoint.Endpoint;
-import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
-import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.template.TemplateLibrary;
 
 public interface PersistencyManager {
@@ -47,15 +45,5 @@ public interface PersistencyManager {
 	Resource createResource(String templateId, Name<?> resourceId, Resource parent);
 
 	<T extends Resource> T createResource(String templateId, Name<?> resourceId, Resource parent, Class<? extends T> expectedResourceClass);
-
-	void add(Resource resource);
-
-	void remove(Resource resource);
-
-	<T extends Resource> T resourceOfId(ResourceId id, Class<? extends T> expectedResourceClass);
-
-	Resource resourceOfId(ResourceId id);
-
-	Container containerOfId(ResourceId id);
 
 }

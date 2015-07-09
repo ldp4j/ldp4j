@@ -133,7 +133,7 @@ final class ApplicationLoader<T extends Configuration> {
 			new EnvironmentImpl(
 				templateManagementService(),
 				persistencyManager(),
-				RuntimeDelegate.getInstance().getEndpointRepository()
+				RuntimeDelegate.getInstance().getEndpointRepository(), RuntimeDelegate.getInstance().getResourceRepository()
 			);
 		try {
 			application.setup(environment,bootstrap);

@@ -36,8 +36,6 @@ public interface EndpointRepository {
 
 	long nextIdentifier();
 
-	void remove(Endpoint endpoint);
-
 	void add(Endpoint endpoint);
 
 }

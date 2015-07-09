@@ -41,6 +41,7 @@ import org.ldp4j.application.engine.endpoint.EndpointManagementService;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleService;
 import org.ldp4j.application.engine.resource.ResourceControllerService;
+import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.slf4j.Logger;
@@ -300,6 +301,11 @@ public abstract class RuntimeDelegate {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
+		@Override
+		public ResourceRepository getResourceRepository() {
+			throw new AssertionError(ERROR_MESSAGE);
+		}
+
 	}
 
 	private void initialize() {
@@ -327,6 +333,8 @@ public abstract class RuntimeDelegate {
 	}
 
 	public abstract PersistencyManager getPersistencyManager();
+
+	public abstract ResourceRepository getResourceRepository();
 
 	public abstract EndpointRepository getEndpointRepository();
 

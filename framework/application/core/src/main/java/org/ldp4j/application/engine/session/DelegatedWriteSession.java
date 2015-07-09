@@ -149,7 +149,7 @@ final class DelegatedWriteSession implements WriteSession {
 	private DelegatedResourceSnapshot resolveResource(ResourceId resourceId, ResourceTemplate template) {
 		DelegatedResourceSnapshot resource=this.resourceCache.get(resourceId);
 		if(resource==null) {
-			Resource delegate=this.writeSessionService.persistencyManager().resourceOfId(resourceId, Resource.class);
+			Resource delegate=loadResource(resourceId);
 			if(delegate!=null) {
 				resource=snapshotFactory.newPersistent(delegate,template);
 				resource.setSession(this);
@@ -267,7 +267,7 @@ final class DelegatedWriteSession implements WriteSession {
 	}
 
 	Resource loadResource(ResourceId resourceId) {
-		return this.writeSessionService.persistencyManager().resourceOfId(resourceId,Resource.class);
+		return this.writeSessionService.resourceOfId(resourceId);
 	}
 
 	DelegatedResourceSnapshot resolveResource(ResourceId resourceId) {

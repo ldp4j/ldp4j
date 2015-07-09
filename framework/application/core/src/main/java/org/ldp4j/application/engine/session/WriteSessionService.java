@@ -38,7 +38,10 @@ import org.ldp4j.application.engine.endpoint.EndpointCreationException;
 import org.ldp4j.application.engine.endpoint.EndpointManagementService;
 import org.ldp4j.application.engine.endpoint.EndpointNotFoundException;
 import org.ldp4j.application.engine.resource.Resource;
+import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.spi.PersistencyManager;
+import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.Service;
 import org.ldp4j.application.engine.spi.ServiceBuilder;
 import org.ldp4j.application.engine.template.TemplateManagementService;
@@ -100,10 +103,13 @@ public final class WriteSessionService implements Service {
 
 	private final TemplateManagementService templateManagementService;
 
+	private final ResourceRepository resourceRepository;
+
 	private WriteSessionService(PersistencyManager persistencyManager, TemplateManagementService templateManagementService, EndpointManagementService endointManagementService) {
 		this.persistencyManager = persistencyManager;
 		this.templateManagementService = templateManagementService;
 		this.endpointManagementService = endointManagementService;
+		this.resourceRepository=RuntimeDelegate.getInstance().getResourceRepository();
 	}
 
 	public WriteSession createSession(WriteSessionConfiguration configuration) {
@@ -159,8 +165,8 @@ public final class WriteSessionService implements Service {
 		this.persistencyManager.currentTransaction().rollback();
 	}
 
-	PersistencyManager persistencyManager() {
-		return this.persistencyManager;
+	Resource resourceOfId(ResourceId resourceId) {
+		return this.resourceRepository.resourceById(resourceId,Resource.class);
 	}
 
 	TemplateManagementService templateManagementService() {
@@ -180,9 +186,9 @@ public final class WriteSessionService implements Service {
 	private void createResource(Resource resource, Date lastModified, String relativePath, URI indirectId) {
 		try {
 			resource.setIndirectId(indirectId);
-			persistencyManager.add(resource);
+			this.resourceRepository.add(resource);
 			Endpoint newEndpoint=
-				endpointManagementService.
+				this.endpointManagementService.
 					createEndpointForResource(
 						resource,
 						relativePath,
@@ -199,9 +205,8 @@ public final class WriteSessionService implements Service {
 
 	private void modifyResource(Resource resource, Date lastModified) {
 		try {
-//			persistencyManager.add(resource);
 			Endpoint endpoint =
-				endpointManagementService.
+				this.endpointManagementService.
 					modifyResourceEndpoint(
 						resource,
 						generateEntityTag(resource),
@@ -217,9 +222,9 @@ public final class WriteSessionService implements Service {
 
 	private void deleteResource(Resource resource, Date lastModified) {
 		try {
-			persistencyManager.remove(resource);
+			this.resourceRepository.remove(resource);
 			Endpoint endpoint =
-				endpointManagementService.
+				this.endpointManagementService.
 					deleteResourceEndpoint(
 						resource,
 						lastModified);

@@ -36,6 +36,7 @@ import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Member;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.resource.Slug;
 import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
@@ -102,12 +103,14 @@ public final class EndpointManagementService implements Service {
 	private final ListenerManager<EndpointLifecycleListener> listenerManager;
 
 	private final EndpointRepository endpointRepository;
+	private final ResourceRepository resourceRepository;
 
 
 	private EndpointManagementService(TemplateManagementService templateManagementService, PersistencyManager persistencyManager) {
 		this.templateManagementService = templateManagementService;
 		this.persistencyManager = persistencyManager;
 		this.endpointRepository=RuntimeDelegate.getInstance().getEndpointRepository();
+		this.resourceRepository=RuntimeDelegate.getInstance().getResourceRepository();
 		this.listenerManager=ListenerManager.<EndpointLifecycleListener>newInstance();
 	}
 
@@ -115,7 +118,7 @@ public final class EndpointManagementService implements Service {
 		if(resource.isRoot()) {
 			throw new IllegalStateException("Cannot get path for root resource");
 		}
-		Resource parent=this.persistencyManager.resourceOfId(resource.parentId(),Resource.class);
+		Resource parent=this.resourceRepository.resourceById(resource.parentId(),Resource.class);
 		if(parent==null) {
 			throw new IllegalStateException("Could not load resource '"+resource.parentId()+"' from the repository");
 		}
