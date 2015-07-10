@@ -29,10 +29,10 @@ package org.ldp4j.application.engine.lifecycle;
 import org.ldp4j.application.engine.ApplicationConfigurationException;
 import org.ldp4j.application.engine.ApplicationContextBootstrapException;
 import org.ldp4j.application.engine.resource.ResourceFactory;
+import org.ldp4j.application.engine.service.ServiceRegistry;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
-import org.ldp4j.application.engine.spi.ServiceRegistry;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.engine.transaction.Transaction;
 import org.ldp4j.application.engine.transaction.TransactionManager;
@@ -62,7 +62,7 @@ final class ApplicationLoader<T extends Configuration> {
 		this.transactionManager=instance.getTransactionManager();
 		this.resourceFactory=instance.getResourceFactory();
 
-		ServiceRegistry serviceRegistry=instance.getServiceRegistry();
+		ServiceRegistry serviceRegistry=ServiceRegistry.getInstance();
 		this.writeSessionService=serviceRegistry.getService(WriteSessionService.class);
 		this.templateManagementService=serviceRegistry.getService(TemplateManagementService.class);
 	}

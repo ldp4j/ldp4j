@@ -27,10 +27,10 @@
 package org.ldp4j.application.engine.resource;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.engine.service.Service;
+import org.ldp4j.application.engine.service.ServiceBuilder;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.session.WriteSessionService;
-import org.ldp4j.application.engine.spi.Service;
-import org.ldp4j.application.engine.spi.ServiceBuilder;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.ext.ResourceHandler;

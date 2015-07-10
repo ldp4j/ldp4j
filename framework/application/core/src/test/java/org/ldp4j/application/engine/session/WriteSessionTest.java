@@ -45,6 +45,7 @@ import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.impl.InMemoryRuntimeDelegate;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceFactory;
+import org.ldp4j.application.engine.service.ServiceRegistry;
 import org.ldp4j.application.engine.session.DelegatedContainerSnapshot;
 import org.ldp4j.application.engine.session.DelegatedResourceSnapshot;
 import org.ldp4j.application.engine.session.UnitOfWork;
@@ -126,10 +127,11 @@ public class WriteSessionTest {
 
 	@Before
 	public void setUp() throws Exception {
+		ServiceRegistry.setInstance(null);
 		RuntimeDelegate.setInstance(new InMemoryRuntimeDelegate());
-		templateManagementService = RuntimeDelegate.
-			getInstance().
-				getServiceRegistry().
+		templateManagementService =
+			ServiceRegistry.
+				getInstance().
 					getService(TemplateManagementService.class);
 		templateManagementService.
 			configure(
@@ -140,9 +142,8 @@ public class WriteSessionTest {
 				getInstance().
 					getResourceFactory();
 		writeSessionService=
-			RuntimeDelegate.
+			ServiceRegistry.
 				getInstance().
-					getServiceRegistry().
 					getService(WriteSessionService.class);
 	}
 

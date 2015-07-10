@@ -41,9 +41,9 @@ import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.lifecycle.LifecycleManager;
 import org.ldp4j.application.engine.resource.ResourceControllerService;
 import org.ldp4j.application.engine.resource.ResourceFactory;
+import org.ldp4j.application.engine.service.ServiceRegistry;
 import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
-import org.ldp4j.application.engine.spi.ServiceRegistry;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.engine.transaction.TransactionManager;
 import org.ldp4j.application.ext.ApplicationShutdownException;
@@ -78,11 +78,8 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 	}
 
 	private void initialize() {
-		RuntimeDelegate instance = RuntimeDelegate.getInstance();
-
-		setResourceFactory(instance.getResourceFactory());
-
-		ServiceRegistry serviceRegistry = instance.getServiceRegistry();
+		setResourceFactory(RuntimeDelegate.getInstance().getResourceFactory());
+		ServiceRegistry serviceRegistry = ServiceRegistry.getInstance();
 		setApplicationLifecycleService(serviceRegistry.getService(ApplicationLifecycleService.class));
 		setTemplateManagementService(serviceRegistry.getService(TemplateManagementService.class));
 		setEndpointManagementService(serviceRegistry.getService(EndpointManagementService.class));
@@ -95,23 +92,23 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 	}
 
 	private void setWriteSessionService(WriteSessionService service) {
-		this.writeSessionService = checkNotNull(service,"Write session service cannot be null");
+		this.writeSessionService=checkNotNull(service,"Write session service cannot be null");
 	}
 
 	private void setEndpointManagementService(EndpointManagementService service) {
-		this.endpointManagementService = checkNotNull(service,"Endpoint management service cannot be null");
+		this.endpointManagementService=checkNotNull(service,"Endpoint management service cannot be null");
 	}
 
 	private void setApplicationLifecycleService(ApplicationLifecycleService service) {
-		this.applicationLifecycleService = checkNotNull(service,"Application lifecycle service cannot be null");
+		this.applicationLifecycleService=checkNotNull(service,"Application lifecycle service cannot be null");
 	}
 
 	private void setTemplateManagementService(TemplateManagementService service) {
-		this.templateManagementService = checkNotNull(service,"Template management service cannot be null");
+		this.templateManagementService=checkNotNull(service,"Template management service cannot be null");
 	}
 
 	private void setResourceControllerService(ResourceControllerService service) {
-		this.resourceControllerService = checkNotNull(service,"Resource controller service cannot be null");
+		this.resourceControllerService=checkNotNull(service,"Resource controller service cannot be null");
 	}
 
 	private <T> void shutdownComponent(T object, List<? super LifecycleException> failures) {

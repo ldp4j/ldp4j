@@ -37,14 +37,9 @@ import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
-import org.ldp4j.application.engine.endpoint.EndpointManagementService;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
-import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleService;
-import org.ldp4j.application.engine.resource.ResourceControllerService;
 import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceRepository;
-import org.ldp4j.application.engine.session.WriteSessionService;
-import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.engine.transaction.TransactionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -248,7 +243,6 @@ public abstract class RuntimeDelegate {
 			result=RuntimeDelegate.CACHED_DELEGATE.get();
 			if(result==null) {
 				RuntimeDelegate delegate = findDelegate();
-				delegate.initialize();
 				RuntimeDelegate.CACHED_DELEGATE.set(delegate);
 				result=RuntimeDelegate.CACHED_DELEGATE.get();
 			}
@@ -273,20 +267,12 @@ public abstract class RuntimeDelegate {
 		if (security != null) {
 			security.checkPermission(suppressAccessChecksPermission);
 		}
-		if(delegate!=null) {
-			delegate.initialize();
-		}
 		RuntimeDelegate.CACHED_DELEGATE.set(delegate);
 	}
 
 	private static class DefaultRuntimeInstance extends RuntimeDelegate {
 
 		private static final String ERROR_MESSAGE = String.format("No implementation for class '%s' could be found",RuntimeDelegate.class);
-
-		@Override
-		public ServiceRegistry getServiceRegistry() {
-			throw new AssertionError(ERROR_MESSAGE);
-		}
 
 		@Override
 		public ResourceFactory getResourceFactory() {
@@ -315,30 +301,6 @@ public abstract class RuntimeDelegate {
 
 	}
 
-	private void initialize() {
-		getServiceRegistry().
-			registerServiceBuilder(
-				TemplateManagementService.
-					serviceBuilder().
-						setRuntimeInstance(this)).
-			registerServiceBuilder(
-				EndpointManagementService.
-					serviceBuilder().
-						setRuntimeInstance(this)).
-			registerServiceBuilder(
-				WriteSessionService.
-					serviceBuilder().
-						setRuntimeInstance(this)).
-			registerServiceBuilder(
-				ResourceControllerService.
-					serviceBuilder().
-						setRuntimeInstance(this)).
-			registerServiceBuilder(
-				ApplicationLifecycleService.
-					serviceBuilder().
-						setRuntimeInstance(this));
-	}
-
 	public abstract ResourceFactory getResourceFactory();
 
 	public abstract TransactionManager getTransactionManager();
@@ -348,7 +310,5 @@ public abstract class RuntimeDelegate {
 	public abstract EndpointRepository getEndpointRepository();
 
 	public abstract ConstraintReportRepository getConstraintReportRepository();
-
-	public abstract ServiceRegistry getServiceRegistry();
 
 }

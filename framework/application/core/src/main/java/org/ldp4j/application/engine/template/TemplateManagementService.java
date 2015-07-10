@@ -32,8 +32,8 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.engine.resource.ResourceFactory;
-import org.ldp4j.application.engine.spi.Service;
-import org.ldp4j.application.engine.spi.ServiceBuilder;
+import org.ldp4j.application.engine.service.Service;
+import org.ldp4j.application.engine.service.ServiceBuilder;
 import org.ldp4j.application.ext.ResourceHandler;
 
 public final class TemplateManagementService implements Service {

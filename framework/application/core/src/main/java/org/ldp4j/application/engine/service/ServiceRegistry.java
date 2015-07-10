@@ -24,7 +24,7 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.impl;
+package org.ldp4j.application.engine.service;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -32,23 +32,31 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import org.ldp4j.application.engine.spi.Service;
-import org.ldp4j.application.engine.spi.ServiceBuilder;
-import org.ldp4j.application.engine.spi.ServiceRegistry;
+import org.ldp4j.application.engine.endpoint.EndpointManagementService;
+import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleService;
+import org.ldp4j.application.engine.resource.ResourceControllerService;
+import org.ldp4j.application.engine.session.WriteSessionService;
+import org.ldp4j.application.engine.spi.RuntimeDelegate;
+import org.ldp4j.application.engine.template.TemplateManagementService;
 
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.MutableClassToInstanceMap;
 
-final class InMemoryServiceRegistry implements ServiceRegistry {
 
-	private ClassToInstanceMap<Service> services=MutableClassToInstanceMap.<Service>create();
-	private Map<Class<?>,ServiceBuilder<?>> builders=new LinkedHashMap<Class<?>, ServiceBuilder<?>>();
+public final class ServiceRegistry {
 
-	InMemoryServiceRegistry() {
-		super();
+	private static ServiceRegistry singleton;
+
+	private final RuntimeDelegate delegate;
+	private final ClassToInstanceMap<Service> services;
+	private final Map<Class<?>,ServiceBuilder<?>> builders;
+
+	public ServiceRegistry() {
+		this.services=MutableClassToInstanceMap.<Service>create();
+		this.builders=new LinkedHashMap<Class<?>, ServiceBuilder<?>>();
+		this.delegate=RuntimeDelegate.getInstance();
 	}
 
-	@Override
 	public <T extends Service> ServiceRegistry registerService(Class<? extends T> serviceClass, T serviceInstance) {
 		checkNotNull(serviceClass,"Service class cannot be null");
 		checkNotNull(serviceInstance,"Service instance cannot be null");
@@ -56,14 +64,14 @@ final class InMemoryServiceRegistry implements ServiceRegistry {
 		return this;
 	}
 
-	@Override
 	public <T extends Service> ServiceRegistry registerServiceBuilder(ServiceBuilder<T> serviceBuilder) {
 		checkNotNull(serviceBuilder,"Service builder cannot be null");
+		serviceBuilder.setServiceRegistry(this);
+		serviceBuilder.setRuntimeInstance(this.delegate);
 		builders.put(serviceBuilder.serviceClass(), serviceBuilder);
 		return this;
 	}
 
-	@Override
 	public <T extends Service> T getService(Class<? extends T> serviceClass) {
 		checkNotNull(serviceClass,"Service class cannot be null");
 		T instance = services.getInstance(serviceClass);
@@ -77,7 +85,6 @@ final class InMemoryServiceRegistry implements ServiceRegistry {
 		return instance;
 	}
 
-	@Override
 	@SuppressWarnings("unchecked")
 	public <T extends Service> ServiceBuilder<T> serviceBuilder(Class<? extends T> tartgetServiceClass) {
 		checkNotNull(tartgetServiceClass,"Target service class cannot be null");
@@ -87,6 +94,32 @@ final class InMemoryServiceRegistry implements ServiceRegistry {
 			}
 		}
 		return null;
+	}
+
+	public static synchronized ServiceRegistry getInstance() {
+		if(ServiceRegistry.singleton==null) {
+			ServiceRegistry.singleton = new ServiceRegistry();
+			initialize(ServiceRegistry.singleton);
+		}
+		return ServiceRegistry.singleton;
+	}
+
+	public static synchronized void setInstance(ServiceRegistry registry) {
+		ServiceRegistry.singleton=registry;
+	}
+
+	private static void initialize(ServiceRegistry registry) {
+		registry.
+			registerServiceBuilder(
+				TemplateManagementService.serviceBuilder()).
+			registerServiceBuilder(
+				EndpointManagementService.serviceBuilder()).
+			registerServiceBuilder(
+				WriteSessionService.serviceBuilder()).
+			registerServiceBuilder(
+				ResourceControllerService.serviceBuilder()).
+			registerServiceBuilder(
+				ApplicationLifecycleService.serviceBuilder());
 	}
 
 }

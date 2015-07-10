@@ -53,6 +53,7 @@ import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.FeatureException;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceControllerService;
+import org.ldp4j.application.engine.service.ServiceRegistry;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.template.TemplateManagementService;
@@ -131,15 +132,15 @@ public class ResourceControllerServiceTest {
 
 	@BeforeClass
 	public static void setUpBefore() throws Exception {
+		ServiceRegistry.setInstance(null);
 		RuntimeDelegate.setInstance(new InMemoryRuntimeDelegate());
 		PersonHandler personHandler = new PersonHandler();
-		RuntimeDelegate.
+		ServiceRegistry.
 			getInstance().
-				getServiceRegistry().
-					getService(TemplateManagementService.class).
-						configure(
-							Lists.<Class<?>>newArrayList(),
-							Arrays.<ResourceHandler>asList(personHandler));
+				getService(TemplateManagementService.class).
+					configure(
+						Lists.<Class<?>>newArrayList(),
+						Arrays.<ResourceHandler>asList(personHandler));
 	}
 
 	@AfterClass
@@ -150,16 +151,13 @@ public class ResourceControllerServiceTest {
 	@Before
 	public void setUp() throws Exception {
 		sut =
-			RuntimeDelegate.
+			ServiceRegistry.
 				getInstance().
-					getServiceRegistry().
-						getService(ResourceControllerService.class);
+					getService(ResourceControllerService.class);
 		tms =
-			RuntimeDelegate.
+			ServiceRegistry.
 				getInstance().
-					getServiceRegistry().
-						getService(TemplateManagementService.class);
-
+					getService(TemplateManagementService.class);
 		resourceFactory=
 			RuntimeDelegate.
 				getInstance().

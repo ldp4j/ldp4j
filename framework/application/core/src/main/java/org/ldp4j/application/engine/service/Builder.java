@@ -24,44 +24,57 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.spi;
+package org.ldp4j.application.engine.service;
 
 import org.ldp4j.application.engine.resource.ResourceFactory;
+import org.ldp4j.application.engine.spi.RuntimeDelegate;
+
+import static com.google.common.base.Preconditions.*;
 
 public abstract class Builder<T,B extends Builder<T,B>> {
 
 	private ResourceFactory resourceFactory;
+	private RuntimeDelegate runtimeDelegate;
+	private ServiceRegistry serviceRegistry;
 
-	private RuntimeDelegate runtimeInstance;
-
-	public final B setRuntimeInstance(RuntimeDelegate runtimeInstance) {
-		if(runtimeInstance==null) {
-			throw new IllegalArgumentException("RuntimeInstance cannot be null");
-		}
-		this.runtimeInstance = runtimeInstance;
+	final B setServiceRegistry(ServiceRegistry serviceRegistry) {
+		this.serviceRegistry=checkNotNull(serviceRegistry,"Service registry cannot be null");
 		return builder();
 	}
 
-	public final B withPersistencyManager(ResourceFactory persistencyManager) {
-		this.resourceFactory=persistencyManager;
+	final B setRuntimeInstance(RuntimeDelegate runtimeDelegate) {
+		this.runtimeDelegate = checkNotNull(runtimeDelegate,"Runtime delegate cannot be null");
 		return builder();
 	}
 
-	private final RuntimeDelegate runtimeInstance() {
-		if(runtimeInstance!=null) {
-			return runtimeInstance;
+	public final B withResourceFactory(ResourceFactory resourceFactory) {
+		this.resourceFactory=resourceFactory;
+		return builder();
+	}
+
+	private final RuntimeDelegate runtimeDelegate() {
+		if(this.runtimeDelegate!=null) {
+			return this.runtimeDelegate;
 		} else {
 			return RuntimeDelegate.getInstance();
 		}
 	}
 
+	private final ServiceRegistry serviceRegistry() {
+		if(this.serviceRegistry!=null) {
+			return this.serviceRegistry;
+		} else {
+			return ServiceRegistry.getInstance();
+		}
+	}
+
 	protected final <S extends Service> S service(Class<? extends S> serviceClass) {
-		return runtimeInstance().getServiceRegistry().getService(serviceClass);
+		return serviceRegistry().getService(serviceClass);
 	}
 
 	protected final ResourceFactory resourceFactory() {
 		if(this.resourceFactory==null) {
-			this.resourceFactory=runtimeInstance().getResourceFactory();
+			this.resourceFactory=runtimeDelegate().getResourceFactory();
 		}
 		return this.resourceFactory;
 	}

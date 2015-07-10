@@ -31,25 +31,14 @@ import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
-import org.ldp4j.application.engine.spi.ServiceRegistry;
 import org.ldp4j.application.engine.transaction.TransactionManager;
 
 public final class InMemoryRuntimeDelegate extends RuntimeDelegate {
 
-	private final InMemoryServiceRegistry serviceRegistry;
 	private final InMemoryResourceFactory persistencyManager;
 
 	public InMemoryRuntimeDelegate() {
-		this.serviceRegistry = new InMemoryServiceRegistry();
 		this.persistencyManager= new InMemoryResourceFactory();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ServiceRegistry getServiceRegistry() {
-		return this.serviceRegistry;
 	}
 
 	/**
