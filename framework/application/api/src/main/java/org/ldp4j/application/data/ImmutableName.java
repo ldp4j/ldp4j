@@ -33,6 +33,11 @@ import com.google.common.base.Objects;
 
 final class ImmutableName<T extends Serializable> implements Name<T> {
 
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -9131252943262008686L;
+
 	private final T id;
 
 	private ImmutableName(T id) {

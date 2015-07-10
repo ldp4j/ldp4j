@@ -20,18 +20,35 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-persistency:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-persistency-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.data;
+package org.ldp4j.application.engine.persistence.jpa;
 
-import java.io.Serializable;
+final class Context {
 
-public interface Name<T extends Serializable> extends Serializable {
+	private static final String DEFAULT_CONTEXT = "";
 
-	T id();
+	private Context() {
+	}
 
-	void accept(NameVisitor visitor);
+	private static String getName(StackTraceElement ste) {
+		String[] fqcn = ste.getClassName().split("\\.");
+		String[] lcn = fqcn[fqcn.length-1].split("\\$");
+		return lcn[lcn.length-1]+"."+ste.getMethodName()+"("+ste.getLineNumber()+")";
+	}
 
+	static String getContext(String packageName) {
+		Exception exception = new Exception();
+		exception.fillInStackTrace();
+		StackTraceElement candidate=null;
+		for(StackTraceElement tmp:exception.getStackTrace()) {
+			if(!tmp.getClassName().startsWith(packageName)) {
+				return getName(candidate);
+			}
+			candidate=tmp;
+		}
+		return DEFAULT_CONTEXT;
+	}
 }

@@ -20,18 +20,32 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-core:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.data;
+package org.ldp4j.application.engine.transaction;
 
-import java.io.Serializable;
+/**
+ * TODO: Extend a kernel specific exception, and if possible, make it checked.
+ */
+public class TransactionException extends RuntimeException {
 
-public interface Name<T extends Serializable> extends Serializable {
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 3505651186351455418L;
 
-	T id();
+	public TransactionException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-	void accept(NameVisitor visitor);
+	public TransactionException(String message) {
+		super(message);
+	}
+
+	public TransactionException(Throwable cause) {
+		super(cause);
+	}
 
 }

@@ -27,7 +27,6 @@
 package org.ldp4j.application.engine.impl;
 
 import org.ldp4j.application.engine.transaction.Transaction;
-import org.ldp4j.application.engine.transaction.TransactionManager;
 
 import com.google.common.base.MoreObjects;
 
@@ -162,11 +161,6 @@ final class InMemoryTransaction implements Transaction {
 
 	long id() {
 		return this.id;
-	}
-
-	@Override
-	public TransactionManager manager() {
-		return this.transactionManager;
 	}
 
 	@Override

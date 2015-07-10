@@ -36,8 +36,19 @@ import com.google.common.base.Objects;
 
 public final class ResourceId {
 
-	private final String templateId;
-	private final Name<?> name;
+	/**
+	 * Not final to enable its usage in JPA
+	 */
+	private String templateId;
+
+	/**
+	 * Not final to enable its usage in JPA
+	 */
+	private Name<?> name;
+
+	private ResourceId() {
+		// JPA FRIENDLY
+	}
 
 	private ResourceId(Name<?> name, String templateId) {
 		this.name = name;

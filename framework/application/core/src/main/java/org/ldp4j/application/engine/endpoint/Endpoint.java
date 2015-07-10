@@ -38,13 +38,24 @@ import com.google.common.base.MoreObjects;
 
 public final class Endpoint {
 
-	private final String path;
-	private final Date created;
+	/**
+	 * Not final to enable its usage in JPA
+	 */
+	private String path;
+
+	/**
+	 * Not final to enable its usage in JPA
+	 */
+	private Date created;
 
 	private ResourceId resourceId;
 	private EntityTag entityTag;
 	private Date lastModified;
 	private Date deleted;
+
+	private Endpoint() {
+		// JPA Friendly
+	}
 
 	private Endpoint(String path, ResourceId resourceId, Date created, EntityTag entityTag) {
 		this.path = path;

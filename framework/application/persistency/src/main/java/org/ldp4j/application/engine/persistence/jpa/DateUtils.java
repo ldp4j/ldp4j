@@ -20,18 +20,32 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-persistency:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-persistency-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.data;
+package org.ldp4j.application.engine.persistence.jpa;
 
-import java.io.Serializable;
+import java.util.Date;
 
-public interface Name<T extends Serializable> extends Serializable {
+import javax.persistence.AttributeConverter;
 
-	T id();
+public class DateUtils implements AttributeConverter<Date,String> {
 
-	void accept(NameVisitor visitor);
+	@Override
+	public String convertToDatabaseColumn(Date attribute) {
+		if(attribute==null) {
+			return null;
+		}
+		return Long.toString(attribute.getTime());
+	}
+
+	@Override
+	public Date convertToEntityAttribute(String dbData) {
+		if(dbData==null) {
+			return null;
+		}
+		return new Date(Long.parseLong(dbData));
+	}
 
 }

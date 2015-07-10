@@ -29,13 +29,11 @@ package org.ldp4j.application.engine.transaction;
 
 public interface Transaction {
 
-	TransactionManager manager();
+	void begin() throws TransactionException;
 
-	void begin();
+	void commit() throws TransactionException;
 
-	void commit();
-
-	void rollback();
+	void rollback() throws TransactionException;
 
 	boolean isStarted();
 
