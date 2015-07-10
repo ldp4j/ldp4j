@@ -26,6 +26,8 @@
  */
 package org.ldp4j.application.engine.constraints;
 
+import java.io.Serializable;
+
 import org.ldp4j.application.engine.resource.ResourceId;
 
 import com.google.common.base.MoreObjects;
@@ -33,12 +35,29 @@ import com.google.common.base.Objects;
 
 import static com.google.common.base.Preconditions.*;
 
-public final class ConstraintReportId {
+public final class ConstraintReportId implements Serializable {
 
-	private final ResourceId resourceId;
-	private final String failureId;
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = -1692929146077368881L;
+
+	/**
+	 * Not final to enable its usage in JPA
+	 */
+	private ResourceId resourceId;
+
+	/**
+	 * Not final to enable its usage in JPA
+	 */
+	private String failureId;
+
+	private ConstraintReportId() {
+		// JPA Friendly
+	}
 
 	private ConstraintReportId(ResourceId resourceId, String failureId) {
+		this();
 		this.resourceId = resourceId;
 		this.failureId = failureId;
 	}

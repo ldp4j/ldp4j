@@ -64,7 +64,7 @@ public final class JPARuntimeDelegate extends RuntimeDelegate {
 
 	private final ThreadLocal<EntityManager> manager;
 
-	private final EntityManagerFactory emf;
+	private EntityManagerFactory emf;
 
 	private final JPAEntityManagerProvider provider;
 
@@ -72,7 +72,6 @@ public final class JPARuntimeDelegate extends RuntimeDelegate {
 
 
 	public JPARuntimeDelegate() {
-		this.emf = Persistence.createEntityManagerFactory("kernel");
 		this.manager=new ThreadLocal<EntityManager>();
 		this.provider = new JPAEntityManagerProvider();
 		this.id = String.format("%08X",hashCode());
@@ -80,12 +79,14 @@ public final class JPARuntimeDelegate extends RuntimeDelegate {
 
 	@Override
 	public void init() throws LifecycleException {
-		throw new UnsupportedOperationException("Method not implemented yet");
+		this.emf=Persistence.createEntityManagerFactory("kernel");
 	}
 
 	@Override
 	public void shutdown() throws LifecycleException {
-		throw new UnsupportedOperationException("Method not implemented yet");
+		if(this.emf!=null) {
+			this.emf.close();
+		}
 	}
 
 	@Override

@@ -55,12 +55,36 @@
 			<orm:embedded name="resourceId"/>
 		</orm:attributes>
 	</orm:entity>
+	<orm:entity class="org.ldp4j.application.engine.persistence.jpa.JPAConstraintReport">
+		<orm:attributes>
+			<orm:id name="primaryKey">
+				<orm:generated-value/>
+				<orm:sequence-generator name="constraintReportPrimaryKeyGenerator" sequence-name="crSeq"/>
+			</orm:id>
+			<orm:basic name="date">
+				<orm:convert converter="org.ldp4j.application.engine.persistence.jpa.DateUtils"/>
+			</orm:basic>
+			<orm:basic name="request">
+				<orm:lob/>
+			</orm:basic>
+			<orm:basic name="constraints">
+				<orm:lob/>
+			</orm:basic>
+			<orm:embedded name="id"/>
+		</orm:attributes>
+	</orm:entity>
 	<orm:embeddable class="org.ldp4j.application.engine.resource.ResourceId">
 		<orm:attributes>
 			<orm:basic name="templateId"/>
 			<orm:basic name="name">
 				<orm:lob/>
 			</orm:basic>
+		</orm:attributes>
+	</orm:embeddable>
+	<orm:embeddable class="org.ldp4j.application.engine.constraints.ConstraintReportId">
+		<orm:attributes>
+			<orm:basic name="failureId"/>
+			<orm:embedded name="resourceId"/>
 		</orm:attributes>
 	</orm:embeddable>
 </orm:entity-mappings>

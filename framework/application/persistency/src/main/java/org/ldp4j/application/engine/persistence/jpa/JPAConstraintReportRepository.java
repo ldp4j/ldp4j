@@ -52,7 +52,23 @@ final class JPAConstraintReportRepository implements ConstraintReportRepository 
 
 	@Override
 	public ConstraintReport constraintReportOfId(ConstraintReportId id) {
-		return entityManager().find(ConstraintReport.class,id);
+		EntityManager em = entityManager();
+
+		CriteriaBuilder cb=em.getCriteriaBuilder();
+
+		CriteriaQuery<JPAConstraintReport> query =
+				cb.createQuery(JPAConstraintReport.class);
+
+		Root<JPAConstraintReport> descriptor = query.from(JPAConstraintReport.class);
+		query.
+			select(descriptor).
+			where(cb.equal(descriptor.get("id"),id)).
+			distinct(true);
+		List<JPAConstraintReport> results = em.createQuery(query).getResultList();
+		if(results.isEmpty()) {
+			return null;
+		}
+		return results.get(0);
 	}
 
 	@Override
@@ -71,16 +87,16 @@ final class JPAConstraintReportRepository implements ConstraintReportRepository 
 
 		CriteriaBuilder cb=em.getCriteriaBuilder();
 
-		CriteriaQuery<ConstraintReport> query =
-				cb.createQuery(ConstraintReport.class);
+		CriteriaQuery<JPAConstraintReport> query =
+				cb.createQuery(JPAConstraintReport.class);
 
-		Root<ConstraintReport> descriptor = query.from(ConstraintReport.class);
+		Root<JPAConstraintReport> descriptor = query.from(JPAConstraintReport.class);
 		query.
 			select(descriptor).
-			where(cb.equal(descriptor.get("resourceId"),resource.id())).
+			where(cb.equal(descriptor.get("id").get("resourceId"),resource.id())).
 			distinct(true);
-		List<ConstraintReport> results = em.createQuery(query).getResultList();
-		for(ConstraintReport report:results){
+		List<JPAConstraintReport> results = em.createQuery(query).getResultList();
+		for(JPAConstraintReport report:results){
 			em.remove(report);
 		}
 	}
