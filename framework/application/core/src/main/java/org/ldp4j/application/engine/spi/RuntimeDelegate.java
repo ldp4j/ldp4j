@@ -38,13 +38,15 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
+import org.ldp4j.application.engine.lifecycle.LifecycleException;
+import org.ldp4j.application.engine.lifecycle.Managed;
 import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.transaction.TransactionManager;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public abstract class RuntimeDelegate {
+public abstract class RuntimeDelegate implements Managed {
 
 	private static final String INSTANTIATE_ACTION = "instantiate";
 
@@ -296,6 +298,16 @@ public abstract class RuntimeDelegate {
 
 		@Override
 		public TransactionManager getTransactionManager() {
+			throw new AssertionError(ERROR_MESSAGE);
+		}
+
+		@Override
+		public void init() throws LifecycleException {
+			throw new AssertionError(ERROR_MESSAGE);
+		}
+
+		@Override
+		public void shutdown() throws LifecycleException {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 

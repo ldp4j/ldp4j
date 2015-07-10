@@ -30,14 +30,9 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
-import org.ldp4j.application.engine.endpoint.EndpointRepository;
-import org.ldp4j.application.engine.lifecycle.LifecycleException;
-import org.ldp4j.application.engine.lifecycle.Managed;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceId;
-import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.template.BasicContainerTemplate;
 import org.ldp4j.application.engine.template.ContainerTemplate;
 import org.ldp4j.application.engine.template.DirectContainerTemplate;
@@ -46,9 +41,8 @@ import org.ldp4j.application.engine.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateLibrary;
 import org.ldp4j.application.engine.template.TemplateVisitor;
-import org.ldp4j.application.engine.transaction.TransactionManager;
 
-final class InMemoryResourceFactory implements ResourceFactory, Managed {
+final class InMemoryResourceFactory implements ResourceFactory {
 
 	private final class RootResourceCreator implements TemplateVisitor {
 
@@ -118,34 +112,9 @@ final class InMemoryResourceFactory implements ResourceFactory, Managed {
 
 	}
 
-	private final InMemoryResourceRepository resourceRepository;
-	private final InMemoryEndpointRepository endpointRepository;
-	private final InMemoryConstraintReportRepository constraintReportRepository;
-	private final InMemoryTransactionManager transactionManager;
-
 	private TemplateLibrary templateLibrary;
 
 	InMemoryResourceFactory() {
-		this.resourceRepository=new InMemoryResourceRepository();
-		this.endpointRepository=new InMemoryEndpointRepository();
-		this.constraintReportRepository=new InMemoryConstraintReportRepository();
-		this.transactionManager = new InMemoryTransactionManager();
-	}
-
-	ResourceRepository resourceRepository() {
-		return this.resourceRepository;
-	}
-
-	EndpointRepository endpointRepository() {
-		return this.endpointRepository;
-	}
-
-	ConstraintReportRepository constraintReportRepository() {
-		return this.constraintReportRepository;
-	}
-
-	TransactionManager transactionManager() {
-		return this.transactionManager;
 	}
 
 	/**
@@ -168,26 +137,6 @@ final class InMemoryResourceFactory implements ResourceFactory, Managed {
 				ResourceId.createId(name,template));
 		template.accept(creator);
 		return creator.createdResource();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void init() throws LifecycleException {
-		this.resourceRepository.init();
-		this.constraintReportRepository.init();
-		this.endpointRepository.init();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void shutdown() throws LifecycleException {
-		this.endpointRepository.shutdown();
-		this.constraintReportRepository.shutdown();
-		this.resourceRepository.shutdown();
 	}
 
 }

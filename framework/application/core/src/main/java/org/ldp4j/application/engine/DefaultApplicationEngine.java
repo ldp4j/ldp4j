@@ -29,18 +29,11 @@ package org.ldp4j.application.engine;
 import java.util.List;
 import java.util.Stack;
 
-import org.ldp4j.application.engine.ApplicationContextCreationException;
-import org.ldp4j.application.engine.ApplicationContextTerminationException;
-import org.ldp4j.application.engine.ApplicationEngine;
-import org.ldp4j.application.engine.ApplicationEngineInitializationException;
-import org.ldp4j.application.engine.ApplicationEngineRuntimeException;
-import org.ldp4j.application.engine.ApplicationEngineTerminationException;
 import org.ldp4j.application.engine.endpoint.EndpointManagementService;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleService;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.lifecycle.LifecycleManager;
 import org.ldp4j.application.engine.resource.ResourceControllerService;
-import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.service.ServiceRegistry;
 import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
@@ -56,18 +49,16 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(DefaultApplicationEngine.class);
 
-	private ResourceFactory resourceFactory;
-
 	private WriteSessionService writeSessionService;
 	private EndpointManagementService endpointManagementService;
 	private ApplicationLifecycleService applicationLifecycleService;
 	private TemplateManagementService templateManagementService;
 	private ResourceControllerService resourceControllerService;
+	private RuntimeDelegate runtimeDelegate;
 
 	private TransactionManager transactionManager;
 
 	public DefaultApplicationEngine() {
-		this.transactionManager=RuntimeDelegate.getInstance().getTransactionManager();
 	}
 
 	private static <T> T checkNotNull(T object, String message) {
@@ -78,7 +69,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 	}
 
 	private void initialize() {
-		setResourceFactory(RuntimeDelegate.getInstance().getResourceFactory());
+		setRuntimeManager(RuntimeDelegate.getInstance());
 		ServiceRegistry serviceRegistry = ServiceRegistry.getInstance();
 		setApplicationLifecycleService(serviceRegistry.getService(ApplicationLifecycleService.class));
 		setTemplateManagementService(serviceRegistry.getService(TemplateManagementService.class));
@@ -87,8 +78,9 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		setResourceControllerService(serviceRegistry.getService(ResourceControllerService.class));
 	}
 
-	private void setResourceFactory(ResourceFactory persistencyManager) {
-		this.resourceFactory=checkNotNull(persistencyManager,"Resource factory cannot be null");
+	private void setRuntimeManager(RuntimeDelegate runtimeDelegate) {
+		this.runtimeDelegate=checkNotNull(runtimeDelegate,"Resource factory cannot be null");
+		this.transactionManager=runtimeDelegate.getTransactionManager();
 	}
 
 	private void setWriteSessionService(WriteSessionService service) {
@@ -135,10 +127,6 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 			Object component=initializedComponents.pop();
 			shutdownComponent(component,failures);
 		}
-	}
-
-	ResourceFactory resourceFactory() {
-		return this.resourceFactory;
 	}
 
 	WriteSessionService writeSessionService() {
@@ -201,10 +189,10 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		}
 		Stack<Object> initializedComponents=new Stack<Object>();
 		try {
-			initializeComponent(this.resourceFactory,initializedComponents);
+			initializeComponent(this.runtimeDelegate,initializedComponents);
+			initializeComponent(this.templateManagementService,initializedComponents);
 			initializeComponent(this.endpointManagementService,initializedComponents);
 			initializeComponent(this.resourceControllerService,initializedComponents);
-			initializeComponent(this.templateManagementService,initializedComponents);
 			initializeComponent(this.writeSessionService,initializedComponents);
 		} catch (ComponentLifecycleException e) {
 			shutdownComponentsQuietly(initializedComponents);
@@ -219,9 +207,9 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		List<LifecycleException> failures=Lists.newArrayList();
 		shutdownComponent(this.endpointManagementService,failures);
 		shutdownComponent(this.resourceControllerService,failures);
-		shutdownComponent(this.templateManagementService,failures);
 		shutdownComponent(this.writeSessionService,failures);
-		shutdownComponent(this.resourceFactory,failures);
+		shutdownComponent(this.templateManagementService,failures);
+		shutdownComponent(this.runtimeDelegate,failures);
 		if(!failures.isEmpty()) {
 			throw new ApplicationEngineTerminationException("Could not shutdown engine components");
 		}

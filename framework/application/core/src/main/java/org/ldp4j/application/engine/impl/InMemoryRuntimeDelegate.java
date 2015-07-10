@@ -28,6 +28,7 @@ package org.ldp4j.application.engine.impl;
 
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
+import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
@@ -36,9 +37,17 @@ import org.ldp4j.application.engine.transaction.TransactionManager;
 public final class InMemoryRuntimeDelegate extends RuntimeDelegate {
 
 	private final InMemoryResourceFactory persistencyManager;
+	private final InMemoryResourceRepository resourceRepository;
+	private final InMemoryEndpointRepository endpointRepository;
+	private final InMemoryConstraintReportRepository constraintReportRepository;
+	private final InMemoryTransactionManager transactionManager;
 
 	public InMemoryRuntimeDelegate() {
 		this.persistencyManager= new InMemoryResourceFactory();
+		this.resourceRepository=new InMemoryResourceRepository();
+		this.endpointRepository=new InMemoryEndpointRepository();
+		this.constraintReportRepository=new InMemoryConstraintReportRepository();
+		this.transactionManager = new InMemoryTransactionManager();
 	}
 
 	/**
@@ -54,7 +63,7 @@ public final class InMemoryRuntimeDelegate extends RuntimeDelegate {
 	 */
 	@Override
 	public ConstraintReportRepository getConstraintReportRepository() {
-		return this.persistencyManager.constraintReportRepository();
+		return this.constraintReportRepository;
 	}
 
 	/**
@@ -62,7 +71,7 @@ public final class InMemoryRuntimeDelegate extends RuntimeDelegate {
 	 */
 	@Override
 	public EndpointRepository getEndpointRepository() {
-		return this.persistencyManager.endpointRepository();
+		return this.endpointRepository;
 	}
 
 	/**
@@ -70,12 +79,35 @@ public final class InMemoryRuntimeDelegate extends RuntimeDelegate {
 	 */
 	@Override
 	public ResourceRepository getResourceRepository() {
-		return this.persistencyManager.resourceRepository();
+		return this.resourceRepository;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public TransactionManager getTransactionManager() {
-		return this.persistencyManager.transactionManager();
+		return this.transactionManager;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void init() throws LifecycleException {
+		this.resourceRepository.init();
+		this.constraintReportRepository.init();
+		this.endpointRepository.init();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void shutdown() throws LifecycleException {
+		this.endpointRepository.shutdown();
+		this.constraintReportRepository.shutdown();
+		this.resourceRepository.shutdown();
 	}
 
 }
