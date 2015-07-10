@@ -26,9 +26,11 @@
  */
 package org.ldp4j.application.engine.spi;
 
+import org.ldp4j.application.engine.resource.ResourceFactory;
+
 public abstract class Builder<T,B extends Builder<T,B>> {
 
-	private PersistencyManager persistencyManager;
+	private ResourceFactory resourceFactory;
 
 	private RuntimeDelegate runtimeInstance;
 
@@ -40,8 +42,8 @@ public abstract class Builder<T,B extends Builder<T,B>> {
 		return builder();
 	}
 
-	public final B withPersistencyManager(PersistencyManager persistencyManager) {
-		this.persistencyManager=persistencyManager;
+	public final B withPersistencyManager(ResourceFactory persistencyManager) {
+		this.resourceFactory=persistencyManager;
 		return builder();
 	}
 
@@ -57,11 +59,11 @@ public abstract class Builder<T,B extends Builder<T,B>> {
 		return runtimeInstance().getServiceRegistry().getService(serviceClass);
 	}
 
-	protected final PersistencyManager persistencyManager() {
-		if(this.persistencyManager==null) {
-			this.persistencyManager=runtimeInstance().getPersistencyManager();
+	protected final ResourceFactory resourceFactory() {
+		if(this.resourceFactory==null) {
+			this.resourceFactory=runtimeInstance().getResourceFactory();
 		}
-		return this.persistencyManager;
+		return this.resourceFactory;
 	}
 
 	protected abstract B builder();

@@ -44,13 +44,13 @@ import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.impl.InMemoryRuntimeDelegate;
 import org.ldp4j.application.engine.resource.Resource;
+import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.session.DelegatedContainerSnapshot;
 import org.ldp4j.application.engine.session.DelegatedResourceSnapshot;
 import org.ldp4j.application.engine.session.UnitOfWork;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.session.UnitOfWork.Visitor;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.engine.transaction.Transaction;
@@ -118,7 +118,7 @@ public class WriteSessionTest {
 	private UnitOfWork uow;
 	private WriteSession sut;
 
-	private PersistencyManager persistencyManager;
+	private ResourceFactory resourceFactory;
 
 	private Transaction transaction;
 
@@ -135,10 +135,10 @@ public class WriteSessionTest {
 			configure(
 				Lists.<Class<?>>newArrayList(),
 				Arrays.<ResourceHandler>asList(new PersonHandler()));
-		persistencyManager=
+		resourceFactory=
 			RuntimeDelegate.
 				getInstance().
-					getPersistencyManager();
+					getResourceFactory();
 		writeSessionService=
 			RuntimeDelegate.
 				getInstance().
@@ -246,10 +246,10 @@ public class WriteSessionTest {
 		try {
 			this.uow = UnitOfWork.newCurrent();
 			Resource rootResource=
-				this.persistencyManager.createResource(
+				this.resourceFactory.createResource(
 					this.templateManagementService.templateOfId("personTemplate"),
 					name("me"));
-			Endpoint rootEndpoint=this.persistencyManager.createEndpoint(rootResource,"root",new EntityTag("root"),new Date());
+			Endpoint rootEndpoint=Endpoint.create("root",rootResource.id(),new Date(),new EntityTag("root"));
 			RuntimeDelegate.getInstance().getResourceRepository().add(rootResource);
 			RuntimeDelegate.getInstance().getEndpointRepository().add(rootEndpoint);
 			UnitOfWork.setCurrent(null);
@@ -330,7 +330,7 @@ public class WriteSessionTest {
 	private void prepareSession(Action action, ResourceSnapshot snapshot) {
 		logAction(Stage.PREPARATION,action,snapshot);
 		Resource resource=
-			this.persistencyManager.
+			this.resourceFactory.
 				createResource(this.templateManagementService.templateOfId(snapshot.templateId()), snapshot.name());
 		doPrepareSession(resource);
 	}

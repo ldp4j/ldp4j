@@ -28,8 +28,8 @@ package org.ldp4j.application.engine.impl;
 
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
+import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceRepository;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.ServiceRegistry;
 import org.ldp4j.application.engine.transaction.TransactionManager;
@@ -37,11 +37,11 @@ import org.ldp4j.application.engine.transaction.TransactionManager;
 public final class InMemoryRuntimeDelegate extends RuntimeDelegate {
 
 	private final InMemoryServiceRegistry serviceRegistry;
-	private final InMemoryPersistencyManager persistencyManager;
+	private final InMemoryResourceFactory persistencyManager;
 
 	public InMemoryRuntimeDelegate() {
 		this.serviceRegistry = new InMemoryServiceRegistry();
-		this.persistencyManager= new InMemoryPersistencyManager();
+		this.persistencyManager= new InMemoryResourceFactory();
 	}
 
 	/**
@@ -56,7 +56,7 @@ public final class InMemoryRuntimeDelegate extends RuntimeDelegate {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public PersistencyManager getPersistencyManager() {
+	public ResourceFactory getResourceFactory() {
 		return this.persistencyManager;
 	}
 

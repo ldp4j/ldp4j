@@ -29,19 +29,15 @@ package org.ldp4j.application.engine.impl;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Date;
-
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
-import org.ldp4j.application.engine.context.EntityTag;
-import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.lifecycle.Managed;
 import org.ldp4j.application.engine.resource.Resource;
+import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceRepository;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.template.BasicContainerTemplate;
 import org.ldp4j.application.engine.template.ContainerTemplate;
 import org.ldp4j.application.engine.template.DirectContainerTemplate;
@@ -52,7 +48,7 @@ import org.ldp4j.application.engine.template.TemplateLibrary;
 import org.ldp4j.application.engine.template.TemplateVisitor;
 import org.ldp4j.application.engine.transaction.TransactionManager;
 
-final class InMemoryPersistencyManager implements PersistencyManager, Managed {
+final class InMemoryResourceFactory implements ResourceFactory, Managed {
 
 	private final class RootResourceCreator implements TemplateVisitor {
 
@@ -69,7 +65,7 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 
 		private void createResource(InMemoryResource resource) {
 			this.resource=resource;
-			this.resource.setTemplateLibrary(InMemoryPersistencyManager.this.templateLibrary);
+			this.resource.setTemplateLibrary(InMemoryResourceFactory.this.templateLibrary);
 		}
 
 		/**
@@ -129,7 +125,7 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 
 	private TemplateLibrary templateLibrary;
 
-	InMemoryPersistencyManager() {
+	InMemoryResourceFactory() {
 		this.resourceRepository=new InMemoryResourceRepository();
 		this.endpointRepository=new InMemoryEndpointRepository();
 		this.constraintReportRepository=new InMemoryConstraintReportRepository();
@@ -172,17 +168,6 @@ final class InMemoryPersistencyManager implements PersistencyManager, Managed {
 				ResourceId.createId(name,template));
 		template.accept(creator);
 		return creator.createdResource();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public Endpoint createEndpoint(Resource resource, String path, EntityTag entityTag, Date creationDate) {
-		checkNotNull(resource,"Endpoint's resource cannot be null");
-		checkNotNull(entityTag,"Endpoint's entity tag cannot be null");
-		checkNotNull(creationDate,"Endpoint's last modified data cannot be null");
-		return new InMemoryEndpoint(path,resource.id(),creationDate,entityTag);
 	}
 
 	/**

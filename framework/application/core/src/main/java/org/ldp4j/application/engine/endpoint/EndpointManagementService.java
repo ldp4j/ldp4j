@@ -38,7 +38,6 @@ import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.resource.Slug;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.Service;
 import org.ldp4j.application.engine.spi.ServiceBuilder;
@@ -88,8 +87,7 @@ public final class EndpointManagementService implements Service {
 		public EndpointManagementService build() {
 			return
 				new EndpointManagementService(
-					service(TemplateManagementService.class),
-					persistencyManager());
+					service(TemplateManagementService.class));
 		}
 
 	}
@@ -99,16 +97,14 @@ public final class EndpointManagementService implements Service {
 	private static final int MAX_ENDPOINT_CREATION_FAILURE = 3;
 
 	private final TemplateManagementService templateManagementService;
-	private final PersistencyManager persistencyManager;
 	private final ListenerManager<EndpointLifecycleListener> listenerManager;
 
 	private final EndpointRepository endpointRepository;
 	private final ResourceRepository resourceRepository;
 
 
-	private EndpointManagementService(TemplateManagementService templateManagementService, PersistencyManager persistencyManager) {
+	private EndpointManagementService(TemplateManagementService templateManagementService) {
 		this.templateManagementService = templateManagementService;
-		this.persistencyManager = persistencyManager;
 		this.endpointRepository=RuntimeDelegate.getInstance().getEndpointRepository();
 		this.resourceRepository=RuntimeDelegate.getInstance().getResourceRepository();
 		this.listenerManager=ListenerManager.<EndpointLifecycleListener>newInstance();
@@ -195,7 +191,7 @@ public final class EndpointManagementService implements Service {
 			try {
 				String resourcePath = calculateResourcePath(resource,candidatePath);
 				LOGGER.debug("({}) Trying resource path {} ",repetitions,resourcePath);
-				Endpoint newEndpoint = this.persistencyManager.createEndpoint(resource,resourcePath,entityTag,lastModified);
+				Endpoint newEndpoint = Endpoint.create(resourcePath, resource.id(), lastModified, entityTag);
 				this.endpointRepository.add(newEndpoint);
 				return newEndpoint;
 			} catch (EndpointNotFoundException e) {

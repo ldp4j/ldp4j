@@ -41,6 +41,7 @@ import org.ldp4j.application.engine.endpoint.EndpointManagementService;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleService;
 import org.ldp4j.application.engine.resource.ResourceControllerService;
+import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.template.TemplateManagementService;
@@ -288,7 +289,7 @@ public abstract class RuntimeDelegate {
 		}
 
 		@Override
-		public PersistencyManager getPersistencyManager() {
+		public ResourceFactory getResourceFactory() {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
@@ -338,7 +339,7 @@ public abstract class RuntimeDelegate {
 						setRuntimeInstance(this));
 	}
 
-	public abstract PersistencyManager getPersistencyManager();
+	public abstract ResourceFactory getResourceFactory();
 
 	public abstract TransactionManager getTransactionManager();
 

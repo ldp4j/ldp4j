@@ -35,9 +35,9 @@ import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.resource.Resource;
+import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceRepository;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -105,14 +105,14 @@ final class EnvironmentImpl implements Environment {
 
 	private final List<RootResource> candidates;
 
-	private final PersistencyManager persistencyManager;
+	private final ResourceFactory persistencyManager;
 
 	private final TemplateManagementService templateManagementService;
 
 	private final ResourceRepository resourceRepository;
 	private final EndpointRepository endpointRepository;
 
-	EnvironmentImpl(TemplateManagementService templateManagementService, PersistencyManager persistencyManager, EndpointRepository endpointRepository, ResourceRepository resourceRepository) {
+	EnvironmentImpl(TemplateManagementService templateManagementService, ResourceFactory persistencyManager, EndpointRepository endpointRepository, ResourceRepository resourceRepository) {
 		this.templateManagementService = templateManagementService;
 		this.resourceRepository = resourceRepository;
 		this.endpointRepository = endpointRepository;
@@ -128,13 +128,14 @@ final class EnvironmentImpl implements Environment {
 
 	void configureRootResources() throws ApplicationConfigurationException {
 		validateRootResources();
+		final Date creationDate = new Date();
 		for(RootResource entry:this.candidates) {
-			publish(entry);
+			publish(entry, creationDate);
 			LOGGER.debug("Published resource '"+entry.resourceId()+"' at '"+entry.path()+"'");
 		}
 	}
 
-	private void publish(RootResource rootResource) throws ApplicationConfigurationException {
+	private void publish(RootResource rootResource, Date creationDate) throws ApplicationConfigurationException {
 		ResourceId resourceId = rootResource.resourceId();
 		String path = rootResource.path();
 
@@ -152,7 +153,7 @@ final class EnvironmentImpl implements Environment {
 		if(prevResource==null && prevEndpoint==null) {
 			Resource resource=this.persistencyManager.createResource(rootResource.template(),rootResource.name());
 			this.resourceRepository.add(resource);
-			Endpoint endpoint=this.persistencyManager.createEndpoint(resource,path,new EntityTag(path),new Date());
+			Endpoint endpoint=Endpoint.create(path,resource.id(),creationDate,new EntityTag(path));
 			this.endpointRepository.add(endpoint);
 		}
 

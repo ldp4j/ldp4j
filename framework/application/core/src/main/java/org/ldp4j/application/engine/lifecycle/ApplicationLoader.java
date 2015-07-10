@@ -28,9 +28,9 @@ package org.ldp4j.application.engine.lifecycle;
 
 import org.ldp4j.application.engine.ApplicationConfigurationException;
 import org.ldp4j.application.engine.ApplicationContextBootstrapException;
+import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.session.WriteSessionService;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.ServiceRegistry;
 import org.ldp4j.application.engine.template.TemplateManagementService;
@@ -50,7 +50,7 @@ final class ApplicationLoader<T extends Configuration> {
 
 	private WriteSessionService writeSessionService;
 	private TemplateManagementService templateManagementService;
-	private PersistencyManager persistencyManager;
+	private ResourceFactory resourceFactory;
 
 	private T configuration;
 
@@ -60,15 +60,15 @@ final class ApplicationLoader<T extends Configuration> {
 		RuntimeDelegate instance = RuntimeDelegate.getInstance();
 
 		this.transactionManager=instance.getTransactionManager();
-		this.persistencyManager=instance.getPersistencyManager();
+		this.resourceFactory=instance.getResourceFactory();
 
 		ServiceRegistry serviceRegistry=instance.getServiceRegistry();
 		this.writeSessionService=serviceRegistry.getService(WriteSessionService.class);
 		this.templateManagementService=serviceRegistry.getService(TemplateManagementService.class);
 	}
 
-	private PersistencyManager persistencyManager() {
-		return this.persistencyManager;
+	private ResourceFactory resourceFactory() {
+		return this.resourceFactory;
 	}
 
 	private WriteSessionService writeSessionService() {
@@ -79,9 +79,9 @@ final class ApplicationLoader<T extends Configuration> {
 		return this.templateManagementService;
 	}
 
-	ApplicationLoader<T> withPersistencyManager(PersistencyManager persistencyManager) {
+	ApplicationLoader<T> withPersistencyManager(ResourceFactory persistencyManager) {
 		if(persistencyManager!=null) {
-			this.persistencyManager=persistencyManager;
+			this.resourceFactory=persistencyManager;
 		}
 		return this;
 	}
@@ -116,7 +116,12 @@ final class ApplicationLoader<T extends Configuration> {
 		Transaction transaction=this.transactionManager.currentTransaction();
 		transaction.begin();
 		try {
-			WriteSession session = writeSessionService().createSession(WriteSessionConfiguration.builder().build());
+			WriteSession session =
+				writeSessionService().
+					createSession(
+						WriteSessionConfiguration.
+							builder().
+								build());
 			try {
 				application.initialize(session);
 			} catch (ApplicationInitializationException e) {
@@ -139,8 +144,9 @@ final class ApplicationLoader<T extends Configuration> {
 		EnvironmentImpl environment=
 			new EnvironmentImpl(
 				templateManagementService(),
-				persistencyManager(),
-				RuntimeDelegate.getInstance().getEndpointRepository(), RuntimeDelegate.getInstance().getResourceRepository()
+				resourceFactory(),
+				RuntimeDelegate.getInstance().getEndpointRepository(),
+				RuntimeDelegate.getInstance().getResourceRepository()
 			);
 		try {
 			application.setup(environment,bootstrap);

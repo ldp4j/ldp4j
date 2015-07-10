@@ -54,7 +54,6 @@ import org.ldp4j.application.engine.resource.FeatureException;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceControllerService;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.engine.transaction.Transaction;
@@ -70,16 +69,16 @@ public class ResourceControllerServiceTest {
 
 	private ResourceControllerService sut;
 	private TemplateManagementService tms;
-	private PersistencyManager persistencyManager;
+	private ResourceFactory resourceFactory;
 
 	private <T extends Resource> T publishResource(Class<? extends T> clazz, String templateId, Name<?> resourceName, String path) {
 		Transaction transaction = RuntimeDelegate.getInstance().getTransactionManager().currentTransaction();
 		transaction.begin();
 
-		Resource newResource=this.persistencyManager.createResource(this.tms.templateOfId(templateId),resourceName);
+		Resource newResource=this.resourceFactory.createResource(this.tms.templateOfId(templateId),resourceName);
 		T resource=clazz.cast(newResource);
 		RuntimeDelegate.getInstance().getResourceRepository().add(resource);
-		Endpoint endpoint=this.persistencyManager.createEndpoint(resource,path,new EntityTag(path),new Date());
+		Endpoint endpoint=Endpoint.create(path,resource.id(),new Date(),new EntityTag(path));
 		RuntimeDelegate.getInstance().getEndpointRepository().add(endpoint);
 
 		transaction.commit();
@@ -161,10 +160,10 @@ public class ResourceControllerServiceTest {
 					getServiceRegistry().
 						getService(TemplateManagementService.class);
 
-		persistencyManager=
+		resourceFactory=
 			RuntimeDelegate.
 				getInstance().
-					getPersistencyManager();
+					getResourceFactory();
 	}
 
 

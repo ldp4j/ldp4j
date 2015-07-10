@@ -40,8 +40,8 @@ import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleService;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.lifecycle.LifecycleManager;
 import org.ldp4j.application.engine.resource.ResourceControllerService;
+import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.session.WriteSessionService;
-import org.ldp4j.application.engine.spi.PersistencyManager;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.spi.ServiceRegistry;
 import org.ldp4j.application.engine.template.TemplateManagementService;
@@ -56,7 +56,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(DefaultApplicationEngine.class);
 
-	private PersistencyManager persistencyManager;
+	private ResourceFactory resourceFactory;
 
 	private WriteSessionService writeSessionService;
 	private EndpointManagementService endpointManagementService;
@@ -80,7 +80,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 	private void initialize() {
 		RuntimeDelegate instance = RuntimeDelegate.getInstance();
 
-		setPersistencyManager(instance.getPersistencyManager());
+		setResourceFactory(instance.getResourceFactory());
 
 		ServiceRegistry serviceRegistry = instance.getServiceRegistry();
 		setApplicationLifecycleService(serviceRegistry.getService(ApplicationLifecycleService.class));
@@ -90,8 +90,8 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		setResourceControllerService(serviceRegistry.getService(ResourceControllerService.class));
 	}
 
-	private void setPersistencyManager(PersistencyManager persistencyManager) {
-		this.persistencyManager=checkNotNull(persistencyManager,"Persistency manager cannot be null");
+	private void setResourceFactory(ResourceFactory persistencyManager) {
+		this.resourceFactory=checkNotNull(persistencyManager,"Resource factory cannot be null");
 	}
 
 	private void setWriteSessionService(WriteSessionService service) {
@@ -140,8 +140,8 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		}
 	}
 
-	PersistencyManager persistencyManager() {
-		return this.persistencyManager;
+	ResourceFactory resourceFactory() {
+		return this.resourceFactory;
 	}
 
 	WriteSessionService writeSessionService() {
@@ -204,7 +204,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		}
 		Stack<Object> initializedComponents=new Stack<Object>();
 		try {
-			initializeComponent(this.persistencyManager,initializedComponents);
+			initializeComponent(this.resourceFactory,initializedComponents);
 			initializeComponent(this.endpointManagementService,initializedComponents);
 			initializeComponent(this.resourceControllerService,initializedComponents);
 			initializeComponent(this.templateManagementService,initializedComponents);
@@ -224,7 +224,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		shutdownComponent(this.resourceControllerService,failures);
 		shutdownComponent(this.templateManagementService,failures);
 		shutdownComponent(this.writeSessionService,failures);
-		shutdownComponent(this.persistencyManager,failures);
+		shutdownComponent(this.resourceFactory,failures);
 		if(!failures.isEmpty()) {
 			throw new ApplicationEngineTerminationException("Could not shutdown engine components");
 		}

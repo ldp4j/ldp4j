@@ -31,7 +31,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.ldp4j.application.engine.spi.PersistencyManager;
+import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.spi.Service;
 import org.ldp4j.application.engine.spi.ServiceBuilder;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -45,7 +45,7 @@ public final class TemplateManagementService implements Service {
 		}
 
 		public TemplateManagementService build() {
-			return new TemplateManagementService(persistencyManager());
+			return new TemplateManagementService(resourceFactory());
 		}
 
 	}
@@ -114,12 +114,12 @@ public final class TemplateManagementService implements Service {
 
 	}
 
-	private final PersistencyManager persistencyManager;
+	private final ResourceFactory resourceFactory;
 
 	private final AtomicReference<ServiceState> state;
 
-	private TemplateManagementService(PersistencyManager persistencyManager) {
-		this.persistencyManager=persistencyManager;
+	private TemplateManagementService(ResourceFactory resourceFactory) {
+		this.resourceFactory=resourceFactory;
 		this.state=new AtomicReference<ServiceState>(new NewServiceState());
 	}
 
@@ -127,7 +127,7 @@ public final class TemplateManagementService implements Service {
 		if(!this.state.compareAndSet(this.state.get(),new ConfiguredServiceState(manager))) {
 			throw new IllegalStateException("Template management service is already configured");
 		}
-		this.persistencyManager.useTemplates(manager.templateLibrary());
+		this.resourceFactory.useTemplates(manager.templateLibrary());
 	}
 
 	private ServiceState getState() {
