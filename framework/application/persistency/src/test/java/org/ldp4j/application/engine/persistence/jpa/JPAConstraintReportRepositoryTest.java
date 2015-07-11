@@ -38,10 +38,12 @@ import org.ldp4j.application.engine.constraints.ConstraintReport;
 import org.ldp4j.application.engine.constraints.ConstraintReportId;
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
 import org.ldp4j.application.engine.context.HttpRequest;
+import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
 import org.ldp4j.application.engine.resource.Attachment;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceVisitor;
+import org.ldp4j.application.sdk.HttpRequestBuilder;
 
 public class JPAConstraintReportRepositoryTest extends AbstractJPARepositoryTest<ConstraintReportRepository> {
 
@@ -50,7 +52,15 @@ public class JPAConstraintReportRepositoryTest extends AbstractJPARepositoryTest
 		Name<String> name = NamingScheme.getDefault().name("resource");
 		ResourceId resourceId = ResourceId.createId(name,"template");
 		Date date = new Date();
-		final ConstraintReport ep1 = new JPAConstraintReport(ConstraintReportId.create(resourceId, "failure1"), new Date(date.getTime()-3600000),null,null);
+		final HttpRequest req1=
+			HttpRequestBuilder.
+				newInstance().
+					withMethod(HttpMethod.POST).
+					withHost("www.example.org").
+					withAbsolutePath("service/resource/").
+					withEntity("body").
+					build();
+		final ConstraintReport ep1 = new JPAConstraintReport(ConstraintReportId.create(resourceId, "failure1"), new Date(date.getTime()-3600000),req1,null);
 		final ConstraintReport ep2 = new JPAConstraintReport(ConstraintReportId.create(resourceId, "failure2"), date,null,null);
 		withinTransaction(
 			new Task<ConstraintReportRepository>() {

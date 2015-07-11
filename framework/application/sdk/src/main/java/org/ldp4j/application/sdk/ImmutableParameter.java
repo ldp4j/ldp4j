@@ -20,73 +20,40 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-engine:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-engine-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-sdk:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-sdk-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.context;
+package org.ldp4j.application.sdk;
 
-import java.io.Serializable;
-import java.util.Date;
-import java.util.List;
+import org.ldp4j.application.engine.context.HttpRequest.Header.Element.Parameter;
 
-public interface HttpRequest extends Serializable {
+final class ImmutableParameter implements Parameter {
 
-	enum ProtocolVersion {
-		HTTP_1_0,
-		HTTP_1_1
+	private static final long serialVersionUID = -7511803578477277362L;
+
+	private final String name;
+	private final String value;
+
+	ImmutableParameter(String name, String value) {
+		this.name = name;
+		this.value = value;
 	}
 
-	enum HttpMethod {
-		HEAD,
-		OPTIONS,
-		GET,
-		PUT,
-		POST,
-		DELETE,
-		PATCH
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String name() {
+		return this.name;
 	}
 
-	interface Header extends Serializable {
-
-		interface Element extends Serializable {
-
-			interface Parameter extends Serializable {
-
-				String name();
-
-				String value();
-
-			}
-
-			String name();
-
-			List<Parameter> parameters();
-
-		}
-
-		String name();
-
-		String rawValue();
-
-		List<Element> elements();
-
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String value() {
+		return this.value;
 	}
-
-	HttpMethod method();
-
-	String absolutePath();
-
-	String host();
-
-	ProtocolVersion version();
-
-	List<Header> headers();
-
-	String body();
-
-	Date serverDate();
-
-	Date clientDate();
 
 }

@@ -20,123 +20,117 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-server-core-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-sdk:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-sdk-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.application.sdk;
 
-import java.util.Collections;
 import java.util.Date;
 import java.util.List;
-import java.util.Map.Entry;
-
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.UriInfo;
 
 import org.ldp4j.application.engine.context.HttpRequest;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Lists;
 
-final class DefaultHttpRequest implements HttpRequest {
+final class ImmutableHttpRequest implements HttpRequest {
 
-	private static final class HeaderImpl implements Header {
+	private static final long serialVersionUID = 8395472376889237517L;
 
-		private final String rawValue;
-		private final String name;
-
-		private HeaderImpl(String name, String rawValue) {
-			this.name = name;
-			this.rawValue = rawValue;
-		}
-
-		@Override
-		public String name() {
-			return this.name;
-		}
-
-		@Override
-		public String rawValue() {
-			return this.rawValue;
-		}
-
-		@Override
-		public List<Element> elements() {
-			return Collections.emptyList();
-		}
-
-		@Override
-		public String toString() {
-			return
-				MoreObjects.
-					toStringHelper(Header.class).
-						add("name",this.name).
-						add("rawValue",this.rawValue).
-						toString();
-		}
-
-	}
-
-	private final String entity;
-	private final List<Header> headers;
 	private final HttpMethod method;
-	private final String absolutePath;
+	private final ProtocolVersion protocolVersion;
 	private final String host;
+	private final String absolutePath;
+	private final String entity;
+	private final ImmutableList<Header> headers;
 	private final Date serverDate;
 	private final Date clientDate;
 
-	private DefaultHttpRequest(HttpMethod method, String absolutePath, String host, List<Header> headers, String entity, Date serverDate, Date clientaDate) {
+	ImmutableHttpRequest(HttpMethod method, ProtocolVersion protocolVersion, String absolutePath, String host, List<ImmutableHeader> headers, String entity, Date serverDate, Date clientaDate) {
+		this.protocolVersion = protocolVersion;
 		this.method=method;
 		this.absolutePath = absolutePath;
 		this.host = host;
-		this.headers = headers;
+		this.headers = ImmutableList.<Header>copyOf(headers);
 		this.entity = entity;
 		this.serverDate = serverDate;
 		this.clientDate = clientaDate;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public HttpMethod method() {
 		return this.method;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String absolutePath() {
 		return this.absolutePath;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String host() {
 		return this.host;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ProtocolVersion version() {
-		return ProtocolVersion.HTTP_1_1;
+		return this.protocolVersion;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public List<Header> headers() {
+	public ImmutableList<Header> headers() {
 		return this.headers;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String body() {
 		return this.entity;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Date serverDate() {
-		return this.serverDate;
+		if(this.serverDate==null) {
+			return null;
+		}
+		return new Date(this.serverDate.getTime());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Date clientDate() {
-		return this.clientDate;
+		if(this.clientDate==null) {
+			return null;
+		}
+		return new Date(this.clientDate.getTime());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return
@@ -146,28 +140,12 @@ final class DefaultHttpRequest implements HttpRequest {
 					add("method",this.method).
 					add("absolutePath",this.absolutePath).
 					add("host",this.host).
-					add("version",version()).
+					add("version",this.protocolVersion).
 					add("serverDate",this.serverDate).
 					add("clientDate",this.clientDate).
 					add("headers",this.headers).
 					add("entity",this.entity).
 					toString();
-	}
-
-	static final HttpRequest create(HttpMethod method, UriInfo uriInfo, HttpHeaders headers, String entity, Date serverDate, Date clientDate) {
-		return new DefaultHttpRequest(method,uriInfo.getAbsolutePath().getPath(),uriInfo.getAbsolutePath().getAuthority(),transformHeaders(headers),entity,serverDate,clientDate);
-	}
-
-	private static List<Header> transformHeaders(HttpHeaders headers) {
-		List<Header> result=Lists.newArrayList();
-		for(Entry<String, List<String>> entry:headers.getRequestHeaders().entrySet()) {
-			for(String rawValue:entry.getValue()) {
-				if(rawValue!=null) {
-					result.add(new HeaderImpl(entry.getKey(), rawValue));
-				}
-			}
-		}
-		return ImmutableList.copyOf(result);
 	}
 
 }

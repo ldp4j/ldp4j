@@ -68,8 +68,6 @@ import com.google.common.collect.Lists;
 
 final class OperationContextImpl implements OperationContext {
 
-	private static final Logger LOGGER=LoggerFactory.getLogger(OperationContextImpl.class);
-
 	private final class OperationContextResourceResolver implements ResourceResolver {
 
 		@Override
@@ -99,6 +97,7 @@ final class OperationContextImpl implements OperationContext {
 
 	}
 
+	private static final Logger LOGGER=LoggerFactory.getLogger(OperationContextImpl.class);
 	private final ApplicationContext applicationContext;
 	private final String             endpointPath;
 	private final HttpMethod         method;
@@ -423,15 +422,13 @@ final class OperationContextImpl implements OperationContext {
 	public void startOperation() {
 		this.applicationContextOperation=
 			this.applicationContext.
-					createOperation(
-						DefaultHttpRequest.
-							create(
-								this.method,
-								this.uriInfo,
-								this.headers,
-								this.entity,
-								new Date(),
-								this.headers.getDate()));
+				createOperation(
+					HttpRequestFactory.
+						create(
+							this.method,
+							this.uriInfo,
+							this.headers,
+							this.entity));
 	}
 
 	@Override
