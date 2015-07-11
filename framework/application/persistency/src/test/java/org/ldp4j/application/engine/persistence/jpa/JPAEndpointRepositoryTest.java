@@ -39,7 +39,7 @@ import org.ldp4j.application.engine.resource.ResourceId;
 public class JPAEndpointRepositoryTest extends AbstractJPARepositoryTest<EndpointRepository> {
 
 	@Test
-	public void testAdd() throws Exception {
+	public void testRepository() throws Exception {
 		Name<String> name = NamingScheme.getDefault().name("resource");
 		ResourceId resourceId = ResourceId.createId(name,"template");
 		EntityTag entityTag = new EntityTag("Entity tag");

@@ -26,56 +26,61 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
-import java.util.Date;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.ldp4j.application.data.constraints.Constraints;
-import org.ldp4j.application.engine.constraints.ConstraintReport;
-import org.ldp4j.application.engine.constraints.ConstraintReportId;
-import org.ldp4j.application.engine.context.HttpRequest;
+import java.io.Serializable;
+
+import org.ldp4j.application.engine.resource.ResourceId;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Objects;
 
-final class JPAConstraintReport implements ConstraintReport {
+final class AttachmentId implements Serializable {
+
+	private static final long serialVersionUID = 520429562135143933L;
 
 	/**
-	 * Persistent key required by JPA
+	 * Not final to enable its usage in JPA
 	 */
-	private long primaryKey;
+	private String id;
 
-	private ConstraintReportId id;
-	private Date date;
-	private HttpRequest request;
-	private Constraints constraints;
+	/**
+	 * Not final to enable its usage in JPA
+	 */
+	private ResourceId resourceId;
 
-	private JPAConstraintReport() {
+	private AttachmentId() {
+		// JPA Friendly
 	}
 
-	JPAConstraintReport(ConstraintReportId id, Date date, HttpRequest request, Constraints constraints) {
-		this();
-		this.id=id;
-		this.date = date;
-		this.request = request;
-		this.constraints = constraints;
+	private AttachmentId(String id, ResourceId resourceId) {
+		this.resourceId = resourceId;
+		this.id = id;
 	}
 
-	@Override
-	public ConstraintReportId id() {
-		return this.id;
+	ResourceId resourceId() {
+		return resourceId;
 	}
 
-	@Override
-	public Date getDate() {
-		return this.date;
+	String id() {
+		return id;
 	}
 
 	@Override
-	public HttpRequest getRequest() {
-		return this.request;
+	public int hashCode() {
+		return Objects.hashCode(this.id,this.resourceId);
 	}
 
 	@Override
-	public Constraints getConstraints() {
-		return this.constraints;
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj!=null && obj.getClass()==this.getClass()) {
+			AttachmentId that=(AttachmentId)obj;
+			result=
+				Objects.equal(this.id,that.id) &&
+				Objects.equal(this.resourceId,that.resourceId);
+		}
+		return result;
 	}
 
 	@Override
@@ -83,13 +88,15 @@ final class JPAConstraintReport implements ConstraintReport {
 		return
 			MoreObjects.
 				toStringHelper(getClass()).
-					omitNullValues().
-					add("primaryKey",this.primaryKey).
-					add("id",this.id).
-					add("date",this.date.getTime()).
-					add("request",this.request).
-					add("constraints",this.constraints).
+					add("id", this.id).
+					add("resourceId", this.resourceId).
 					toString();
+	}
+
+	static AttachmentId createId(String attachmentId, ResourceId resourceId) {
+		checkNotNull(attachmentId,"Template identifier cannot be null");
+		checkNotNull(resourceId,"Resource identifier cannot be null");
+		return new AttachmentId(attachmentId,resourceId);
 	}
 
 }

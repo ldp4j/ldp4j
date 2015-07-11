@@ -26,23 +26,17 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
-import java.net.URI;
 import java.util.Date;
-import java.util.Set;
 
 import org.junit.Test;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.engine.constraints.ConstraintReport;
 import org.ldp4j.application.engine.constraints.ConstraintReportId;
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
 import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
-import org.ldp4j.application.engine.resource.Attachment;
-import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
-import org.ldp4j.application.engine.resource.ResourceVisitor;
 import org.ldp4j.application.sdk.HttpRequestBuilder;
 
 public class JPAConstraintReportRepositoryTest extends AbstractJPARepositoryTest<ConstraintReportRepository> {
@@ -88,97 +82,7 @@ public class JPAConstraintReportRepositoryTest extends AbstractJPARepositoryTest
 			new Task<ConstraintReportRepository>() {
 				@Override
 				public void execute(ConstraintReportRepository sut) {
-					sut.removeByResource(new Resource() {
-
-						@Override
-						public ResourceId id() {
-							return ep1.id().resourceId();
-						}
-
-						@Override
-						public void setIndirectId(URI indirectId) {
-							// TODO Auto-generated method stub
-
-						}
-
-						@Override
-						public URI indirectId() {
-							// TODO Auto-generated method stub
-							return null;
-						}
-
-						@Override
-						public boolean isRoot() {
-							// TODO Auto-generated method stub
-							return false;
-						}
-
-						@Override
-						public ResourceId parentId() {
-							// TODO Auto-generated method stub
-							return null;
-						}
-
-						@Override
-						public Attachment findAttachment(ResourceId resourceId) {
-							// TODO Auto-generated method stub
-							return null;
-						}
-
-						@Override
-						public Resource attach(String attachmentId,
-								ResourceId resourceId) {
-							// TODO Auto-generated method stub
-							return null;
-						}
-
-						@Override
-						public <T extends Resource> T attach(
-								String attachmentId, ResourceId resourceId,
-								Class<? extends T> clazz) {
-							// TODO Auto-generated method stub
-							return null;
-						}
-
-						@Override
-						public boolean detach(Attachment attachment) {
-							// TODO Auto-generated method stub
-							return false;
-						}
-
-						@Override
-						public Set<? extends Attachment> attachments() {
-							// TODO Auto-generated method stub
-							return null;
-						}
-
-						@Override
-						public void accept(ResourceVisitor visitor) {
-							// TODO Auto-generated method stub
-
-						}
-
-						@Override
-						public ConstraintReport addConstraintReport(
-								Constraints constraints, Date date,
-								HttpRequest request) {
-							// TODO Auto-generated method stub
-							return null;
-						}
-
-						@Override
-						public Set<ConstraintReportId> constraintReports() {
-							// TODO Auto-generated method stub
-							return null;
-						}
-
-						@Override
-						public void removeFailure(ConstraintReport report) {
-							// TODO Auto-generated method stub
-
-						}
-
-					});
+					sut.removeByResource(new JPAResource(ep1.id().resourceId()));
 					ConstraintReport result1 = sut.constraintReportOfId(ep1.id());
 					System.out.println(result1);
 					ConstraintReport result2 = sut.constraintReportOfId(ep2.id());

@@ -26,69 +26,80 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
-import java.util.Date;
-
-import org.ldp4j.application.data.constraints.Constraints;
-import org.ldp4j.application.engine.constraints.ConstraintReport;
-import org.ldp4j.application.engine.constraints.ConstraintReportId;
-import org.ldp4j.application.engine.context.HttpRequest;
+import org.ldp4j.application.engine.resource.Member;
+import org.ldp4j.application.engine.resource.ResourceId;
 
 import com.google.common.base.MoreObjects;
 
-final class JPAConstraintReport implements ConstraintReport {
+final class JPAMember implements Member {
 
 	/**
 	 * Persistent key required by JPA
 	 */
 	private long primaryKey;
 
-	private ConstraintReportId id;
-	private Date date;
-	private HttpRequest request;
-	private Constraints constraints;
+	/**
+	 * Not final to enable its usage in JPA
+	 */
+	private ResourceId memberId;
 
-	private JPAConstraintReport() {
+	/**
+	 * Not final to enable its usage in JPA
+	 */
+	private ResourceId containerId;
+
+	/**
+	 * Not final to enable its usage in JPA
+	 */
+	private long number;
+
+	private JPAMember() {
+		// JPA Friendly
 	}
 
-	JPAConstraintReport(ConstraintReportId id, Date date, HttpRequest request, Constraints constraints) {
+	JPAMember(ResourceId containerId, ResourceId memberId, long number) {
 		this();
-		this.id=id;
-		this.date = date;
-		this.request = request;
-		this.constraints = constraints;
+		this.memberId = memberId;
+		this.containerId = containerId;
+		this.number = number;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public ConstraintReportId id() {
-		return this.id;
+	public long number() {
+		return this.number;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public Date getDate() {
-		return this.date;
+	public ResourceId containerId() {
+		return this.containerId;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public HttpRequest getRequest() {
-		return this.request;
+	public ResourceId memberId() {
+		return this.memberId;
 	}
 
-	@Override
-	public Constraints getConstraints() {
-		return this.constraints;
-	}
-
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return
 			MoreObjects.
 				toStringHelper(getClass()).
-					omitNullValues().
 					add("primaryKey",this.primaryKey).
-					add("id",this.id).
-					add("date",this.date.getTime()).
-					add("request",this.request).
-					add("constraints",this.constraints).
+					add("number",this.number).
+					add("containerId",this.containerId).
+					add("memberId", this.memberId).
 					toString();
 	}
 

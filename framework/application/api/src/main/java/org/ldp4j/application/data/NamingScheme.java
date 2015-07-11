@@ -45,6 +45,7 @@ public final class NamingScheme {
 		QNAME(QName.class),
 		STRING(String.class),
 		NUMBER(Number.class),
+		SERIALIZABLE(Serializable.class),
 		;
 
 		private final Class<?> clazz;
@@ -223,6 +224,10 @@ public final class NamingScheme {
 	}
 
 	public <T extends Number> Name<T> name(T id) {
+		return createName(id);
+	}
+
+	public <T extends Serializable> Name<T> name(T id) {
 		return createName(id);
 	}
 

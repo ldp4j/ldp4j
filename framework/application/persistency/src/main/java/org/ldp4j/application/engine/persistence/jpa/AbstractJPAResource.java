@@ -26,70 +26,36 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
-import java.util.Date;
-
-import org.ldp4j.application.data.constraints.Constraints;
-import org.ldp4j.application.engine.constraints.ConstraintReport;
-import org.ldp4j.application.engine.constraints.ConstraintReportId;
-import org.ldp4j.application.engine.context.HttpRequest;
+import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.engine.template.ResourceTemplate;
+import org.ldp4j.application.engine.template.TemplateLibrary;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.MoreObjects.ToStringHelper;
+import static com.google.common.base.Preconditions.*;
 
-final class JPAConstraintReport implements ConstraintReport {
+abstract class AbstractJPAResource {
 
-	/**
-	 * Persistent key required by JPA
-	 */
-	private long primaryKey;
+	private TemplateLibrary templateLibrary;
 
-	private ConstraintReportId id;
-	private Date date;
-	private HttpRequest request;
-	private Constraints constraints;
-
-	private JPAConstraintReport() {
+	final void setTemplateLibrary(TemplateLibrary templateLibrary) {
+		this.templateLibrary = templateLibrary;
 	}
 
-	JPAConstraintReport(ConstraintReportId id, Date date, HttpRequest request, Constraints constraints) {
-		this();
-		this.id=id;
-		this.date = date;
-		this.request = request;
-		this.constraints = constraints;
+	final TemplateLibrary getTemplateLibrary() {
+		checkState(this.templateLibrary!=null,"Template library has not been initialized yet");
+		return this.templateLibrary;
 	}
 
-	@Override
-	public ConstraintReportId id() {
-		return this.id;
+	final ResourceTemplate getTemplate(ResourceId resourceId) {
+		return getTemplateLibrary().findById(resourceId.templateId());
 	}
 
-	@Override
-	public Date getDate() {
-		return this.date;
-	}
-
-	@Override
-	public HttpRequest getRequest() {
-		return this.request;
-	}
-
-	@Override
-	public Constraints getConstraints() {
-		return this.constraints;
-	}
-
-	@Override
-	public String toString() {
+	protected ToStringHelper stringHelper() {
 		return
 			MoreObjects.
 				toStringHelper(getClass()).
-					omitNullValues().
-					add("primaryKey",this.primaryKey).
-					add("id",this.id).
-					add("date",this.date.getTime()).
-					add("request",this.request).
-					add("constraints",this.constraints).
-					toString();
+					omitNullValues();
 	}
 
 }

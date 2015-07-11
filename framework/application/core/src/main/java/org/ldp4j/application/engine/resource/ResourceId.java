@@ -28,13 +28,17 @@ package org.ldp4j.application.engine.resource;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.Serializable;
+
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Objects;
 
-public final class ResourceId {
+public final class ResourceId implements Serializable {
+
+	private static final long serialVersionUID = -8083258917826432416L;
 
 	/**
 	 * Not final to enable its usage in JPA

@@ -70,11 +70,16 @@ public final class JPARuntimeDelegate extends RuntimeDelegate {
 
 	private final String id;
 
+	private final JPAResourceFactory resourceFactory;
+
+	private JPAResourceRepository resourceRepository;
 
 	public JPARuntimeDelegate() {
 		this.manager=new ThreadLocal<EntityManager>();
 		this.provider = new JPAEntityManagerProvider();
 		this.id = String.format("%08X",hashCode());
+		this.resourceRepository = new JPAResourceRepository(this.provider);
+		this.resourceFactory = new JPAResourceFactory(this.resourceRepository);
 	}
 
 	@Override
@@ -91,7 +96,7 @@ public final class JPARuntimeDelegate extends RuntimeDelegate {
 
 	@Override
 	public ResourceFactory getResourceFactory() {
-		throw new UnsupportedOperationException("Method not implemented yet");
+		return this.resourceFactory;
 	}
 
 	@Override
@@ -101,7 +106,7 @@ public final class JPARuntimeDelegate extends RuntimeDelegate {
 
 	@Override
 	public ResourceRepository getResourceRepository() {
-		return new JPAResourceRepository(this.provider);
+		return this.resourceRepository;
 	}
 
 	@Override

@@ -73,17 +73,120 @@
 			<orm:embedded name="id"/>
 		</orm:attributes>
 	</orm:entity>
+	<orm:entity class="org.ldp4j.application.engine.persistence.jpa.JPAResource">
+		<orm:inheritance strategy="SINGLE_TABLE"/>
+		<orm:discriminator-value>resource</orm:discriminator-value>
+		<orm:discriminator-column name="type"/>
+		<orm:attributes>
+			<orm:id name="primaryKey">
+				<orm:generated-value/>
+				<orm:sequence-generator name="resourceKeyGenerator" sequence-name="resourceSeq"/>
+			</orm:id>
+			<orm:basic name="indirectId"/>
+			<orm:element-collection name="attachments" fetch="EAGER"/>
+			<orm:element-collection name="failures" fetch="EAGER"/>
+			<orm:embedded name="id">
+				<orm:attribute-override name="name">
+					<orm:column name="id_name" />
+				</orm:attribute-override>
+				<orm:attribute-override name="templateId">
+					<orm:column name="id_templateId"/>
+				</orm:attribute-override>
+			</orm:embedded>
+			<orm:embedded name="parentId">
+				<orm:attribute-override name="name">
+					<orm:column name="parentId_name"/>
+				</orm:attribute-override>
+				<orm:attribute-override name="templateId">
+					<orm:column name="parentId_templateId"/>
+				</orm:attribute-override>
+			</orm:embedded>
+			<orm:transient name="attachmentCollection"/>
+			<orm:transient name="versionGenerator"/>
+		</orm:attributes>
+	</orm:entity>
+	<orm:entity class="org.ldp4j.application.engine.persistence.jpa.JPAAttachment">
+		<orm:attributes>
+			<orm:id name="primaryKey">
+				<orm:generated-value/>
+				<orm:sequence-generator name="attachmentKeyGenerator" sequence-name="attachmentSeq"/>
+			</orm:id>
+			<orm:basic name="version"/>
+			<orm:embedded name="attachmentId"/>
+		</orm:attributes>
+	</orm:entity>
+	<orm:entity class="org.ldp4j.application.engine.persistence.jpa.JPAContainer">
+		<orm:discriminator-value>container</orm:discriminator-value>
+		<orm:attributes>
+			<orm:basic name="memberCounter"/>
+			<orm:one-to-many name="slugs">
+				<orm:map-key name="preferredPath"/>
+				<orm:cascade>
+					<orm:cascade-all/>
+				</orm:cascade>
+			</orm:one-to-many>
+			<orm:one-to-many name="members">
+				<orm:map-key name="memberId"/>
+				<orm:cascade>
+					<orm:cascade-all/>
+				</orm:cascade>
+			</orm:one-to-many>
+		</orm:attributes>
+	</orm:entity>
+	<orm:entity class="org.ldp4j.application.engine.persistence.jpa.JPAMember">
+		<orm:attributes>
+			<orm:id name="primaryKey">
+				<orm:generated-value/>
+				<orm:sequence-generator name="memberPrimaryKeyGenerator" sequence-name="memberSeq"/>
+			</orm:id>
+			<orm:basic name="number"/>
+			<orm:embedded name="memberId">
+				<orm:attribute-override name="name">
+					<orm:column name="memberId_name"/>
+				</orm:attribute-override>
+				<orm:attribute-override name="templateId">
+					<orm:column name="memberId_templateId"/>
+				</orm:attribute-override>
+			</orm:embedded>
+			<orm:embedded name="containerId">
+				<orm:attribute-override name="name">
+					<orm:column name="containerId_name"/>
+				</orm:attribute-override>
+				<orm:attribute-override name="templateId">
+					<orm:column name="containerId_templateId"/>
+				</orm:attribute-override>
+			</orm:embedded>
+		</orm:attributes>
+	</orm:entity>
+	<orm:entity class="org.ldp4j.application.engine.persistence.jpa.JPASlug">
+		<orm:attributes>
+			<orm:id name="primaryKey">
+				<orm:generated-value/>
+				<orm:sequence-generator name="slugPrimaryKeyGenerator" sequence-name="slugSeq"/>
+			</orm:id>
+			<orm:basic name="preferredPath"/>
+			<orm:basic name="version"/>
+			<orm:embedded name="containerId"/>
+		</orm:attributes>
+	</orm:entity>
 	<orm:embeddable class="org.ldp4j.application.engine.resource.ResourceId">
 		<orm:attributes>
-			<orm:basic name="templateId"/>
 			<orm:basic name="name">
 				<orm:lob/>
+				<!--  orm:convert converter="org.ldp4j.application.engine.persistence.jpa.NameUtils"/ -->
 			</orm:basic>
+			<orm:basic name="templateId"/>
 		</orm:attributes>
 	</orm:embeddable>
 	<orm:embeddable class="org.ldp4j.application.engine.constraints.ConstraintReportId">
 		<orm:attributes>
 			<orm:basic name="failureId"/>
+			<orm:embedded name="resourceId"/>
+		</orm:attributes>
+	</orm:embeddable>
+	<orm:embeddable class="org.ldp4j.application.engine.persistence.jpa.AttachmentId">
+		<orm:attributes>
+			<orm:basic name="id"/>
 			<orm:embedded name="resourceId"/>
 		</orm:attributes>
 	</orm:embeddable>

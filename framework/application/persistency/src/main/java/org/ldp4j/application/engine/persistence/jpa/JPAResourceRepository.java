@@ -26,19 +26,30 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
+import java.util.List;
+
 import javax.persistence.EntityManager;
+import javax.persistence.criteria.CriteriaBuilder;
+import javax.persistence.criteria.CriteriaQuery;
+import javax.persistence.criteria.Root;
 
 import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceRepository;
+import org.ldp4j.application.engine.template.TemplateLibrary;
 
 final class JPAResourceRepository implements ResourceRepository {
 
 	private final EntityManagerProvider provider;
+	private TemplateLibrary templateLibrary;
 
 	JPAResourceRepository(EntityManagerProvider provider) {
 		this.provider = provider;
+	}
+
+	void setTemplateLibrary(TemplateLibrary templateLibrary) {
+		this.templateLibrary = templateLibrary;
 	}
 
 	private EntityManager entityManager() {
@@ -47,8 +58,26 @@ final class JPAResourceRepository implements ResourceRepository {
 
 	@Override
 	public <T extends Resource> T resourceById(ResourceId id, Class<? extends T> expectedResourceClass) {
-		Resource found = entityManager().find(Resource.class,id);
+		EntityManager em = entityManager();
+
+		CriteriaBuilder cb=em.getCriteriaBuilder();
+
+		CriteriaQuery<JPAResource> query =
+				cb.createQuery(JPAResource.class);
+
+		Root<JPAResource> descriptor = query.from(JPAResource.class);
+		query.
+			select(descriptor).
+			where(cb.equal(descriptor.get("id"),id)).
+			distinct(true);
+		List<JPAResource> results = em.createQuery(query).getResultList();
+		if(results.isEmpty()) {
+			return null;
+		}
+		JPAResource found = results.get(0);
 		if(expectedResourceClass.isInstance(found)) {
+			found.setTemplateLibrary(this.templateLibrary);
+			found.init();
 			return expectedResourceClass.cast(found);
 		}
 		return null;
@@ -56,7 +85,7 @@ final class JPAResourceRepository implements ResourceRepository {
 
 	@Override
 	public Resource resourceOfId(ResourceId id) {
-		Resource found = entityManager().find(Resource.class,id);
+		Resource found = resourceById(id, Resource.class);
 		if(found instanceof Container) {
 			return null;
 		}

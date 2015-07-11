@@ -26,11 +26,25 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
+import java.util.Arrays;
+
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
+import org.junit.BeforeClass;
+import org.ldp4j.application.data.Name;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
+import org.ldp4j.application.engine.resource.Container;
+import org.ldp4j.application.engine.resource.Resource;
+import org.ldp4j.application.engine.service.ServiceRegistry;
+import org.ldp4j.application.engine.spi.RuntimeDelegate;
+import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.engine.transaction.Transaction;
 import org.ldp4j.application.engine.transaction.TransactionManager;
+import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.example.PersonHandler;
+
+import com.google.common.collect.Lists;
 
 public abstract class AbstractJPARepositoryTest<T> {
 
@@ -44,9 +58,27 @@ public abstract class AbstractJPARepositoryTest<T> {
 	private TransactionManager txManager;
 	private JPARuntimeDelegate delegate;
 
+	@BeforeClass
+	public static void setUpBefore() throws Exception {
+		ServiceRegistry.setInstance(null);
+		RuntimeDelegate.setInstance(new JPARuntimeDelegate());
+		PersonHandler personHandler = new PersonHandler();
+		ServiceRegistry.
+			getInstance().
+				getService(TemplateManagementService.class).
+					configure(
+						Lists.<Class<?>>newArrayList(),
+						Arrays.<ResourceHandler>asList(personHandler));
+	}
+
+	@AfterClass
+	public static void tearDownAfter() throws Exception {
+		RuntimeDelegate.setInstance(null);
+	}
+
 	@Before
 	public void setUp() throws LifecycleException {
-		this.delegate = new JPARuntimeDelegate();
+		this.delegate = (JPARuntimeDelegate)RuntimeDelegate.getInstance();
 		this.delegate.init();
 		this.txManager=delegate.getTransactionManager();
 		this.sut = getSubjectUnderTest(this.delegate);
@@ -56,6 +88,16 @@ public abstract class AbstractJPARepositoryTest<T> {
 	public void tearDown() throws LifecycleException {
 		this.delegate.shutdown();
 	}
+
+	protected final Container rootContainer(Name<?> name, String templateId) {
+		return (Container)this.delegate.getResourceFactory().createResource(ServiceRegistry.getInstance().getService(TemplateManagementService.class).templateOfId(templateId), name);
+	}
+
+	protected final Resource rootResource(Name<?> name, String templateId) {
+		return this.delegate.getResourceFactory().createResource(ServiceRegistry.getInstance().getService(TemplateManagementService.class).templateOfId(templateId), name);
+	}
+
+
 
 	protected final void clear() {
 		this.delegate.clear();

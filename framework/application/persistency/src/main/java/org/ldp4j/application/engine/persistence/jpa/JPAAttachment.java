@@ -26,56 +26,72 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
-import java.util.Date;
+import java.util.Objects;
 
-import org.ldp4j.application.data.constraints.Constraints;
-import org.ldp4j.application.engine.constraints.ConstraintReport;
-import org.ldp4j.application.engine.constraints.ConstraintReportId;
-import org.ldp4j.application.engine.context.HttpRequest;
+import org.ldp4j.application.engine.resource.Attachment;
+import org.ldp4j.application.engine.resource.ResourceId;
 
 import com.google.common.base.MoreObjects;
 
-final class JPAConstraintReport implements ConstraintReport {
+final class JPAAttachment implements Attachment {
 
 	/**
 	 * Persistent key required by JPA
 	 */
 	private long primaryKey;
 
-	private ConstraintReportId id;
-	private Date date;
-	private HttpRequest request;
-	private Constraints constraints;
+	/**
+	 * Not final to enable its usage in JPA
+	 */
+	private AttachmentId attachmentId;
 
-	private JPAConstraintReport() {
+	/**
+	 * Not final to enable its usage in JPA
+	 */
+	private long version;
+
+	JPAAttachment() {
+		// JPA-friendly
 	}
 
-	JPAConstraintReport(ConstraintReportId id, Date date, HttpRequest request, Constraints constraints) {
+	JPAAttachment(AttachmentId attachmentId, long version) {
 		this();
-		this.id=id;
-		this.date = date;
-		this.request = request;
-		this.constraints = constraints;
+		this.attachmentId = attachmentId;
+		this.version = version;
+	}
+
+	AttachmentId attachmentId() {
+		return this.attachmentId;
 	}
 
 	@Override
-	public ConstraintReportId id() {
-		return this.id;
+	public String id() {
+		return this.attachmentId.id();
 	}
 
 	@Override
-	public Date getDate() {
-		return this.date;
+	public ResourceId resourceId() {
+		return this.attachmentId.resourceId();
 	}
 
 	@Override
-	public HttpRequest getRequest() {
-		return this.request;
+	public long version() {
+		return this.version;
 	}
 
 	@Override
-	public Constraints getConstraints() {
-		return this.constraints;
+	public int hashCode() {
+		return Objects.hash(this.primaryKey);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj instanceof JPAAttachment) {
+			JPAAttachment that=(JPAAttachment)obj;
+			result=this.primaryKey==that.primaryKey;
+		}
+		return result;
 	}
 
 	@Override
@@ -85,10 +101,9 @@ final class JPAConstraintReport implements ConstraintReport {
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("primaryKey",this.primaryKey).
-					add("id",this.id).
-					add("date",this.date.getTime()).
-					add("request",this.request).
-					add("constraints",this.constraints).
+					add("id", id()).
+					add("resourceId", resourceId()).
+					add("version", this.version).
 					toString();
 	}
 
