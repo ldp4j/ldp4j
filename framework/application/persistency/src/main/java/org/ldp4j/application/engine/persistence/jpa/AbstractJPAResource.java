@@ -40,7 +40,10 @@ abstract class AbstractJPAResource {
 
 	final void setTemplateLibrary(TemplateLibrary templateLibrary) {
 		this.templateLibrary = templateLibrary;
+		init();
 	}
+
+	protected abstract void init();
 
 	final TemplateLibrary getTemplateLibrary() {
 		checkState(this.templateLibrary!=null,"Template library has not been initialized yet");

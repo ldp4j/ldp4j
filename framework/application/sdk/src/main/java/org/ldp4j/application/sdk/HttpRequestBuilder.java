@@ -53,6 +53,14 @@ public final class HttpRequestBuilder {
 		this.headers=Lists.newArrayList();
 	}
 
+	private Date copy(Date date) {
+		Date tmp=date;
+		if(tmp!=null) {
+			tmp=new Date(tmp.getTime());
+		}
+		return tmp;
+	}
+
 	public HttpRequestBuilder withMethod(HttpMethod method) {
 		this.method = method;
 		return this;
@@ -88,12 +96,12 @@ public final class HttpRequestBuilder {
 	}
 
 	public HttpRequestBuilder withServerDate(Date date) {
-		this.serverDate = date;
+		this.serverDate=copy(date);
 		return this;
 	}
 
 	public HttpRequestBuilder withClientDate(Date date) {
-		this.clientDate = date;
+		this.clientDate=copy(date);
 		return this;
 	}
 

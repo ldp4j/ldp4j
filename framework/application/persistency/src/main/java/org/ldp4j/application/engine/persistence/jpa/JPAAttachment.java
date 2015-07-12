@@ -43,35 +43,42 @@ final class JPAAttachment implements Attachment {
 	/**
 	 * Not final to enable its usage in JPA
 	 */
-	private AttachmentId attachmentId;
+	private long version;
 
 	/**
 	 * Not final to enable its usage in JPA
 	 */
-	private long version;
+	private String id;
+
+	private ResourceId resourceId;
 
 	JPAAttachment() {
 		// JPA-friendly
 	}
 
-	JPAAttachment(AttachmentId attachmentId, long version) {
+	JPAAttachment(String id) {
 		this();
-		this.attachmentId = attachmentId;
-		this.version = version;
+		this.id=id;
+		this.version=0;
 	}
 
-	AttachmentId attachmentId() {
-		return this.attachmentId;
+	void bind(ResourceId resourceId) {
+		this.resourceId=resourceId;
+	}
+
+	void unbind() {
+		this.resourceId=null;
+		this.version++;
 	}
 
 	@Override
 	public String id() {
-		return this.attachmentId.id();
+		return this.id;
 	}
 
 	@Override
 	public ResourceId resourceId() {
-		return this.attachmentId.resourceId();
+		return this.resourceId;
 	}
 
 	@Override
@@ -101,8 +108,8 @@ final class JPAAttachment implements Attachment {
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("primaryKey",this.primaryKey).
-					add("id", id()).
-					add("resourceId", resourceId()).
+					add("id", this.id).
+					add("resourceId", this.resourceId).
 					add("version", this.version).
 					toString();
 	}

@@ -34,9 +34,6 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
-import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.data.constraints.Constraints;
@@ -48,6 +45,7 @@ import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceVisitor;
+import org.ldp4j.application.engine.template.AttachedTemplate;
 import org.ldp4j.application.engine.template.BasicContainerTemplate;
 import org.ldp4j.application.engine.template.ContainerTemplate;
 import org.ldp4j.application.engine.template.DirectContainerTemplate;
@@ -64,20 +62,6 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 class JPAResource extends AbstractJPAResource implements Resource {
-
-	private static final class VersionGenerator {
-
-		private final ConcurrentMap<String,AtomicLong> ATTACHMENT_COUNTER=new ConcurrentHashMap<String, AtomicLong>();
-
-		long nextVersion(String id) {
-			AtomicLong counter = ATTACHMENT_COUNTER.putIfAbsent(id, new AtomicLong(-1));
-			if(counter==null) {
-				counter=ATTACHMENT_COUNTER.get(id);
-			}
-			return counter.incrementAndGet();
-		}
-
-	}
 
 	/**
 	 * Persistent key required by JPA
@@ -106,14 +90,11 @@ class JPAResource extends AbstractJPAResource implements Resource {
 
 	private URI indirectId;
 
-	private final VersionGenerator versionGenerator;
-
 	private final AttachmentCollection attachmentCollection;
 
 	protected JPAResource() {
 		this.attachmentCollection=new AttachmentCollection();
 		this.failures=Sets.newLinkedHashSet();
-		this.versionGenerator=new VersionGenerator();
 		this.attachments=Lists.newArrayList();
 	}
 
@@ -127,7 +108,15 @@ class JPAResource extends AbstractJPAResource implements Resource {
 		this(id,null);
 	}
 
-	void init() {
+	protected void init() {
+		ResourceTemplate template = super.getTemplate(this.id);
+		Set<? extends AttachedTemplate> attachedTemplates = template.attachedTemplates();
+		if(!attachedTemplates.isEmpty() && this.attachments.isEmpty()) {
+			for(AttachedTemplate attachedTemplate:attachedTemplates) {
+				JPAAttachment newAttachment = new JPAAttachment(attachedTemplate.id());
+				this.attachments.add(newAttachment);
+			}
+		}
 		this.attachmentCollection.init(this.attachments);
 	}
 
@@ -226,13 +215,12 @@ class JPAResource extends AbstractJPAResource implements Resource {
 		checkNotNull(attachmentId,"Attachment identifier cannot be null");
 		checkNotNull(resourceId,"Attached resource identifier cannot be null");
 		checkNotNull(clazz,"Attached resource class cannot be null");
-		AttachmentId aId = AttachmentId.createId(attachmentId,resourceId);
-		this.attachmentCollection.checkNotAttached(aId);
+		this.attachmentCollection.checkNotAttached(attachmentId,resourceId);
 		ResourceTemplate attachmentTemplate=super.getTemplate(resourceId);
 		checkState(areCompatible(clazz,attachmentTemplate),"Attachment '%s' is not of type '%s' (%s)",attachmentId,clazz.getCanonicalName(),attachmentTemplate.getClass().getCanonicalName());
 		JPAResource newResource=createChild(resourceId,attachmentTemplate);
-		JPAAttachment newAttachment = new JPAAttachment(aId,this.versionGenerator.nextVersion(attachmentId));
-		this.attachmentCollection.addAttachment(newAttachment);
+		JPAAttachment newAttachment=this.attachmentCollection.attachmentById(attachmentId);
+		newAttachment.bind(resourceId);
 		return clazz.cast(newResource);
 	}
 

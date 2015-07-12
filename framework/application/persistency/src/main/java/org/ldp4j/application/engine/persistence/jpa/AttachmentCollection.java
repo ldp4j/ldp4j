@@ -38,26 +38,24 @@ import com.google.common.collect.Maps;
 
 final class AttachmentCollection {
 
-	private final Map<AttachmentId,JPAAttachment> indexById;
+	private final Map<String,JPAAttachment> indexByAttachmentId;
 
-	private final Map<String,AttachmentId> indexByAttachmentId;
-
-	private final Map<ResourceId,AttachmentId> indexByResourceId;
+	private final Map<ResourceId,JPAAttachment> indexByResourceId;
 
 	private List<JPAAttachment> collection;
 
 
 	AttachmentCollection() {
-		this.indexById=Maps.newLinkedHashMap();
 		this.indexByAttachmentId=Maps.newLinkedHashMap();
 		this.indexByResourceId=Maps.newLinkedHashMap();
 	}
 
 	private void indexAttachment(JPAAttachment attachment) {
-		AttachmentId aId = attachment.attachmentId();
-		this.indexById.put(aId,attachment);
-		this.indexByAttachmentId.put(aId.id(),aId);
-		this.indexByResourceId.put(aId.resourceId(),aId);
+		this.indexByAttachmentId.put(attachment.id(),attachment);
+		ResourceId resourceId = attachment.resourceId();
+		if(resourceId!=null) {
+			this.indexByResourceId.put(resourceId,attachment);
+		}
 	}
 
 	void addAttachment(JPAAttachment attachment) {
@@ -66,23 +64,26 @@ final class AttachmentCollection {
 	}
 
 	boolean removeAttachment(Attachment attachment) {
-		boolean removed = this.collection.remove(attachment);
-		if(removed) {
-			AttachmentId remove = this.indexByAttachmentId.remove(attachment.id());
-			this.indexByResourceId.remove(attachment.resourceId());
-			this.indexById.remove(remove);
+		JPAAttachment jpaAttachment = this.indexByAttachmentId.get(attachment.id());
+		if(jpaAttachment!=null) {
+			jpaAttachment.unbind();
 		}
-		return removed;
+		return jpaAttachment!=null;
 	}
 
 	JPAAttachment attachmendByResourceId(ResourceId resourceId) {
-		return this.indexById.get(this.indexByResourceId.get(resourceId));
+		return this.indexByResourceId.get(resourceId);
 	}
 
-	void checkNotAttached(AttachmentId aId) {
-		checkState(!this.indexById.containsKey(aId),"Resource '%s' is already attached as '%s'",aId.resourceId(),aId.id());
-		checkState(!this.indexByAttachmentId.containsKey(aId.id()),"A resource is already attached as '%s'",aId.id());
-		checkState(!this.indexByResourceId.containsKey(aId.resourceId()),"Resource '%s' is already attached",aId.resourceId());
+	JPAAttachment attachmentById(String attachmentId) {
+		return this.indexByAttachmentId.get(attachmentId);
+	}
+
+	void checkNotAttached(String attachmentId, ResourceId resourceId) {
+		checkState(!this.indexByResourceId.containsKey(resourceId),"Resource '%s' is already attached",resourceId);
+		JPAAttachment attachment = this.indexByAttachmentId.get(attachmentId);
+		checkState(attachment!=null,"Unknown attachment '%s'",attachmentId);
+		checkState(attachment.resourceId()==null,"A resource is already attached as '%s'",attachmentId);
 	}
 
 	void init(List<JPAAttachment> resourceAttachments) {
@@ -91,5 +92,6 @@ final class AttachmentCollection {
 			indexAttachment(attachment);
 		}
 	}
+
 
 }

@@ -77,7 +77,6 @@ final class JPAResourceRepository implements ResourceRepository {
 		JPAResource found = results.get(0);
 		if(expectedResourceClass.isInstance(found)) {
 			found.setTemplateLibrary(this.templateLibrary);
-			found.init();
 			return expectedResourceClass.cast(found);
 		}
 		return null;

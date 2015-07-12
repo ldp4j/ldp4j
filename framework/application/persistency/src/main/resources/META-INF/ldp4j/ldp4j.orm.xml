@@ -83,7 +83,11 @@
 				<orm:sequence-generator name="resourceKeyGenerator" sequence-name="resourceSeq"/>
 			</orm:id>
 			<orm:basic name="indirectId"/>
-			<orm:element-collection name="attachments" fetch="EAGER"/>
+			<orm:one-to-many name="attachments" fetch="EAGER">
+				<orm:cascade>
+					<orm:cascade-all/>
+				</orm:cascade>
+			</orm:one-to-many>
 			<orm:element-collection name="failures" fetch="EAGER"/>
 			<orm:embedded name="id">
 				<orm:attribute-override name="name">
@@ -181,12 +185,6 @@
 	<orm:embeddable class="org.ldp4j.application.engine.constraints.ConstraintReportId">
 		<orm:attributes>
 			<orm:basic name="failureId"/>
-			<orm:embedded name="resourceId"/>
-		</orm:attributes>
-	</orm:embeddable>
-	<orm:embeddable class="org.ldp4j.application.engine.persistence.jpa.AttachmentId">
-		<orm:attributes>
-			<orm:basic name="id"/>
 			<orm:embedded name="resourceId"/>
 		</orm:attributes>
 	</orm:embeddable>
