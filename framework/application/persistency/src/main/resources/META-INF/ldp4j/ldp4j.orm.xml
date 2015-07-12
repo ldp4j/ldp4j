@@ -116,7 +116,7 @@
 				<orm:sequence-generator name="attachmentKeyGenerator" sequence-name="attachmentSeq"/>
 			</orm:id>
 			<orm:basic name="version"/>
-			<orm:embedded name="attachmentId"/>
+			<orm:embedded name="resourceId"/>
 		</orm:attributes>
 	</orm:entity>
 	<orm:entity class="org.ldp4j.application.engine.persistence.jpa.JPAContainer">
@@ -177,7 +177,6 @@
 		<orm:attributes>
 			<orm:basic name="name">
 				<orm:lob/>
-				<!--  orm:convert converter="org.ldp4j.application.engine.persistence.jpa.NameUtils"/ -->
 			</orm:basic>
 			<orm:basic name="templateId"/>
 		</orm:attributes>
@@ -186,6 +185,15 @@
 		<orm:attributes>
 			<orm:basic name="failureId"/>
 			<orm:embedded name="resourceId"/>
+		</orm:attributes>
+	</orm:embeddable>
+	<orm:embeddable class="org.ldp4j.application.engine.persistence.jpa.Key">
+		<orm:attributes>
+			<orm:basic name="templateId"/>
+			<orm:basic name="nameType"/>
+			<orm:basic name="nameValue"/>
+			<orm:transient name="cacheAvailable"/>
+			<orm:transient name="cachedId"/>
 		</orm:attributes>
 	</orm:embeddable>
 </orm:entity-mappings>

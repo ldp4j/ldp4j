@@ -69,7 +69,7 @@ public final class ResourceId implements Serializable {
 
 	@Override
 	public int hashCode() {
-		return Objects.hashCode(this.name(),this.templateId());
+		return Objects.hashCode(this.name,this.templateId);
 	}
 
 	@Override
@@ -78,8 +78,8 @@ public final class ResourceId implements Serializable {
 		if(obj!=null && obj.getClass()==this.getClass()) {
 			ResourceId that=(ResourceId)obj;
 			result=
-				Objects.equal(this.name(),that.name()) &&
-				Objects.equal(this.templateId(),that.templateId());
+				Objects.equal(this.name,that.name) &&
+				Objects.equal(this.templateId,that.templateId);
 		}
 		return result;
 	}
@@ -89,8 +89,8 @@ public final class ResourceId implements Serializable {
 		return
 			MoreObjects.
 				toStringHelper(getClass()).
-					add("name", this.name()).
-					add("templateId", this.templateId()).
+					add("name", this.name).
+					add("templateId", this.templateId).
 					toString();
 	}
 

@@ -33,6 +33,8 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.engine.context.HttpRequest;
+import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
@@ -42,17 +44,28 @@ import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.engine.transaction.Transaction;
 import org.ldp4j.application.engine.transaction.TransactionManager;
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.sdk.HttpRequestBuilder;
 import org.ldp4j.example.PersonHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
 
 public abstract class AbstractJPARepositoryTest<T> {
 
-	protected interface Task<E> {
+	protected abstract class Task<E> {
 
-		void execute(E repository) throws Exception;
+		private String title;
+
+		protected Task(String title) {
+			this.title = title;
+		}
+
+		abstract void execute(E repository) throws Exception;
 
 	}
+
+	private Logger logger=LoggerFactory.getLogger(getClass());
 
 	private T sut;
 	private TransactionManager txManager;
@@ -97,7 +110,13 @@ public abstract class AbstractJPARepositoryTest<T> {
 		return this.delegate.getResourceFactory().createResource(ServiceRegistry.getInstance().getService(TemplateManagementService.class).templateOfId(templateId), name);
 	}
 
+	protected final Logger logger() {
+		return this.logger;
+	}
 
+	protected final void debug(String message, Object... args) {
+		this.logger.debug("   {}",String.format(message,args));
+	}
 
 	protected final void clear() {
 		this.delegate.clear();
@@ -107,8 +126,13 @@ public abstract class AbstractJPARepositoryTest<T> {
 		Transaction tx = txManager.currentTransaction();
 		tx.begin();
 		try {
+			this.logger.info(">> Started '{}'...",task.title);
 			task.execute(this.sut);
 			tx.commit();
+			this.logger.info(">> Completed '{}'.",task.title);
+		} catch(Exception e) {
+			this.logger.info(">> Failed '{}': {}.",task.title,e.getMessage());
+			throw e;
 		} finally {
 			if(!tx.isCompleted()) {
 				tx.rollback();
@@ -117,5 +141,16 @@ public abstract class AbstractJPARepositoryTest<T> {
 	}
 
 	protected abstract T getSubjectUnderTest(JPARuntimeDelegate delegate);
+
+	protected HttpRequest httpRequest() {
+		return
+			HttpRequestBuilder.
+				newInstance().
+					withMethod(HttpMethod.POST).
+					withHost("www.example.org").
+					withAbsolutePath("service/resource/").
+					withEntity("body").
+					build();
+	}
 
 }

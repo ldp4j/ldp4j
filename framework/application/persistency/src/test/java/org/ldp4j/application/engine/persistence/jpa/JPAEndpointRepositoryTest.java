@@ -26,8 +26,11 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
+import static org.junit.Assert.fail;
+
 import java.util.Date;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
@@ -45,7 +48,7 @@ public class JPAEndpointRepositoryTest extends AbstractJPARepositoryTest<Endpoin
 		EntityTag entityTag = new EntityTag("Entity tag");
 		final Endpoint ep1 = Endpoint.create("path",resourceId,new Date(), entityTag);
 		withinTransaction(
-			new Task<EndpointRepository>() {
+			new Task<EndpointRepository>("Creating endpoint") {
 				@Override
 				public void execute(EndpointRepository sut) {
 					sut.add(ep1);
@@ -54,7 +57,7 @@ public class JPAEndpointRepositoryTest extends AbstractJPARepositoryTest<Endpoin
 		);
 		clear();
 		withinTransaction(
-			new Task<EndpointRepository>() {
+			new Task<EndpointRepository>("Finding endpoint by path") {
 				@Override
 				public void execute(EndpointRepository sut) {
 					Endpoint result = sut.endpointOfPath(ep1.path());
@@ -64,7 +67,7 @@ public class JPAEndpointRepositoryTest extends AbstractJPARepositoryTest<Endpoin
 		);
 		clear();
 		withinTransaction(
-			new Task<EndpointRepository>() {
+			new Task<EndpointRepository>("Finding endpoint by resource id") {
 				@Override
 				public void execute(EndpointRepository sut) {
 					Endpoint result = sut.endpointOfResource(ep1.resourceId());
@@ -73,6 +76,38 @@ public class JPAEndpointRepositoryTest extends AbstractJPARepositoryTest<Endpoin
 			}
 		);
 		clear();
+	}
+
+	@Ignore("Not ready yet")
+	@Test
+	public void testUniqueResourceId() throws Exception {
+		Name<String> name = NamingScheme.getDefault().name("resource");
+		ResourceId resourceId = ResourceId.createId(name,"template");
+		EntityTag entityTag = new EntityTag("Entity tag");
+		final Endpoint ep1 = Endpoint.create("path1",resourceId,new Date(), entityTag);
+		final Endpoint ep2 = Endpoint.create("path2",resourceId,new Date(), entityTag);
+		withinTransaction(
+			new Task<EndpointRepository>("Creating first endpoint") {
+				@Override
+				public void execute(EndpointRepository sut) {
+					sut.add(ep1);
+				}
+			}
+		);
+		clear();
+		try {
+			withinTransaction(
+				new Task<EndpointRepository>("Creating endpoint with for the same resource") {
+					@Override
+					public void execute(EndpointRepository sut) {
+						sut.add(ep2);
+					}
+				}
+			);
+			fail("Should not allowing storing multiple endpoints for the same resource");
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
 	}
 
 	@Override

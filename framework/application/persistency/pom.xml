@@ -87,18 +87,22 @@
 			<groupId>org.hibernate</groupId>
 			<artifactId>hibernate-entitymanager</artifactId>
 		</dependency>
-<!--
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derby</artifactId>
-			<version>10.8.2.2</version>
+			<version>10.11.1.1</version>
+			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.derby</groupId>
 			<artifactId>derbytools</artifactId>
-			<version>10.8.2.2</version>
+			<version>10.11.1.1</version>
+			<scope>test</scope>
 		</dependency>
- -->
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-sdk</artifactId>

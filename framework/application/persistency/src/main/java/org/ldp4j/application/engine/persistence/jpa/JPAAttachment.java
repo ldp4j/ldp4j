@@ -32,6 +32,7 @@ import org.ldp4j.application.engine.resource.Attachment;
 import org.ldp4j.application.engine.resource.ResourceId;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.base.Optional;
 
 final class JPAAttachment implements Attachment {
 
@@ -50,10 +51,13 @@ final class JPAAttachment implements Attachment {
 	 */
 	private String id;
 
-	private ResourceId resourceId;
+	/**
+	 * Surrogate key to prevent DB failures
+	 */
+	private Key resourceId;
 
 	JPAAttachment() {
-		// JPA-friendly
+		// JPA Friendly
 	}
 
 	JPAAttachment(String id) {
@@ -62,8 +66,12 @@ final class JPAAttachment implements Attachment {
 		this.version=0;
 	}
 
+	private Key key() {
+		return Optional.fromNullable(this.resourceId).or(Key.NULL);
+	}
+
 	void bind(ResourceId resourceId) {
-		this.resourceId=resourceId;
+		this.resourceId=Key.newInstance(resourceId);
 	}
 
 	void unbind() {
@@ -71,26 +79,41 @@ final class JPAAttachment implements Attachment {
 		this.version++;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String id() {
 		return this.id;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ResourceId resourceId() {
-		return this.resourceId;
+		return key().resourceId();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public long version() {
 		return this.version;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.primaryKey);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		boolean result=false;
@@ -101,6 +124,9 @@ final class JPAAttachment implements Attachment {
 		return result;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return

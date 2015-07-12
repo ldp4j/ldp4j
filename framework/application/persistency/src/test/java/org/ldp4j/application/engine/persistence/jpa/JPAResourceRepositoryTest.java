@@ -26,14 +26,18 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
+import java.util.Date;
+
 import org.junit.Test;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.engine.constraints.ConstraintReport;
 import org.ldp4j.application.engine.resource.Attachment;
 import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceRepository;
+import org.ldp4j.application.engine.resource.Slug;
 import org.ldp4j.example.AddressHandler;
 import org.ldp4j.example.PersonContainerHandler;
 import org.ldp4j.example.PersonHandler;
@@ -51,7 +55,7 @@ public class JPAResourceRepositoryTest extends AbstractJPARepositoryTest<Resourc
 		final ResourceId memberId = ResourceId.createId(NamingScheme.getDefault().name("member"), PersonHandler.ID);
 		final ResourceId attachmentId = ResourceId.createId(NamingScheme.getDefault().name("attachment"),AddressHandler.ID);
 		withinTransaction(
-			new Task<ResourceRepository>() {
+			new Task<ResourceRepository>("Creating root resources") {
 				@Override
 				public void execute(ResourceRepository sut) {
 					sut.add(resource);
@@ -61,55 +65,79 @@ public class JPAResourceRepositoryTest extends AbstractJPARepositoryTest<Resourc
 		);
 		clear();
 		withinTransaction(
-			new Task<ResourceRepository>() {
+			new Task<ResourceRepository>("Adding attachments, slugs, and members") {
 				@Override
 				public void execute(ResourceRepository sut) {
 					Resource result1 = sut.resourceOfId(resourceId);
-					System.out.println(result1);
+					debug("Retrieving resource {%s}: %s",resourceId,result1);
 					Resource attachment = result1.attach(PersonHandler.ADDRESS_ID,attachmentId);
 					sut.add(attachment);
+					debug("Created attachment: %s",attachment);
 					Container result2 = sut.containerOfId(containerId);
-					System.out.println(result2);
-					result2.addSlug("test");
-					result2.addSlug("anotherTest");
+					debug("Retrieving container {%s}: %s",containerId,result2);
+					Slug slug1=result2.addSlug("test");
+					debug("Created slug: %s",slug1);
+					Slug slug2=result2.addSlug("anotherTest");
+					debug("Created slug: %s",slug2);
 					Resource member = result2.addMember(memberId);
 					sut.add(member);
+					debug("Created member: %s",member);
 				}
 			}
 		);
 		clear();
 		withinTransaction(
-			new Task<ResourceRepository>() {
+			new Task<ResourceRepository>("Removing attachments and members") {
 				@Override
 				public void execute(ResourceRepository sut) {
 					Resource result1 = sut.resourceOfId(resourceId);
-					System.out.println(result1);
+					debug("Retrieving resource {%s}: %s",resourceId,result1);
 					Container result2 = sut.containerOfId(containerId);
-					System.out.println(result2);
+					debug("Retrieving container {%s}: %s",containerId,result2);
 					Resource result3 = sut.resourceById(memberId,Resource.class);
-					System.out.println(result3);
+					debug("Retrieving member resource {%s}: %s",memberId,result3);
 					sut.remove(result2);
+					debug("Deleted resource {%s}",result2.id());
 					Resource result4 = sut.resourceById(attachmentId,Resource.class);
-					System.out.println(result4);
+					debug("Retrieving attached resource {%s}: %s",attachmentId,result4);
 					Attachment attachment = result1.findAttachment(result4.id());
+					debug("Retrieving attachment {%s}: %s",result4.id(),attachment);
 					result1.detach(attachment);
+					debug("Detached resource {%s}",attachment.id());
 					sut.remove(result4);
+					debug("Deleted resource {%s}",result4.id());
 				}
 			}
 		);
 		clear();
 		withinTransaction(
-			new Task<ResourceRepository>() {
+			new Task<ResourceRepository>("Adding constraint report") {
 				@Override
 				public void execute(ResourceRepository sut) {
 					Resource result1 = sut.resourceOfId(resourceId);
-					System.out.println(result1);
+					debug("Retrieving resource {%s}: %s",resourceId,result1);
 					Container result2 = sut.containerOfId(containerId);
-					System.out.println(result2);
+					debug("Retrieving container {%s}: %s",containerId,result2);
 					Resource result3 = sut.resourceById(memberId,Resource.class);
-					System.out.println(result3);
+					debug("Retrieving member resource {%s}: %s",memberId,result3);
 					Resource result4 = sut.resourceById(attachmentId,Resource.class);
-					System.out.println(result4);
+					debug("Retrieving attached resource {%s}: %s",attachmentId,result4);
+					ConstraintReport report = result1.addConstraintReport(null,new Date(),httpRequest());
+					debug("Created report {%s}",report.id());
+				}
+			}
+		);
+		clear();
+		withinTransaction(
+			new Task<ResourceRepository>("Checking final state") {
+				@Override
+				public void execute(ResourceRepository sut) {
+					Resource result1 = sut.resourceOfId(resourceId);
+					debug("Retrieving resource {%s}: %s",resourceId,result1);
+					Container result2 = sut.containerOfId(containerId);
+					debug("Retrieving container {%s}: %s",containerId,result2);
+					Resource result3 = sut.resourceById(memberId,Resource.class);
+					debug("Retrieving member resource {%s}: %s",memberId,result3);
 				}
 			}
 		);
