@@ -37,6 +37,7 @@ final class InMemoryTransaction implements Transaction {
 		TransactionState begin();
 		TransactionState commit();
 		TransactionState rollback();
+		boolean isActive();
 		boolean isStarted();
 		boolean isCompleted();
 
@@ -73,6 +74,11 @@ final class InMemoryTransaction implements Transaction {
 			return false;
 		}
 
+		@Override
+		public boolean isActive() {
+			return false;
+		}
+
 	}
 
 	private final class InFlightTransactionState implements TransactionState {
@@ -106,6 +112,11 @@ final class InMemoryTransaction implements Transaction {
 		@Override
 		public boolean isCompleted() {
 			return false;
+		}
+
+		@Override
+		public boolean isActive() {
+			return true;
 		}
 	}
 
@@ -147,6 +158,11 @@ final class InMemoryTransaction implements Transaction {
 			return true;
 		}
 
+		@Override
+		public boolean isActive() {
+			return false;
+		}
+
 	}
 
 	private final InMemoryTransactionManager transactionManager;
@@ -176,6 +192,11 @@ final class InMemoryTransaction implements Transaction {
 	@Override
 	public void rollback() {
 		this.state=this.state.rollback();
+	}
+
+	@Override
+	public boolean isActive() {
+		return this.state.isActive();
 	}
 
 	@Override

@@ -72,9 +72,9 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 							builder().
 								build());
 			Transaction transaction=transactionManager().currentTransaction();
-			if(!transaction.isStarted()) {
+//			if(!transaction.isActive()) {
 				transaction.begin();
-			}
+//			}
 			return new TransactionalWriteSession(transaction, delegate);
 		} catch (ApplicationEngineException e) {
 			throw new ApplicationContextException("Unsupported application engine implementation",e);

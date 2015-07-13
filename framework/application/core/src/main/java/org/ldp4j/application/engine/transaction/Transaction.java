@@ -35,8 +35,12 @@ public interface Transaction {
 
 	void rollback() throws TransactionException;
 
+	boolean isActive();
+
+	@Deprecated
 	boolean isStarted();
 
+	@Deprecated
 	boolean isCompleted();
 
 }

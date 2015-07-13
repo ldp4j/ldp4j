@@ -26,82 +26,52 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
 import javax.persistence.Persistence;
 
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
-import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceRepository;
+import org.ldp4j.application.engine.spi.ModelFactory;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.transaction.TransactionManager;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public final class JPARuntimeDelegate extends RuntimeDelegate {
 
-	private final class JPAEntityManagerProvider implements EntityManagerProvider {
-
-		@Override
-		public EntityManager entityManager() {
-			return getManager();
-		}
-
-		@Override
-		public void close() {
-			disposeManager();
-		}
-		@Override
-		public boolean isActive() {
-			return isTransactionActive();
-		}
-
-	}
-
-	private static final Logger LOGGER=LoggerFactory.getLogger(JPARuntimeDelegate.class);
-
-	private final ThreadLocal<EntityManager> manager;
-
-	private EntityManagerFactory emf;
-
 	private final JPAEntityManagerProvider provider;
-
-	private final String id;
-
-	private final JPAResourceFactory resourceFactory;
-
-	private JPAResourceRepository resourceRepository;
+	private final JPAModelFactory modelFactory;
+	private final JPAResourceRepository resourceRepository;
+	private final JPATransactionManager transactionManager;
+	private final JPAEndpointRepository endpointRepository;
+	private final JPAConstraintReportRepository constraintReportRepository;
 
 	public JPARuntimeDelegate() {
-		this.manager=new ThreadLocal<EntityManager>();
 		this.provider = new JPAEntityManagerProvider();
-		this.id = String.format("%08X",hashCode());
+		this.transactionManager = new JPATransactionManager(this.provider);
+		this.endpointRepository = new JPAEndpointRepository(this.provider);
 		this.resourceRepository = new JPAResourceRepository(this.provider);
-		this.resourceFactory = new JPAResourceFactory(this.resourceRepository);
+		this.constraintReportRepository = new JPAConstraintReportRepository(this.provider);
+		this.modelFactory = new JPAModelFactory(this.resourceRepository);
 	}
 
 	@Override
 	public void init() throws LifecycleException {
-		this.emf=Persistence.createEntityManagerFactory("kernel");
+		this.provider.setEntityManagerFactory(Persistence.createEntityManagerFactory("kernel"));
 	}
 
 	@Override
 	public void shutdown() throws LifecycleException {
-		if(this.emf!=null) {
-			this.emf.close();
-		}
+		this.provider.dispose();
 	}
 
 	@Override
-	public ResourceFactory getResourceFactory() {
-		return this.resourceFactory;
+	public ModelFactory getModelFactory() {
+		return this.modelFactory;
 	}
 
 	@Override
 	public TransactionManager getTransactionManager() {
-		return new JPATransactionManager(this.provider);
+		return this.transactionManager;
 	}
 
 	@Override
@@ -111,57 +81,16 @@ public final class JPARuntimeDelegate extends RuntimeDelegate {
 
 	@Override
 	public EndpointRepository getEndpointRepository() {
-		return new JPAEndpointRepository(this.provider);
+		return this.endpointRepository;
 	}
 
 	@Override
 	public ConstraintReportRepository getConstraintReportRepository() {
-		return new JPAConstraintReportRepository(this.provider);
-	}
-
-	private void trace(String message, Object... args) {
-		if(LOGGER.isTraceEnabled()) {
-			LOGGER.trace("{} - {} - {}",
-				this.id,
-				String.format(message,args),
-				Context.getContext(JPARuntimeDelegate.class.getPackage().getName()));
-		}
-	}
-
-	private boolean isTransactionActive() {
-		boolean result = false;
-		EntityManager entityManager = this.manager.get();
-		if(entityManager!=null) {
-			result=entityManager.getTransaction().isActive();
-		}
-		return result;
-	}
-
-	private EntityManager getManager() {
-		EntityManager entityManager = this.manager.get();
-		if(entityManager==null) {
-			entityManager = this.emf.createEntityManager();
-			this.manager.set(entityManager);
-			trace("Assigned manager %08X",entityManager.hashCode());
-		} else {
-			trace("Returned manager %08X",entityManager.hashCode());
-		}
-		return entityManager;
-	}
-
-	private void disposeManager() {
-		EntityManager entityManager = this.manager.get();
-		if(entityManager!=null) {
-			entityManager.close();
-			this.manager.remove();
-			trace("Disposed manager %08X",entityManager.hashCode());
-		} else {
-			trace("Nothing to dispose");
-		}
+		return this.constraintReportRepository;
 	}
 
 	public void clear() {
-		disposeManager();
+		this.provider.close();
 	}
 
 }

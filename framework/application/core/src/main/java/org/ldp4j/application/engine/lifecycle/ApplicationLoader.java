@@ -28,10 +28,10 @@ package org.ldp4j.application.engine.lifecycle;
 
 import org.ldp4j.application.engine.ApplicationConfigurationException;
 import org.ldp4j.application.engine.ApplicationContextBootstrapException;
-import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.service.ServiceRegistry;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.session.WriteSessionService;
+import org.ldp4j.application.engine.spi.ModelFactory;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.engine.transaction.Transaction;
@@ -50,7 +50,7 @@ final class ApplicationLoader<T extends Configuration> {
 
 	private WriteSessionService writeSessionService;
 	private TemplateManagementService templateManagementService;
-	private ResourceFactory resourceFactory;
+	private ModelFactory modelFactory;
 
 	private T configuration;
 
@@ -60,15 +60,15 @@ final class ApplicationLoader<T extends Configuration> {
 		RuntimeDelegate instance = RuntimeDelegate.getInstance();
 
 		this.transactionManager=instance.getTransactionManager();
-		this.resourceFactory=instance.getResourceFactory();
+		this.modelFactory=instance.getModelFactory();
 
 		ServiceRegistry serviceRegistry=ServiceRegistry.getInstance();
 		this.writeSessionService=serviceRegistry.getService(WriteSessionService.class);
 		this.templateManagementService=serviceRegistry.getService(TemplateManagementService.class);
 	}
 
-	private ResourceFactory resourceFactory() {
-		return this.resourceFactory;
+	private ModelFactory resourceFactory() {
+		return this.modelFactory;
 	}
 
 	private WriteSessionService writeSessionService() {
@@ -79,9 +79,9 @@ final class ApplicationLoader<T extends Configuration> {
 		return this.templateManagementService;
 	}
 
-	ApplicationLoader<T> withPersistencyManager(ResourceFactory persistencyManager) {
+	ApplicationLoader<T> withPersistencyManager(ModelFactory persistencyManager) {
 		if(persistencyManager!=null) {
-			this.resourceFactory=persistencyManager;
+			this.modelFactory=persistencyManager;
 		}
 		return this;
 	}
@@ -130,7 +130,7 @@ final class ApplicationLoader<T extends Configuration> {
 				writeSessionService().terminateSession(session);
 			}
 		} finally {
-			if(transaction.isStarted() && !transaction.isCompleted()) {
+			if(transaction.isActive()) {
 				transaction.rollback();
 			}
 		}

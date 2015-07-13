@@ -134,7 +134,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 
 		public void endTransaction(Transaction transaction) {
-			if(!transaction.isCompleted() && transaction.isStarted()) {
+			if(transaction.isActive()) {
 				transaction.rollback();
 			}
 			LOGGER.

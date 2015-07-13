@@ -35,9 +35,9 @@ import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.resource.Resource;
-import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceRepository;
+import org.ldp4j.application.engine.spi.ModelFactory;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -105,18 +105,18 @@ final class EnvironmentImpl implements Environment {
 
 	private final List<RootResource> candidates;
 
-	private final ResourceFactory persistencyManager;
+	private final ModelFactory modelFactory;
 
 	private final TemplateManagementService templateManagementService;
 
 	private final ResourceRepository resourceRepository;
 	private final EndpointRepository endpointRepository;
 
-	EnvironmentImpl(TemplateManagementService templateManagementService, ResourceFactory persistencyManager, EndpointRepository endpointRepository, ResourceRepository resourceRepository) {
+	EnvironmentImpl(TemplateManagementService templateManagementService, ModelFactory persistencyManager, EndpointRepository endpointRepository, ResourceRepository resourceRepository) {
 		this.templateManagementService = templateManagementService;
 		this.resourceRepository = resourceRepository;
 		this.endpointRepository = endpointRepository;
-		this.persistencyManager = persistencyManager;
+		this.modelFactory = persistencyManager;
 		this.candidates=Lists.newArrayList();
 	}
 
@@ -151,9 +151,9 @@ final class EnvironmentImpl implements Environment {
 		}
 
 		if(prevResource==null && prevEndpoint==null) {
-			Resource resource=this.persistencyManager.createResource(rootResource.template(),rootResource.name());
+			Resource resource=this.modelFactory.createResource(rootResource.template(),rootResource.name());
 			this.resourceRepository.add(resource);
-			Endpoint endpoint=Endpoint.create(path,resource.id(),creationDate,new EntityTag(path));
+			Endpoint endpoint=this.modelFactory.createEndpoint(path,resource,creationDate,new EntityTag(path));
 			this.endpointRepository.add(endpoint);
 		}
 

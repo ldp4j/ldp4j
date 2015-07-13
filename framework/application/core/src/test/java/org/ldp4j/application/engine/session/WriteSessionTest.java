@@ -44,7 +44,6 @@ import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.impl.InMemoryRuntimeDelegate;
 import org.ldp4j.application.engine.resource.Resource;
-import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.service.ServiceRegistry;
 import org.ldp4j.application.engine.session.DelegatedContainerSnapshot;
 import org.ldp4j.application.engine.session.DelegatedResourceSnapshot;
@@ -52,6 +51,7 @@ import org.ldp4j.application.engine.session.UnitOfWork;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
 import org.ldp4j.application.engine.session.WriteSessionService;
 import org.ldp4j.application.engine.session.UnitOfWork.Visitor;
+import org.ldp4j.application.engine.spi.ModelFactory;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.engine.transaction.Transaction;
@@ -119,7 +119,7 @@ public class WriteSessionTest {
 	private UnitOfWork uow;
 	private WriteSession sut;
 
-	private ResourceFactory resourceFactory;
+	private ModelFactory modelFactory;
 
 	private Transaction transaction;
 
@@ -129,19 +129,19 @@ public class WriteSessionTest {
 	public void setUp() throws Exception {
 		ServiceRegistry.setInstance(null);
 		RuntimeDelegate.setInstance(new InMemoryRuntimeDelegate());
-		templateManagementService =
+		this.templateManagementService =
 			ServiceRegistry.
 				getInstance().
 					getService(TemplateManagementService.class);
-		templateManagementService.
+		this.templateManagementService.
 			configure(
 				Lists.<Class<?>>newArrayList(),
 				Arrays.<ResourceHandler>asList(new PersonHandler()));
-		resourceFactory=
+		this.modelFactory=
 			RuntimeDelegate.
 				getInstance().
-					getResourceFactory();
-		writeSessionService=
+					getModelFactory();
+		this.writeSessionService=
 			ServiceRegistry.
 				getInstance().
 					getService(WriteSessionService.class);
@@ -247,17 +247,17 @@ public class WriteSessionTest {
 		try {
 			this.uow = UnitOfWork.newCurrent();
 			Resource rootResource=
-				this.resourceFactory.createResource(
+				this.modelFactory.createResource(
 					this.templateManagementService.templateOfId("personTemplate"),
 					name("me"));
-			Endpoint rootEndpoint=Endpoint.create("root",rootResource.id(),new Date(),new EntityTag("root"));
+			Endpoint rootEndpoint=this.modelFactory.createEndpoint("root",rootResource,new Date(),new EntityTag("root"));
 			RuntimeDelegate.getInstance().getResourceRepository().add(rootResource);
 			RuntimeDelegate.getInstance().getEndpointRepository().add(rootEndpoint);
 			UnitOfWork.setCurrent(null);
 			transaction.commit();
 			return rootResource;
 		} finally {
-			if(!transaction.isCompleted()) {
+			if(transaction.isActive()) {
 				transaction.rollback();
 			}
 		}
@@ -325,13 +325,13 @@ public class WriteSessionTest {
 		this.uow.accept(new UnitOfWorkInspector());
 		this.sut.saveChanges();
 		this.writeSessionService.terminateSession(this.sut);
-		assertThat(transaction.isCompleted(),equalTo(true));
+		assertThat(transaction.isActive(),equalTo(false));
 	}
 
 	private void prepareSession(Action action, ResourceSnapshot snapshot) {
 		logAction(Stage.PREPARATION,action,snapshot);
 		Resource resource=
-			this.resourceFactory.
+			this.modelFactory.
 				createResource(this.templateManagementService.templateOfId(snapshot.templateId()), snapshot.name());
 		doPrepareSession(resource);
 	}

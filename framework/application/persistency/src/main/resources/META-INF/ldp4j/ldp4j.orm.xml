@@ -37,7 +37,14 @@
 	<orm:description>Persistency for the LDP4j Application Engine Kernel</orm:description>
 	<orm:package>org.ldp4j.application.engine.persistence.jpa</orm:package>
 	<orm:access>FIELD</orm:access>
-	<orm:entity class="org.ldp4j.application.engine.endpoint.Endpoint">
+	<orm:entity class="org.ldp4j.application.engine.persistence.jpa.JPAEndpoint">
+		<orm:table name="ENDPOINT">
+			<orm:unique-constraint name="UNIQUE_ENDPOINT_PER_RESOURCE">
+				<orm:column-name>templateId</orm:column-name>
+				<orm:column-name>type</orm:column-name>
+				<orm:column-name>value</orm:column-name>
+			</orm:unique-constraint>
+		</orm:table>
 		<orm:attributes>
 			<orm:id name="path"/>
 			<orm:basic name="created"/>

@@ -40,10 +40,10 @@ final class JPATransactionManager implements TransactionManager {
 			return provider.entityManager().getTransaction();
 		}
 
-//		@Override
-//		public boolean isActive() {
-//			return provider.isActive();
-//		}
+		@Override
+		public boolean isActive() {
+			return provider.isActive();
+		}
 
 		@Override
 		public void begin() throws TransactionException {
@@ -58,20 +58,25 @@ final class JPATransactionManager implements TransactionManager {
 		public void commit() throws TransactionException {
 			try {
 				nativeTransaction().commit();
-				provider.close();
 			} catch (Exception e) {
 				throw new TransactionException("Commit failed",e);
+			} finally {
+				if(!provider.isActive()) {
+					provider.close();
+				}
 			}
 		}
 
 		@Override
 		public void rollback() throws TransactionException {
-			try {
-				nativeTransaction().rollback();
-			} catch (Exception e) {
-				throw new TransactionException("Rollback failed",e);
-			} finally {
-				provider.close();
+			if(provider.isActive()) {
+				try {
+					nativeTransaction().rollback();
+				} catch (Exception e) {
+					throw new TransactionException("Rollback failed",e);
+				} finally {
+					provider.close();
+				}
 			}
 		}
 

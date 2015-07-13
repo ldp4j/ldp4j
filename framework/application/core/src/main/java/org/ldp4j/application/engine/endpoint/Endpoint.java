@@ -26,105 +26,27 @@
  */
 package org.ldp4j.application.engine.endpoint;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.Date;
 
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.resource.ResourceId;
 
-import com.google.common.base.MoreObjects;
+public interface Endpoint {
 
-public final class Endpoint {
+	String path();
 
-	/**
-	 * Not final to enable its usage in JPA
-	 */
-	private String path;
+	ResourceId resourceId();
 
-	/**
-	 * Not final to enable its usage in JPA
-	 */
-	private Date created;
+	Date created();
 
-	private ResourceId resourceId;
-	private EntityTag entityTag;
-	private Date lastModified;
-	private Date deleted;
+	Date deleted();
 
-	private Endpoint() {
-		// JPA Friendly
-	}
+	EntityTag entityTag();
 
-	private Endpoint(String path, ResourceId resourceId, Date created, EntityTag entityTag) {
-		this.path = path;
-		this.resourceId = resourceId;
-		this.created = created;
-		this.entityTag = entityTag;
-		this.lastModified = created;
-	}
+	Date lastModified();
 
-	public String path() {
-		return this.path;
-	}
+	void modify(EntityTag newEntityTag, Date newLastModified);
 
-	public Date created() {
-		return this.created;
-	}
-
-	public Date deleted() {
-		return this.deleted;
-	}
-
-	public EntityTag entityTag() {
-		return this.entityTag;
-	}
-
-	public Date lastModified() {
-		return this.lastModified;
-	}
-
-	public ResourceId resourceId() {
-		return this.resourceId;
-	}
-
-	public void modify(EntityTag newEntityTag, Date newLastModified) {
-		checkState(this.deleted==null,"Endpoint is already deleted");
-		this.entityTag=newEntityTag;
-		this.lastModified=new Date(newLastModified.getTime());
-	}
-
-	public void delete(Date deleted) {
-		checkState(this.deleted==null,"Endpoint is already deleted");
-		this.deleted=deleted;
-		this.resourceId=null;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return
-			MoreObjects.
-				toStringHelper(getClass()).
-					omitNullValues().
-					add("path",this.path).
-					add("created",this.created).
-					add("deleted",this.deleted).
-					add("entityTag",this.entityTag).
-					add("lastModified",this.lastModified.getTime()).
-					add("resourceId",this.resourceId).
-					toString();
-	}
-
-	public static Endpoint create(String path, ResourceId resourceId, Date created, EntityTag entityTag) {
-		checkNotNull(path,"Endpoint path cannot be null");
-		checkNotNull(resourceId,"Endpoint identifier cannot be null");
-		checkNotNull(created,"Endpoint creation date cannot be null");
-		checkNotNull(entityTag,"Endpoint entity tag cannot be null");
-		return new Endpoint(path, resourceId, created, entityTag);
-	}
+	void delete(Date deleted);
 
 }

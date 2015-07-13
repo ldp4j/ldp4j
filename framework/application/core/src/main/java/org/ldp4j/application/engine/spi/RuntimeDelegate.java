@@ -40,7 +40,6 @@ import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.lifecycle.Managed;
-import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.transaction.TransactionManager;
 import org.slf4j.Logger;
@@ -277,7 +276,7 @@ public abstract class RuntimeDelegate implements Managed {
 		private static final String ERROR_MESSAGE = String.format("No implementation for class '%s' could be found",RuntimeDelegate.class);
 
 		@Override
-		public ResourceFactory getResourceFactory() {
+		public ModelFactory getModelFactory() {
 			throw new AssertionError(ERROR_MESSAGE);
 		}
 
@@ -313,7 +312,7 @@ public abstract class RuntimeDelegate implements Managed {
 
 	}
 
-	public abstract ResourceFactory getResourceFactory();
+	public abstract ModelFactory getModelFactory();
 
 	public abstract TransactionManager getTransactionManager();
 

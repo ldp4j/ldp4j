@@ -40,6 +40,7 @@ import org.ldp4j.application.engine.resource.ResourceRepository;
 import org.ldp4j.application.engine.resource.Slug;
 import org.ldp4j.application.engine.service.Service;
 import org.ldp4j.application.engine.service.ServiceBuilder;
+import org.ldp4j.application.engine.spi.ModelFactory;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.template.AttachedTemplate;
 import org.ldp4j.application.engine.template.ContainerTemplate;
@@ -99,12 +100,13 @@ public final class EndpointManagementService implements Service {
 	private final TemplateManagementService templateManagementService;
 	private final ListenerManager<EndpointLifecycleListener> listenerManager;
 
+	private final ModelFactory modelFactory;
 	private final EndpointRepository endpointRepository;
 	private final ResourceRepository resourceRepository;
 
-
 	private EndpointManagementService(TemplateManagementService templateManagementService) {
 		this.templateManagementService = templateManagementService;
+		this.modelFactory=RuntimeDelegate.getInstance().getModelFactory();
 		this.endpointRepository=RuntimeDelegate.getInstance().getEndpointRepository();
 		this.resourceRepository=RuntimeDelegate.getInstance().getResourceRepository();
 		this.listenerManager=ListenerManager.<EndpointLifecycleListener>newInstance();
@@ -191,7 +193,7 @@ public final class EndpointManagementService implements Service {
 			try {
 				String resourcePath = calculateResourcePath(resource,candidatePath);
 				LOGGER.debug("({}) Trying resource path {} ",repetitions,resourcePath);
-				Endpoint newEndpoint = Endpoint.create(resourcePath, resource.id(), lastModified, entityTag);
+				Endpoint newEndpoint = this.modelFactory.createEndpoint(resourcePath, resource, lastModified, entityTag);
 				this.endpointRepository.add(newEndpoint);
 				return newEndpoint;
 			} catch (EndpointNotFoundException e) {

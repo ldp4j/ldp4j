@@ -55,6 +55,7 @@ import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceControllerService;
 import org.ldp4j.application.engine.service.ServiceRegistry;
 import org.ldp4j.application.engine.session.WriteSessionConfiguration;
+import org.ldp4j.application.engine.spi.ModelFactory;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 import org.ldp4j.application.engine.template.TemplateManagementService;
 import org.ldp4j.application.engine.transaction.Transaction;
@@ -70,16 +71,16 @@ public class ResourceControllerServiceTest {
 
 	private ResourceControllerService sut;
 	private TemplateManagementService tms;
-	private ResourceFactory resourceFactory;
+	private ModelFactory modelFactory;
 
 	private <T extends Resource> T publishResource(Class<? extends T> clazz, String templateId, Name<?> resourceName, String path) {
 		Transaction transaction = RuntimeDelegate.getInstance().getTransactionManager().currentTransaction();
 		transaction.begin();
 
-		Resource newResource=this.resourceFactory.createResource(this.tms.templateOfId(templateId),resourceName);
+		Resource newResource=this.modelFactory.createResource(this.tms.templateOfId(templateId),resourceName);
 		T resource=clazz.cast(newResource);
 		RuntimeDelegate.getInstance().getResourceRepository().add(resource);
-		Endpoint endpoint=Endpoint.create(path,resource.id(),new Date(),new EntityTag(path));
+		Endpoint endpoint=this.modelFactory.createEndpoint(path,resource,new Date(),new EntityTag(path));
 		RuntimeDelegate.getInstance().getEndpointRepository().add(endpoint);
 
 		transaction.commit();
@@ -150,18 +151,18 @@ public class ResourceControllerServiceTest {
 
 	@Before
 	public void setUp() throws Exception {
-		sut =
+		this.sut =
 			ServiceRegistry.
 				getInstance().
 					getService(ResourceControllerService.class);
-		tms =
+		this.tms =
 			ServiceRegistry.
 				getInstance().
 					getService(TemplateManagementService.class);
-		resourceFactory=
+		this.modelFactory=
 			RuntimeDelegate.
 				getInstance().
-					getResourceFactory();
+					getModelFactory();
 	}
 
 
@@ -175,7 +176,7 @@ public class ResourceControllerServiceTest {
 			throw e;
 		} finally {
 			try {
-				assertThat(transaction.isCompleted(),equalTo(true));
+				assertThat(transaction.isActive(),equalTo(false));
 			} catch (Exception e) {
 				e.printStackTrace();
 				transaction.rollback();

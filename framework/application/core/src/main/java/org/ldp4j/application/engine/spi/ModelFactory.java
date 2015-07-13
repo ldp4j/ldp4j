@@ -24,15 +24,22 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.resource;
+package org.ldp4j.application.engine.spi;
+
+import java.util.Date;
 
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.engine.endpoint.Endpoint;
+import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateLibrary;
 
-public interface ResourceFactory {
+public interface ModelFactory {
 
 	void useTemplates(TemplateLibrary library);
+
+	Endpoint createEndpoint(String path, Resource resource, Date created, EntityTag entityTag);
 
 	Resource createResource(ResourceTemplate template, Name<?> name);
 

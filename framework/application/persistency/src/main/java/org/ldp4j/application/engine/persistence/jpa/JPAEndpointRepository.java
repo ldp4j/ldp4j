@@ -51,7 +51,7 @@ final class JPAEndpointRepository implements EndpointRepository {
 
 	@Override
 	public Endpoint endpointOfPath(String path) {
-		return entityManager().find(Endpoint.class, path);
+		return entityManager().find(JPAEndpoint.class, path);
 	}
 
 	@Override
@@ -59,15 +59,15 @@ final class JPAEndpointRepository implements EndpointRepository {
 		CriteriaBuilder cb =
 				entityManager().getCriteriaBuilder();
 
-		CriteriaQuery<Endpoint> query =
-				cb.createQuery(Endpoint.class);
+		CriteriaQuery<JPAEndpoint> query =
+				cb.createQuery(JPAEndpoint.class);
 
-		Root<Endpoint> descriptor = query.from(Endpoint.class);
+		Root<JPAEndpoint> descriptor = query.from(JPAEndpoint.class);
 		query.
 			select(descriptor).
-			where(cb.equal(descriptor.get("resourceId"),id)).
+			where(cb.equal(descriptor.get("resourceId"),Key.newInstance(id))).
 			distinct(true);
-		List<Endpoint> results = entityManager().createQuery(query).getResultList();
+		List<JPAEndpoint> results = entityManager().createQuery(query).getResultList();
 		if(results.isEmpty()) {
 			return null;
 		}

@@ -30,23 +30,29 @@ import static org.junit.Assert.fail;
 
 import java.util.Date;
 
-import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.endpoint.EndpointRepository;
-import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.engine.resource.Resource;
+import org.ldp4j.example.PersonHandler;
 
 public class JPAEndpointRepositoryTest extends AbstractJPARepositoryTest<EndpointRepository> {
 
+	@Rule
+	public TestName name=new TestName();
+
+	private Name<String> resourceName() {
+		return NamingScheme.getDefault().name(this.name.getMethodName());
+	}
+
 	@Test
 	public void testRepository() throws Exception {
-		Name<String> name = NamingScheme.getDefault().name("resource");
-		ResourceId resourceId = ResourceId.createId(name,"template");
-		EntityTag entityTag = new EntityTag("Entity tag");
-		final Endpoint ep1 = Endpoint.create("path",resourceId,new Date(), entityTag);
+		Resource resource = rootResource(resourceName(),PersonHandler.ID);
+		final Endpoint ep1 = super.endpoint("path",resource);
 		withinTransaction(
 			new Task<EndpointRepository>("Creating endpoint") {
 				@Override
@@ -78,14 +84,11 @@ public class JPAEndpointRepositoryTest extends AbstractJPARepositoryTest<Endpoin
 		clear();
 	}
 
-	@Ignore("Not ready yet")
 	@Test
 	public void testUniqueResourceId() throws Exception {
-		Name<String> name = NamingScheme.getDefault().name("resource");
-		ResourceId resourceId = ResourceId.createId(name,"template");
-		EntityTag entityTag = new EntityTag("Entity tag");
-		final Endpoint ep1 = Endpoint.create("path1",resourceId,new Date(), entityTag);
-		final Endpoint ep2 = Endpoint.create("path2",resourceId,new Date(), entityTag);
+		Resource resource = rootResource(resourceName(),PersonHandler.ID);
+		final Endpoint ep1 = super.endpoint("path1",resource);
+		final Endpoint ep2 = super.endpoint("path2",resource);
 		withinTransaction(
 			new Task<EndpointRepository>("Creating first endpoint") {
 				@Override
@@ -108,6 +111,66 @@ public class JPAEndpointRepositoryTest extends AbstractJPARepositoryTest<Endpoin
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+
+	@Test
+	public void testResourceDeletion() throws Exception {
+		final Resource resource = rootResource(resourceName(),PersonHandler.ID);
+		final Endpoint ep1 = super.endpoint("path3",resource);
+		final Date deleted = new Date(ep1.created().getTime()+1000);
+		withinTransaction(
+			new Task<EndpointRepository>("Creating first endpoint") {
+				@Override
+				public void execute(EndpointRepository sut) {
+					sut.add(ep1);
+				}
+			}
+		);
+		clear();
+		withinTransaction(
+			new Task<EndpointRepository>("Delete endpoint") {
+				@Override
+				public void execute(EndpointRepository sut) {
+					Endpoint endpoint = sut.endpointOfPath(ep1.path());
+					endpoint.delete(deleted);
+				}
+			}
+		);
+		withinTransaction(
+			new Task<EndpointRepository>("Check deletion") {
+				@Override
+				public void execute(EndpointRepository sut) {
+					Endpoint endpointByPath = sut.endpointOfPath(ep1.path());
+					debug("Retrieving endpoint by path {%s} : %s",ep1.path(),endpointByPath);
+					Endpoint endpointByResource = sut.endpointOfResource(resource.id());
+					debug("Retrieving endpoint by resource {%s} : %s",resource.id(),endpointByResource);
+				}
+			}
+		);
+		final String path = "path4";
+		withinTransaction(
+			new Task<EndpointRepository>("Create new endoint for 'same' resource") {
+				@Override
+				public void execute(EndpointRepository sut) {
+					Endpoint newEndpoint = endpoint(path,resource);
+					sut.add(newEndpoint);
+					debug("Adding endpoint: %s",newEndpoint);
+				}
+			}
+		);
+		withinTransaction(
+			new Task<EndpointRepository>("Check new resource") {
+				@Override
+				public void execute(EndpointRepository sut) {
+					Endpoint legacyEndpointByPath = sut.endpointOfPath(ep1.path());
+					debug("Retrieving endpoint by path {%s} : %s",ep1.path(),legacyEndpointByPath);
+					Endpoint endpointByPath = sut.endpointOfPath(path);
+					debug("Retrieving endpoint by path {%s} : %s",path,endpointByPath);
+					Endpoint endpointByResource = sut.endpointOfResource(resource.id());
+					debug("Retrieving endpoint by resource {%s} : %s",resource.id(),endpointByResource);
+				}
+			}
+		);
 	}
 
 	@Override

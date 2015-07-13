@@ -26,14 +26,14 @@
  */
 package org.ldp4j.application.engine.service;
 
-import org.ldp4j.application.engine.resource.ResourceFactory;
+import org.ldp4j.application.engine.spi.ModelFactory;
 import org.ldp4j.application.engine.spi.RuntimeDelegate;
 
 import static com.google.common.base.Preconditions.*;
 
 public abstract class Builder<T,B extends Builder<T,B>> {
 
-	private ResourceFactory resourceFactory;
+	private ModelFactory modelFactory;
 	private RuntimeDelegate runtimeDelegate;
 	private ServiceRegistry serviceRegistry;
 
@@ -47,8 +47,8 @@ public abstract class Builder<T,B extends Builder<T,B>> {
 		return builder();
 	}
 
-	public final B withResourceFactory(ResourceFactory resourceFactory) {
-		this.resourceFactory=resourceFactory;
+	public final B withResourceFactory(ModelFactory resourceFactory) {
+		this.modelFactory=resourceFactory;
 		return builder();
 	}
 
@@ -72,11 +72,11 @@ public abstract class Builder<T,B extends Builder<T,B>> {
 		return serviceRegistry().getService(serviceClass);
 	}
 
-	protected final ResourceFactory resourceFactory() {
-		if(this.resourceFactory==null) {
-			this.resourceFactory=runtimeDelegate().getResourceFactory();
+	protected final ModelFactory modelFactory() {
+		if(this.modelFactory==null) {
+			this.modelFactory=runtimeDelegate().getModelFactory();
 		}
-		return this.resourceFactory;
+		return this.modelFactory;
 	}
 
 	protected abstract B builder();

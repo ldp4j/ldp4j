@@ -29,10 +29,14 @@ package org.ldp4j.application.engine.persistence.jpa;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Date;
+
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.resource.Resource;
-import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.engine.spi.ModelFactory;
 import org.ldp4j.application.engine.template.BasicContainerTemplate;
 import org.ldp4j.application.engine.template.ContainerTemplate;
 import org.ldp4j.application.engine.template.DirectContainerTemplate;
@@ -42,7 +46,7 @@ import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateLibrary;
 import org.ldp4j.application.engine.template.TemplateVisitor;
 
-final class JPAResourceFactory implements ResourceFactory {
+final class JPAModelFactory implements ModelFactory {
 
 	private final class RootResourceCreator implements TemplateVisitor {
 
@@ -59,7 +63,7 @@ final class JPAResourceFactory implements ResourceFactory {
 
 		private void createResource(JPAResource resource) {
 			this.resource=resource;
-			this.resource.setTemplateLibrary(JPAResourceFactory.this.templateLibrary);
+			this.resource.setTemplateLibrary(JPAModelFactory.this.templateLibrary);
 		}
 
 		/**
@@ -116,7 +120,7 @@ final class JPAResourceFactory implements ResourceFactory {
 
 	private TemplateLibrary templateLibrary;
 
-	JPAResourceFactory(JPAResourceRepository resourceRepository) {
+	JPAModelFactory(JPAResourceRepository resourceRepository) {
 		this.resourceRepository = resourceRepository;
 	}
 
@@ -141,6 +145,12 @@ final class JPAResourceFactory implements ResourceFactory {
 				ResourceId.createId(name,template));
 		template.accept(creator);
 		return creator.createdResource();
+	}
+
+	@Override
+	public Endpoint createEndpoint(String path, Resource resource, Date created, EntityTag entityTag) {
+		checkNotNull(resource,"Resource cannot be null");
+		return JPAEndpoint.create(path, resource.id(), created, entityTag);
 	}
 
 }

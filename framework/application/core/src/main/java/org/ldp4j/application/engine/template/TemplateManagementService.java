@@ -31,9 +31,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.ldp4j.application.engine.resource.ResourceFactory;
 import org.ldp4j.application.engine.service.Service;
 import org.ldp4j.application.engine.service.ServiceBuilder;
+import org.ldp4j.application.engine.spi.ModelFactory;
 import org.ldp4j.application.ext.ResourceHandler;
 
 public final class TemplateManagementService implements Service {
@@ -45,7 +45,7 @@ public final class TemplateManagementService implements Service {
 		}
 
 		public TemplateManagementService build() {
-			return new TemplateManagementService(resourceFactory());
+			return new TemplateManagementService(modelFactory());
 		}
 
 	}
@@ -114,11 +114,11 @@ public final class TemplateManagementService implements Service {
 
 	}
 
-	private final ResourceFactory resourceFactory;
+	private final ModelFactory resourceFactory;
 
 	private final AtomicReference<ServiceState> state;
 
-	private TemplateManagementService(ResourceFactory resourceFactory) {
+	private TemplateManagementService(ModelFactory resourceFactory) {
 		this.resourceFactory=resourceFactory;
 		this.state=new AtomicReference<ServiceState>(new NewServiceState());
 	}

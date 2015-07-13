@@ -27,14 +27,17 @@
 package org.ldp4j.application.engine.persistence.jpa;
 
 import java.util.Arrays;
+import java.util.Date;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
+import org.ldp4j.application.engine.endpoint.Endpoint;
 import org.ldp4j.application.engine.lifecycle.LifecycleException;
 import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
@@ -103,11 +106,15 @@ public abstract class AbstractJPARepositoryTest<T> {
 	}
 
 	protected final Container rootContainer(Name<?> name, String templateId) {
-		return (Container)this.delegate.getResourceFactory().createResource(ServiceRegistry.getInstance().getService(TemplateManagementService.class).templateOfId(templateId), name);
+		return (Container)this.delegate.getModelFactory().createResource(ServiceRegistry.getInstance().getService(TemplateManagementService.class).templateOfId(templateId), name);
 	}
 
 	protected final Resource rootResource(Name<?> name, String templateId) {
-		return this.delegate.getResourceFactory().createResource(ServiceRegistry.getInstance().getService(TemplateManagementService.class).templateOfId(templateId), name);
+		return this.delegate.getModelFactory().createResource(ServiceRegistry.getInstance().getService(TemplateManagementService.class).templateOfId(templateId), name);
+	}
+
+	protected final Endpoint endpoint(String path, Resource resource) {
+		return this.delegate.getModelFactory().createEndpoint(path, resource, new Date(),new EntityTag("tag"));
 	}
 
 	protected final Logger logger() {
@@ -125,6 +132,7 @@ public abstract class AbstractJPARepositoryTest<T> {
 	protected final void withinTransaction(Task<T> task) throws Exception{
 		Transaction tx = txManager.currentTransaction();
 		tx.begin();
+		boolean failed=false;
 		try {
 			this.logger.info(">> Started '{}'...",task.title);
 			task.execute(this.sut);
@@ -132,10 +140,19 @@ public abstract class AbstractJPARepositoryTest<T> {
 			this.logger.info(">> Completed '{}'.",task.title);
 		} catch(Exception e) {
 			this.logger.info(">> Failed '{}': {}.",task.title,e.getMessage());
+			failed=true;
 			throw e;
 		} finally {
-			if(!tx.isCompleted()) {
-				tx.rollback();
+			if(failed) {
+				this.logger.debug("Transaction failed [active: {}]",tx.isActive());
+			}
+			if(tx.isActive()) {
+				this.logger.info("Attempting rollback...");
+				try {
+					tx.rollback();
+				} catch (Exception e) {
+					this.logger.error("Rollback failed",e);
+				}
 			}
 		}
 	}
