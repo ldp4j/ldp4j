@@ -24,83 +24,35 @@
  *   Bundle      : ldp4j-application-persistency-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.persistence.jpa;
+package org.ldp4j.application.engine.persistence.encoding;
 
-import org.ldp4j.application.engine.resource.Member;
-import org.ldp4j.application.engine.resource.ResourceId;
+import java.io.IOException;
+import java.io.Serializable;
 
-import com.google.common.base.MoreObjects;
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.NamingScheme;
 
-final class JPAMember implements Member {
-
-	/**
-	 * Persistent key required by JPA
-	 */
-	private long primaryKey;
-
-	/**
-	 * Surrogate object to guarantee DB portability
-	 */
-	private Key memberId;
+/**
+ * Identifier value encoder.
+ *
+ * @author Miguel Esteban Guti&eacute;rrez
+ */
+final class ValueEncoder extends AbstractEncoder {
 
 	/**
-	 * Surrogate object to guarantee DB portability
+	 * {@inheritDoc}
 	 */
-	private Key containerId;
-
-	/**
-	 * Not final to enable its usage in JPA
-	 */
-	private long number;
-
-	private JPAMember() {
-		// JPA Friendly
-	}
-
-	JPAMember(Key containerId, Key memberId, long number) {
-		this();
-		this.memberId = memberId;
-		this.containerId = containerId;
-		this.number = number;
+	@Override
+	protected Serializable prepare(Name<?> name) {
+		return name.id();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public long number() {
-		return this.number;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ResourceId containerId() {
-		return this.containerId.resourceId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ResourceId memberId() {
-		return this.memberId.resourceId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return
-			MoreObjects.
-				toStringHelper(getClass()).
-					add("primaryKey",this.primaryKey).
-					add("number",this.number).
-					add("containerId",this.containerId).
-					add("memberId", this.memberId).
-					toString();
+	protected Name<?> assemble(Serializable subject) throws IOException {
+		return NamingScheme.getDefault().name(subject);
 	}
 
 }

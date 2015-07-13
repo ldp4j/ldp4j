@@ -30,8 +30,17 @@ import java.util.Date;
 
 import javax.persistence.AttributeConverter;
 
-public class DateUtils implements AttributeConverter<Date,String> {
+/**
+ * Utility class to enable persisting {@code java.util.Date} objects as
+ * {@code java.lang.String} objects.
+ *
+ * @author Miguel Esteban Guti&eacute;rrez
+ */
+public final class DateConverter implements AttributeConverter<Date,String> {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String convertToDatabaseColumn(Date attribute) {
 		if(attribute==null) {
@@ -40,6 +49,9 @@ public class DateUtils implements AttributeConverter<Date,String> {
 		return Long.toString(attribute.getTime());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Date convertToEntityAttribute(String dbData) {
 		if(dbData==null) {

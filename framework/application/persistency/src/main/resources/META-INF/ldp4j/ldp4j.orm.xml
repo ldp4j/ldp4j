@@ -40,18 +40,10 @@
 	<orm:entity class="org.ldp4j.application.engine.endpoint.Endpoint">
 		<orm:attributes>
 			<orm:id name="path"/>
-			<orm:basic name="created">
-				<orm:convert converter="org.ldp4j.application.engine.persistence.jpa.DateUtils"/>
-			</orm:basic>
-			<orm:basic name="lastModified">
-				<orm:convert converter="org.ldp4j.application.engine.persistence.jpa.DateUtils"/>
-			</orm:basic>
-			<orm:basic name="deleted">
-				<orm:convert converter="org.ldp4j.application.engine.persistence.jpa.DateUtils"/>
-			</orm:basic>
-			<orm:basic name="entityTag">
-				<orm:convert converter="org.ldp4j.application.engine.persistence.jpa.EntityTagUtils"/>
-			</orm:basic>
+			<orm:basic name="created"/>
+			<orm:basic name="lastModified"/>
+			<orm:basic name="deleted"/>
+			<orm:basic name="entityTag"/>
 			<orm:embedded name="resourceId"/>
 		</orm:attributes>
 	</orm:entity>
@@ -61,9 +53,7 @@
 				<orm:generated-value/>
 				<orm:sequence-generator name="constraintReportPrimaryKeyGenerator" sequence-name="crSeq"/>
 			</orm:id>
-			<orm:basic name="date">
-				<orm:convert converter="org.ldp4j.application.engine.persistence.jpa.DateUtils"/>
-			</orm:basic>
+			<orm:basic name="date"/>
 			<orm:basic name="request">
 				<orm:lob/>
 			</orm:basic>
@@ -145,19 +135,25 @@
 			</orm:id>
 			<orm:basic name="number"/>
 			<orm:embedded name="memberId">
-				<orm:attribute-override name="name">
-					<orm:column name="memberId_name"/>
-				</orm:attribute-override>
 				<orm:attribute-override name="templateId">
 					<orm:column name="memberId_templateId"/>
 				</orm:attribute-override>
+				<orm:attribute-override name="nameType">
+					<orm:column name="memberId_type"/>
+				</orm:attribute-override>
+				<orm:attribute-override name="nameValue">
+					<orm:column name="memberId_value"/>
+				</orm:attribute-override>
 			</orm:embedded>
 			<orm:embedded name="containerId">
-				<orm:attribute-override name="name">
-					<orm:column name="containerId_name"/>
-				</orm:attribute-override>
 				<orm:attribute-override name="templateId">
 					<orm:column name="containerId_templateId"/>
+				</orm:attribute-override>
+				<orm:attribute-override name="nameType">
+					<orm:column name="containerId_type"/>
+				</orm:attribute-override>
+				<orm:attribute-override name="nameValue">
+					<orm:column name="containerId_value"/>
 				</orm:attribute-override>
 			</orm:embedded>
 		</orm:attributes>
@@ -189,11 +185,19 @@
 	</orm:embeddable>
 	<orm:embeddable class="org.ldp4j.application.engine.persistence.jpa.Key">
 		<orm:attributes>
-			<orm:basic name="templateId"/>
-			<orm:basic name="nameType"/>
-			<orm:basic name="nameValue"/>
+			<orm:basic name="templateId">
+				<orm:column length="1024"/>
+			</orm:basic>
+			<orm:basic name="nameType">
+				<orm:column name="type" length="1024"/>
+			</orm:basic>
+			<orm:basic name="nameValue">
+				<orm:column name="value" length="4096"/>
+			</orm:basic>
 			<orm:transient name="cacheAvailable"/>
 			<orm:transient name="cachedId"/>
 		</orm:attributes>
 	</orm:embeddable>
+	<orm:converter class="org.ldp4j.application.engine.persistence.jpa.DateConverter" auto-apply="true"/>
+	<orm:converter class="org.ldp4j.application.engine.persistence.jpa.EntityTagConverter" auto-apply="true"/>
 </orm:entity-mappings>

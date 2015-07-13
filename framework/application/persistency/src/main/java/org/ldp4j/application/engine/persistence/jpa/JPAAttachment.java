@@ -52,7 +52,7 @@ final class JPAAttachment implements Attachment {
 	private String id;
 
 	/**
-	 * Surrogate key to prevent DB failures
+	 * Surrogate object to guarantee DB portability
 	 */
 	private Key resourceId;
 

@@ -48,7 +48,7 @@ final class JPAContainer extends JPAResource implements Container {
 	/**
 	 * Not final to enable its usage in JPA
 	 */
-	private Map<ResourceId,JPAMember> members;
+	private Map<Key,JPAMember> members;
 
 	/**
 	 * Not final to enable its usage in JPA
@@ -77,18 +77,21 @@ final class JPAContainer extends JPAResource implements Container {
 		this(id,null);
 	}
 
-	private Member createMember(JPAResource newResource) {
+	private Key key() {
+		return Key.newInstance(id());
+	}
+
+	private Member createMember(JPAResource newResource, Key memberId) {
 		long memberIndex=this.memberCounter++;
-		JPAMember member = new JPAMember(id(), newResource.id(), memberIndex);
-		this.members.put(member.memberId(), member);
+		JPAMember member = new JPAMember(key(), memberId, memberIndex);
+		this.members.put(memberId, member);
 		return member;
 	}
 
-	private JPAResource createMemberResource(ResourceId resourceId) {
+	private JPAResource createMemberResource(ResourceId resourceId, Key memberId) {
 		checkNotNull(resourceId,"Member resource identifier cannot be null");
-		checkState(!this.members.containsKey(resourceId),"A resource with id '%s' is already a member of the container",resourceId);
-		JPAResource newResource=createChild(resourceId,template().memberTemplate());
-		return newResource;
+		checkState(!this.members.containsKey(memberId),"A resource with id '%s' is already a member of the container",resourceId);
+		return createChild(resourceId,template().memberTemplate());
 	}
 
 	private ContainerTemplate template() {
@@ -102,30 +105,31 @@ final class JPAContainer extends JPAResource implements Container {
 
 	@Override
 	public Resource addMember(ResourceId resourceId) {
-		JPAResource newResource = createMemberResource(resourceId);
-		createMember(newResource);
+		Key memberId=Key.newInstance(resourceId);
+		JPAResource newResource=createMemberResource(resourceId,memberId);
+		createMember(newResource,memberId);
 		return newResource;
 	}
 
 	@Override
 	public boolean hasMember(ResourceId resource) {
-		return this.members.containsKey(resource);
+		return this.members.containsKey(Key.newInstance(resource));
 	}
 
 	@Override
 	public Set<Member> members() {
-		return ImmutableSet.<Member>copyOf(members.values());
+		return ImmutableSet.<Member>copyOf(this.members.values());
 	}
 
 	@Override
 	public Member findMember(ResourceId resourceId) {
-		return this.members.get(resourceId);
+		return this.members.get(Key.newInstance(resourceId));
 	}
 
 	@Override
 	public boolean removeMember(Member member) {
 		checkNotNull(member,"Member cannot be null");
-		return this.members.remove(member.memberId())!=null;
+		return this.members.remove(Key.newInstance(member.memberId()))!=null;
 	}
 
 	@Override

@@ -24,28 +24,25 @@
  *   Bundle      : ldp4j-application-persistency-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.persistence.jpa;
+package org.ldp4j.application.engine.persistence.encoding;
 
-import javax.persistence.AttributeConverter;
+import org.ldp4j.application.data.Name;
 
-import org.ldp4j.application.engine.context.EntityTag;
+public abstract class Encoder {
 
-public class EntityTagUtils implements AttributeConverter<EntityTag,String> {
+	private static final NameEncoder NAME_ENCODER = new NameEncoder();
+	private static final ValueEncoder VALUE_ENCODER = new ValueEncoder();
 
-	@Override
-	public String convertToDatabaseColumn(EntityTag attribute) {
-		if(attribute==null) {
-			return null;
-		}
-		return attribute.toString();
+	public abstract String encode(Name<?> name);
+
+	public abstract Name<?> decode(String data);
+
+	public static Encoder nameEncoder() {
+		return Encoder.NAME_ENCODER;
 	}
 
-	@Override
-	public EntityTag convertToEntityAttribute(String dbData) {
-		if(dbData==null) {
-			return null;
-		}
-		return EntityTag.valueOf(dbData);
+	public static Encoder valueEncoder() {
+		return Encoder.VALUE_ENCODER;
 	}
 
 }

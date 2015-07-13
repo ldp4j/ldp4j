@@ -26,81 +26,40 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
-import org.ldp4j.application.engine.resource.Member;
-import org.ldp4j.application.engine.resource.ResourceId;
+import javax.persistence.AttributeConverter;
 
-import com.google.common.base.MoreObjects;
+import org.ldp4j.application.engine.context.EntityTag;
 
-final class JPAMember implements Member {
-
-	/**
-	 * Persistent key required by JPA
-	 */
-	private long primaryKey;
-
-	/**
-	 * Surrogate object to guarantee DB portability
-	 */
-	private Key memberId;
+/**
+ * Utility class to enable persisting
+ * {@code org.ldp4j.application.engine.context.EntityTag} objects as
+ * {@code java.lang.String} objects.
+ *
+ * @see org.ldp4j.application.engine.context.EntityTag
+ * @author Miguel Esteban Guti&eacute;rrez
+ */
+public final class EntityTagConverter implements AttributeConverter<EntityTag,String> {
 
 	/**
-	 * Surrogate object to guarantee DB portability
+	 * {@inheritDoc}
 	 */
-	private Key containerId;
-
-	/**
-	 * Not final to enable its usage in JPA
-	 */
-	private long number;
-
-	private JPAMember() {
-		// JPA Friendly
-	}
-
-	JPAMember(Key containerId, Key memberId, long number) {
-		this();
-		this.memberId = memberId;
-		this.containerId = containerId;
-		this.number = number;
+	@Override
+	public String convertToDatabaseColumn(EntityTag attribute) {
+		if(attribute==null) {
+			return null;
+		}
+		return attribute.toString();
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public long number() {
-		return this.number;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ResourceId containerId() {
-		return this.containerId.resourceId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public ResourceId memberId() {
-		return this.memberId.resourceId();
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return
-			MoreObjects.
-				toStringHelper(getClass()).
-					add("primaryKey",this.primaryKey).
-					add("number",this.number).
-					add("containerId",this.containerId).
-					add("memberId", this.memberId).
-					toString();
+	public EntityTag convertToEntityAttribute(String dbData) {
+		if(dbData==null) {
+			return null;
+		}
+		return EntityTag.valueOf(dbData);
 	}
 
 }

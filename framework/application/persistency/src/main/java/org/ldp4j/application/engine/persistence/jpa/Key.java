@@ -26,12 +26,11 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
-import java.io.IOException;
 import java.io.Serializable;
 import java.util.Objects;
 
-import org.apache.commons.codec.binary.Base64;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.engine.persistence.encoding.Encoder;
 import org.ldp4j.application.engine.resource.ResourceId;
 
 import com.google.common.base.MoreObjects;
@@ -77,30 +76,36 @@ final class Key implements Serializable {
 					this.templateId);
 	}
 
-	public synchronized ResourceId resourceId() {
+	synchronized ResourceId resourceId() {
 		if(!this.cacheAvailable) {
 			assemble();
 		}
 		return this.cachedId;
 	}
 
-	public String templateId() {
+	String templateId() {
 		return this.templateId;
 	}
 
-	public String nameType() {
+	String nameType() {
 		return this.nameType;
 	}
 
-	public String nameValue() {
+	String nameValue() {
 		return this.nameValue;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int hashCode() {
 		return Objects.hash(this.templateId,this.nameType,this.nameValue);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		boolean result=false;
@@ -114,6 +119,9 @@ final class Key implements Serializable {
 		return result;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return
@@ -129,39 +137,26 @@ final class Key implements Serializable {
 		return Integer.toHexString(this.nameValue.hashCode());
 	}
 
-	public static Key newInstance(String templateId, String nameType, String nameValue) {
+	static Key newInstance(String templateId, String nameType, String nameValue) {
 		return new Key(null,templateId,nameType,nameValue);
 	}
 
-	public static Key newInstance(ResourceId id) {
+	static Key newInstance(ResourceId id) {
+		if(id==null) {
+			return null;
+		}
 		Name<?> name = id.name();
 		String nameType=name.id().getClass().getCanonicalName();
 		String nameValue=Key.toBase64(name);
 		return new Key(id,id.templateId(),nameType,nameValue);
 	}
 
-	private static String toBase64(Name<?> name) {
-		if(name==null) {
-			return null;
-		}
-		try {
-			byte[] serializedData=SerializationUtils.serialize(name);
-			return Base64.encodeBase64String(serializedData);
-		} catch (IOException e) {
-			throw new AssertionError("Serialization should not fail",e);
-		}
+	static String toBase64(Name<?> name) {
+		return Encoder.valueEncoder().encode(name);
 	}
 
-	private static Name<?> fromBase64(String data) {
-		if(data==null) {
-			return null;
-		}
-		try {
-			byte[] serializedData=Base64.decodeBase64(data);
-			return SerializationUtils.deserialize(serializedData,Name.class);
-		} catch (IOException e) {
-			throw new AssertionError("Deserialization should not fail",e);
-		}
+	static Name<?> fromBase64(String data) {
+		return Encoder.valueEncoder().decode(data);
 	}
 
 }

@@ -43,9 +43,9 @@ final class JPASlug implements Slug {
 	private long primaryKey;
 
 	/**
-	 * Not final to enable its usage in JPA
+	 * Surrogate key to guarantee DB portability
 	 */
-	private ResourceId containerId;
+	private Key containerId;
 
 	/**
 	 * Not final to enable its usage in JPA
@@ -63,7 +63,7 @@ final class JPASlug implements Slug {
 
 	private JPASlug(ResourceId containerId, String preferredPath, long version) {
 		this();
-		this.containerId = containerId;
+		this.containerId = Key.newInstance(containerId);
 		this.preferredPath = preferredPath;
 		this.version=version;
 	}
@@ -73,7 +73,7 @@ final class JPASlug implements Slug {
 	 */
 	@Override
 	public ResourceId containerId() {
-		return this.containerId;
+		return this.containerId.resourceId();
 	}
 
 	/**

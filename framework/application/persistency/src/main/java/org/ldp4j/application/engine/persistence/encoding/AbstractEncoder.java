@@ -24,42 +24,53 @@
  *   Bundle      : ldp4j-application-persistency-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.persistence.jpa;
+package org.ldp4j.application.engine.persistence.encoding;
 
 import java.io.IOException;
-
-import javax.persistence.AttributeConverter;
+import java.io.Serializable;
 
 import org.apache.commons.codec.binary.Base64;
-import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.data.Name;
 
 
-public final class ResourceIdUtils implements AttributeConverter<ResourceId,String> {
+abstract class AbstractEncoder extends Encoder {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public String convertToDatabaseColumn(ResourceId attribute) {
-		if(attribute==null) {
+	public final String encode(Name<?> name) {
+		if(name==null) {
 			return null;
 		}
 		try {
-			byte[] serializedData=SerializationUtils.serialize(attribute);
+			Serializable target = prepare(name);
+			byte[] serializedData=SerializationUtils.serialize(target);
 			return Base64.encodeBase64String(serializedData);
 		} catch (IOException e) {
 			throw new AssertionError("Serialization should not fail",e);
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public ResourceId convertToEntityAttribute(String dbData) {
-		if(dbData==null) {
+	public final Name<?> decode(String data) {
+		if(data==null) {
 			return null;
 		}
 		try {
-			byte[] serializedData=Base64.decodeBase64(dbData);
-			return SerializationUtils.deserialize(serializedData,ResourceId.class);
+			byte[] serializedData=Base64.decodeBase64(data);
+			Serializable subject=SerializationUtils.deserialize(serializedData, Serializable.class);
+			return assemble(subject);
 		} catch (IOException e) {
 			throw new AssertionError("Deserialization should not fail",e);
 		}
 	}
+
+	protected abstract Serializable prepare(Name<?> name);
+
+	protected abstract Name<?> assemble(Serializable subject) throws IOException;
 
 }
