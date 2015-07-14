@@ -246,6 +246,7 @@ public final class ConstraintReportTransformer {
 		requestInd().addValue(httpTerm("methodName"),literal(request.method().toString()));
 		requestInd().addValue(httpTerm("mthd"),externalIndividual(methodsTerm(request.method().toString())));
 		requestInd().addValue(httpTerm("absolutePath"),literal(request.absolutePath()));
+		// TODO: Use the protocol version specified in the request
 		requestInd().addValue(httpTerm("httpVersion"),literal("1.1"));
 
 		Date clientDate = request.clientDate();
@@ -313,7 +314,7 @@ public final class ConstraintReportTransformer {
 			Individual<?,?> typeInd=externalIndividual(type);
 			typeInd.addValue(shaclTerm("typeShape"), shapeCache.individual(constraints.typeShape(type)));
 		}
-		for(Individual<?, ?> node:constraints.nodes()) {
+		for(Individual<?, ?> node:constraints.nodes(dataset)) {
 			Individual<?, ?> individual = translator.translate(node);
 			individual.addValue(shaclTerm("nodeShape"), shapeCache.individual(constraints.nodeShape(node)));
 		}
@@ -338,7 +339,12 @@ public final class ConstraintReportTransformer {
 			populateDescription(pcInd, pc);
 			populateCardinality(pcInd, pc.cardinality());
 			populateNodeKind(pcInd, pc.nodeKind());
-			populateHasValues(pcInd, pc.values(), translator);
+			populateHasValues(pcInd, pc.literals(), translator);
+			populateHasValues(pcInd, pc.individuals(dataset), translator);
+			Set<Value> allowedValues=Sets.newHashSet();
+			allowedValues.addAll(pc.allowedLiterals());
+			allowedValues.addAll(pc.allowedIndividuals(dataset));
+			populateAllowedValues(pcInd, allowedValues, translator);
 			populateValueType(pcInd,pc.valueType());
 			populateDatatype(pcInd,pc.datatype());
 			Shape valueShape = pc.valueShape();
@@ -357,7 +363,12 @@ public final class ConstraintReportTransformer {
 			populateDescription(ipcInd, ipc);
 			populateCardinality(ipcInd, ipc.cardinality());
 			populateNodeKind(ipcInd, ipc.nodeKind());
-			populateHasValues(ipcInd, ipc.values(), translator);
+			populateHasValues(ipcInd, ipc.literals(), translator);
+			populateHasValues(ipcInd, ipc.individuals(dataset), translator);
+			Set<Value> allowedValues=Sets.newHashSet();
+			allowedValues.addAll(ipc.allowedLiterals());
+			allowedValues.addAll(ipc.allowedIndividuals(dataset));
+			populateAllowedValues(ipcInd, allowedValues, translator);
 			populateValueType(ipcInd,ipc.valueType());
 			populateDatatype(ipcInd,ipc.datatype());
 			Shape valueShape = ipc.valueShape();
@@ -411,7 +422,7 @@ public final class ConstraintReportTransformer {
 		}
 	}
 
-	private void populateHasValues(final Individual<?,?> individual, List<Value> values, final IndividualTranslator translator) {
+	private void populateHasValues(final Individual<?,?> individual, List<? extends Value> values, final IndividualTranslator translator) {
 		for(Value value:values) {
 			value.accept(
 				new ValueVisitor() {
@@ -427,6 +438,45 @@ public final class ConstraintReportTransformer {
 				}
 			);
 		}
+	}
+
+	private void populateAllowedValues(LocalIndividual individual, Set<Value> allowedValues, final IndividualTranslator translator) {
+		class ValueAdapter implements ValueVisitor {
+			private Value value=null;
+
+			@Override
+			public void visitLiteral(Literal<?> value) {
+				this.value=value;
+			}
+			@Override
+			public void visitIndividual(Individual<?, ?> value) {
+				this.value=translator.translate(value);
+			}
+		}
+		ValueAdapter adapter=new ValueAdapter();
+		Iterator<Value> values = allowedValues.iterator();
+		if(values.hasNext()) {
+			int i=0;
+			String prefix = individual.id().id()+"_allowedValues_";
+			Individual<?,?> current=localIndividual(prefix+i);
+			individual.addValue(shaclTerm("allowedValues"), current);
+			while(values.hasNext()) {
+				Value value=values.next();
+				value.accept(adapter);
+				current.addValue(vocabularyTerm(RDF.FIRST),adapter.value);
+				if(values.hasNext()) {
+					Individual<?,?> last=current;
+					current=localIndividual(prefix+(++i));
+					last.addValue(vocabularyTerm(RDF.REST),current);
+				} else {
+					current.
+						addValue(
+							vocabularyTerm(RDF.REST),
+							externalIndividual(RDF.NIL.as(URI.class)));
+				}
+			}
+		}
+
 	}
 
 	private ExternalIndividual headerType(Header header) {
