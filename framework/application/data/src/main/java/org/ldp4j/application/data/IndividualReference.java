@@ -26,11 +26,12 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.concurrent.atomic.AtomicReference;
 
 
-public abstract class IndividualReference<T, S extends Individual<T,S>> {
+public abstract class IndividualReference<T extends Serializable, S extends Individual<T,S>> {
 
 	public static class ManagedIndividualReference extends IndividualReference<ManagedIndividualId,ManagedIndividual> {
 
@@ -166,7 +167,7 @@ public abstract class IndividualReference<T, S extends Individual<T,S>> {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T,S extends Individual<T,S>> IndividualReference<T,S> fromIndividual(Individual<T,S> value) {
+	public static <T extends Serializable,S extends Individual<T,S>> IndividualReference<T,S> fromIndividual(Individual<T,S> value) {
 		final AtomicReference<IndividualReference<?,?>> result=new AtomicReference<IndividualReference<?,?>>();
 		value.accept(
 			new IndividualVisitor() {

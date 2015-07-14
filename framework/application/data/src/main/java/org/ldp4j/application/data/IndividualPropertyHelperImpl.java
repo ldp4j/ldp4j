@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Set;
 
@@ -53,7 +54,7 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz) {
+	public <T extends Serializable, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz) {
 		return this.pHelper.firstIndividual(clazz);
 	}
 

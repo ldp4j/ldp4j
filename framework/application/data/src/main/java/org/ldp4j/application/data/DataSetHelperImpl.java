@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -114,9 +115,9 @@ final class DataSetHelperImpl extends DataSetHelper {
 	}
 
 	@Override
-	public <T, S extends Individual<T, S>>  S replace(Object from, T to, Class<? extends S> clazz) {
+	public <T extends Serializable, S extends Individual<T, S>>  S replace(Serializable from, T to, Class<? extends S> clazz) {
 		S target=this.dataSet.individual(to, clazz);
-		Individual<Object, ?> src=this.dataSet.individualOfId(from);
+		Individual<?, ?> src=this.dataSet.individualOfId(from);
 		if(src!=null) {
 			rename(src,target);
 		}

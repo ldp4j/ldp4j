@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 
 import org.ldp4j.application.vocabulary.Term;
@@ -85,7 +86,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T, S extends Individual<T,S>> T firstIndividual(final Class<? extends S> clazz) {
+	public <T extends Serializable, S extends Individual<T,S>> T firstIndividual(final Class<? extends S> clazz) {
 		Property property=getProperty();
 		if(property==null) {
 			return null;

@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
@@ -79,12 +80,12 @@ final class MutableDataSet implements DataSet {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T> Individual<T,?> individualOfId(T id) {
+	public <T extends Serializable> Individual<T,?> individualOfId(T id) {
 		return (Individual<T,?>)this.individuals.get(id);
 	}
 
 	@Override
-	public <T, S extends Individual<T, S>> S individual(T id, Class<? extends S> clazz) {
+	public <T extends Serializable, S extends Individual<T, S>> S individual(T id, Class<? extends S> clazz) {
 		Individual<T,?> result=individualOfId(id);
 		if(result==null) {
 			result=factory.newIndividual(clazz,id);

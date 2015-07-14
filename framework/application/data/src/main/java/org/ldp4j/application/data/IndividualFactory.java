@@ -26,8 +26,10 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Map;
+
 
 
 import com.google.common.collect.ImmutableMap;
@@ -128,7 +130,7 @@ final class IndividualFactory {
 		this.dataSet = dataSet;
 	}
 
-	<T, S extends Individual<T,S>> Individual<T,S> newIndividual(Class<? extends S> clazz, T id) {
+	<T extends Serializable, S extends Individual<T,S>> Individual<T,S> newIndividual(Class<? extends S> clazz, T id) {
 		Factory<?> factory=FACTORIES.get(clazz);
 		if(factory==null) {
 			throw new IllegalStateException("Unsupported individual type '"+clazz.getCanonicalName()+"'");

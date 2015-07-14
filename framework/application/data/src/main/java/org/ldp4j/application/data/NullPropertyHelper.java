@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 
 import org.ldp4j.application.vocabulary.Term;
@@ -63,7 +64,7 @@ final class NullPropertyHelper implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz) {
+	public <T extends Serializable, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz) {
 		return null;
 	}
 

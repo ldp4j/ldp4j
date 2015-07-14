@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 
 import org.ldp4j.application.vocabulary.Term;
@@ -36,7 +37,7 @@ public interface PropertyHelper {
 
 	IndividualHelper firstIndividual();
 
-	<T, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz);
+	<T extends Serializable, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz);
 
 	/**
 	 * Add a literal value
