@@ -34,7 +34,7 @@ interface Store {
 	void addLink(IndividualReference<?,?> individualId, URI property, IndividualReference<?,?> targetId);
 
 	void addValue(IndividualReference<?,?> individualId, URI property, Object value);
-	
+
 	DataSet serialize();
 
 }

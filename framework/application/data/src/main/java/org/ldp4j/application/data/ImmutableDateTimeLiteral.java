@@ -26,14 +26,43 @@
  */
 package org.ldp4j.application.data;
 
+import java.net.URI;
 
-final class ValueFactory {
+import org.joda.time.DateTime;
 
-	private ValueFactory() {
+final class ImmutableDateTimeLiteral implements DateTimeLiteral {
+
+	/**
+	 *
+	 */
+	private static final long serialVersionUID = 2311445959339832121L;
+
+	private final DateTime dateTime;
+	private final URI dataType;
+
+	ImmutableDateTimeLiteral(DateTime dateTime, URI dataType) {
+		this.dateTime = dateTime;
+		this.dataType = dataType;
 	}
-	
-	static <T> Value newLiteral(T rawValue) {
-		return new ImmutableLiteral<T>(rawValue);
+
+	@Override
+	public void accept(ValueVisitor visitor) {
+		visitor.visitLiteral(this);
+	}
+
+	@Override
+	public DateTime get() {
+		return this.dateTime;
+	}
+
+	@Override
+	public void accept(LiteralVisitor visitor) {
+		visitor.visitTypedLiteral(this);
+	}
+
+	@Override
+	public URI type() {
+		return this.dataType;
 	}
 
 }

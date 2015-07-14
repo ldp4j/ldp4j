@@ -20,18 +20,37 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
-import java.io.Serializable;
+import java.net.URI;
 
-public interface Literal<T> extends Serializable, Value {
+public class DatatypeCohercionException extends RuntimeException {
 
-	T get();
+	private static final long serialVersionUID = 4890445503107565445L;
 
-	void accept(LiteralVisitor visitor);
+	private final String value;
+	private final URI datatype;
+
+	public DatatypeCohercionException(Object value, URI datatype) {
+		this(value,datatype,null);
+	}
+
+	public DatatypeCohercionException(Object value, URI datatype, Throwable cause) {
+		super(String.format("Value %s (%s) cannot be coherced to %s",value,value.getClass().getName(),datatype),cause);
+		this.value = value.toString();
+		this.datatype = datatype;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public URI getDatatype() {
+		return datatype;
+	}
 
 }

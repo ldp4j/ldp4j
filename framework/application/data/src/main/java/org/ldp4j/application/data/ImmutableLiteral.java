@@ -26,9 +26,11 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 
+final class ImmutableLiteral<T extends Serializable> implements Literal<T> {
 
-final class ImmutableLiteral<T> implements Literal<T> {
+	private static final long serialVersionUID = 7931003982852019934L;
 
 	private final T value;
 

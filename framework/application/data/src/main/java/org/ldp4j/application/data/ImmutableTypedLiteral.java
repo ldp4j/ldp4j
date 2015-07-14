@@ -26,11 +26,12 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 
+final class ImmutableTypedLiteral<T extends Serializable> implements TypedLiteral<T> {
 
-
-final class ImmutableTypedLiteral<T> implements TypedLiteral<T> {
+	private static final long serialVersionUID = -7467201601402003544L;
 
 	private final T value;
 	private final URI type;

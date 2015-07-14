@@ -35,19 +35,19 @@ public final class DataDSL {
 	//--------------------------------------------------------------------------
 
 	public interface RecursiveDataSetBuilder extends DataSetBuilder {
-		
+
 		DataSet build();
 	}
-	
-	public interface RecursiveIndividualBuilder 
+
+	public interface RecursiveIndividualBuilder
 		extends IndividualBuilder, RecursiveDataSetBuilder {
 	}
 
-	public interface RecursiveObjectPropertyBuilder 
+	public interface RecursiveObjectPropertyBuilder
 		extends ObjectPropertyBuilder, RecursiveIndividualBuilder {
 	}
 
-	public interface RecursiveDatatypePropertyBuilder 
+	public interface RecursiveDatatypePropertyBuilder
 		extends DatatypePropertyBuilder, RecursiveIndividualBuilder {
 	}
 
@@ -61,27 +61,27 @@ public final class DataDSL {
 	public interface DatatypePropertyBuilder {
 
 		RecursiveDatatypePropertyBuilder withValue(Object value);
-		
+
 	}
-	
+
 	public interface IndividualBuilder {
-		
+
 		ObjectPropertyBuilder hasLink(String id);
 		DatatypePropertyBuilder hasProperty(String id);
-		
+
 	}
-	
+
 	public interface DataSetBuilder {
 
 		IndividualBuilder individual(IndividualReference<?,?> reference);
 
-	}	
+	}
 
 	//--------------------------------------------------------------------------
 	// Default DataDSL implementation
 	//--------------------------------------------------------------------------
 
-	private abstract static class AbstractIndividualBuilder 
+	private abstract static class AbstractIndividualBuilder
 		extends Configurable
 		implements IndividualBuilder {
 
@@ -103,8 +103,8 @@ public final class DataDSL {
 
 	}
 
-	private abstract static class AbstractRecursiveIndividualBuilder 
-		extends AbstractIndividualBuilder 
+	private abstract static class AbstractRecursiveIndividualBuilder
+		extends AbstractIndividualBuilder
 		implements RecursiveIndividualBuilder {
 
 		protected AbstractRecursiveIndividualBuilder(Configurable configurable) {
@@ -124,11 +124,11 @@ public final class DataDSL {
 	}
 
 	private static final class ObjectPropertyBuilderImpl extends Configurable implements ObjectPropertyBuilder {
-	
-		private final class InnerObjectPropertyBuilder 
-			extends AbstractRecursiveIndividualBuilder 
+
+		private final class InnerObjectPropertyBuilder
+			extends AbstractRecursiveIndividualBuilder
 			implements RecursiveObjectPropertyBuilder {
-	
+
 			protected InnerObjectPropertyBuilder() {
 				super(ObjectPropertyBuilderImpl.this);
 			}
@@ -137,7 +137,7 @@ public final class DataDSL {
 			public RecursiveObjectPropertyBuilder referringTo(IndividualReference<?,?> id) {
 				return ObjectPropertyBuilderImpl.this.referringTo(id);
 			}
-	
+
 			@Override
 			public IndividualBuilder toIndividual(IndividualReference<?,?> id) {
 				return ObjectPropertyBuilderImpl.this.toIndividual(id);
@@ -149,22 +149,22 @@ public final class DataDSL {
 			}
 
 		}
-	
+
 		private final IndividualReference<?,?> individualId;
 		private final String propertyId;
 		private final InnerObjectPropertyBuilder recursive;
-	
+
 		private ObjectPropertyBuilderImpl(Configurable ctx, IndividualReference<?,?> individualId, String propertyId) {
 			super(ctx);
 			this.individualId = individualId;
 			this.propertyId = propertyId;
 			this.recursive = new InnerObjectPropertyBuilder();
 		}
-	
+
 		private void addLinkToStore(IndividualReference<?,?> reference) {
 			getStore().addLink(individualId, URI.create(propertyId), reference);
 		}
-	
+
 		@Override
 		public RecursiveObjectPropertyBuilder referringTo(IndividualReference<?,?> targetReference) {
 			addLinkToStore(targetReference);
@@ -176,15 +176,15 @@ public final class DataDSL {
 			addLinkToStore(targetReference);
 			return new IndividualBuilderImpl(this,targetReference);
 		}
-	
+
 	}
 
 	private static final class DatatypePropertyBuilderImpl extends Configurable implements DatatypePropertyBuilder {
-	
-		private final class InnerDatatypePropertyBuilder 
-			extends AbstractRecursiveIndividualBuilder 
+
+		private final class InnerDatatypePropertyBuilder
+			extends AbstractRecursiveIndividualBuilder
 			implements RecursiveDatatypePropertyBuilder {
-				
+
 			protected InnerDatatypePropertyBuilder() {
 				super(DatatypePropertyBuilderImpl.this);
 			}
@@ -200,30 +200,30 @@ public final class DataDSL {
 			}
 
 		}
-	
+
 		private final String propertyId;
 		private final IndividualReference<?,?> individualReference;
 		private final InnerDatatypePropertyBuilder recursive;
-	
+
 		private DatatypePropertyBuilderImpl(Configurable ctx, IndividualReference<?,?> individualId, String propertyId) {
 			super(ctx);
 			this.individualReference = individualId;
 			this.propertyId = propertyId;
 			this.recursive = new InnerDatatypePropertyBuilder();
 		}
-	
+
 		@Override
 		public RecursiveDatatypePropertyBuilder withValue(Object value) {
 			getStore().addValue(this.individualReference, URI.create(this.propertyId), value);
 			return recursive;
 		}
-		
+
 	}
 
 	private static final class IndividualBuilderImpl extends AbstractIndividualBuilder {
-	
+
 		private final IndividualReference<?,?> individualReference;
-	
+
 		private IndividualBuilderImpl(Configurable configurable, IndividualReference<?,?> individualReference) {
 			super(configurable);
 			this.individualReference = individualReference;
@@ -241,21 +241,21 @@ public final class DataDSL {
 		private DataSetBuilderImpl(Store store) {
 			super(store);
 		}
-	
+
 		@Override
 		public IndividualBuilder individual(IndividualReference<?,?> reference) {
 			return new IndividualBuilderImpl(this,reference);
 		}
 	}
-	
+
 	private static abstract class Configurable {
-		
+
 		private final Store store;
-	
+
 		private Configurable(Store store) {
 			this.store = store;
 		}
-		
+
 		protected Configurable(Configurable configurable) {
 			this(configurable.store);
 		}
@@ -265,7 +265,7 @@ public final class DataDSL {
 		}
 
 	}
-	
+
 	private DataDSL() {
 	}
 

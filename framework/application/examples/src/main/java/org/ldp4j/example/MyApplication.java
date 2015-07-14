@@ -29,11 +29,8 @@ package org.ldp4j.example;
 import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference;
 
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.ldp4j.application.data.DataDSL;
 import org.ldp4j.application.data.DataSet;
@@ -72,15 +69,15 @@ public class MyApplication extends Application<Configuration> {
 	}
 
 	private DataSet getInitialData(String templateId, String name) throws DatatypeConfigurationException {
-		GregorianCalendar gc=new GregorianCalendar();
-		gc.setTime(new Date());
-		XMLGregorianCalendar date=DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
+//		GregorianCalendar gc=new GregorianCalendar();
+//		gc.setTime(new Date());
+//		XMLGregorianCalendar date=DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
 		DataSet initial=
 			DataDSL.
 				dataSet().
 					individual(newReference().toManagedIndividual(templateId).named(name)).
 						hasProperty("http://www.ldp4j.org/vocabulary/example#creationDate").
-							withValue(date).
+							withValue(new Date()).
 						hasProperty("http://www.ldp4j.org/vocabulary/example#age").
 							withValue(34).
 						hasLink("http://www.ldp4j.org/vocabulary/example#hasFather").

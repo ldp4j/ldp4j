@@ -32,13 +32,14 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetHelper;
 import org.ldp4j.application.data.DataSetModificationException;
 import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.Literals;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.ext.InconsistentContentException;
-import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.application.ext.Modifiable;
+import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
@@ -85,7 +86,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 			individual.
 				addValue(
 					TCKFHelper.READ_ONLY_PROPERTY,
-					DataSetUtils.newLiteral(new Date().toString()));
+					Literals.of(new Date()).dateTime());
 		} catch (DataSetModificationException e) {
 			// TODO: Verify this weird error
 			Constraints constraints = Constraints.constraints();

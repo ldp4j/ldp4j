@@ -20,18 +20,46 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
-import java.io.Serializable;
+import java.net.URI;
 
-public interface Literal<T> extends Serializable, Value {
+import org.joda.time.Duration;
 
-	T get();
+final class ImmutableDurationLiteral implements DurationLiteral {
 
-	void accept(LiteralVisitor visitor);
+	private static final long serialVersionUID = -7312919003663624256L;
+
+	private final Duration duration;
+	private final URI dataType;
+
+	ImmutableDurationLiteral(Duration duration, URI dataType) {
+		this.duration = duration;
+		this.dataType = dataType;
+	}
+
+	@Override
+	public void accept(ValueVisitor visitor) {
+		visitor.visitLiteral(this);
+	}
+
+	@Override
+	public Duration get() {
+		return this.duration;
+	}
+
+	@Override
+	public void accept(LiteralVisitor visitor) {
+		visitor.visitTypedLiteral(this);
+	}
+
+	@Override
+	public URI type() {
+		return this.dataType;
+	}
 
 }

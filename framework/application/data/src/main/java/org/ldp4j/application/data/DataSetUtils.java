@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -210,21 +211,22 @@ public final class DataSetUtils {
 		}
 	}
 
-	public static <T> Literal<T> newLiteral(T value) {
+	@Deprecated
+	public static <T extends Serializable> Literal<T> newLiteral(T value) {
 		Preconditions.checkNotNull(value,"Literal value cannot be null");
 		return new ImmutableLiteral<T>(value);
 	}
 
-	public static <T> TypedLiteral<T> newTypedLiteral(T value, URI datatype) {
+	@Deprecated
+	public static <T extends Serializable> TypedLiteral<T> newTypedLiteral(T value, URI datatype) {
 		Preconditions.checkNotNull(value,"Literal value cannot be null");
 		Preconditions.checkNotNull(datatype,"Literal datatype cannot be null");
 		return new ImmutableTypedLiteral<T>(value,datatype);
 	}
 
-	public static LanguageLiteral newLanguageLiteral(String value, String datatype) {
-		Preconditions.checkNotNull(value,"Literal value cannot be null");
-		Preconditions.checkNotNull(datatype,"Literal languages cannot be null");
-		return new ImmutableLanguageLiteral(value,datatype);
+	@Deprecated
+	public static LanguageLiteral newLanguageLiteral(String value, String language) {
+		return Literals.newLanguageLiteral(value, language);
 	}
 
 	public static boolean hasLiteral(Literal<?> literal, Property property) {

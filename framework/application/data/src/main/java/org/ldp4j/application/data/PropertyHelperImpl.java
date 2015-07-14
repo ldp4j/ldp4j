@@ -28,9 +28,6 @@ package org.ldp4j.application.data;
 
 import java.net.URI;
 
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.Property;
-import org.ldp4j.application.data.Value;
 import org.ldp4j.application.vocabulary.Term;
 
 final class PropertyHelperImpl implements PropertyHelper {
@@ -109,7 +106,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 	@Override
 	public <T> IndividualPropertyHelper withLiteral(T rawValue) {
 		if(rawValue!=null) {
-			Literal<T> value = DataSetUtils.newLiteral(rawValue);
+			Literal<?> value = Literals.newLiteral(rawValue);
 			this.individual.addValue(this.propertyId,value);
 		}
 		return new IndividualPropertyHelperImpl(new IndividualHelperImpl(this.individual),this);

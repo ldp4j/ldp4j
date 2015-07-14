@@ -26,7 +26,12 @@
  */
 package org.ldp4j.application.engine.context;
 
-public final class EntityTag {
+import java.io.Serializable;
+
+public final class EntityTag implements Serializable {
+
+	private static final long serialVersionUID = 1537356414568176655L;
+
 	private final boolean isWeak;
 	private final String value;
 

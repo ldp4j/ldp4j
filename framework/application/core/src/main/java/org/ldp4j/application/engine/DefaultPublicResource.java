@@ -29,9 +29,9 @@ package org.ldp4j.application.engine;
 import java.net.URI;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.Literals;
 import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
@@ -93,7 +93,7 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 		}
 
 		public Value value(Object value) {
-			return DataSetUtils.newLiteral(value);
+			return Literals.newLiteral(value);
 		}
 	}
 

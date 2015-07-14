@@ -20,18 +20,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
-import java.io.Serializable;
+import org.joda.time.DateTime;
 
-public interface Literal<T> extends Serializable, Value {
-
-	T get();
-
-	void accept(LiteralVisitor visitor);
+public interface DateTimeLiteral extends TypedLiteral<DateTime> {
 
 }

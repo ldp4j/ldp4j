@@ -28,8 +28,8 @@ package org.ldp4j.server.data;
 
 import static org.ldp4j.rdf.util.RDFModelDSL.blankNode;
 import static org.ldp4j.rdf.util.RDFModelDSL.literal;
-import static org.ldp4j.rdf.util.RDFModelDSL.typedLiteral;
 import static org.ldp4j.rdf.util.RDFModelDSL.triple;
+import static org.ldp4j.rdf.util.RDFModelDSL.typedLiteral;
 import static org.ldp4j.rdf.util.RDFModelDSL.uriRef;
 
 import java.net.URI;
@@ -41,6 +41,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import javax.xml.namespace.QName;
 
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.IndividualVisitor;
@@ -56,6 +58,7 @@ import org.ldp4j.application.data.NewIndividual;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.RelativeIndividual;
 import org.ldp4j.application.data.RelativeIndividualId;
+import org.ldp4j.application.data.TimeUtils;
 import org.ldp4j.application.data.TypedLiteral;
 import org.ldp4j.application.data.ValueVisitor;
 import org.ldp4j.application.vocabulary.Term;
@@ -131,7 +134,13 @@ final class TripleSetBuilder {
 			}
 			@Override
 			public void visitTypedLiteral(TypedLiteral<?> literal) {
-				append(typedLiteral(literal.get(),literal.type()));
+				Object value = literal.get();
+				if(value instanceof DateTime) {
+					value=TripleSetBuilder.this.timeUtils.from((DateTime)value).toXMLGregorianCalendar();
+				} else if(value instanceof Duration) {
+					value=TripleSetBuilder.this.timeUtils.from((Duration)value).toDuration();
+				}
+				append(typedLiteral(value,literal.type()));
 			}
 			@Override
 			public void visitLanguageLiteral(LanguageLiteral literal) {
@@ -184,6 +193,7 @@ final class TripleSetBuilder {
 
 	private final URI base;
 	private TripleSet triples;
+	private final TimeUtils timeUtils;
 
 	TripleSetBuilder(ResourceResolver resourceResolver, URI base) {
 		this.resourceResolver=resourceResolver;
@@ -191,6 +201,8 @@ final class TripleSetBuilder {
 		this.localResources=new HashMap<Object,Resource<?>>();
 		this.visitedIndividuals=new ArrayList<Object>();
 		this.triples=new TripleSet();
+		// TODO: Make this configurable --> See Literals class
+		this.timeUtils=TimeUtils.newInstance();
 	}
 
 	private Resource<?> toResource(Individual<?,?> individual) {

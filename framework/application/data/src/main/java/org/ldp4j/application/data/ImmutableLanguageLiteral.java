@@ -29,6 +29,8 @@ package org.ldp4j.application.data;
 
 final class ImmutableLanguageLiteral implements LanguageLiteral {
 
+	private static final long serialVersionUID = -8602353246169016363L;
+
 	private final String value;
 	private final String language;
 

@@ -30,24 +30,19 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.net.URI;
 import java.util.Date;
-import java.util.GregorianCalendar;
 import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
-
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
-import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.IndividualVisitor;
 import org.ldp4j.application.data.Literal;
+import org.ldp4j.application.data.Literals;
 import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
@@ -242,7 +237,7 @@ public final class ConstraintReportTransformer {
 
 	private void populateResourceIndividual(Endpoint endpoint) {
 		resourceInd().addValue(ldp4jTerm("entityTag"), literal(endpoint.entityTag()));
-		resourceInd().addValue(ldp4jTerm("lastModified"), literal(dateTime(endpoint.lastModified())));
+		resourceInd().addValue(ldp4jTerm("lastModified"), literal(endpoint.lastModified()));
 		resourceInd().addValue(ldpTerm("constrainedBy"), reportInd());
 	}
 
@@ -298,7 +293,7 @@ public final class ConstraintReportTransformer {
 		LOGGER.debug("Populating constraints: {}",constraints);
 		reportInd().addValue(vocabularyTerm(RDF.TYPE), externalIndividual(ldp4jTerm("ConstraintReport")));
 		reportInd().addValue(ldp4jTerm("failureId"), literal(this.report.id().failureId()));
-		reportInd().addValue(ldp4jTerm("failureDate"), literal(dateTime(this.report.getDate())));
+		reportInd().addValue(ldp4jTerm("failureDate"), literal(this.report.getDate()));
 		reportInd().addValue(ldp4jTerm("failureRequest"), requestInd());
 
 		IndividualTranslator translator = new IndividualTranslator();
@@ -324,21 +319,6 @@ public final class ConstraintReportTransformer {
 		}
 
 
-	}
-
-	private XMLGregorianCalendar dateTime(Date date) {
-		XMLGregorianCalendar newXMLGregorianCalendar=null;
-		try {
-			GregorianCalendar gc=new GregorianCalendar();
-			gc.setTime(date);
-			newXMLGregorianCalendar =
-				DatatypeFactory.
-					newInstance().
-						newXMLGregorianCalendar(gc);
-		} catch (DatatypeConfigurationException e) {
-			throw new IllegalStateException("Could not configure datatype",e);
-		}
-		return newXMLGregorianCalendar;
 	}
 
 	private Set<Shape> populateShapeDefinition(Shape shape, ShapeIndividualCache cache, IndividualTranslator translator) {
@@ -476,12 +456,12 @@ public final class ConstraintReportTransformer {
 		return new ConstraintReportTransformer(resource, report);
 	}
 
-	private static <T> Literal<T> literal(T value) {
-		return DataSetUtils.newLiteral(value);
+	private static Literal<?> literal(Object value) {
+		return Literals.newLiteral(value);
 	}
 
-	private static <T> Literal<T> typedLiteral(T value, String type) {
-		return DataSetUtils.newTypedLiteral(value, URI.create("http://www.w3.org/2001/XMLSchema#"+type));
+	private static Literal<?> typedLiteral(Object value, String type) {
+		return Literals.newTypedLiteral(value, URI.create("http://www.w3.org/2001/XMLSchema#"+type));
 	}
 
 	private static URI vocabularyTerm(Term term) {

@@ -40,7 +40,7 @@
 		<version>1.0.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
-	
+
 	<artifactId>ldp4j-application-data</artifactId>
 
 	<!-- =================================================================== -->
@@ -71,6 +71,10 @@
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-api</artifactId>
 		</dependency>
+		<dependency>
+			<groupId>joda-time</groupId>
+			<artifactId>joda-time</artifactId>
+		</dependency>
 	</dependencies>
-	
+
 </project>

@@ -28,10 +28,12 @@ package org.ldp4j.server.data;
 
 import java.net.URI;
 
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.Literals;
 import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
@@ -71,17 +73,17 @@ final class ValueAdapter {
 
 		@Override
 		public Value visitLanguageLiteral(LanguageLiteral node, Value defaultResult) {
-			return DataSetUtils.newLanguageLiteral(node.getValue(),node.getLanguage());
+			return Literals.newLanguageLiteral(node.getValue(),node.getLanguage());
 		}
 
 		@Override
 		public Value visitTypedLiteral(TypedLiteral<?> node, Value defaultResult) {
-			return DataSetUtils.newTypedLiteral(node.getValue(),node.getType().toURI());
+			return Literals.newTypedLiteral(serializable(node.getValue()),node.getType().toURI());
 		}
 
 		@Override
 		public Value visitLiteral(Literal<?> node, Value defaultResult) {
-			return DataSetUtils.newLiteral(node.getValue());
+			return Literals.newLiteral(serializable(node.getValue()));
 		}
 
 		@Override
@@ -110,6 +112,15 @@ final class ValueAdapter {
 		this.dataSet = dataSet;
 		this.individualGenerator = new IndividualGenerator();
 		this.objectGenerator = new ObjectGenerator();
+	}
+
+	private Object serializable(Object value) {
+		if(value instanceof XMLGregorianCalendar) {
+			XMLGregorianCalendar calendar=(XMLGregorianCalendar)value;
+			// TODO: Make this configurable --> See Literals class
+			return calendar.toGregorianCalendar().getTime();
+		}
+		return value;
 	}
 
 	private Individual<?, ?> resolveURIRef(URIRef node) {
