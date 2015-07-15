@@ -37,14 +37,14 @@ import java.util.Arrays;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-final class SerializationUtils {
+public final class SerializationUtils {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(SerializationUtils.class);
 
 	private SerializationUtils() {
 	}
 
-	static <T extends Serializable> T deserialize(byte[] binary, Class<? extends T> clazz) throws IOException {
+	public static <T extends Serializable> T deserialize(byte[] binary, Class<? extends T> clazz) throws IOException {
 		try {
 			ByteArrayInputStream is = new ByteArrayInputStream(binary);
 			ObjectInputStream in = new ObjectInputStream(is);
@@ -59,7 +59,7 @@ final class SerializationUtils {
 		}
 	}
 
-	static byte[] serialize(Serializable object) throws IOException {
+	public static byte[] serialize(Serializable object) throws IOException {
 		try {
 			ByteArrayOutputStream os = new ByteArrayOutputStream();
 			ObjectOutputStream out = new ObjectOutputStream(os);

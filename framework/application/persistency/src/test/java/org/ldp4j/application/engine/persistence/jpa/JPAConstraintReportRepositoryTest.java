@@ -26,27 +26,36 @@
  */
 package org.ldp4j.application.engine.persistence.jpa;
 
+import java.io.IOException;
 import java.util.Date;
 
 import org.junit.Test;
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.engine.constraints.ConstraintReport;
 import org.ldp4j.application.engine.constraints.ConstraintReportId;
 import org.ldp4j.application.engine.constraints.ConstraintReportRepository;
-import org.ldp4j.application.engine.context.HttpRequest;
+import org.ldp4j.application.engine.persistence.encoding.SerializationUtils;
 import org.ldp4j.application.engine.resource.ResourceId;
+
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public class JPAConstraintReportRepositoryTest extends AbstractJPARepositoryTest<ConstraintReportRepository> {
 
 	@Test
+	public void testSerializability() throws IOException {
+		Constraints constraints = constraints();
+		byte[] serialize = SerializationUtils.serialize(constraints);
+		Constraints deserialize = SerializationUtils.deserialize(serialize,Constraints.class);
+		assertThat(constraints.toString(),equalTo(deserialize.toString()));
+	}
+
+	@Test
 	public void testRepository() throws Exception {
-		Name<String> name = NamingScheme.getDefault().name("resource");
-		ResourceId resourceId = ResourceId.createId(name,"template");
+		ResourceId resourceId = ResourceId.createId(name("resource"),"template");
 		Date date = new Date();
-		final HttpRequest req1 = httpRequest();
-		final ConstraintReport ep1 = new JPAConstraintReport(ConstraintReportId.create(resourceId, "failure1"), new Date(date.getTime()-3600000),req1,null);
-		final ConstraintReport ep2 = new JPAConstraintReport(ConstraintReportId.create(resourceId, "failure2"), date,null,null);
+		final ConstraintReport ep1 = new JPAConstraintReport(ConstraintReportId.create(resourceId, "failure1"), new Date(date.getTime()-3600000),httpRequest(),constraints());
+		final ConstraintReport ep2 = new JPAConstraintReport(ConstraintReportId.create(resourceId, "failure2"), date,httpRequest(),null);
 		withinTransaction(
 			new Task<ConstraintReportRepository>("Creating reports") {
 				@Override

@@ -84,6 +84,11 @@
 			<artifactId>ldp4j-application-examples</artifactId>
 			<scope>test</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-sdk</artifactId>
+			<scope>test</scope>
+		</dependency>
 	</dependencies>
 
 </project>

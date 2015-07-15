@@ -62,9 +62,11 @@
 			</orm:id>
 			<orm:basic name="date"/>
 			<orm:basic name="request">
+				<orm:column length="262144"/> <!-- 256KB -->
 				<orm:lob/>
 			</orm:basic>
 			<orm:basic name="constraints">
+				<orm:column length="262144"/> <!-- 256KB -->
 				<orm:lob/>
 			</orm:basic>
 			<orm:embedded name="id"/>

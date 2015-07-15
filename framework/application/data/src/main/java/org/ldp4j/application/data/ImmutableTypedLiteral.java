@@ -28,6 +28,9 @@ package org.ldp4j.application.data;
 
 import java.io.Serializable;
 import java.net.URI;
+import java.util.Objects;
+
+import com.google.common.base.MoreObjects;
 
 final class ImmutableTypedLiteral<T extends Serializable> implements TypedLiteral<T> {
 
@@ -41,24 +44,72 @@ final class ImmutableTypedLiteral<T extends Serializable> implements TypedLitera
 		this.type = type;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void accept(ValueVisitor visitor) {
 		visitor.visitLiteral(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public T get() {
 		return value;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void accept(LiteralVisitor visitor) {
 		visitor.visitTypedLiteral(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public URI type() {
 		return this.type;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.value,this.type);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj instanceof TypedLiteral) {
+			TypedLiteral<?> that=(TypedLiteral<?>)obj;
+			result=
+				Objects.equals(this.value, that.get()) &&
+				Objects.equals(this.type, that.type()) &&
+				!(obj instanceof LanguageLiteral);
+		}
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					add("value",this.value).
+					add("type", this.type).
+					toString();
+	}
 }

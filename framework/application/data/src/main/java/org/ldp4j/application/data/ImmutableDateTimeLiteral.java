@@ -27,8 +27,11 @@
 package org.ldp4j.application.data;
 
 import java.net.URI;
+import java.util.Objects;
 
 import org.joda.time.DateTime;
+
+import com.google.common.base.MoreObjects;
 
 final class ImmutableDateTimeLiteral implements DateTimeLiteral {
 
@@ -45,24 +48,73 @@ final class ImmutableDateTimeLiteral implements DateTimeLiteral {
 		this.dataType = dataType;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void accept(ValueVisitor visitor) {
 		visitor.visitLiteral(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public DateTime get() {
 		return this.dateTime;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void accept(LiteralVisitor visitor) {
 		visitor.visitTypedLiteral(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public URI type() {
 		return this.dataType;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.dateTime,this.dataType);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj instanceof TypedLiteral) {
+			TypedLiteral<?> that=(TypedLiteral<?>)obj;
+			result=
+				Objects.equals(this.dateTime, that.get()) &&
+				Objects.equals(this.dataType, that.type()) &&
+				!(obj instanceof LanguageLiteral);
+		}
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					add("dateTime",this.dateTime).
+					add("dataType", this.dataType).
+					toString();
 	}
 
 }

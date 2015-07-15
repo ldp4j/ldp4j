@@ -533,8 +533,8 @@ public final class Constraints implements Serializable {
 		return new PropertyConstraint(predicate);
 	}
 
-	public static PropertyConstraint inversePropertyConstraint(URI predicate) {
-		return new PropertyConstraint(predicate);
+	public static InversePropertyConstraint inversePropertyConstraint(URI predicate) {
+		return new InversePropertyConstraint(predicate);
 	}
 
 }

@@ -27,6 +27,9 @@
 package org.ldp4j.application.data;
 
 import java.io.Serializable;
+import java.util.Objects;
+
+import com.google.common.base.MoreObjects;
 
 final class ImmutableLiteral<T extends Serializable> implements Literal<T> {
 
@@ -38,19 +41,64 @@ final class ImmutableLiteral<T extends Serializable> implements Literal<T> {
 		this.value = value;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void accept(ValueVisitor visitor) {
 		visitor.visitLiteral(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public T get() {
 		return this.value;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void accept(LiteralVisitor visitor) {
 		visitor.visitLiteral(this);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.value);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj instanceof Literal) {
+			Literal<?> that=(Literal<?>)obj;
+			result=
+				Objects.equals(this.value, that.get()) &&
+				!(obj instanceof TypedLiteral<?>) &&
+				!(obj instanceof LanguageLiteral);
+		}
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					add("value", this.value).
+					toString();
 	}
 
 }

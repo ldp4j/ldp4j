@@ -37,9 +37,6 @@ import static com.google.common.base.Preconditions.*;
 
 public final class ConstraintReportId implements Serializable {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -1692929146077368881L;
 
 	/**

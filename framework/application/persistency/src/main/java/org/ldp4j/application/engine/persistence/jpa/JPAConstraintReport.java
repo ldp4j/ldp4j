@@ -48,6 +48,7 @@ final class JPAConstraintReport implements ConstraintReport {
 	private Constraints constraints;
 
 	private JPAConstraintReport() {
+		// JPA Friendly
 	}
 
 	JPAConstraintReport(ConstraintReportId id, Date date, HttpRequest request, Constraints constraints) {
@@ -58,26 +59,41 @@ final class JPAConstraintReport implements ConstraintReport {
 		this.constraints = constraints;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ConstraintReportId id() {
 		return this.id;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Date getDate() {
 		return this.date;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public HttpRequest getRequest() {
 		return this.request;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Constraints getConstraints() {
 		return this.constraints;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return

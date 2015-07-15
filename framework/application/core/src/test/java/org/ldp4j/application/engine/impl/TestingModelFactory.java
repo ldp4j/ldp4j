@@ -20,55 +20,36 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-core:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.data;
+package org.ldp4j.application.engine.impl;
 
+import java.util.Date;
 
-final class ImmutableLanguageLiteral implements LanguageLiteral {
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.engine.endpoint.Endpoint;
+import org.ldp4j.application.engine.resource.Container;
+import org.ldp4j.application.engine.resource.Resource;
+import org.ldp4j.application.engine.resource.ResourceId;
 
-	private static final long serialVersionUID = -8602353246169016363L;
+public final class TestingModelFactory {
 
-	private final String value;
-	private final String language;
-
-	ImmutableLanguageLiteral(String value, String language) {
-		this.value = value;
-		this.language = language;
+	private TestingModelFactory() {
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void accept(ValueVisitor visitor) {
-		visitor.visitLiteral(this);
+	public static Endpoint createEndpoint(String path, Resource resource, Date created, EntityTag entityTag) {
+		return InMemoryEndpoint.create(path, resource.id(), created, entityTag);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String get() {
-		return this.value;
+	public static Resource createResource(Name<?> name, String templateId) {
+		return new InMemoryResource(ResourceId.createId(name, templateId));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void accept(LiteralVisitor visitor) {
-		visitor.visitLanguageLiteral(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String language() {
-		return this.language;
+	public static Container createContainer(Name<?> name, String templateId) {
+		return new InMemoryContainer(ResourceId.createId(name, templateId));
 	}
 
 }
