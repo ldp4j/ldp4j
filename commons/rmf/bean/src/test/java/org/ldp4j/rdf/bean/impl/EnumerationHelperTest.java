@@ -48,13 +48,13 @@ public class EnumerationHelperTest {
 		ONE,
 		TWO;
 	}
-	
+
 	public static class Invalid$Names {
 		public static class Missing {
 			public String name() {
 				return null;
 			}
-			
+
 			public static Missing valueOf(String name) {
 				return null;
 			}
@@ -63,11 +63,11 @@ public class EnumerationHelperTest {
 			public static String names() {
 				return null;
 			}
-	 		
+
 			public static String name(WrongReturn$NoParameterizedType value) {
 				return null;
 			}
-			
+
 			public static WrongReturn$NoParameterizedType valueOf(String name) {
 				return null;
 			}
@@ -76,11 +76,11 @@ public class EnumerationHelperTest {
 			public static List<String> names() {
 				return null;
 			}
-	 		
+
 			public static String name(WrongReturn$NoSet value) {
 				return null;
 			}
-			
+
 			public static WrongReturn$NoSet valueOf(String name) {
 				return null;
 			}
@@ -89,11 +89,11 @@ public class EnumerationHelperTest {
 			public static Set<Integer> names() {
 				return null;
 			}
-	 		
+
 			public static String name(WrongReturn$NoSet value) {
 				return null;
 			}
-			
+
 			public static WrongReturn$NoSet valueOf(String name) {
 				return null;
 			}
@@ -109,7 +109,7 @@ public class EnumerationHelperTest {
 				return null;
 			}
 		}
-		public static abstract class WrongModifiers$abstract {
+		public abstract static class WrongModifiers$abstract {
 			public static Set<String> names() {
 				return Collections.emptySet();
 			}
@@ -185,14 +185,14 @@ public class EnumerationHelperTest {
 			}
 		}
 	}
-	
+
 	public static class Invalid$FromName {
 		public static class Missing {
 
 			public static Set<String> names() {
 				return Collections.emptySet();
 			}
-	 		
+
 			public static String name(Missing value) {
 				return null;
 			}
@@ -202,11 +202,11 @@ public class EnumerationHelperTest {
 			public static Set<String> names() {
 				return Collections.emptySet();
 			}
-	 		
+
 			public static String name(WrongParam value) {
 				return null;
 			}
-			
+
 			public static WrongParam valueOf(Integer name) {
 				return null;
 			}
@@ -216,38 +216,38 @@ public class EnumerationHelperTest {
 			public static Set<String> names() {
 				return Collections.emptySet();
 			}
-	 		
+
 			public static String name(WrongReturn value) {
 				return null;
 			}
-			
+
 			public static Integer valueOf(String name) {
 				return null;
 			}
 		}
 	}
-	
+
 	public static class ValidEnumeration {
-		
+
 		protected static final Set<String> NAMES = Collections.unmodifiableSet(new HashSet<String>(Arrays.asList("ONE","TWO")));
 		protected static final ValidEnumeration ONE=new ValidEnumeration("ONE");
 		protected static final ValidEnumeration TWO=new ValidEnumeration("TWO");
 		protected static final Set<ValidEnumeration> VALUES = Collections.unmodifiableSet(new HashSet<ValidEnumeration>(Arrays.asList(ONE,TWO)));
-		
+
 		private final String name;
 
 		private ValidEnumeration(String name) {
 			this.name = name;
 		}
-		
+
 		public static Set<String> names() {
 			return NAMES;
 		}
- 		
+
 		public String name() {
 			return name;
 		}
-		
+
 		public static ValidEnumeration valueOf(String name) {
 			if(ONE.name.equals(name)) {
 				return ONE;
@@ -287,13 +287,13 @@ public class EnumerationHelperTest {
 			}
 			return true;
 		}
-		
+
 		@Override
 		public String toString() {
 			return name;
 		}
 	}
-	
+
 	@Before
 	public void setUp() throws Exception {
 	}

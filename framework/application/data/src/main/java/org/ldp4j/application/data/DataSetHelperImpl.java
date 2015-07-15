@@ -79,8 +79,6 @@ final class DataSetHelperImpl extends DataSetHelper {
 
 	}
 
-	public static Individual<?, ?> to;
-
 	private final DataSet dataSet;
 
 	DataSetHelperImpl(DataSet dataSet) {
@@ -177,12 +175,12 @@ final class DataSetHelperImpl extends DataSetHelper {
 	}
 
 	@Override
-	public Individual<?,?> self() {
+	public Individual<URI,?> self() {
 		return relative(SELF);
 	}
 
 	@Override
-	public Individual<?,?> relative(URI path) {
+	public Individual<URI,?> relative(URI path) {
 		return this.dataSet.individualOfId(path);
 	}
 

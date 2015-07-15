@@ -32,7 +32,7 @@ public final class ObjectUtils {
 	}
 
 	public static boolean areEqualClasses(Class<?> c1, Class<?> c2) {
-		return c1==null?c2==null:c2==null?false:c1.getName().equals(c2.getName());
+		return c1==null?c2==null:c2==null?false:c1.equals(c2);
 	}
 
 	public static boolean areEqualObjects(Object o1, Object o2) {

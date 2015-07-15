@@ -139,7 +139,7 @@ public final class Constraints implements Serializable {
 	}
 
 
-	public static abstract class AbstractPropertyConstraint<T extends AbstractPropertyConstraint<T>> implements Serializable {
+	public abstract static class AbstractPropertyConstraint<T extends AbstractPropertyConstraint<T>> implements Serializable {
 
 		private static final long serialVersionUID = 6473281395518369031L;
 

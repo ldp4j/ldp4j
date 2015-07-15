@@ -30,21 +30,10 @@ import org.ldp4j.application.engine.lifecycle.ApplicationEngineState;
 
 public class ApplicationEngineLifecycleException extends ApplicationEngineException {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 1815238454226331703L;
 
 	private final ApplicationEngineState originalState;
 	private final ApplicationEngineState pretendedState;
-
-	private static String defaultErrorMessage(ApplicationEngineState originalState, ApplicationEngineState pretendedState) {
-		return String.format("Application engine exception will trying to go from '%s' to '%s'",originalState,pretendedState);
-	}
-
-	private static String defaultErrorMessage(ApplicationEngineState originalState, ApplicationEngineState pretendedState, Throwable cause) {
-		return String.format(defaultErrorMessage(originalState, pretendedState).concat(" (%s)"),cause.getMessage());
-	}
 
 	public ApplicationEngineLifecycleException(ApplicationEngineState originalState, ApplicationEngineState pretendedState) {
 		this(originalState,pretendedState,defaultErrorMessage(originalState, pretendedState));
@@ -70,6 +59,14 @@ public class ApplicationEngineLifecycleException extends ApplicationEngineExcept
 
 	public ApplicationEngineState pretendedState() {
 		return pretendedState;
+	}
+
+	private static String defaultErrorMessage(ApplicationEngineState originalState, ApplicationEngineState pretendedState) {
+		return String.format("Application engine exception will trying to go from '%s' to '%s'",originalState,pretendedState);
+	}
+
+	private static String defaultErrorMessage(ApplicationEngineState originalState, ApplicationEngineState pretendedState, Throwable cause) {
+		return String.format(defaultErrorMessage(originalState, pretendedState).concat(" (%s)"),cause.getMessage());
 	}
 
 }

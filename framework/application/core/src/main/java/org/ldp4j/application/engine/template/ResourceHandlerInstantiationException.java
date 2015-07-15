@@ -37,8 +37,8 @@ public class ResourceHandlerInstantiationException extends RuntimeException {
 
 	private final Class<? extends ResourceHandler> handlerClass;
 
-	public ResourceHandlerInstantiationException(String message, Class<? extends ResourceHandler> handlerClass) {
-		super(message);
+	public ResourceHandlerInstantiationException(String message, Class<? extends ResourceHandler> handlerClass, Throwable cause) {
+		super(message,cause);
 		this.handlerClass = handlerClass;
 	}
 

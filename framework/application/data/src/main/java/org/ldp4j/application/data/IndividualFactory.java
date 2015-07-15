@@ -45,7 +45,7 @@ final class IndividualFactory {
 	}
 
 
-	private static abstract class SimpleFactory<S,T extends Individual<?,?>> implements Factory<T> {
+	private abstract static class SimpleFactory<S,T extends Individual<?,?>> implements Factory<T> {
 
 		private final Class<? extends S> clazz;
 

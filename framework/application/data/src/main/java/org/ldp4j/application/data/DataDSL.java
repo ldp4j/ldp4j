@@ -248,7 +248,7 @@ public final class DataDSL {
 		}
 	}
 
-	private static abstract class Configurable {
+	private abstract static class Configurable {
 
 		private final Store store;
 

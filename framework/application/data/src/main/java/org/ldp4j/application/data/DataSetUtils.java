@@ -36,6 +36,9 @@ import com.google.common.base.Preconditions;
 
 public final class DataSetUtils {
 
+	private static final String LITERAL_DATATYPE_CANNOT_BE_NULL = "Literal datatype cannot be null";
+	private static final String LITERAL_VALUE_CANNOT_BE_NULL = "Literal value cannot be null";
+
 	private static final class IndividualFinder implements IndividualVisitor {
 
 		private final DataSet dataSet;
@@ -98,7 +101,7 @@ public final class DataSetUtils {
 		}
 	}
 
-	static abstract class ValueMatcher implements ValueVisitor {
+	abstract static class ValueMatcher implements ValueVisitor {
 
 		private boolean matches;
 
@@ -211,19 +214,39 @@ public final class DataSetUtils {
 		}
 	}
 
+	/**
+	 * Create a new literal
+	 * @deprecated
+	 * @param value The value for the literal
+	 * @return A literal wrapping the specified value
+	 */
 	@Deprecated
 	public static <T extends Serializable> Literal<T> newLiteral(T value) {
-		Preconditions.checkNotNull(value,"Literal value cannot be null");
+		Preconditions.checkNotNull(value,LITERAL_VALUE_CANNOT_BE_NULL);
 		return new ImmutableLiteral<T>(value);
 	}
 
+	/**
+	 * Create a new typed literal
+	 * @deprecated
+	 * @param value The value for the literal
+	 * @param datatype The datatype of the literal
+	 * @return A typed literal wrapping the specified value
+	 */
 	@Deprecated
 	public static <T extends Serializable> TypedLiteral<T> newTypedLiteral(T value, URI datatype) {
-		Preconditions.checkNotNull(value,"Literal value cannot be null");
-		Preconditions.checkNotNull(datatype,"Literal datatype cannot be null");
+		Preconditions.checkNotNull(value,LITERAL_VALUE_CANNOT_BE_NULL);
+		Preconditions.checkNotNull(datatype,LITERAL_DATATYPE_CANNOT_BE_NULL);
 		return new ImmutableTypedLiteral<T>(value,datatype);
 	}
 
+	/**
+	 * Create a new language literal
+	 * @deprecated
+	 * @param value The value for the literal
+	 * @param language The language in which the value is defined
+	 * @return A language literal wrapping the specified value
+	 */
 	@Deprecated
 	public static LanguageLiteral newLanguageLiteral(String value, String language) {
 		return Literals.newLanguageLiteral(value, language);

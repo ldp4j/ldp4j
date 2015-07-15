@@ -26,10 +26,6 @@
  */
 package org.ldp4j.application.vocabulary;
 
-import java.io.Serializable;
-
-import org.ldp4j.application.vocabulary.Term;
-import org.ldp4j.application.vocabulary.Vocabulary;
 
 /**
  * A term implementation that enforces the creation of immutable terms defined
@@ -40,11 +36,8 @@ import org.ldp4j.application.vocabulary.Vocabulary;
  * @author Miguel Esteban Guti&eacute;rrez
  * @see AbstractImmutableVocabulary
  */
-public class ImmutableTerm implements Term, Serializable {
+public class ImmutableTerm implements Term {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 6842492155071877731L;
 
 	private static final int HASH_CODE_SALT = 19;

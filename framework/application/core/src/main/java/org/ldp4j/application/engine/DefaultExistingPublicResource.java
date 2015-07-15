@@ -139,6 +139,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 		return applicationContext().getConstraintReport(endpoint(),constraintsId);
 	}
 
+	@Override
 	protected DataSet metadata() {
 		DataSet metadata =
 			DataSetFactory.
@@ -154,10 +155,12 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 		return metadata;
 	}
 
+	@Override
 	protected DataSet resourceData(ContentPreferences contentPreferences) throws ApplicationExecutionException {
 		return applicationContext().getResource(endpoint());
 	}
 
+	@Override
 	protected final ResourceId id() {
 		return endpoint().resourceId();
 	}

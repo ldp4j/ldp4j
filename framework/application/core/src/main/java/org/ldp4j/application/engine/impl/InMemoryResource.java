@@ -204,42 +204,66 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		return result.get();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ResourceId id() {
 		return this.id;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void setIndirectId(URI indirectId) {
 		this.indirectId=indirectId;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public URI indirectId() {
 		return this.indirectId;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean isRoot() {
 		return this.parentId==null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ResourceId parentId() {
 		return this.parentId;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Attachment findAttachment(ResourceId resourceId) {
 		checkNotNull(resourceId,"Attached resource identifier cannot be null");
 		return this.attachments.get(this.attachmentsByResourceId.get(resourceId));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Resource attach(String attachmentId, ResourceId resourceId) {
 		return attach(attachmentId,resourceId,Resource.class);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T extends Resource> T attach(String attachmentId, ResourceId resourceId, Class<? extends T> clazz) {
 		checkNotNull(attachmentId,"Attachment identifier cannot be null");
@@ -259,6 +283,9 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		return clazz.cast(newResource);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean detach(Attachment attachment) {
 		boolean found=this.attachments.containsValue(attachment);
@@ -269,22 +296,35 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		}
 		return found;
 	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Set<InMemoryAttachment> attachments() {
 		return Collections.unmodifiableSet(new LinkedHashSet<InMemoryAttachment>(this.attachments.values()));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void accept(ResourceVisitor visitor) {
 		visitor.visitResource(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ConstraintReport addConstraintReport(Constraints constraints, Date date, HttpRequest request) {
 		ConstraintReportId reportId = nextConstraintReportId();
 		return new InMemoryConstraintReport(reportId,date, request, constraints);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Set<ConstraintReportId> constraintReports() {
 		Set<ConstraintReportId> currentReports=null;
@@ -294,6 +334,9 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		return currentReports;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void removeFailure(ConstraintReport report) {
 		if(report!=null) {
@@ -304,11 +347,15 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return stringHelper().toString();
 	}
 
+	@Override
 	protected ToStringHelper stringHelper() {
 		return
 			super.stringHelper().

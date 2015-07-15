@@ -120,8 +120,8 @@ final class PropertyHelperImpl implements PropertyHelper {
 	public <T> IndividualPropertyHelper withIndividual(Name<?> id) {
 		if(id!=null) {
 			@SuppressWarnings("rawtypes")
-			Individual<?,?> individual = this.individual.dataSet().individual((Name)id, LocalIndividual.class);
-			this.individual.addValue(this.propertyId,individual);
+			Individual<?,?> srcIndividual = this.individual.dataSet().individual((Name)id, LocalIndividual.class);
+			this.individual.addValue(this.propertyId,srcIndividual);
 		}
 		return new IndividualPropertyHelperImpl(new IndividualHelperImpl(this.individual),this);
 	}
@@ -132,13 +132,13 @@ final class PropertyHelperImpl implements PropertyHelper {
 	@Override
 	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId) {
 		if(id!=null) {
-			Individual<?,?> individual =
+			Individual<?,?> srcIndividual =
 				this.individual.
 					dataSet().
 						individual(
 							ManagedIndividualId.createId(id, managerId),
 							ManagedIndividual.class);
-			this.individual.addValue(this.propertyId,individual);
+			this.individual.addValue(this.propertyId,srcIndividual);
 		}
 		return new IndividualPropertyHelperImpl(new IndividualHelperImpl(this.individual),this);
 	}
@@ -149,15 +149,15 @@ final class PropertyHelperImpl implements PropertyHelper {
 	@Override
 	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, URI path) {
 		if(id!=null) {
-			ManagedIndividualId parentId = ManagedIndividualId.createId(id,managerId);
+			ManagedIndividualId parentId=ManagedIndividualId.createId(id,managerId);
 			RelativeIndividualId individualId=RelativeIndividualId.createId(parentId, path);
-			Individual<?,?> individual =
+			Individual<?,?> srcIndividual=
 				this.individual.
 					dataSet().
 						individual(
 							individualId,
 							RelativeIndividual.class);
-			this.individual.addValue(this.propertyId,individual);
+			this.individual.addValue(this.propertyId,srcIndividual);
 		}
 		return new IndividualPropertyHelperImpl(new IndividualHelperImpl(this.individual),this);
 	}
@@ -179,8 +179,8 @@ final class PropertyHelperImpl implements PropertyHelper {
 	@Override
 	public <T> IndividualPropertyHelper withIndividual(URI id) {
 		if(id!=null) {
-			Individual<?,?> individual=this.individual.dataSet().individual(id, ExternalIndividual.class);
-			this.individual.addValue(this.propertyId,individual);
+			Individual<?,?> srcIndividual=this.individual.dataSet().individual(id, ExternalIndividual.class);
+			this.individual.addValue(this.propertyId,srcIndividual);
 		}
 		return new IndividualPropertyHelperImpl(new IndividualHelperImpl(this.individual),this);
 	}

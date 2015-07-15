@@ -35,11 +35,12 @@ final class InMemoryTransaction implements Transaction {
 	private interface TransactionState {
 
 		TransactionState begin();
+
 		TransactionState commit();
+
 		TransactionState rollback();
+
 		boolean isActive();
-		boolean isStarted();
-		boolean isCompleted();
 
 	}
 
@@ -62,16 +63,6 @@ final class InMemoryTransaction implements Transaction {
 		@Override
 		public String toString() {
 			return "pending";
-		}
-
-		@Override
-		public boolean isStarted() {
-			return false;
-		}
-
-		@Override
-		public boolean isCompleted() {
-			return false;
 		}
 
 		@Override
@@ -102,16 +93,6 @@ final class InMemoryTransaction implements Transaction {
 		@Override
 		public String toString() {
 			return "in-flight";
-		}
-
-		@Override
-		public boolean isStarted() {
-			return true;
-		}
-
-		@Override
-		public boolean isCompleted() {
-			return false;
 		}
 
 		@Override
@@ -149,16 +130,6 @@ final class InMemoryTransaction implements Transaction {
 		}
 
 		@Override
-		public boolean isStarted() {
-			return true;
-		}
-
-		@Override
-		public boolean isCompleted() {
-			return true;
-		}
-
-		@Override
 		public boolean isActive() {
 			return false;
 		}
@@ -179,36 +150,42 @@ final class InMemoryTransaction implements Transaction {
 		return this.id;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void begin() {
 		this.state=this.state.begin();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void commit() {
 		this.state=this.state.commit();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void rollback() {
 		this.state=this.state.rollback();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean isActive() {
 		return this.state.isActive();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
-	public boolean isStarted() {
-		return this.state.isStarted();
-	}
-
-	@Override
-	public boolean isCompleted() {
-		return this.state.isCompleted();
-	}
-
 	public String toString() {
 		return
 			MoreObjects.

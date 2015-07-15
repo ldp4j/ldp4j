@@ -85,10 +85,11 @@ public final class EndpointManagementService implements Service {
 			super(EndpointManagementService.class);
 		}
 
+		@Override
 		public EndpointManagementService build() {
 			return
 				new EndpointManagementService(
-					service(TemplateManagementService.class));
+					super.service(TemplateManagementService.class));
 		}
 
 	}

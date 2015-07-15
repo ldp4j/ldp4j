@@ -38,16 +38,16 @@ import com.google.common.collect.Lists;
 
 public final class ListenerManager<T> {
 
-	private static final Logger LOGGER=LoggerFactory.getLogger(ListenerManager.class); 
-	
+	private static final Logger LOGGER=LoggerFactory.getLogger(ListenerManager.class);
+
 	private final ReadWriteLock lock;
 	private final List<T> listeners;
-	
+
 	private ListenerManager() {
 		this.lock=new ReentrantReadWriteLock();
 		this.listeners=Lists.newArrayList();
 	}
-	
+
 	private void logListenerLifecycle(T listener, String action) {
 		if(LOGGER.isDebugEnabled()) {
 			LOGGER.debug(String.format("%s %08X (%s)",action,listener.hashCode(),listener.getClass().getName()));
@@ -65,7 +65,7 @@ public final class ListenerManager<T> {
 			this.lock.writeLock().unlock();
 		}
 	}
-	
+
 	public void deregisterListener(T listener) {
 		this.lock.writeLock().lock();
 		try {
@@ -76,24 +76,33 @@ public final class ListenerManager<T> {
 			this.lock.writeLock().unlock();
 		}
 	}
-	
+
 	public void notify(Notification<T> notification) {
-		List<T> listeners=new ArrayList<T>();
+		List<T> currentListeners=new ArrayList<T>();
 		this.lock.readLock().lock();
 		try {
-			listeners.addAll(this.listeners);
+			currentListeners.addAll(this.listeners);
 		} finally {
 			this.lock.readLock().unlock();
 		}
+
+		// TODO: Check why this idiom is used... If we want to keep it we should
+		// also synchronize the additions
+		// TODO: What about using a thread pool to propagate the notifications?
+		// Maybe a configurable option
 		synchronized(this.listeners) {
-			for(T listener:listeners) {
-				notification.propagate(listener);
+			for(T listener:currentListeners) {
+				try {
+					notification.propagate(listener);
+				} catch (Exception e) {
+					LOGGER.warn("Propagation failure",e);
+				}
 			}
 		}
 	}
-	
+
 	public static <T> ListenerManager<T> newInstance() {
 		return new ListenerManager<T>();
 	}
-	
+
 }

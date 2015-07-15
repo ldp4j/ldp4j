@@ -34,11 +34,12 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.ReflectPermission;
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.Properties;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
-import java.util.Stack;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReadWriteLock;
@@ -129,12 +130,12 @@ public abstract class ApplicationEngine {
 	private final Lock read;
 	private final Lock write;
 	private final Map<String,ApplicationContext> contexts;
-	private final Stack<String> loadedContexts;
+	private final Deque<String> loadedContexts;
 	private final AtomicReference<ApplicationContext> currentContext;
 
 	private ApplicationEngineState state;
 
-	protected static abstract class ApplicationContextManager<T extends ApplicationContext> {
+	protected abstract static class ApplicationContextManager<T extends ApplicationContext> {
 
 		private final Class<? extends T> managedClass;
 
@@ -167,7 +168,7 @@ public abstract class ApplicationEngine {
 		this.write=lock.writeLock();
 		this.currentContext=new AtomicReference<ApplicationContext>();
 		this.state=ApplicationEngineState.UNAVAILABLE;
-		this.loadedContexts=new Stack<String>();
+		this.loadedContexts=new LinkedList<String>();
 	}
 
 	private void refreshCurrentContext() {
@@ -298,6 +299,11 @@ public abstract class ApplicationEngine {
 		}
 	}
 
+	/**
+	 * Get the last active loaded application context
+	 * @deprecated
+	 * @return The last active loaded application context
+	 */
 	@Deprecated
 	public final ApplicationContext currentContext() {
 		checkApplicationEngineActive();

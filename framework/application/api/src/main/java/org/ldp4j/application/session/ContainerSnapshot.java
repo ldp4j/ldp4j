@@ -33,6 +33,7 @@ import org.ldp4j.application.ext.ContainerHandler;
 
 public interface ContainerSnapshot extends ResourceSnapshot {
 
+	@Override
 	Class<? extends ContainerHandler> handlerClass();
 
 	Set<? extends ResourceSnapshot> members();

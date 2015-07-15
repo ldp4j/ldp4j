@@ -41,14 +41,14 @@ import org.slf4j.LoggerFactory;
 public final class ProtocolHandlerConfigurator {
 
 	private abstract static class Loader {
-		
+
 		static final ProtocolHandlerConfigurator SINGLETON=new ProtocolHandlerConfigurator();
 
 		private Loader() {
 		}
 
 	}
-	
+
 	private static final String SCHEME_PARAM = "scheme";
 
 	private static final String CHECKING_SUPPORT_FOR_CUSTOM_PROTOCOL = "Checking support for custom '%s' protocol...";
@@ -59,7 +59,7 @@ public final class ProtocolHandlerConfigurator {
 
 	private Set<String> packagesAdded;
 
-	private ProtocolHandlerConfigurator() { 
+	private ProtocolHandlerConfigurator() {
 		handlerCache=new WeakHashMap<String, URLStreamHandler>();
 		packagesAdded = new HashSet<String>();
 	}
@@ -128,7 +128,7 @@ public final class ProtocolHandlerConfigurator {
 
 	public static <T extends URLStreamHandler> boolean addProvider(Class<T> handlerClass) {
 		Assertions.notNull(handlerClass,"handlerClass");
-		if(!"Handler".equals(handlerClass.getSimpleName())) {
+		if(!"Handler".equals(handlerClass.getSimpleName())) { // NOSONAR
 			throw new IllegalArgumentException("Handler class '"+handlerClass.getCanonicalName()+"' is not a valid URLStreamHandler class: name does meet specification");
 		}
 		String protocolPackage=handlerClass.getPackage().getName();

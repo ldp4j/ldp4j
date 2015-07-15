@@ -37,10 +37,4 @@ public interface Transaction {
 
 	boolean isActive();
 
-	@Deprecated
-	boolean isStarted();
-
-	@Deprecated
-	boolean isCompleted();
-
 }

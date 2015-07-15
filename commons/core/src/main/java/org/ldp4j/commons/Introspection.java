@@ -106,7 +106,7 @@ public final class Introspection<T> {
 
 		AbstractPropertyEditor(
 				Class<? extends T> clazz,
-				String propertyName, 
+				String propertyName,
 				Class<? extends V> propertyType,
 				Method setter) {
 			this.beanClass = clazz;
@@ -118,9 +118,8 @@ public final class Introspection<T> {
 		final void update(T targetBean, V value) {
 			try {
 				setter.invoke(targetBean, value);
-				Object[] args = { targetBean, getPropertyName(), value };
 				if(LOGGER.isTraceEnabled()) {
-					LOGGER.trace(String.format("[%s] Property '%s' set to '%s'",args));
+					LOGGER.trace("[{}] Property '{}' set to '{}'",targetBean, getPropertyName(), value);
 				}
 			} catch (IllegalArgumentException e) {
 				throw handleFailure(e,"Method '%s' does not support value '%s'",setter,value);
@@ -223,7 +222,7 @@ public final class Introspection<T> {
 
 	}
 
-	private Introspection() { 
+	private Introspection() {
 	}
 
 	public static <S> ClassIntrospector<S> create(Class<S> baseClass) {
@@ -297,15 +296,15 @@ public final class Introspection<T> {
 
 		/**
 		 * Constructs a new type token of {@code T}.
-		 * 
+		 *
 		 * <p>
 		 * Clients create an empty anonymous subclass. Doing so embeds the type
 		 * parameter in the anonymous class's type hierarchy so we can
 		 * reconstitute it at runtime despite erasure.
-		 * 
+		 *
 		 * <p>
 		 * For example:
-		 * 
+		 *
 		 * <pre>
 		 * {@code TypeToken<List<String>> t = new TypeToken<List<String>>() {};}}
 		 * </pre>
@@ -315,10 +314,10 @@ public final class Introspection<T> {
 			if(runtimeType instanceof TypeVariable) {
 				throw new IllegalStateException(
 						String.format(
-							"Cannot construct a TypeToken for a type variable."+ NL+ 
-							"You probably meant to call new TypeToken<%s>(getClass()) "+ 
+							"Cannot construct a TypeToken for a type variable."+ NL+
+							"You probably meant to call new TypeToken<%s>(getClass()) "+
 							"that can resolve the type variable for you."+ NL +
-							"If you do need to create a TypeToken of a type variable, " + 
+							"If you do need to create a TypeToken of a type variable, " +
 							"please use TypeToken.of() instead.",
 							runtimeType));
 			}
@@ -381,7 +380,7 @@ public final class Introspection<T> {
 			/**
 			 * TODO(user): This is not the most efficient way to handle generic
 			 * arrays, but is there another way to extract the array class in a
-			 * non-hacky way (i.e. using String value class names- "[L...")?
+			 * non-hacky way (i.e., using String value class names- "[L...")?
 			 */
 			return Array.newInstance(componentType, 0).getClass();
 		}

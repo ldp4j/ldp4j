@@ -36,7 +36,7 @@ public class ExtensibilityTest {
 
 	}
 
-	private static abstract class Base {
+	private abstract static class Base {
 
 		protected abstract Class<? extends IFace> implementationClass();
 

@@ -34,6 +34,8 @@ import java.util.Collection;
 import java.util.List;
 
 import org.ldp4j.application.ext.ResourceHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ClassToInstanceMap;
 import com.google.common.collect.ImmutableMap;
@@ -42,6 +44,8 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.MutableClassToInstanceMap;
 
 final class TemplateManager {
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(TemplateManager.class);
 
 	private final TemplateLibrary library;
 	private final ImmutableMap<HandlerId, ResourceHandler> handlers;
@@ -86,10 +90,10 @@ final class TemplateManager {
 				if(handler==null) {
 					try {
 						handler=handlerClass.newInstance();
-					} catch (InstantiationException e) {
-						throw new ResourceHandlerInstantiationException("Could not instantiate resource handler from template '"+template.id()+"' ("+handlerClass.getCanonicalName()+")",handlerClass);
-					} catch (IllegalAccessException e) {
-						throw new ResourceHandlerInstantiationException("Could not instantiate resource handler from template '"+template.id()+"' ("+handlerClass.getCanonicalName()+")",handlerClass);
+					} catch (Exception e) {
+						String message=String.format("Could not instantiate resource handler from template '%s' (%s)",template.id(),handlerClass.getCanonicalName());
+						LOGGER.warn(message);
+						throw new ResourceHandlerInstantiationException(message,handlerClass,e);
 					}
 				}
 				this.builder.put(HandlerId.createId(handlerClass), handler);
@@ -163,15 +167,15 @@ final class TemplateManager {
 
 		TemplateManager build() throws TemplateManagementServiceConfigurationException {
 			try {
-				MutableTemplateLibrary library=new MutableTemplateLibrary();
+				MutableTemplateLibrary newLibrary=new MutableTemplateLibrary();
 				for(Class<?> handlerClass:handlerClasses) {
-					if(!library.isHandlerRegistered(handlerClass)) {
-						library.registerHandler(handlerClass);
+					if(!newLibrary.isHandlerRegistered(handlerClass)) {
+						newLibrary.registerHandler(handlerClass);
 					}
 				}
 				Builder<HandlerId, ResourceHandler> builder = ImmutableMap.<HandlerId, ResourceHandler>builder();
-				library.accept(new HandlerMapBuilder(builder,this.handlers));
-				return new TemplateManager(new ImmutableTemplateLibrary(library), builder.build());
+				newLibrary.accept(new HandlerMapBuilder(builder,this.handlers));
+				return new TemplateManager(new ImmutableTemplateLibrary(newLibrary), builder.build());
 			} catch (TemplateCreationException e) {
 				throw new TemplateManagementServiceConfigurationException(e);
 			} catch (ResourceHandlerInstantiationException e) {

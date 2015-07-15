@@ -65,7 +65,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 
 	}
 
-	private static abstract class Processor<A extends Annotation, R extends ResourceHandler,  M extends AbstractMutableTemplate<?>> {
+	private abstract static class Processor<A extends Annotation, R extends ResourceHandler,  M extends AbstractMutableTemplate<?>> {
 
 		private final Class<? extends A> annotationClass;
 
@@ -132,7 +132,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 
 	}
 
-	private static abstract class ContainerProcessor<A extends Annotation, T extends MutableContainerTemplate> extends Processor<A,ContainerHandler,T> {
+	private abstract static class ContainerProcessor<A extends Annotation, T extends MutableContainerTemplate> extends Processor<A,ContainerHandler,T> {
 
 		public ContainerProcessor(Class<? extends A> annotationClass) {
 			super(annotationClass);
@@ -162,7 +162,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 
 	}
 
-	private static abstract class MembershipAwareContainerProcessor<A extends Annotation, T extends MutableMembershipAwareContainerTemplate> extends ContainerProcessor<A,T> {
+	private abstract static class MembershipAwareContainerProcessor<A extends Annotation, T extends MutableMembershipAwareContainerTemplate> extends ContainerProcessor<A,T> {
 
 		public MembershipAwareContainerProcessor(Class<? extends A> annotationClass) {
 			super(annotationClass);

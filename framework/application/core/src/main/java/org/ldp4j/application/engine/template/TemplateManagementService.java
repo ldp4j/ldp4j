@@ -44,8 +44,9 @@ public final class TemplateManagementService implements Service {
 			super(TemplateManagementService.class);
 		}
 
+		@Override
 		public TemplateManagementService build() {
-			return new TemplateManagementService(modelFactory());
+			return new TemplateManagementService(super.modelFactory());
 		}
 
 	}

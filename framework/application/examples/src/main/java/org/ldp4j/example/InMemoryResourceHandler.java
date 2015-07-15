@@ -41,6 +41,7 @@ import com.google.common.collect.Multimap;
 
 public class InMemoryResourceHandler implements ResourceHandler {
 
+	private static final Multimap<String,ResourceHandler> loadedHandlers=LinkedListMultimap.<String, ResourceHandler>create();
 	private final String handlerName;
 	private final Map<Name<?>, DataSet> resources;
 	
@@ -92,8 +93,6 @@ public class InMemoryResourceHandler implements ResourceHandler {
 		return handlerName;
 	}
 
-	private static final Multimap<String,ResourceHandler> loadedHandlers=LinkedListMultimap.<String, ResourceHandler>create();
-	
 	public static <T extends ResourceHandler> List<T> getInstances(Class<? extends T> handlerClass) {
 		List<T> result = new ArrayList<T>();
 		for(ResourceHandler handler:loadedHandlers.get(handlerClass.getCanonicalName())) {

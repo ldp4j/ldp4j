@@ -60,6 +60,7 @@ public final class WriteSessionService implements Service {
 			super(WriteSessionService.class);
 		}
 
+		@Override
 		public WriteSessionService build() {
 			return
 				new WriteSessionService(

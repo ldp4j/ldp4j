@@ -37,6 +37,8 @@ import com.google.common.base.MoreObjects;
 
 final class InMemorySlug implements Slug {
 
+	private static final Pattern SLUG_PATH_PATTERN=Pattern.compile("(^.*)(_(\\d+)?$)");
+
 	private final ResourceId containerId;
 	private final String preferredPath;
 	private long version;
@@ -47,16 +49,25 @@ final class InMemorySlug implements Slug {
 		this.version=version;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ResourceId containerId() {
 		return this.containerId;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String preferredPath() {
 		return this.preferredPath;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public synchronized long version() {
 		return this.version;
@@ -66,6 +77,9 @@ final class InMemorySlug implements Slug {
 		this.version=version;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public synchronized String nextPath() {
 		long id=this.version++;
@@ -76,6 +90,9 @@ final class InMemorySlug implements Slug {
 		return result;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return
@@ -87,8 +104,6 @@ final class InMemorySlug implements Slug {
 					add("version",version()).
 					toString();
 	}
-
-	private static final Pattern SLUG_PATH_PATTERN=Pattern.compile("(^.*)(_(\\d+)?$)");
 
 	static InMemorySlug create(String slugPath, Container container) {
 		Matcher matcher = SLUG_PATH_PATTERN.matcher(slugPath);

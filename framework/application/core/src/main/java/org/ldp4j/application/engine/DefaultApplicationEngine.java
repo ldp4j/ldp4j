@@ -26,8 +26,9 @@
  */
 package org.ldp4j.application.engine;
 
+import java.util.Deque;
+import java.util.LinkedList;
 import java.util.List;
-import java.util.Stack;
 
 import org.ldp4j.application.engine.endpoint.EndpointManagementService;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleService;
@@ -112,7 +113,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		}
 	}
 
-	private <T> void initializeComponent(T object, Stack<? super T> initializedComponents) throws ComponentLifecycleException {
+	private <T> void initializeComponent(T object, Deque<? super T> initializedComponents) throws ComponentLifecycleException {
 		try {
 			LifecycleManager.init(object);
 			initializedComponents.push(object);
@@ -121,7 +122,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		}
 	}
 
-	private void shutdownComponentsQuietly(Stack<Object> initializedComponents) {
+	private void shutdownComponentsQuietly(Deque<Object> initializedComponents) {
 		List<LifecycleException> failures=Lists.newArrayList();
 		while(!initializedComponents.isEmpty()) {
 			Object component=initializedComponents.pop();
@@ -187,7 +188,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 			LOGGER.error(errorMessage,e);
 			throw new ApplicationEngineInitializationException(errorMessage,e);
 		}
-		Stack<Object> initializedComponents=new Stack<Object>();
+		Deque<Object> initializedComponents=new LinkedList<Object>();
 		try {
 			initializeComponent(this.runtimeDelegate,initializedComponents);
 			initializeComponent(this.templateManagementService,initializedComponents);

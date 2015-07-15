@@ -150,7 +150,7 @@ abstract class PersistencyState {
 
 	}
 
-	private static abstract class BasePersistencyState extends PersistencyState {
+	private abstract static class BasePersistencyState extends PersistencyState {
 
 		private final AttachmentSnapshotCollection attachments;
 		private final MemberCollection members;
@@ -185,6 +185,7 @@ abstract class PersistencyState {
 			return this.attachments.findById(attachmentId);
 		}
 
+		@Override
 		<T extends DelegatedResourceSnapshot> T createAttachedResource(
 				Class<? extends T> snapshotClass,
 				String attachmentId,
@@ -409,9 +410,8 @@ abstract class PersistencyState {
 					@Override
 					public void visitContainer(Container resource) {
 						visitResource(resource);
-						for(ResourceId resourceId:PersistentResourceState.this.deletedMembers.keySet()) {
-//							resource.removeMember(resourceId);
-							Member member=resource.findMember(resourceId);
+						for(ResourceId id:PersistentResourceState.this.deletedMembers.keySet()) {
+							Member member=resource.findMember(id);
 							resource.removeMember(member);
 						}
 						for(DelegatedResourceSnapshot member:PersistentResourceState.this.newMembers.values()) {
@@ -451,7 +451,7 @@ abstract class PersistencyState {
 				new ResourceVisitor() {
 					@Override
 					public void visitResource(Resource resource) {
-						for(DelegatedAttachmentSnapshot attachment:attachments(ctx)) {
+						for(DelegatedAttachmentSnapshot attachment:TransientResourceState.this.attachments(ctx)) {
 							DelegatedResourceSnapshot attachedResource = attachment.resource();
 							Resource attach = resource.attach(attachment.id(), attachedResource.resourceId());
 							attachedResource.setDelegate(attach);
@@ -460,7 +460,7 @@ abstract class PersistencyState {
 					@Override
 					public void visitContainer(Container resource) {
 						visitResource(resource);
-						for(DelegatedResourceSnapshot member:members(ctx)) {
+						for(DelegatedResourceSnapshot member:TransientResourceState.this.members(ctx)) {
 							Resource newResource = resource.addMember(member.resourceId());
 							member.setDelegate(newResource);
 						}
@@ -470,6 +470,7 @@ abstract class PersistencyState {
 		}
 
 	}
+
 	private static final class DeletedResourceState extends PersistencyState {
 
 		private final String failureMessage;

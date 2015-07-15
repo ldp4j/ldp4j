@@ -66,6 +66,7 @@ public final class ApplicationLifecycleService implements Service {
 			super(ApplicationLifecycleService.class);
 		}
 
+		@Override
 		public ApplicationLifecycleService build() {
 			return new ApplicationLifecycleService();
 		}
@@ -120,12 +121,12 @@ public final class ApplicationLifecycleService implements Service {
 		ApplicationState newState = ApplicationState.UNAVAILABLE;
 		try {
 			ApplicationLoader<T> helper = ApplicationLoader.newInstance(this.<T>loadApplicationClass(className));
-			Application<T> application = helper.bootstrap();
+			Application<T> createdApplication = helper.bootstrap();
 			newState=ApplicationState.AVAILABLE;
-			this.application = application;
+			this.application = createdApplication;
 			this.configuration =helper.configuration();
 			LOGGER.info("Application '{}' ({}) initialized.",this.application.getName(),this.application.getClass().getCanonicalName());
-			return application;
+			return createdApplication;
 		} catch (ApplicationContextBootstrapException e) {
 			throw e;
 		} finally {

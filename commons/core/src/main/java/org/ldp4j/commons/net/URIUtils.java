@@ -57,7 +57,7 @@ public final class URIUtils {
 		}
 	}
 
-	private static boolean equals(Object one, Object other) {
+	private static boolean equal(Object one, Object other) {
 		return
 			one==null?
 				other==null:
@@ -76,7 +76,7 @@ public final class URIUtils {
 		if(base.isOpaque() || target.isOpaque()) {
 			return target;
 		}
-		if(!equals(base.getScheme(),target.getScheme()) || !equals(base.getAuthority(),target.getAuthority())) {
+		if(!equal(base.getScheme(),target.getScheme()) || !equal(base.getAuthority(),target.getAuthority())) {
 			return target;
 		}
 		URI nBase = base.normalize();

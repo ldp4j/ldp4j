@@ -37,6 +37,8 @@ import com.google.common.base.MoreObjects;
 
 final class JPASlug implements Slug {
 
+	private static final Pattern SLUG_PATH_PATTERN=Pattern.compile("(^.*)(_(\\d+)?$)");
+
 	/**
 	 * Persistent key required by JPA
 	 */
@@ -125,10 +127,8 @@ final class JPASlug implements Slug {
 					toString();
 	}
 
-	private static final Pattern SLUG_PATH_PATTERN=Pattern.compile("(^.*)(_(\\d+)?$)");
-
 	static JPASlug create(String slugPath, Container container) {
-		Matcher matcher = SLUG_PATH_PATTERN.matcher(slugPath);
+		Matcher matcher=SLUG_PATH_PATTERN.matcher(slugPath);
 		String path=slugPath;
 		long version=0;
 		if(matcher.matches()) {

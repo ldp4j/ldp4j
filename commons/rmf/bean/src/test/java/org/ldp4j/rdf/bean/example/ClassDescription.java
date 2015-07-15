@@ -52,18 +52,18 @@ public final class ClassDescription<T> {
 	private final ClassWrapper classWrapper;
 
 	private static interface IPrinter<E> {
-		
+
 		public String toString(E element);
-		
+
 	}
-	
+
 	private ClassDescription(Class<T> type) {
 		this.type = type;
 		this.classWrapper = new ClassWrapper(type);
 	}
-	
-	public static abstract class AbstractPrinter<T> implements IPrinter<T> {
-		
+
+	public abstract static class AbstractPrinter<T> implements IPrinter<T> {
+
 		private static final String FIELD_SEPARATOR = ", ";
 		private static final String BLOCK_OPENING = "[";
 		private static final String BLOCK_CLOSING = "]";
@@ -73,22 +73,22 @@ public final class ClassDescription<T> {
 		private static final String NEW_LINE = System.getProperty("line.separator");
 
 		private static class Entry {
-			
+
 			private String field;
 			private Object value;
-		
+
 			public Entry withField(String field) {
 				this.field=field;
 				return this;
 			}
-			
+
 			public Entry withValue(Object value) {
 				this.value=value;
 				return this;
 			}
-			
+
 		}
-		
+
 		private List<Entry> fields=new ArrayList<Entry>();
 		private String title="Type";
 		private boolean excludePublicElementsFromDeclared=false;
@@ -97,11 +97,11 @@ public final class ClassDescription<T> {
 			this.excludePublicElementsFromDeclared = excludePublicElementsFromDeclared;
 			return this;
 		}
-		
+
 		public boolean excludePublicElementsFromDeclared() {
 			return excludePublicElementsFromDeclared;
 		}
-		
+
 		@Override
 		public final String toString(T type) {
 			String result=null;
@@ -125,7 +125,7 @@ public final class ClassDescription<T> {
 			}
 			return result;
 		}
-	
+
 		private static final Class<?>[][] ELEMENT_WRAPPER_MAP={
 			{Constructor.class, ConstructorWrapper.class},
 			{Annotation.class, AnnotationWrapper.class},
@@ -179,7 +179,7 @@ public final class ClassDescription<T> {
 			}
 			return result;
 		}
-	
+
 		private String toRawString(Object value) {
 			String valueString=null;
 			IPrinter<Object> printer=getPrinter(value);
@@ -195,21 +195,21 @@ public final class ClassDescription<T> {
 			this.title=title;
 			return this;
 		}
-	
+
 		protected final AbstractPrinter<T> addField(String field, Object value) {
 			if(value==null) {
 				return this;
 			}
-			
+
 			String valueString=value.toString();
 			if(valueString.isEmpty()) {
 				return this;
 			}
-	
+
 			this.fields.add(new Entry().withField(field).withValue(value));
 			return this;
 		}
-	
+
 		protected final AbstractPrinter<T> addBlockField(String field, Object value)  {
 			if(value==null) {
 				return this;
@@ -218,24 +218,24 @@ public final class ClassDescription<T> {
 			if(valueString.isEmpty()) {
 				return this;
 			}
-			
+
 			this.fields.add(new Entry().withField(field).withValue(COMPOSITE_OPENING+NEW_LINE+INDEXATION+INDEXATION+valueString.replace(NEW_LINE,NEW_LINE+INDEXATION+INDEXATION)+NEW_LINE+INDEXATION+COMPOSITE_CLOSING));
 			return this;
 		}
-	
+
 		protected final AbstractPrinter<T> addMultiField(String field, Object[] values)  {
 			if(values==null || values.length==0) {
 				return this;
 			}
-	
+
 			return addMultiField(field,Arrays.asList(values));
 		}
-			
+
 		protected final AbstractPrinter<T> addMultiField(String field, Collection<?> values)  {
 			if(values==null || values.isEmpty()) {
 				return this;
 			}
-			
+
 			StringBuilder builder=new StringBuilder();
 			builder.append(COMPOSITE_OPENING);
 			boolean first=true;
@@ -262,7 +262,7 @@ public final class ClassDescription<T> {
 			}
 			return this;
 		}
-	
+
 		protected final <E, S extends E> Wrapper<E> wrapElement(S element) {
 			if(element==null) {
 				return null;
@@ -271,7 +271,7 @@ public final class ClassDescription<T> {
 			Class<E> clazz = (Class<E>)element.getClass();
 			return wrapElementAs(element, clazz);
 		}
-	
+
 		protected final List<Wrapper<?>> wrapElements(List<?> elements) {
 			List<Wrapper<?>> result=new ArrayList<Wrapper<?>>();
 			if(elements!=null) {
@@ -281,7 +281,7 @@ public final class ClassDescription<T> {
 			}
 			return result;
 		}
-		
+
 		protected final List<Wrapper<?>> wrapElementArray(Object[] elements) {
 			List<Wrapper<?>> result=null;
 			if(elements!=null) {
@@ -354,44 +354,44 @@ public final class ClassDescription<T> {
 				throw new IllegalArgumentException("Could not instantiate wrapper ",e);
 			}
 		}
-	
+
 		protected abstract void processType(T type);
-		
+
 	}
 
 	private static class DefaultTypePrinter extends AbstractPrinter<Type> {
-	
+
 		@Override
 		protected void processType(Type type) {
 			super.addTitle("Type");
 			super.addField("class", type.toString());
 		}
-		
+
 	}
 
 	private static class WildcardTypePrinter extends AbstractPrinter<WildcardType> {
-	
+
 		@Override
 		protected void processType(WildcardType type) {
 			super.addTitle("WildcardType");
 			super.addMultiField("lower bounds", wrapElementArray(type.getLowerBounds()));
 			super.addMultiField("upper bounds", wrapElementArray(type.getUpperBounds()));
 		}
-		
+
 	}
 
 	private static class GenericArrayTypePrinter extends AbstractPrinter<GenericArrayType> {
-	
+
 		@Override
 		protected void processType(GenericArrayType type) {
 			super.addTitle("GenericArrayType");
 			super.addBlockField("generic component type",wrapElement(type.getGenericComponentType()));
 		}
-		
+
 	}
 
 	private static class ParameterizedTypePrinter extends AbstractPrinter<ParameterizedType> {
-	
+
 		@Override
 		protected void processType(ParameterizedType type) {
 			super.addTitle("ParameterizedType");
@@ -399,11 +399,11 @@ public final class ClassDescription<T> {
 			super.addField("raw type", type.getRawType());
 			super.addMultiField("actual type parameters",wrapElementArray(type.getActualTypeArguments()));
 		}
-	
+
 	}
 
 	private static class TypeVariablePrinter extends AbstractPrinter<TypeVariable<?>> {
-	
+
 		@Override
 		protected void processType(TypeVariable<?> type) {
 			super.addTitle("TypeVariable");
@@ -411,11 +411,11 @@ public final class ClassDescription<T> {
 			super.addField("name", type.getName());
 			super.addMultiField("bounds",wrapElementArray(type.getBounds()));
 		}
-		
+
 	}
 
 	public static class AnnotatedElementPrinter extends AbstractPrinter<AnnotatedElement> {
-	
+
 		@Override
 		protected void processType(AnnotatedElement type) {
 			String suffix="";
@@ -438,11 +438,11 @@ public final class ClassDescription<T> {
 			}
 			return nonPublicClasses;
 		}
-	
+
 	}
 
 	private static class MemberPrinter extends AbstractPrinter<Member> {
-	
+
 		@Override
 		protected void processType(Member type) {
 			super.addTitle("Member");
@@ -451,31 +451,31 @@ public final class ClassDescription<T> {
 			super.addField("modifiers", Modifier.toString(type.getModifiers()));
 			super.addField("synthetic", type.isSynthetic());
 		}
-	
+
 	}
 
 	private static class GenericDeclarationPrinter extends AbstractPrinter<GenericDeclaration> {
-	
+
 		@Override
 		protected void processType(GenericDeclaration type) {
 			super.addTitle("GenericDeclaration");
 			super.addMultiField("typeParameters", wrapElementArray(type.getTypeParameters()));
 		}
-	
+
 	}
 
 	private static final class AnnotationPrinter extends AbstractPrinter<Annotation> {
-	
+
 		@Override
 		protected void processType(Annotation type) {
 			super.addTitle("Annotation");
 			super.addField("annotationType", type.annotationType());
 		}
-	
+
 	}
 
 	private static class FieldPrinter extends AbstractPrinter<Field> {
-	
+
 		@Override
 		protected void processType(Field type) {
 			super.addTitle("Field");
@@ -486,11 +486,11 @@ public final class ClassDescription<T> {
 			super.addField("generic type", type.getGenericType());
 			super.addField("enum constant", type.isEnumConstant());
 		}
-	
+
 	}
 
 	private static class MethodPrinter extends AbstractPrinter<Method> {
-	
+
 		@Override
 		protected void processType(Method type) {
 			super.addTitle("Method");
@@ -513,11 +513,11 @@ public final class ClassDescription<T> {
 			super.addMultiField("exception types",type.getExceptionTypes());
 			super.addMultiField("generic exception types",type.getGenericExceptionTypes());
 		}
-		
+
 	}
 
 	private static class ConstructorPrinter extends AbstractPrinter<Constructor<?>> {
-	
+
 		@Override
 		protected void processType(Constructor<?> type) {
 			super.addTitle("Constructor");
@@ -537,11 +537,11 @@ public final class ClassDescription<T> {
 			super.addMultiField("exception types",type.getExceptionTypes());
 			super.addMultiField("generic exception types",type.getGenericExceptionTypes());
 		}
-		
+
 	}
 
 	private static class ClassPrinter extends AbstractPrinter<Class<?>> {
-		
+
 		private boolean ignoreDefaultSuperclass;
 		private boolean ignoreDefaultMethods;
 		private boolean recursive;
@@ -551,7 +551,7 @@ public final class ClassDescription<T> {
 
 		public ClassPrinter() {
 		}
-		
+
 		public ClassPrinter excludePublicElementsFromDeclared(boolean excludePublicElementsFromDeclared) {
 			super.excludePublicElementsFromDeclared(excludePublicElementsFromDeclared);
 			return this;
@@ -656,7 +656,7 @@ public final class ClassDescription<T> {
 			if(ignoreDefaultMethods) {
 				subprefix="non-default ";
 			}
-			
+
 			super.addMultiField(prefix+subprefix+"methods", defaultMethodFilter(Arrays.asList(methods),ignoreDefaultMethods));
 			super.addMultiField(prefix+subprefix+"declared methods"+suffix, defaultMethodFilter(publicElementFilter(methods,type.getDeclaredMethods(),excludePublicElementsFromDeclared()),ignoreDefaultMethods));
 
@@ -675,7 +675,7 @@ public final class ClassDescription<T> {
 		}
 
 		private ClassWrapper wrap(Class<?> clazz) {
-			ClassWrapper e = 
+			ClassWrapper e =
 				new ClassWrapper(clazz).
 					recursive(recursive).
 					excludePublicElementsFromDeclared(excludePublicElementsFromDeclared()).
@@ -686,7 +686,7 @@ public final class ClassDescription<T> {
 					traverseSuperclass(traverseSuperclass && recursive);
 			return e;
 		}
-		
+
 		private <T> List<T> publicElementFilter(T[] publicElements, T[] declaredElements, boolean filter) {
 			List<T> nonPublicClasses=new ArrayList<T>(Arrays.asList(declaredElements));
 			if(filter) {
@@ -706,33 +706,33 @@ public final class ClassDescription<T> {
 			}
 			return result;
 		}
-		
+
 	}
 
 	private static interface IWrapper<E> {
-		
+
 		public E getElement();
 	}
 
-	private static abstract class Wrapper<E> implements IWrapper<E> {
-				
+	private abstract static class Wrapper<E> implements IWrapper<E> {
+
 		private final E element;
-	
+
 		public Wrapper(E element) {
 			this.element = element;
 		}
-		
+
 		public final E getElement() {
 			return element;
 		}
-		
+
 		private boolean excludePublicElementsFromDeclared=false;
 
 		public Wrapper<E> excludePublicElementsFromDeclared(boolean excludePublicElementsFromDeclared) {
 			this.excludePublicElementsFromDeclared = excludePublicElementsFromDeclared;
 			return this;
 		}
-		
+
 		public boolean excludePublicElementsFromDeclared() {
 			return excludePublicElementsFromDeclared;
 		}
@@ -744,13 +744,13 @@ public final class ClassDescription<T> {
 			}
 			return createPrinter().toString(getElement());
 		}
-	
+
 		protected abstract IPrinter<E> createPrinter();
 
 	}
 
 	private static class TypeWrapper<T extends Type> extends Wrapper<T> {
-	
+
 		protected IPrinter<T> createPrinter() {
 			T element=getElement();
 			IPrinter<T> result;
@@ -777,71 +777,71 @@ public final class ClassDescription<T> {
 			}
 			return result;
 		}
-	
+
 		public TypeWrapper(T type) {
 			super(type);
 		}
-	
+
 	}
 
 	private static class AnnotationWrapper extends Wrapper<Annotation> {
-		
+
 		public AnnotationWrapper(Annotation annotation) {
 			super(annotation);
 		}
-		
+
 		@Override
 		protected final IPrinter<Annotation> createPrinter() {
 			return new AnnotationPrinter().excludePublicElementsFromDeclared(excludePublicElementsFromDeclared());
 		}
-		
+
 	}
 
 	private static class FieldWrapper extends Wrapper<Field> {
-	
+
 		public FieldWrapper(Field field) {
 			super(field);
 		}
-	
+
 		@Override
 		protected final IPrinter<Field> createPrinter() {
 			return new FieldPrinter().excludePublicElementsFromDeclared(excludePublicElementsFromDeclared());
 		}
-		
+
 	}
 
 	private static class MethodWrapper extends Wrapper<Method>{
-		
+
 		public MethodWrapper(Method method) {
 			super(method);
 		}
-	
+
 		public boolean isFromKernel() {
 			return getElement().getDeclaringClass().equals(Object.class);
 		}
-		
+
 		@Override
 		protected IPrinter<Method> createPrinter() {
 			return new MethodPrinter().excludePublicElementsFromDeclared(excludePublicElementsFromDeclared());
 		}
-		
+
 	}
 
 	private static class ConstructorWrapper extends Wrapper<Constructor<?>> {
-	
+
 		public ConstructorWrapper(Constructor<?> constructor) {
 			super(constructor);
 		}
-	
+
 		@Override
 		protected IPrinter<Constructor<?>> createPrinter() {
 			return new ConstructorPrinter().excludePublicElementsFromDeclared(excludePublicElementsFromDeclared());
 		}
-	
+
 	}
 
 	private static class ClassWrapper extends TypeWrapper<Class<?>> {
-		
+
 		private boolean recursive=false;
 		private boolean traverseInterfaces=false;
 		private boolean ignoreDefaultMethods=false;
@@ -852,7 +852,7 @@ public final class ClassDescription<T> {
 		public ClassWrapper(Class<?> clazz) {
 			super(clazz);
 		}
-		
+
 		public ClassWrapper recursive(boolean recursive) {
 			this.recursive = recursive;
 			return this;
@@ -900,9 +900,9 @@ public final class ClassDescription<T> {
 					traverseClasses(traverseClasses).
 					traverseSuperclass(traverseSuperclass);
 		}
-		
+
 	}
-	
+
 	private static class GenericDeclarationWrapper extends Wrapper<GenericDeclaration> {
 
 		public GenericDeclarationWrapper(GenericDeclaration element) {
@@ -913,9 +913,9 @@ public final class ClassDescription<T> {
 		protected IPrinter<GenericDeclaration> createPrinter() {
 			return new GenericDeclarationPrinter().excludePublicElementsFromDeclared(excludePublicElementsFromDeclared());
 		}
-		
+
 	}
-	
+
 	private static class MemberWrapper extends Wrapper<Member> {
 
 		public MemberWrapper(Member element) {
@@ -926,9 +926,9 @@ public final class ClassDescription<T> {
 		protected IPrinter<Member> createPrinter() {
 			return new MemberPrinter().excludePublicElementsFromDeclared(excludePublicElementsFromDeclared());
 		}
-		
+
 	}
-	
+
 	private static class AnnotatedElementWrapper extends Wrapper<AnnotatedElement> {
 
 		public AnnotatedElementWrapper(AnnotatedElement element) {
@@ -939,7 +939,7 @@ public final class ClassDescription<T> {
 		protected IPrinter<AnnotatedElement> createPrinter() {
 			return new AnnotatedElementPrinter().excludePublicElementsFromDeclared(excludePublicElementsFromDeclared());
 		}
-		
+
 	}
 
 	public ClassDescription<T> excludePublicElementsFromDeclared(boolean excludePublicElementsFromDeclared) {
@@ -975,16 +975,16 @@ public final class ClassDescription<T> {
 		classWrapper.traverseClasses(traverseClasses);
 		return this;
 	}
-	
+
 	public Class<T> getType() {
 		return type;
 	}
-	
+
 	@Override
 	public String toString() {
 		return classWrapper.toString();
 	}
-	
+
 	public static <T> ClassDescription<T> newInstance(Class<T> type) {
 		return new ClassDescription<T>(type);
 	}

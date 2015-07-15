@@ -43,6 +43,7 @@ public class ResourceControllerService implements Service {
 			super(ResourceControllerService.class);
 		}
 
+		@Override
 		public ResourceControllerService build() {
 			return
 				new ResourceControllerService(

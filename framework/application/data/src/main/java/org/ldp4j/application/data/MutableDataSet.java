@@ -38,6 +38,8 @@ import java.util.Set;
 
 final class MutableDataSet implements DataSet {
 
+	private static final String NL=System.lineSeparator();
+
 	private final Name<?> name;
 	private final Map<Object,Individual<?,?>> individuals;
 	private final IndividualFactory factory;
@@ -112,8 +114,6 @@ final class MutableDataSet implements DataSet {
 		}
 		return false;
 	}
-
-	private static final String NL=System.getProperty("line.separator");
 
 	@Override
 	public String toString() {

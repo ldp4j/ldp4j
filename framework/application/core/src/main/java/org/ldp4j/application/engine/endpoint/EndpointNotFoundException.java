@@ -26,23 +26,25 @@
  */
 package org.ldp4j.application.engine.endpoint;
 
+import org.ldp4j.application.engine.resource.ResourceId;
+
 
 public class EndpointNotFoundException extends Exception {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = 2477573776081403424L;
 
-	private final Object searchedKey;
+	private final ResourceId resourceId;
 
-	public EndpointNotFoundException(Object resourceName) {
-		super("Could not find endpoint for resource named '"+resourceName+"'");
-		this.searchedKey = resourceName;
+	public EndpointNotFoundException(ResourceId resourceId) {
+		super("Could not find endpoint for resource '"+resourceId+"'");
+		this.resourceId = resourceId;
 	}
 
-	public Object getSearchedKey() {
-		return searchedKey;
+	public ResourceId searchedResourceId() {
+		return this.resourceId;
 	}
-	
+
 }

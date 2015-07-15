@@ -80,16 +80,6 @@ final class JPATransactionManager implements TransactionManager {
 			}
 		}
 
-		@Override
-		public boolean isStarted() {
-			return provider.isActive();
-		}
-
-		@Override
-		public boolean isCompleted() {
-			return !provider.isActive();
-		}
-
 	}
 
 	private final EntityManagerProvider provider;

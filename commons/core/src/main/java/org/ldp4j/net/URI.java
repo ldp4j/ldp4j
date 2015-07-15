@@ -53,7 +53,7 @@ public final class URI {
 			return obj!=null?obj.hashCode():0;
 		}
 
-		static boolean equals(Object one, Object other) {
+		static boolean equal(Object one, Object other) {
 			return
 				one==null?
 					other==null:
@@ -490,9 +490,9 @@ public final class URI {
 			if(obj instanceof Path) {
 				Path that=(Path)obj;
 				result=
-					Objects.equals(this.directory,that.directory) &&
-					Objects.equals(this.fileName,that.fileName) &&
-					Objects.equals(this.fileExtension,that.fileExtension);
+					Objects.equal(this.directory,that.directory) &&
+					Objects.equal(this.fileName,that.fileName) &&
+					Objects.equal(this.fileExtension,that.fileExtension);
 			}
 			return result;
 		}
@@ -661,8 +661,8 @@ public final class URI {
 			return target;
 		}
 
-		if(!Objects.equals(base.getScheme(),target.getScheme()) ||
-			!Objects.equals(base.getAuthority(),target.getAuthority())) {
+		if(!Objects.equal(base.getScheme(),target.getScheme()) ||
+			!Objects.equal(base.getAuthority(),target.getAuthority())) {
 			return target;
 		}
 

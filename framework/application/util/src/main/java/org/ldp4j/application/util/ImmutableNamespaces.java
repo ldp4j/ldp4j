@@ -39,7 +39,8 @@ import com.google.common.collect.Maps;
 
 public final class ImmutableNamespaces implements Namespaces {
 
-	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
+	private static final String LINE_SEPARATOR = System.lineSeparator();
+
 	private final Map<String,String> map;
 
 	private ImmutableNamespaces(Map<String,String> map) {
@@ -64,17 +65,26 @@ public final class ImmutableNamespaces implements Namespaces {
 		return result;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Set<String> getDeclaredPrefixes() {
 		return ImmutableSet.copyOf(this.map.keySet());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String getNamespaceURI(String prefix) {
 		Object namespaceURI=this.map.get(prefix);
 		return namespaceURI==null?null:namespaceURI.toString();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String getPrefix(String namespaceURI) {
 		for(Entry<String,String> entry:this.map.entrySet()) {
@@ -85,6 +95,9 @@ public final class ImmutableNamespaces implements Namespaces {
 		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public List<String> getPrefixes(String namespaceURI) {
 		List<String> list=new ArrayList<String>();
@@ -96,6 +109,10 @@ public final class ImmutableNamespaces implements Namespaces {
 		return list;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
 	public String toString() {
 		StringBuilder builder=new StringBuilder();
 		builder.append("Namespaces {");

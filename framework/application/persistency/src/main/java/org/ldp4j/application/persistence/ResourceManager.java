@@ -242,15 +242,15 @@ public final class ResourceManager extends BaseManager {
 
 				Slug tmp=Slug.create(this.slugPath,this.container);
 
-				Slug slug=getManager().find(Slug.class,tmp.id());
-				if(slug==null) {
+				Slug existingSlug=getManager().find(Slug.class,tmp.id());
+				if(existingSlug==null) {
 					return tmp;
 				}
 
-				synchronized(slug) {
-					if(slug.getVersion()<tmp.getVersion()) {
-						slug.setVersion(tmp.getVersion());
-						return slug;
+				synchronized(existingSlug) {
+					if(existingSlug.getVersion()<tmp.getVersion()) {
+						existingSlug.setVersion(tmp.getVersion());
+						return existingSlug;
 					}
 				}
 
@@ -353,6 +353,7 @@ public final class ResourceManager extends BaseManager {
 				return resource;
 			}
 
+			@Override
 			protected String getPath() {
 				return this.resourceAttachment.nextAttachmentPath();
 			}
@@ -585,7 +586,6 @@ public final class ResourceManager extends BaseManager {
 					public void visitMembershipAwareContainer(MembershipAwareContainer resource) {
 						visitContainer(resource);
 					}
-
 				}
 			);
 		}

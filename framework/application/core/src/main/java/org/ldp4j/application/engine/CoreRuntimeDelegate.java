@@ -33,8 +33,12 @@ import org.ldp4j.application.engine.transaction.Transaction;
 import org.ldp4j.application.engine.transaction.TransactionManager;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.spi.RuntimeDelegate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class CoreRuntimeDelegate extends RuntimeDelegate {
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(CoreRuntimeDelegate.class);
 
 	private DefaultApplicationEngine applicationEngine() throws ApplicationEngineException {
 		return
@@ -53,11 +57,11 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 
 	@Override
 	public boolean isOffline() {
-		boolean result=false;
+		boolean result=true;
 		try {
 			result=!applicationEngine().state().isStarted();
 		} catch (ApplicationEngineException e) {
-			// NOTHING TO DO
+			LOGGER.warn("Could not check engine state",e);
 		}
 		return result;
 	}
@@ -72,9 +76,7 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 							builder().
 								build());
 			Transaction transaction=transactionManager().currentTransaction();
-//			if(!transaction.isActive()) {
-				transaction.begin();
-//			}
+			transaction.begin();
 			return new TransactionalWriteSession(transaction, delegate);
 		} catch (ApplicationEngineException e) {
 			throw new ApplicationContextException("Unsupported application engine implementation",e);

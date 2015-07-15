@@ -120,10 +120,10 @@ public class ResourceAttachment implements Serializable {
 	}
 
 	public String nextAttachmentPath() {
-		long version=this.version.getAndIncrement();
+		long newVersion=this.version.getAndIncrement();
 		String suffix="";
-		if(version>0) {
-			suffix=String.format("_%d/",version);
+		if(newVersion>0) {
+			suffix=String.format("_%d/",newVersion);
 		}
 		String ownerPath = this.ownerResource.getEndpoint().getPath();
 		String attachmentPath = this.templateAttachment.getPath();

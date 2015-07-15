@@ -37,21 +37,23 @@ import javax.xml.namespace.QName;
  * in the LDP specification. Check the LDP specification for normative
  * reference.
  * <p>
- * 
+ *
  * <b>Namespace:</b> {@code <http://www.w3.org/ns/ldp#>} <br/>
  * <b>Prefix:</b> {@code ldp}
- * 
+ *
  * @version 1.0
  * @since 1.0.0
  * @author Miguel Esteban Guti&eacute;rrez
- * 
+ *
  * @see <a href="http://www.w3.org/TR/ldp/">http://www.w3.org/TR/ldp/</a>
  */
 public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
-	
+
+	private static final long serialVersionUID = -7172036547604166277L;
+
 	/** The namespace of the vocabulary ({@code http://www.w3.org/ns/ldp#}) **/
 	public static final String NAMESPACE = "http://www.w3.org/ns/ldp#";
-	
+
 	/** The preferred prefix of the vocabulary ({@code ldp}) **/
 	public static final String NS_PREFIX = "ldp";
 
@@ -65,7 +67,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/ns/ldp#contains}.
 	 * <p>
 	 * Links a container with resources created through the container.
-	 * 
+	 *
 	 * @see <a href="http://www.w3.org/ns/ldp#contains">ldp:contains</a>
 	 */
 	public static final Term CONTAINS;
@@ -77,7 +79,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * <p>
 	 * LDP servers should use this predicate as the membership predicate if
 	 * there is no obvious predicate from an application vocabulary to use.
-	 * 
+	 *
 	 * @see <a href="http://www.w3.org/ns/ldp#member">ldp:member</a>
 	 */
 	public static final Term MEMBER;
@@ -92,7 +94,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * presence of {@code ldp:hasMemberRelation} or
 	 * {@code ldp:isMemberOfRelation}, the membership-constant-URI might occupy
 	 * either the subject or object position in membership triples.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/ns/ldp#membershipResource">ldp:membershipResource</a>
 	 */
@@ -106,7 +108,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * Indicates which predicate is used in membership triples, and that the
 	 * membership triple pattern is {@code <membership-constant-URI,
 	 * object-of-hasMemberRelation, member-URI>}.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/ns/ldp#hasMemberRelation">ldp:hasMemberRelation</a>
 	 */
@@ -121,7 +123,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * membership triple pattern is
 	 * {@code <member-URI, object-of-isMemberOfRelation,
 	 * membership-constant-URI>}.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/ns/ldp#isMemberOfRelation">ldp:isMemberOfRelation</a>
 	 */
@@ -135,7 +137,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * Indicates which triple in a creation request should be used as the
 	 * member-URI value in the membership triple added when the creation request
 	 * is successful.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/ns/ldp#insertedContentRelation">ldp:insertedContentRelation</a>
 	 */
@@ -148,7 +150,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * <p>
 	 * Indicates that the resource has publishing constraints. The object of the
 	 * triple should be the URL that provides the constraints that apply.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/ns/ldp#constrainedBy">ldp:constrainedBy</a>
 	 */
@@ -164,7 +166,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/ns/ldp#Resource}.
 	 * <p>
 	 * A HTTP-addressable resource whose lifecycle is managed by a LDP server.
-	 * 
+	 *
 	 * @see <a href="http://www.w3.org/ns/ldp#Resource">ldp:Resource</a>
 	 */
 	public static final Term RESOURCE;
@@ -176,18 +178,18 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * <p>
 	 * A Linked Data Platform Resource (LDPR) whose state is NOT represented as
 	 * RDFS.
-	 * 
+	 *
 	 * @see <a href="http://www.w3.org/ns/ldp#NonRDFSource">ldp:NonRDFSource</a>
 	 */
     public static final Term NON_RDF_SOURCE;
-    
+
 	/**
 	 * RDF_SOURCE
 	 * <p>
 	 * {@code http://www.w3.org/ns/ldp#RDFSource}.
 	 * <p>
 	 * A Linked Data Platform Resource (LDPR) whose state is represented as RDFS.
-	 * 
+	 *
 	 * @see <a href="http://www.w3.org/ns/ldp#RDFSource">ldp:RDFSource</a>
 	 */
     public static final Term RDF_SOURCE;
@@ -201,11 +203,11 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * additional patterns and conventions for managing membership. Readers
 	 * should refer to the specification defining this ontology for the list of
 	 * behaviors associated with it.
-	 * 
+	 *
 	 * @see <a href="http://www.w3.org/ns/ldp#Container">ldp:Container</a>
 	 */
 	public static final Term CONTAINER;
-	
+
 	/**
 	 * BASIC_CONTAINER
 	 * <p>
@@ -213,7 +215,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * <p>
 	 * An LDPC that uses a predefined predicate to simply link to its contained
 	 * resources.
-	 * 
+	 *
 	 * @see <a href="http://www.w3.org/ns/ldp#BasicContainer">ldp:BasicContainer</a>
 	 */
 	public static final Term BASIC_CONTAINER;
@@ -226,7 +228,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * An LDPC that is similar to a LDP-DC but it allows an indirection with the
 	 * ability to list as member a resource, such as a URI representing a
 	 * real-world object, that is different from the resource that is created.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/ns/ldp#DirectContainer">ldp:DirectContainer</a>
 	 */
@@ -239,7 +241,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * <p>
 	 * An LDPC that has the flexibility of choosing what form the membership
 	 * triples take.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/ns/ldp#IndirectContainer">ldp:IndirectContainer</a>
 	 */
@@ -258,7 +260,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code ldp:insertedContentRelation}, where the member-URI value in the membership
 	 * triple added when a creation request is successful is the URI assigned to
 	 * the newly created resource.
-	 * 
+	 *
 	 * @see <a href="http://www.w3.org/ns/ldp#MemberSubject">ldp:MemberSubject</a>
 	 */
 	public static final Term MEMBER_SUBJECT;
@@ -270,7 +272,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * <p>
 	 * LDPTerm identifying a LDPC's containment triples, for example to allow
 	 * clients to express interest in receiving them.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/ns/ldp#PreferContainment">ldp:PreferContainment</a>
 	 */
@@ -286,7 +288,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * Currently this excludes containment and membership triples, but in the
 	 * future other exclusions might be added. This definition is written to
 	 * automatically exclude those new classes of triples.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/ns/ldp#PreferEmptyContainer">ldp:PreferEmptyContainer</a>
 	 */
@@ -302,7 +304,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * Currently this excludes containment and membership triples, but in the
 	 * future other exclusions might be added. This definition is written to
 	 * automatically exclude those new classes of triples.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/ns/ldp#PreferMinimalContainer">ldp:PreferMinimalContainer</a>
 	 */
@@ -315,7 +317,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * <p>
 	 * LDPTerm identifying a LDPC's membership triples, for example to allow
 	 * clients to express interest in receiving them.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/ns/ldp#PreferMembership">ldp:PreferMembership</a>
 	 */
@@ -356,7 +358,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 
 	/**
 	 * Create a term
-	 * 
+	 *
 	 * @param localPart
 	 *            The local part of the term's URI
 	 * @return A {@code LDPTerm} instance that represents the term.
@@ -375,16 +377,16 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 
 	/**
 	 * Get the terms of the vocabulary
-	 * 
+	 *
 	 * @return An array with all the terms of the vocabulary.
 	 */
 	public static Term[] values() {
 		return getInstance().terms();
 	}
-	
+
 	/**
 	 * Find the term that matches the specified URI.
-	 * 
+	 *
 	 * @param term
 	 *            A {@code String}-based representation of the term's URI.
 	 * @return The {@code Term} that matches the specified URI.
@@ -392,10 +394,10 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 	public static Term valueOf(String term) {
 		return getInstance().fromValue(term);
 	}
- 	
+
 	/**
 	 * Find the term that matches the specified URI.
-	 * 
+	 *
 	 * @param term
 	 *            A {@code QName}-based representation of the term's URI.
 	 * @return The {@code Term} that matches the specified URI.
@@ -407,7 +409,7 @@ public final class LDP extends AbstractImmutableVocabulary<ImmutableTerm> {
 
 	/**
 	 * Find the term that matches the specified URI.
-	 * 
+	 *
 	 * @param term
 	 *            A {@code URI}-based representation of the term's URI.
 	 * @return The {@code LDPTerm} that matches the specified URI.

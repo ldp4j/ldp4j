@@ -36,83 +36,129 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ConcurrentHashSet<E> extends AbstractSet<E> implements Set<E> {
 
 	private final Map<E, Boolean> valueMap = new ConcurrentHashMap<E, Boolean>();
-	private transient Set<E> values = valueMap.keySet();
+	private Set<E> values = valueMap.keySet();
 
 	public ConcurrentHashSet() {
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean add(E e) {
-		return valueMap.put(e, Boolean.TRUE) == null;
+		return this.valueMap.put(e, Boolean.TRUE) == null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean remove(Object o) {
-		return valueMap.remove(o) != null;
+		return this.valueMap.remove(o) != null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void clear() {
-		valueMap.clear();
+		this.valueMap.clear();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean contains(Object o) {
-		return valueMap.containsKey(o);
+		return this.valueMap.containsKey(o);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean isEmpty() {
-		return valueMap.isEmpty();
+		return this.valueMap.isEmpty();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int size() {
-		return valueMap.size();
+		return this.valueMap.size();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean containsAll(Collection<?> c) {
-		return values.containsAll(c);
+		return this.values.containsAll(c);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean equals(Object o) {
-		return o == this || values.equals(o);
+		return o == this || this.values.equals(o);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int hashCode() {
-		return values.hashCode();
+		return this.values.hashCode();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Iterator<E> iterator() {
-		return values.iterator();
+		return this.values.iterator();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean removeAll(Collection<?> c) {
-		return values.removeAll(c);
+		return this.values.removeAll(c);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean retainAll(Collection<?> c) {
-		return values.retainAll(c);
+		return this.values.retainAll(c);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Object[] toArray() {
-		return values.toArray();
+		return this.values.toArray();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> T[] toArray(T[] a) {
-		return values.toArray(a);
+		return this.values.toArray(a);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
-		return values.toString();
+		return this.values.toString();
 	}
+
 }

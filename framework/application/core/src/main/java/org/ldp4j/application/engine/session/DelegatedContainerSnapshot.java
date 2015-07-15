@@ -57,14 +57,17 @@ final class DelegatedContainerSnapshot extends DelegatedResourceSnapshot impleme
 		visitor.visitContainerSnapshot(this);
 	}
 
+	@Override
 	void accept(DelegatedSnapshotVisitor visitor) {
 		visitor.visitDelegatedContainerSnapshot(this);
 	}
 
+	@Override
 	Container delegate() {
 		return (Container)super.delegate();
 	}
 
+	@Override
 	ContainerTemplate template() {
 		return (ContainerTemplate)super.template();
 	}

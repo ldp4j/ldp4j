@@ -38,7 +38,7 @@ import org.ldp4j.util.ListBuilder;
 
 public final class URIOpsImpComparator {
 
-	public static abstract class RoundtripResolutionTester<T> {
+	public abstract static class RoundtripResolutionTester<T> {
 
 		enum Stage {
 			RELATIVIZATION("Relativization"),

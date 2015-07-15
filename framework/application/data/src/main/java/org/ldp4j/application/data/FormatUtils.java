@@ -31,6 +31,16 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public final class FormatUtils implements IndividualVisitor {
 
+	private static final String NEW_ID_FORMAT              = "<%s> {New}";
+	private static final String RELATIVE_ID_FORMAT         = "<%s> {Parent: %s}";
+	private static final String MANAGED_ID_INDIRECT_FORMAT = "%s {Managed by: %s, indirect id: <%s>}";
+	private static final String MANAGED_ID_FORMAT          = "%s {Managed by: %s}";
+	private static final String LOCAL_ID_FORMAT            = "%s [%s] {Local}";
+	private static final String EXTERNAL_ID_FORMAT         = "<%s> {External}";
+	private static final String COMPOSITE_FORMAT           = "%s (%s) [%s]";
+	private static final String SIMPLE_FORMAT              = "%s [%s]";
+	private static final String NULL                       = "<null>";
+
 	private String id;
 
 	private FormatUtils() {
@@ -46,35 +56,35 @@ public final class FormatUtils implements IndividualVisitor {
 
 	@Override
 	public void visitManagedIndividual(ManagedIndividual individual) {
-		ManagedIndividualId id = individual.id();
-		if(id.indirectId()==null) {
-			log("%s {Managed by: %s}",id.name(),id.managerId());
+		ManagedIndividualId mId = individual.id();
+		if(mId.indirectId()==null) {
+			log(MANAGED_ID_FORMAT,mId.name(),mId.managerId());
 		} else {
-			log("%s {Managed by: %s, indirect id: <%s>}",id.name(),id.managerId(),id.indirectId());
+			log(MANAGED_ID_INDIRECT_FORMAT,mId.name(),mId.managerId(),mId.indirectId());
 		}
 	}
 
 	@Override
 	public void visitRelativeIndividual(RelativeIndividual individual) {
-		RelativeIndividualId id = individual.id();
-		log("<%s> {Parent: %s}",id.path(),formatId(id.parentId()));
+		RelativeIndividualId rId = individual.id();
+		log(RELATIVE_ID_FORMAT,rId.path(),formatId(rId.parentId()));
 	}
 
 	@Override
 	public void visitLocalIndividual(LocalIndividual individual) {
 		Name<?> name = individual.id();
 		Object id=name.id();
-		log("%s [%s] {Local}",id,id.getClass().getCanonicalName());
+		log(LOCAL_ID_FORMAT,id,id.getClass().getCanonicalName());
 	}
 
 	@Override
 	public void visitExternalIndividual(ExternalIndividual individual) {
-		log("<%s> {External}",individual.id());
+		log(EXTERNAL_ID_FORMAT,individual.id());
 	}
 
 	@Override
 	public void visitNewIndividual(NewIndividual individual) {
-		log("<%s> {New}",individual.id());
+		log(NEW_ID_FORMAT,individual.id());
 	}
 
 	public static String formatLiteral(final Literal<?> literal) {
@@ -82,15 +92,15 @@ public final class FormatUtils implements IndividualVisitor {
 			private String format;
 			@Override
 			public void visitLiteral(Literal<?> literal) {
-				this.format=String.format("%s [%s]",literal.get(),literal.get().getClass().getCanonicalName());
+				this.format=String.format(SIMPLE_FORMAT,literal.get(),literal.get().getClass().getCanonicalName());
 			}
 			@Override
 			public void visitTypedLiteral(TypedLiteral<?> literal) {
-				this.format=String.format("%s (%s) [%s]",literal.get(),literal.type(),literal.get().getClass().getCanonicalName());
+				this.format=String.format(COMPOSITE_FORMAT,literal.get(),literal.type(),literal.get().getClass().getCanonicalName());
 			}
 			@Override
 			public void visitLanguageLiteral(LanguageLiteral literal) {
-				this.format=String.format("%s (%s) [%s]",literal.get(),literal.language(),literal.get().getClass().getCanonicalName());
+				this.format=String.format(COMPOSITE_FORMAT,literal.get(),literal.language(),literal.get().getClass().getCanonicalName());
 			}
 			String format() {
 				return this.format;
@@ -103,14 +113,14 @@ public final class FormatUtils implements IndividualVisitor {
 
 	public static String formatName(Name<?> tmp) {
 		if(tmp==null) {
-			return "<null>";
+			return NULL;
 		}
-		return String.format("%s [%s]",tmp.id(),tmp.id().getClass().getCanonicalName());
+		return String.format(SIMPLE_FORMAT,tmp.id(),tmp.id().getClass().getCanonicalName());
 	}
 
 	public static String formatIndividualId(Individual<?, ?> individual) {
 		if(individual==null) {
-			return "<null>";
+			return NULL;
 		}
 		FormatUtils visitor = new FormatUtils();
 		individual.accept(visitor);
@@ -118,26 +128,26 @@ public final class FormatUtils implements IndividualVisitor {
 	}
 
 	public static String formatId(Object id) {
-		String result = "<null>";
+		String result = NULL;
 		if(id==null) {
 			return result;
 		}
 
 		if(id instanceof URI) {
-			result=String.format("<%s> {External}",id);
+			result=String.format(EXTERNAL_ID_FORMAT,id);
 		} else if(id instanceof Name<?>) {
 			Name<?> name=(Name<?>)id;
-			result=String.format("%s [%s] {Local}",name,name.getClass().getCanonicalName());
+			result=String.format(LOCAL_ID_FORMAT,name,name.getClass().getCanonicalName());
 		} else if(id instanceof ManagedIndividualId) {
 			ManagedIndividualId mid = (ManagedIndividualId)id;
 			if(mid.indirectId()==null) {
-				result=String.format("%s {Managed by: %s}",mid.name(),mid.managerId());
+				result=String.format(MANAGED_ID_FORMAT,mid.name(),mid.managerId());
 			} else {
-				result=String.format("%s {Managed by: %s, indirect id: <%s>}",mid.name(),mid.managerId(),mid.indirectId());
+				result=String.format(MANAGED_ID_INDIRECT_FORMAT,mid.name(),mid.managerId(),mid.indirectId());
 			}
 		} else if(id instanceof RelativeIndividualId){
 			RelativeIndividualId rid = (RelativeIndividualId)id;
-			result=String.format("<%s> {Parent: %s}",rid.path(),rid.parentId());
+			result=String.format(RELATIVE_ID_FORMAT,rid.path(),rid.parentId());
 		} else {
 			result=id.toString();
 		}

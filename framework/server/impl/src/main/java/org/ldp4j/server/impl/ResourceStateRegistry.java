@@ -52,7 +52,7 @@ final class ResourceStateRegistry {
 	 * Internal logger.
 	 */
 	private static final Logger LOGGER=LoggerFactory.getLogger(ResourceStateRegistry.class);
-	
+
 	public static class ResourceState {
 
 		/**
@@ -62,9 +62,6 @@ final class ResourceStateRegistry {
 
 		private static class LoggingWriteLock extends WriteLock {
 
-			/**
-			 * 
-			 */
 			private static final long serialVersionUID = -2316674765875656949L;
 
 			private final String containerId;
@@ -75,21 +72,20 @@ final class ResourceStateRegistry {
 				this.containerId= containerId;
 				this.resourceId = resourceId;
 			}
-			
-			/* (non-Javadoc)
-			 * @see java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock#lock()
+
+			/**
+			 * {@inheritDoc}
 			 */
 			@Override
 			public void lock() {
-				super.lock();
+				super.lock(); // NOSONAR
 				if(LOGGER.isDebugEnabled()) {
 					LOGGER.debug(String.format("State of resource '%s' in container '%s' write-locked by thread %x",resourceId,containerId,Thread.currentThread().getId()));
 				}
-				
 			}
 
-			/* (non-Javadoc)
-			 * @see java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock#unlock()
+			/**
+			 * {@inheritDoc}
 			 */
 			@Override
 			public void unlock() {
@@ -103,9 +99,6 @@ final class ResourceStateRegistry {
 
 		private static class LoggingReadLock extends ReadLock {
 
-			/**
-			 * 
-			 */
 			private static final long serialVersionUID = -2316674765875656949L;
 
 			private final String containerId;
@@ -114,25 +107,25 @@ final class ResourceStateRegistry {
 			private final ReentrantReadWriteLock lock;
 
 			private final ConcurrentMap<Long,AtomicLong> readingThreads=new ConcurrentHashMap<Long, AtomicLong>();
-			
+
 			public LoggingReadLock(ReentrantReadWriteLock lock, String containerId, String resourceId) {
 				super(lock);
 				this.lock = lock;
 				this.containerId= containerId;
 				this.resourceId = resourceId;
 			}
-			
+
 			private void log(String action, Thread currentThread) {
 				LOGGER.debug(String.format("State of resource '%s' in container '%s' read-%s by thread '%s' (%X)",resourceId,containerId,action,currentThread.getName(),currentThread.getId()));
 			}
-			
-			
-			/* (non-Javadoc)
-			 * @see java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock#lock()
+
+
+			/**
+			 * {@inheritDoc}
 			 */
 			@Override
 			public void lock() {
-				super.lock();
+				super.lock(); // NOSONAR
 				Thread currentThread = Thread.currentThread();
 				Long threadId = currentThread.getId();
 				readingThreads.putIfAbsent(threadId, new AtomicLong());
@@ -145,8 +138,8 @@ final class ResourceStateRegistry {
 				}
 			}
 
-			/* (non-Javadoc)
-			 * @see java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock#unlock()
+			/**
+			 * {@inheritDoc}
 			 */
 			@Override
 			public void unlock() {
@@ -169,7 +162,7 @@ final class ResourceStateRegistry {
 		public static class LoggingReentrantReadWriteLock extends ReentrantReadWriteLock {
 
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = 2188070076315788962L;
 			private final LoggingWriteLock loggingWriteLock;
@@ -195,19 +188,19 @@ final class ResourceStateRegistry {
 			public ReadLock readLock() {
 				return loggingReadLock;
 			}
-			
+
 		}
-		
+
 
 		private final String containerId;
 		private final String resourceId;
 		private EntityTag etag;
 		private Date lastModified;
-	
+
 		private final ReadWriteLock lock;
 		private final URL location;
 		private boolean deleted;
-		
+
 		private ResourceState(String containerId, String resourceId, URL location, EntityTag etag, Date lastModified) {
 			if(containerId==null) {
 				throw new IllegalArgumentException("Object 'containerId' cannot be null");
@@ -224,14 +217,14 @@ final class ResourceStateRegistry {
 			if(lastModified==null) {
 				throw new IllegalArgumentException("Object 'date' cannot be null");
 			}
-	
+
 			this.containerId = containerId.trim();
 			this.resourceId = resourceId;
 			this.location = location;
 			this.lock=new LoggingReentrantReadWriteLock(this.containerId,this.resourceId);
 			this.etag = etag;
 			this.lastModified = lastModified;
-	
+
 			if(this.containerId.isEmpty()) {
 				throw new IllegalArgumentException("String 'containerId' cannot be empty");
 			}
@@ -239,15 +232,15 @@ final class ResourceStateRegistry {
 				throw new IllegalArgumentException("String 'resourceId' cannot be empty");
 			}
 		}
-	
+
 		public Lock readLock() {
 			return lock.readLock();
 		}
-	
+
 		public Lock writeLock() {
 			return lock.readLock();
 		}
-		
+
 		/**
 		 * @return the etag
 		 */
@@ -259,7 +252,7 @@ final class ResourceStateRegistry {
 				readLock().unlock();
 			}
 		}
-	
+
 		/**
 		 * @param etag the etag to set
 		 */
@@ -274,7 +267,7 @@ final class ResourceStateRegistry {
 				writeLock().unlock();
 			}
 		}
-	
+
 		/**
 		 * @return the lastModified
 		 */
@@ -286,7 +279,7 @@ final class ResourceStateRegistry {
 				readLock().unlock();
 			}
 		}
-	
+
 		/**
 		 * @param lastModified the lastModified to set
 		 */
@@ -301,7 +294,7 @@ final class ResourceStateRegistry {
 				writeLock().unlock();
 			}
 		}
-	
+
 		/**
 		 * @return the containerId
 		 */
@@ -313,7 +306,7 @@ final class ResourceStateRegistry {
 				readLock().unlock();
 			}
 		}
-	
+
 		/**
 		 * @return the resourceId
 		 */
@@ -333,18 +326,18 @@ final class ResourceStateRegistry {
 		public void deleted() {
 			this.deleted=true;
 		}
-		
+
 		public boolean isDeleted() {
 			return deleted;
 		}
 
 	}
-	
+
 	private static final Map<String,Map<String,ResourceState>> STATUS_REGISTRY=new HashMap<String, Map<String,ResourceState>>();
-	
+
 	private ResourceStateRegistry() {
 	}
-	
+
 	public static synchronized ResourceState createResourceState(String containerId, String resourceId, URL location, EntityTag etag) {
 		if(LOGGER.isDebugEnabled()) {
 			LOGGER.debug(String.format("Requested state creation for container '%s' and resource '%s' (etag: %s)...",containerId,resourceId,etag));

@@ -46,7 +46,18 @@ import org.joda.time.Duration;
 
 public final class Literals {
 
-	public static abstract class AbstractDateTimeLiteralBuilder {
+	private static final String DATATYPE_CANNOT_BE_NULL = "Datatype cannot be null";
+	private static final String LANGUAGE_CANNOT_BE_NULL = "Language cannot be null";
+	private static final String STRING_CANNOT_BE_NULL = "String cannot be null";
+	private static final String TIME_UNIT_CANNOT_BE_NULL = "Time unit cannot be null";
+	private static final String DATE_TIME_CANNOT_BE_NULL = "Date-time cannot be null";
+	private static final String LITERAL_VALUE_CANNOT_BE_NULL = "Literal value cannot be null";
+	private static final String CALENDAR_CANNOT_BE_NULL = "Calendar cannot be null";
+	private static final String TIME_CANNOT_BE_NULL = "Time cannot be null";
+	private static final String DATE_CANNOT_BE_NULL = "Date cannot be null";
+	private static final String DURATION_CANNOT_BE_NULL = "Duration cannot be null";
+
+	public abstract static class AbstractDateTimeLiteralBuilder {
 
 		private AbstractDateTimeLiteralBuilder() {
 		}
@@ -96,6 +107,7 @@ public final class Literals {
 			this.dateTime = dateTime;
 		}
 
+		@Override
 		protected DateTime getDateTime() {
 			return dateTime;
 		}
@@ -130,6 +142,7 @@ public final class Literals {
 			return this;
 		}
 
+		@Override
 		protected DateTime getDateTime() {
 			return new DateTime(this.calendar.toGregorianCalendar(this.timezone, this.locale, this.defaults));
 		}
@@ -147,7 +160,7 @@ public final class Literals {
 	private static final URI GMONTHDAY=toURI(DatatypeConstants.GMONTHDAY);
 	private static final URI DURATION=toURI(DatatypeConstants.DURATION);
 
-	private static Class<?>[] DATE_TIME_CLASSES={
+	private static final Class<?>[] DATE_TIME_CLASSES={
 		java.sql.Date.class,
 		Date.class,
 		java.sql.Time.class,
@@ -156,7 +169,7 @@ public final class Literals {
 		Calendar.class,
 		XMLGregorianCalendar.class
 	};
-	private static Class<?>[] DURATION_CLASSES={
+	private static final Class<?>[] DURATION_CLASSES={
 		Duration.class,
 		javax.xml.datatype.Duration.class
 	};
@@ -185,11 +198,11 @@ public final class Literals {
 	}
 
 	private static boolean isDateTime(Object obj) {
-		return isInstanceOf(obj, DATE_TIME_CLASSES);
+		return isInstanceOf(obj,Literals.DATE_TIME_CLASSES);
 	}
 
 	private static boolean isDuration(Object obj) {
-		return isInstanceOf(obj, DURATION_CLASSES);
+		return isInstanceOf(obj,Literals.DURATION_CLASSES);
 	}
 
 	private static boolean isInstanceOf(Object obj, Class<?>[] classes) {
@@ -231,7 +244,7 @@ public final class Literals {
 		} else if(Literals.GMONTHDAY.equals(datatype)) {
 			return getBuilder(value,datatype).monthAndDay();
 		}
-		throw new AssertionError(datatype.toString()+" is not a data-time compatible datype");
+		throw new AssertionError(datatype.toString()+" is not a date-time compatible datype");
 	}
 
 	private static AbstractDateTimeLiteralBuilder getBuilder(Object value, URI datatype) {
@@ -271,63 +284,63 @@ public final class Literals {
 	}
 
 	public static Literal<String> of(String value) {
-		checkNotNull(value,"Value cannot be null");
+		checkNotNull(value,STRING_CANNOT_BE_NULL);
 		return new ImmutableLiteral<String>(value);
 	}
 
 	public static DurationLiteral of(javax.xml.datatype.Duration duration) {
-		checkNotNull(duration,"Duration cannot be null");
+		checkNotNull(duration,DURATION_CANNOT_BE_NULL);
 		return new ImmutableDurationLiteral(new Duration(duration.toString()),Literals.DURATION);
 	}
 
 	public static DurationLiteral of(Duration duration) {
-		checkNotNull(duration,"Duration cannot be null");
+		checkNotNull(duration,DURATION_CANNOT_BE_NULL);
 		return new ImmutableDurationLiteral(duration,Literals.DURATION);
 	}
 
 	public static DateTimeLiteralBuilder of(Date date) {
-		checkNotNull(date,"Date cannot be null");
+		checkNotNull(date,DATE_CANNOT_BE_NULL);
 		return new DateTimeLiteralBuilder(new DateTime(date));
 	}
 
 	public static DateTimeLiteral of(java.sql.Date date) {
-		checkNotNull(date,"Date cannot be null");
+		checkNotNull(date,DATE_CANNOT_BE_NULL);
 		return new ImmutableDateTimeLiteral(new DateTime(date), Literals.DATE);
 	}
 
 	public static DateTimeLiteral of(java.sql.Time time) {
-		checkNotNull(time,"Time cannot be null");
+		checkNotNull(time,TIME_CANNOT_BE_NULL);
 		return new ImmutableDateTimeLiteral(new DateTime(time.getTime()), Literals.TIME);
 	}
 
 	public static DateTimeLiteralBuilder of(Calendar calendar) {
-		checkNotNull(calendar,"Calendar cannot be null");
+		checkNotNull(calendar,CALENDAR_CANNOT_BE_NULL);
 		return new DateTimeLiteralBuilder(new DateTime(calendar));
 	}
 
 	public static DateTimeLiteralBuilder of(GregorianCalendar calendar) {
-		checkNotNull(calendar,"Calendar cannot be null");
+		checkNotNull(calendar,CALENDAR_CANNOT_BE_NULL);
 		return new DateTimeLiteralBuilder(new DateTime(calendar));
 	}
 
 	public static XMLGregorianCalendarDateTimeLiteralBuilder of(XMLGregorianCalendar calendar) {
-		checkNotNull(calendar,"Calendar cannot be null");
+		checkNotNull(calendar,CALENDAR_CANNOT_BE_NULL);
 		return new XMLGregorianCalendarDateTimeLiteralBuilder(calendar);
 	}
 
 	public static DateTimeLiteralBuilder of(DateTime dateTime) {
-		checkNotNull(dateTime,"Datetime cannot be null");
+		checkNotNull(dateTime,DATE_TIME_CANNOT_BE_NULL);
 		return new DateTimeLiteralBuilder(dateTime);
 	}
 
 	public static DurationLiteral duration(long time, TimeUnit unit) {
-		checkNotNull(time,"Time cannot be null");
-		checkNotNull(unit,"Unit cannot be null");
+		checkNotNull(time,TIME_CANNOT_BE_NULL);
+		checkNotNull(unit,TIME_UNIT_CANNOT_BE_NULL);
 		return of(new Duration(TimeUnit.MILLISECONDS.convert(time, unit)));
 	}
 
 	public static Literal<? extends Serializable> newLiteral(Object value) {
-		checkNotNull(value,"Literal value cannot be null");
+		checkNotNull(value,LITERAL_VALUE_CANNOT_BE_NULL);
 		Literal<? extends Serializable> result=null;
 		if(isDuration(value)) {
 			result=coherceDuration(value);
@@ -342,8 +355,8 @@ public final class Literals {
 	}
 
 	public static TypedLiteral<? extends Serializable> newTypedLiteral(Object value, URI datatype) {
-		checkNotNull(value,"Literal value cannot be null");
-		checkNotNull(datatype,"Literal datatype cannot be null");
+		checkNotNull(value,LITERAL_VALUE_CANNOT_BE_NULL);
+		checkNotNull(datatype,DATATYPE_CANNOT_BE_NULL);
 		TypedLiteral<? extends Serializable> result=null;
 		if(isDurationDatetype(datatype)) {
 			result=coherceDuration(value);
@@ -360,8 +373,8 @@ public final class Literals {
 	}
 
 	public static LanguageLiteral newLanguageLiteral(String value, String language) {
-		checkNotNull(value,"Literal value cannot be null");
-		checkNotNull(language,"Literal language cannot be null");
+		checkNotNull(value,STRING_CANNOT_BE_NULL);
+		checkNotNull(language,LANGUAGE_CANNOT_BE_NULL);
 		return new ImmutableLanguageLiteral(value,language);
 	}
 

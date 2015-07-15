@@ -31,9 +31,10 @@ import org.ldp4j.application.ext.ContainerHandler;
 import com.google.common.base.Optional;
 
 public interface ContainerTemplate extends ResourceTemplate {
-	
+
+	@Override
 	Class<? extends ContainerHandler> handlerClass();
-	
+
 	ResourceTemplate memberTemplate();
 
 	Optional<String> memberPath();
