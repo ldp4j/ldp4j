@@ -371,7 +371,7 @@ public final class Constraints implements Serializable {
 
 		private static final long serialVersionUID = 3966457418001884744L;
 
-		private Map<URI,AbstractPropertyConstraint<?>> constraints;
+		private Map<URI,AbstractPropertyConstraint<?>> constraints; // NOSONAR
 		private String label;
 		private String comment;
 
@@ -457,8 +457,8 @@ public final class Constraints implements Serializable {
 
 	private static final long serialVersionUID = 4368698694568719975L;
 
-	private Map<Serializable,Shape> nodeShapes;
-	private Map<URI,Shape> typeShapes;
+	private Map<Serializable,Shape> nodeShapes; // NOSONAR
+	private Map<URI,Shape> typeShapes; // NOSONAR
 
 	private Constraints() {
 		this.nodeShapes=Maps.newLinkedHashMap();

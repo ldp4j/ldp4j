@@ -24,80 +24,66 @@
  *   Bundle      : ldp4j-application-core-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.engine.template;
+package org.ldp4j.application.engine.resource;
 
-import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.engine.template.BasicContainerTemplate;
+import org.ldp4j.application.engine.template.ContainerTemplate;
+import org.ldp4j.application.engine.template.DirectContainerTemplate;
+import org.ldp4j.application.engine.template.IndirectContainerTemplate;
+import org.ldp4j.application.engine.template.MembershipAwareContainerTemplate;
+import org.ldp4j.application.engine.template.ResourceTemplate;
+import org.ldp4j.application.engine.template.TemplateVisitor;
 
-final class ImmutableTemplateLibrary implements TemplateLibrary {
+public final class Resources {
 
-	private static final class SafeTemplateVisitor implements TemplateVisitor {
+	private static final class Checker implements TemplateVisitor {
 
-		private final TemplateVisitor visitor;
+		private Class<? extends Resource> clazz;
 
-		private SafeTemplateVisitor(TemplateVisitor visitor) {
-			this.visitor = visitor;
+		private boolean result;
+
+		private Checker(Class<? extends Resource> clazz) {
+			this.clazz=clazz;
+		}
+
+		private boolean getResult() {
+			return this.result;
 		}
 
 		@Override
 		public void visitResourceTemplate(ResourceTemplate template) {
-			ImmutableTemplateFactory.newImmutable(template).accept(this.visitor);
+			this.result=this.clazz.isAssignableFrom(Resource.class);
 		}
-
 		@Override
 		public void visitContainerTemplate(ContainerTemplate template) {
-			ImmutableTemplateFactory.newImmutable(template).accept(this.visitor);
+			this.result=this.clazz.isAssignableFrom(Container.class);
 		}
-
 		@Override
 		public void visitBasicContainerTemplate(BasicContainerTemplate template) {
-			ImmutableTemplateFactory.newImmutable(template).accept(this.visitor);
+			visitContainerTemplate(template);
 		}
-
 		@Override
 		public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
-			ImmutableTemplateFactory.newImmutable(template).accept(this.visitor);
+			visitContainerTemplate(template);
 		}
-
 		@Override
 		public void visitDirectContainerTemplate(DirectContainerTemplate template) {
-			ImmutableTemplateFactory.newImmutable(template).accept(this.visitor);
+			visitContainerTemplate(template);
 		}
-
 		@Override
 		public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
-			ImmutableTemplateFactory.newImmutable(template).accept(this.visitor);
+			visitContainerTemplate(template);
 		}
 	}
 
-	private final TemplateLibrary delegate;
-
-	ImmutableTemplateLibrary(TemplateLibrary delegate) {
-		this.delegate = delegate;
+	private Resources() {
 	}
 
-	private TemplateLibrary delegate() {
-		return this.delegate;
+	public static boolean areCompatible(Class<? extends Resource> clazz, ResourceTemplate template) {
+		Checker checker = new Checker(clazz);
+		template.accept(checker);
+		return checker.getResult();
 	}
 
-	// TODO: Returning a mutable version...
-	@Override
-	public ResourceTemplate findByHandler(Class<? extends ResourceHandler> handlerClass) {
-		return delegate().findByHandler(handlerClass);
-	}
-
-	// TODO: Returning a mutable version...
-	@Override
-	public ResourceTemplate findById(String templateId) {
-		return delegate().findById(templateId);
-	}
-
-	@Override
-	public boolean contains(ResourceTemplate template) {
-		return delegate().contains(template);
-	}
-
-	@Override
-	public void accept(final TemplateVisitor visitor) {
-		delegate().accept(new SafeTemplateVisitor(visitor));
-	}
 }
+

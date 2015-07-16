@@ -30,9 +30,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.net.URI;
 import java.util.Date;
-import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 
@@ -90,7 +90,7 @@ public final class ConstraintReportTransformer {
 
 	private final class IndividualTranslator implements IndividualVisitor {
 
-		private final IdentityHashMap<Individual<?, ?>, Individual<?, ?>> individualCache;
+		private final Map<Individual<?, ?>, Individual<?, ?>> individualCache;
 
 		private IndividualTranslator() {
 			this.individualCache=Maps.newIdentityHashMap();
@@ -162,7 +162,7 @@ public final class ConstraintReportTransformer {
 
 	private class ShapeIndividualCache {
 
-		private final IdentityHashMap<Shape,CacheEntry> cache;
+		private final Map<Shape,CacheEntry> cache;
 
 		private int shapeCount;
 

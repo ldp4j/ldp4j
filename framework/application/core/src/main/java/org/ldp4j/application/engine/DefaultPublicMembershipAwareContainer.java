@@ -59,13 +59,14 @@ abstract class DefaultPublicMembershipAwareContainer<T extends MembershipAwareCo
 
 		URI predicate = containerTemplate().membershipPredicate();
 		switch(containerTemplate().membershipRelation()) {
-		case HAS_MEMBER:
-			populateHasMember(individual, ctx, predicate);
-			break;
-		case IS_MEMBER_OF:
-			populateIsMemberOf(individual, ctx, predicate);
-			break;
-
+			case HAS_MEMBER:
+				populateHasMember(individual, ctx, predicate);
+				break;
+			case IS_MEMBER_OF:
+				populateIsMemberOf(individual, ctx, predicate);
+				break;
+			default:
+				throw new IllegalStateException("Unsupported membership relation "+containerTemplate().membershipRelation());
 		}
 	}
 
@@ -117,13 +118,14 @@ abstract class DefaultPublicMembershipAwareContainer<T extends MembershipAwareCo
 	final void configureMemberValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata) {
 		URI predicate = containerTemplate().membershipPredicate();
 		switch(containerTemplate().membershipRelation()) {
-		case HAS_MEMBER:
-			configureHasMemberValidationConstraints(builder,individual,metadata,predicate);
-			break;
-		case IS_MEMBER_OF:
-			configureIsMemberOfValidationConstraints(builder,individual,metadata,predicate);
-			break;
-
+			case HAS_MEMBER:
+				configureHasMemberValidationConstraints(builder,individual,metadata,predicate);
+				break;
+			case IS_MEMBER_OF:
+				configureIsMemberOfValidationConstraints(builder,individual,metadata,predicate);
+				break;
+			default:
+				throw new IllegalStateException("Unsupported membership relation "+containerTemplate().membershipRelation());
 		}
 	}
 

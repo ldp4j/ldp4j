@@ -103,7 +103,6 @@ public final class NamingScheme {
 	public static final class NamingSchemeBuilder {
 
 		private Map<NameType, NamingStrategy> configuration=new HashMap<NameType, NamingStrategy>();
-		private String base;
 
 		private void addMappings(NamingStrategy strategy, NameType type, NameType... rest) {
 			this.configuration.put(type, strategy);
@@ -122,13 +121,8 @@ public final class NamingScheme {
 			return this;
 		}
 
-		public NamingSchemeBuilder withBase(String base) {
-			this.base = base;
-			return this;
-		}
-
 		public NamingScheme build() {
-			return new NamingScheme(this.configuration,this.base);
+			return new NamingScheme(this.configuration);
 		}
 
 	}
@@ -142,12 +136,8 @@ public final class NamingScheme {
 
 	private final Map<NameType, NamingStrategy> configuration;
 
-	@SuppressWarnings("unused")
-	private final String base;
-
-	private NamingScheme(Map<NameType,NamingStrategy> configuration, String base) {
+	private NamingScheme(Map<NameType,NamingStrategy> configuration) {
 		this.configuration = configuration;
-		this.base = base;
 	}
 
 	private NameFactory getFactory(NameType type) {

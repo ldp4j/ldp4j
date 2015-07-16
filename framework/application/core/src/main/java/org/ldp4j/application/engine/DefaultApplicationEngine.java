@@ -197,7 +197,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 			initializeComponent(this.writeSessionService,initializedComponents);
 		} catch (ComponentLifecycleException e) {
 			shutdownComponentsQuietly(initializedComponents);
-			String errorMessage = String.format("Could not initialize component %s",e.getComponent().getClass().getName());
+			String errorMessage = String.format("Could not initialize component %s",e.getComponent().getName());
 			LOGGER.error(errorMessage,e);
 			throw new ApplicationEngineInitializationException(errorMessage,e);
 		}

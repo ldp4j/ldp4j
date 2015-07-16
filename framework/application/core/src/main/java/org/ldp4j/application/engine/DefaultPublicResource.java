@@ -59,28 +59,28 @@ abstract class DefaultPublicResource extends DefaultPublicEndpoint implements Pu
 			return term.as(URI.class);
 		}
 
-		public Individual<?,?> reference(URI externalIndividual) {
+		public ExternalIndividual reference(URI externalIndividual) {
 			return this.dataSet.individual(externalIndividual, ExternalIndividual.class);
 		}
 
-		public Individual<?,?> reference(Term term) {
+		public ExternalIndividual reference(Term term) {
 			return reference(term.as(URI.class));
 		}
 
-		public Individual<?,?> newIndividual(URI id) {
+		public ExternalIndividual newIndividual(URI id) {
 			return this.dataSet.individual(id, ExternalIndividual.class);
 		}
 
 		@SuppressWarnings("rawtypes")
-		public Individual<?,?> newIndividual(Name<?> id) {
+		public LocalIndividual newIndividual(Name<?> id) {
 			return this.dataSet.individual((Name)id, LocalIndividual.class);
 		}
 
-		public Individual<?,?> newIndividual(ManagedIndividualId id) {
+		public ManagedIndividual newIndividual(ManagedIndividualId id) {
 			return this.dataSet.individual(id, ManagedIndividual.class);
 		}
 
-		public Individual<?,?> newIndividual(PublicResource resource) {
+		public ManagedIndividual newIndividual(PublicResource resource) {
 			ResourceId resourceId = ((DefaultPublicResource)resource).id();
 			ManagedIndividualId id = ManagedIndividualId.createId(resourceId.name(), resourceId.templateId());
 			return newIndividual(id);

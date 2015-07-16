@@ -104,8 +104,8 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 	private final String prefix;
 	private final Class<T> termClass;
 
-	private final Map<String,Integer> nameOrdinal=new HashMap<String,Integer>();
-	private final SortedMap<Integer,T> terms=new TreeMap<Integer,T>();
+	private final Map<String,Integer> nameOrdinal=new HashMap<String,Integer>(); // NOSONAR
+	private final SortedMap<Integer,T> terms=new TreeMap<Integer,T>(); // NOSONAR
 
 	private int ordinal=-1;
 

@@ -83,6 +83,9 @@ final class HeaderHelper {
 				add("Last-Modified").
 				build();
 
+	private HeaderHelper() {
+	}
+
 	static String getHeaderType(String name) {
 		if(matches(name, GENERAL_HEADERS)) {
 			return "GeneralHeader";

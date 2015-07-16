@@ -35,28 +35,15 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.atomic.AtomicReference;
 
-import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.IndividualVisitor;
-import org.ldp4j.application.data.LocalIndividual;
-import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
-import org.ldp4j.application.data.NewIndividual;
-import org.ldp4j.application.data.RelativeIndividual;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.session.UnitOfWork.EventHandler;
-import org.ldp4j.application.engine.template.BasicContainerTemplate;
-import org.ldp4j.application.engine.template.ContainerTemplate;
-import org.ldp4j.application.engine.template.DirectContainerTemplate;
-import org.ldp4j.application.engine.template.IndirectContainerTemplate;
-import org.ldp4j.application.engine.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateIntrospector;
-import org.ldp4j.application.engine.template.TemplateVisitor;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.session.ContainerSnapshot;
@@ -75,39 +62,42 @@ final class DelegatedWriteSession implements WriteSession {
 	}
 
 	private final class MembershipAwareContainerTargetCollector implements EventHandler {
+
+		private final class TargetCollector implements DelegatedSnapshotVisitor {
+
+			@Override
+			public void visitDelegatedResourceSnapshot(final DelegatedResourceSnapshot child) {
+				if(child.isRoot()) {
+					return;
+				}
+				child.parent().accept(
+					new DelegatedSnapshotVisitor() {
+						@Override
+						public void visitDelegatedResourceSnapshot(DelegatedResourceSnapshot resource) {
+							// Nothing special to do
+						}
+						@Override
+						public void visitDelegatedContainerSnapshot(DelegatedContainerSnapshot container) {
+							if(!container.hasMember(child) || !TemplateIntrospector.newInstance(container.template()).isMembershipAwareContainer()) {
+								return;
+							}
+							if(!container.isRoot()) {
+								UnitOfWork.getCurrent().registerDirty(container.parent());
+							}
+						}
+					}
+				);
+			}
+
+			@Override
+			public void visitDelegatedContainerSnapshot(DelegatedContainerSnapshot resource) {
+				visitDelegatedResourceSnapshot(resource);
+			}
+		}
+
 		@Override
 		public void notifyObjectCreation(DelegatedResourceSnapshot obj) {
-			obj.accept(
-				new DelegatedSnapshotVisitor() {
-					@Override
-					public void visitDelegatedResourceSnapshot(final DelegatedResourceSnapshot child) {
-						if(child.isRoot()) {
-							return;
-						}
-						child.parent().accept(
-							new DelegatedSnapshotVisitor() {
-								@Override
-								public void visitDelegatedResourceSnapshot(DelegatedResourceSnapshot resource) {
-									// Nothing special to do
-								}
-								@Override
-								public void visitDelegatedContainerSnapshot(DelegatedContainerSnapshot container) {
-									if(!container.hasMember(child) || !TemplateIntrospector.newInstance(container.template()).isMembershipAwareContainer()) {
-										return;
-									}
-									if(!container.isRoot()) {
-										UnitOfWork.getCurrent().registerDirty(container.parent());
-									}
-								}
-							}
-						);
-					}
-					@Override
-					public void visitDelegatedContainerSnapshot(DelegatedContainerSnapshot resource) {
-						visitDelegatedResourceSnapshot(resource);
-					}
-				}
-			);
+			obj.accept(new TargetCollector());
 		}
 
 		@Override
@@ -164,42 +154,9 @@ final class DelegatedWriteSession implements WriteSession {
 			ResourceId resourceId) {
 		ResourceTemplate template=loadTemplate(resourceId.templateId());
 		checkArgument(template!=null,"Unknown template '%s' ",resourceId.templateId());
-		checkArgument(areCompatible(snapshotClass,template),"Cannot wrap an object managed by '%s' with an snapshot of type '%s'",resourceId.templateId(),snapshotClass.getCanonicalName());
+		checkArgument(Snapshots.areCompatible(snapshotClass,template),"Cannot wrap an object managed by '%s' with an snapshot of type '%s'",resourceId.templateId(),snapshotClass.getCanonicalName());
 		DelegatedResourceSnapshot resource = resolveResource(resourceId, template);
 		return snapshotClass.cast(resource);
-	}
-
-	private boolean areCompatible(final Class<?> clazz, ResourceTemplate template) {
-		final AtomicReference<Boolean> result=new AtomicReference<Boolean>();
-		template.accept(
-			new TemplateVisitor() {
-				@Override
-				public void visitResourceTemplate(ResourceTemplate template) {
-					result.set(clazz.isAssignableFrom(ResourceSnapshot.class));
-				}
-				@Override
-				public void visitContainerTemplate(ContainerTemplate template) {
-					result.set(clazz.isAssignableFrom(ContainerSnapshot.class));
-				}
-				@Override
-				public void visitBasicContainerTemplate(BasicContainerTemplate template) {
-					visitContainerTemplate(template);
-				}
-				@Override
-				public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
-					visitContainerTemplate(template);
-				}
-				@Override
-				public void visitDirectContainerTemplate(DirectContainerTemplate template) {
-					visitContainerTemplate(template);
-				}
-				@Override
-				public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
-					visitContainerTemplate(template);
-				}
-			}
-		);
-		return result.get();
 	}
 
 	/**
@@ -207,36 +164,13 @@ final class DelegatedWriteSession implements WriteSession {
 	 * @return
 	 */
 	private ResourceId getIdentifier(final Individual<?, ?> individual) {
-		final AtomicReference<ResourceId> resourceId=new AtomicReference<ResourceId>();
-		individual.accept(
-			new IndividualVisitor() {
-				private ResourceId translateIdentifier(ManagedIndividualId id) {
-					return ResourceId.createId(id.name(), id.managerId());
-				}
-				@Override
-				public void visitManagedIndividual(ManagedIndividual individual) {
-					resourceId.set(translateIdentifier(individual.id()));
-				}
-				@Override
-				public void visitLocalIndividual(LocalIndividual individual) {
-					resourceId.set(null);
-				}
-				@Override
-				public void visitExternalIndividual(ExternalIndividual individual) {
-					resourceId.set(null);
-				}
-				@Override
-				public void visitRelativeIndividual(RelativeIndividual individual) {
-					resourceId.set(null);
-				}
-				@Override
-				public void visitNewIndividual(NewIndividual individual) {
-					resourceId.set(null);
-				}
-			}
-		);
-		ResourceId id = resourceId.get();
-		return id;
+		ResourceId result=null;
+		Object rawId=individual.id();
+		if(rawId instanceof ManagedIndividualId) {
+			ManagedIndividualId id=(ManagedIndividualId)rawId;
+			result=ResourceId.createId(id.name(),id.managerId());
+		}
+		return result;
 	}
 
 	private boolean isMainResource(DelegatedResourceSnapshot snapshot) {
@@ -331,7 +265,7 @@ final class DelegatedWriteSession implements WriteSession {
 		checkArgument(!ContainerSnapshot.class.isAssignableFrom(snapshotClass) || ContainerHandler.class.isAssignableFrom(handlerClass),"Incompatible snapshot and handler classes ('%s' instances are not handled by '%s')",snapshotClass.getCanonicalName(),handlerClass.getCanonicalName());
 		ResourceTemplate template=this.writeSessionService.templateManagementService().templateOfHandler(handlerClass);
 		checkArgument(template!=null,"Handler class '%s' is not associated to any existing template",handlerClass.getCanonicalName());
-		checkArgument(areCompatible(snapshotClass,template),"Cannot wrap an object managed by '%s' with an snapshot of type '%s'",handlerClass.getCanonicalName(),snapshotClass.getCanonicalName());
+		checkArgument(Snapshots.areCompatible(snapshotClass,template),"Cannot wrap an object managed by '%s' with an snapshot of type '%s'",handlerClass.getCanonicalName(),snapshotClass.getCanonicalName());
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,this.status);
 		ResourceId id=ResourceId.createId(name,template);
 		DelegatedResourceSnapshot resource = resolveResource(id, template);

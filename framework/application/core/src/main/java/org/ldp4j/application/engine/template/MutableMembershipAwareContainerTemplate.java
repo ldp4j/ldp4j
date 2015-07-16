@@ -27,10 +27,13 @@
 package org.ldp4j.application.engine.template;
 
 import java.net.URI;
+import java.util.Objects;
 
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.annotations.MembershipRelation;
 import org.ldp4j.application.vocabulary.LDP;
+
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 class MutableMembershipAwareContainerTemplate extends MutableContainerTemplate implements MembershipAwareContainerTemplate {
 
@@ -60,19 +63,65 @@ class MutableMembershipAwareContainerTemplate extends MutableContainerTemplate i
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void accept(TemplateVisitor visitor) {
 		visitor.visitMembershipAwareContainerTemplate(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public URI membershipPredicate() {
 		return this.membershipPredicate;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public MembershipRelation membershipRelation() {
 		return this.membershipRelation;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return
+			Objects.
+				hash(super.hashCode(),this.membershipPredicate,this.membershipRelation);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=super.equals(obj);
+		if(result) {
+			MutableMembershipAwareContainerTemplate that = (MutableMembershipAwareContainerTemplate) obj;
+			result=
+				Objects.equals(this.membershipPredicate, that.membershipPredicate) &&
+				Objects.equals(this.membershipRelation, that.membershipRelation);
+		}
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected ToStringHelper stringHelper() {
+		return
+			super.
+				stringHelper().
+					add("membershipPredicate",this.membershipPredicate).
+					add("membershipRelation", this.membershipRelation);
 	}
 
 }

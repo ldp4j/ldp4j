@@ -75,6 +75,46 @@ import com.google.common.collect.Sets;
 
 abstract class DefaultPublicContainer<T extends ContainerTemplate> extends DefaultPublicRDFSource implements PublicContainer {
 
+	private static final class AcceptableInteractionModelCollector implements
+			TemplateVisitor {
+		private final Set<InteractionModel> acceptable;
+
+		private AcceptableInteractionModelCollector(
+				Set<InteractionModel> acceptable) {
+			this.acceptable = acceptable;
+		}
+
+		@Override
+		public void visitResourceTemplate(ResourceTemplate template) {
+			acceptable.add(InteractionModel.RESOURCE);
+		}
+
+		@Override
+		public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
+			acceptable.add(InteractionModel.INDIRECT_CONTAINER);
+		}
+
+		@Override
+		public void visitDirectContainerTemplate(DirectContainerTemplate template) {
+			acceptable.add(InteractionModel.DIRECT_CONTAINER);
+		}
+
+		@Override
+		public void visitBasicContainerTemplate(BasicContainerTemplate template) {
+			acceptable.add(InteractionModel.BASIC_CONTAINER);
+		}
+
+		@Override
+		public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
+			throw new AssertionError("We should not arrive here");
+		}
+
+		@Override
+		public void visitContainerTemplate(ContainerTemplate template) {
+			throw new AssertionError("We should not arrive here");
+		}
+	}
+
 	private final class IndividualFilter implements IndividualVisitor {
 		private final List<Individual<?, ?>> toRemove;
 
@@ -86,28 +126,28 @@ abstract class DefaultPublicContainer<T extends ContainerTemplate> extends Defau
 		public void visitManagedIndividual(ManagedIndividual individual) {
 			ManagedIndividualId id = individual.id();
 			if(!isSelf(id)) {
-				toRemove.add(individual);
+				this.toRemove.add(individual);
 			}
 		}
 
 		@Override
 		public void visitLocalIndividual(LocalIndividual individual) {
-			toRemove.add(individual);
+			this.toRemove.add(individual);
 		}
 
 		@Override
 		public void visitExternalIndividual(ExternalIndividual individual) {
-			toRemove.add(individual);
+			this.toRemove.add(individual);
 		}
 
 		@Override
 		public void visitRelativeIndividual(RelativeIndividual individual) {
-			toRemove.add(individual);
+			this.toRemove.add(individual);
 		}
 
 		@Override
 		public void visitNewIndividual(NewIndividual individual) {
-			toRemove.add(individual);
+			this.toRemove.add(individual);
 		}
 	}
 
@@ -216,35 +256,8 @@ abstract class DefaultPublicContainer<T extends ContainerTemplate> extends Defau
 		if(interactionModel==null) {
 			return;
 		}
-		final Set<InteractionModel> acceptable=Sets.newHashSet();
-		containerTemplate().memberTemplate().accept(
-			new TemplateVisitor() {
-				@Override
-				public void visitResourceTemplate(ResourceTemplate template) {
-					acceptable.add(InteractionModel.RESOURCE);
-				}
-				@Override
-				public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
-					acceptable.add(InteractionModel.INDIRECT_CONTAINER);
-				}
-				@Override
-				public void visitDirectContainerTemplate(DirectContainerTemplate template) {
-					acceptable.add(InteractionModel.DIRECT_CONTAINER);
-				}
-				@Override
-				public void visitBasicContainerTemplate(BasicContainerTemplate template) {
-					acceptable.add(InteractionModel.BASIC_CONTAINER);
-				}
-				@Override
-				public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
-					throw new AssertionError("We should not arrive here");
-				}
-				@Override
-				public void visitContainerTemplate(ContainerTemplate template) {
-					throw new AssertionError("We should not arrive here");
-				}
-			}
-		);
+		Set<InteractionModel> acceptable=Sets.newHashSet();
+		containerTemplate().memberTemplate().accept(new AcceptableInteractionModelCollector(acceptable));
 		if(!acceptable.contains(interactionModel)) {
 			throw new UnsupportedInteractionModelException(interactionModel,acceptable);
 		}

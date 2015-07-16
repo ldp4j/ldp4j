@@ -297,6 +297,36 @@ abstract class PersistencyState {
 
 	private static final class PersistentResourceState extends BasePersistencyState {
 
+		private final class ResourceSaver implements ResourceVisitor {
+
+			@Override
+			public void visitResource(Resource resource) {
+				for(DelegatedAttachmentSnapshot deleted:PersistentResourceState.this.deletedAttachments.values()) {
+					Attachment attachment = resource.findAttachment(deleted.resource().resourceId());
+					resource.detach(attachment);
+				}
+				for(DelegatedAttachmentSnapshot attachment:PersistentResourceState.this.newAttachments.values()) {
+					DelegatedResourceSnapshot attachedResource = attachment.resource();
+					Resource attach = resource.attach(attachment.id(), attachedResource.resourceId());
+					attachedResource.setDelegate(attach);
+				}
+			}
+
+			@Override
+			public void visitContainer(Container resource) {
+				visitResource(resource);
+				for(ResourceId id:PersistentResourceState.this.deletedMembers.keySet()) {
+					Member member=resource.findMember(id);
+					resource.removeMember(member);
+				}
+				for(DelegatedResourceSnapshot member:PersistentResourceState.this.newMembers.values()) {
+					Resource addedResource = resource.addMember(member.resourceId());
+					member.setDelegate(addedResource);
+				}
+			}
+
+		}
+
 		private final Map<String,DelegatedAttachmentSnapshot> newAttachments;
 		private final Map<String,DelegatedAttachmentSnapshot> deletedAttachments;
 		private final Map<ResourceId,DelegatedResourceSnapshot> newMembers;
@@ -393,34 +423,7 @@ abstract class PersistencyState {
 
 		@Override
 		void saveChanges(final DelegatedResourceSnapshot ctx) {
-			delegate(ctx).accept(
-				new ResourceVisitor() {
-					@Override
-					public void visitResource(Resource resource) {
-						for(DelegatedAttachmentSnapshot deleted:PersistentResourceState.this.deletedAttachments.values()) {
-							Attachment attachment = resource.findAttachment(deleted.resource().resourceId());
-							resource.detach(attachment);
-						}
-						for(DelegatedAttachmentSnapshot attachment:PersistentResourceState.this.newAttachments.values()) {
-							DelegatedResourceSnapshot attachedResource = attachment.resource();
-							Resource attach = resource.attach(attachment.id(), attachedResource.resourceId());
-							attachedResource.setDelegate(attach);
-						}
-					}
-					@Override
-					public void visitContainer(Container resource) {
-						visitResource(resource);
-						for(ResourceId id:PersistentResourceState.this.deletedMembers.keySet()) {
-							Member member=resource.findMember(id);
-							resource.removeMember(member);
-						}
-						for(DelegatedResourceSnapshot member:PersistentResourceState.this.newMembers.values()) {
-							Resource addedResource = resource.addMember(member.resourceId());
-							member.setDelegate(addedResource);
-						}
-					}
-				}
-			);
+			delegate(ctx).accept(new ResourceSaver());
 			this.deletedAttachments.clear();
 			this.newAttachments.clear();
 			this.deletedMembers.clear();
@@ -441,32 +444,41 @@ abstract class PersistencyState {
 
 	private static final class TransientResourceState extends BasePersistencyState {
 
+		private final class ResourceSaver implements ResourceVisitor {
+
+			private final DelegatedResourceSnapshot ctx;
+
+			private ResourceSaver(DelegatedResourceSnapshot ctx) {
+				this.ctx = ctx;
+			}
+
+			@Override
+			public void visitResource(Resource resource) {
+				for(DelegatedAttachmentSnapshot attachment:TransientResourceState.this.attachments(ctx)) {
+					DelegatedResourceSnapshot attachedResource = attachment.resource();
+					Resource attach = resource.attach(attachment.id(), attachedResource.resourceId());
+					attachedResource.setDelegate(attach);
+				}
+			}
+
+			@Override
+			public void visitContainer(Container resource) {
+				visitResource(resource);
+				for(DelegatedResourceSnapshot member:TransientResourceState.this.members(ctx)) {
+					Resource newResource = resource.addMember(member.resourceId());
+					member.setDelegate(newResource);
+				}
+			}
+
+		}
+
 		private TransientResourceState(ResourceId resourceId, ResourceTemplate template) {
 			super(resourceId,template,AttachmentSnapshotCollection.newInstance(),MemberCollection.newInstance());
 		}
 
 		@Override
 		void saveChanges(final DelegatedResourceSnapshot ctx) {
-			delegate(ctx).accept(
-				new ResourceVisitor() {
-					@Override
-					public void visitResource(Resource resource) {
-						for(DelegatedAttachmentSnapshot attachment:TransientResourceState.this.attachments(ctx)) {
-							DelegatedResourceSnapshot attachedResource = attachment.resource();
-							Resource attach = resource.attach(attachment.id(), attachedResource.resourceId());
-							attachedResource.setDelegate(attach);
-						}
-					}
-					@Override
-					public void visitContainer(Container resource) {
-						visitResource(resource);
-						for(DelegatedResourceSnapshot member:TransientResourceState.this.members(ctx)) {
-							Resource newResource = resource.addMember(member.resourceId());
-							member.setDelegate(newResource);
-						}
-					}
-				}
-			);
+			delegate(ctx).accept(new ResourceSaver(ctx));
 		}
 
 	}

@@ -34,26 +34,19 @@ import java.util.Date;
 import java.util.List;
 import java.util.Set;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.engine.constraints.ConstraintReport;
 import org.ldp4j.application.engine.constraints.ConstraintReportId;
 import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.resource.Attachment;
-import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceVisitor;
+import org.ldp4j.application.engine.resource.Resources;
 import org.ldp4j.application.engine.template.AttachedTemplate;
-import org.ldp4j.application.engine.template.BasicContainerTemplate;
-import org.ldp4j.application.engine.template.ContainerTemplate;
-import org.ldp4j.application.engine.template.DirectContainerTemplate;
-import org.ldp4j.application.engine.template.IndirectContainerTemplate;
-import org.ldp4j.application.engine.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateIntrospector;
-import org.ldp4j.application.engine.template.TemplateVisitor;
 
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.ImmutableSet;
@@ -142,39 +135,6 @@ class JPAResource extends AbstractJPAResource implements Resource {
 		return reportId;
 	}
 
-	private boolean areCompatible(final Class<? extends Resource> clazz, ResourceTemplate template) {
-		final AtomicReference<Boolean> result=new AtomicReference<Boolean>();
-		template.accept(
-			new TemplateVisitor() {
-				@Override
-				public void visitResourceTemplate(ResourceTemplate template) {
-					result.set(clazz.isAssignableFrom(Resource.class));
-				}
-				@Override
-				public void visitContainerTemplate(ContainerTemplate template) {
-					result.set(clazz.isAssignableFrom(Container.class));
-				}
-				@Override
-				public void visitBasicContainerTemplate(BasicContainerTemplate template) {
-					visitContainerTemplate(template);
-				}
-				@Override
-				public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
-					visitContainerTemplate(template);
-				}
-				@Override
-				public void visitDirectContainerTemplate(DirectContainerTemplate template) {
-					visitContainerTemplate(template);
-				}
-				@Override
-				public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
-					visitContainerTemplate(template);
-				}
-			}
-		);
-		return result.get();
-	}
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -242,7 +202,7 @@ class JPAResource extends AbstractJPAResource implements Resource {
 		checkNotNull(clazz,"Attached resource class cannot be null");
 		this.attachmentCollection.checkNotAttached(attachmentId,resourceId);
 		ResourceTemplate attachmentTemplate=super.getTemplate(resourceId);
-		checkState(areCompatible(clazz,attachmentTemplate),"Attachment '%s' is not of type '%s' (%s)",attachmentId,clazz.getCanonicalName(),attachmentTemplate.getClass().getCanonicalName());
+		checkState(Resources.areCompatible(clazz,attachmentTemplate),"Attachment '%s' is not of type '%s' (%s)",attachmentId,clazz.getCanonicalName(),attachmentTemplate.getClass().getCanonicalName());
 		JPAResource newResource=createChild(resourceId,attachmentTemplate);
 		JPAAttachment newAttachment=this.attachmentCollection.attachmentById(attachmentId);
 		newAttachment.bind(resourceId);

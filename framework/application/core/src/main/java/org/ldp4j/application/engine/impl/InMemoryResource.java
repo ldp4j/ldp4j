@@ -40,25 +40,18 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.data.constraints.Constraints;
 import org.ldp4j.application.engine.constraints.ConstraintReport;
 import org.ldp4j.application.engine.constraints.ConstraintReportId;
 import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.resource.Attachment;
-import org.ldp4j.application.engine.resource.Container;
 import org.ldp4j.application.engine.resource.Resource;
 import org.ldp4j.application.engine.resource.ResourceId;
 import org.ldp4j.application.engine.resource.ResourceVisitor;
-import org.ldp4j.application.engine.template.BasicContainerTemplate;
-import org.ldp4j.application.engine.template.ContainerTemplate;
-import org.ldp4j.application.engine.template.DirectContainerTemplate;
-import org.ldp4j.application.engine.template.IndirectContainerTemplate;
-import org.ldp4j.application.engine.template.MembershipAwareContainerTemplate;
+import org.ldp4j.application.engine.resource.Resources;
 import org.ldp4j.application.engine.template.ResourceTemplate;
 import org.ldp4j.application.engine.template.TemplateIntrospector;
-import org.ldp4j.application.engine.template.TemplateVisitor;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
@@ -171,39 +164,6 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		return reportId;
 	}
 
-	private boolean areCompatible(final Class<? extends Resource> clazz, ResourceTemplate template) {
-		final AtomicReference<Boolean> result=new AtomicReference<Boolean>();
-		template.accept(
-			new TemplateVisitor() {
-				@Override
-				public void visitResourceTemplate(ResourceTemplate template) {
-					result.set(clazz.isAssignableFrom(Resource.class));
-				}
-				@Override
-				public void visitContainerTemplate(ContainerTemplate template) {
-					result.set(clazz.isAssignableFrom(Container.class));
-				}
-				@Override
-				public void visitBasicContainerTemplate(BasicContainerTemplate template) {
-					visitContainerTemplate(template);
-				}
-				@Override
-				public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
-					visitContainerTemplate(template);
-				}
-				@Override
-				public void visitDirectContainerTemplate(DirectContainerTemplate template) {
-					visitContainerTemplate(template);
-				}
-				@Override
-				public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
-					visitContainerTemplate(template);
-				}
-			}
-		);
-		return result.get();
-	}
-
 	/**
 	 * {@inheritDoc}
 	 */
@@ -274,7 +234,7 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 		checkState(!attachmentsById.containsKey(attachmentId),"A resource is already attached as '%s'",attachmentId);
 		checkState(!attachmentsByResourceId.containsKey(resourceId),"Resource '%s' is already attached",resourceId);
 		ResourceTemplate attachmentTemplate=super.getTemplate(resourceId);
-		checkState(areCompatible(clazz,attachmentTemplate),"Attachment '%s' is not of type '%s' (%s)",attachmentId,clazz.getCanonicalName(),attachmentTemplate.getClass().getCanonicalName());
+		checkState(Resources.areCompatible(clazz,attachmentTemplate),"Attachment '%s' is not of type '%s' (%s)",attachmentId,clazz.getCanonicalName(),attachmentTemplate.getClass().getCanonicalName());
 		InMemoryResource newResource=createChild(resourceId,attachmentTemplate);
 		InMemoryAttachment newAttachment = new InMemoryAttachment(aId,this.versionGenerator.nextVersion(attachmentId));
 		attachments.put(newAttachment.attachmentId(),newAttachment);

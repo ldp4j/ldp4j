@@ -363,7 +363,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 		;
 
 		private final Class<? extends Annotation> annotationClass;
-		private final Processor<?,ResourceHandler,AbstractMutableTemplate<?>> processor;
+		private final transient Processor<?,ResourceHandler,AbstractMutableTemplate<?>> processor;
 
 		@SuppressWarnings("unchecked")
 		private <A extends Annotation, R extends ResourceHandler, M extends AbstractMutableTemplate<?>> SupportedAnnotations(Class<? extends A> annotationClass, Processor<A,R,M> processor) {

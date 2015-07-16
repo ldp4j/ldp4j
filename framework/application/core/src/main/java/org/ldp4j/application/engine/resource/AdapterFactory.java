@@ -196,6 +196,9 @@ final class AdapterFactory {
 
 	}
 
+	private AdapterFactory() {
+	}
+
 	static Adapter newAdapter(Resource resource, ResourceHandler resourceHandler, WriteSessionService writeSessionService, WriteSessionConfiguration configuration) {
 		WriteSession session = writeSessionService.createSession(configuration);
 		ResourceSnapshot snapshot = writeSessionService.attach(session,resource,resourceHandler.getClass());

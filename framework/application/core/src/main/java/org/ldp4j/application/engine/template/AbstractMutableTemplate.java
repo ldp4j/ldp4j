@@ -34,13 +34,13 @@ import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.ldp4j.application.ext.ResourceHandler;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
-import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 
 public abstract class AbstractMutableTemplate<T extends ResourceHandler> implements ResourceTemplate {
@@ -81,66 +81,99 @@ public abstract class AbstractMutableTemplate<T extends ResourceHandler> impleme
 		this.attachments.remove(attachmentId);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String id() {
 		return id;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Class<? extends T> handlerClass() {
 		return handlerClass;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Optional<String> name() {
 		return Optional.fromNullable(name);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Optional<String> description() {
 		return Optional.fromNullable(description);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Set<? extends AttachedTemplate> attachedTemplates() {
 		return Collections.unmodifiableSet(new LinkedHashSet<AttachedTemplate>(attachments.values()));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public AttachedTemplate attachedTemplate(String attachmentId) {
 		checkNotNull(attachmentId, "AttachmentSnapshot identifier cannot be null");
 		return attachments.get(attachmentId);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Iterator<AttachedTemplate> iterator() {
 		return Collections.unmodifiableCollection(attachments.values()).iterator();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Set<String> attachmentIds() {
 		return Collections.unmodifiableSet(attachments.keySet());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int hashCode() {
 		return
 			Objects.
-				hashCode(id,handlerClass);
+				hash(this.id,this.handlerClass);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		boolean result=false;
 		if(obj!=null && this.getClass()==obj.getClass()) {
 			AbstractMutableTemplate<?> that = (AbstractMutableTemplate<?>) obj;
 			result=
-				Objects.equal(this.id, that.id) &&
-				Objects.equal(this.handlerClass, that.handlerClass);
+				Objects.equals(this.id, that.id) &&
+				Objects.equals(this.handlerClass, that.handlerClass);
 		}
 		return result;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return

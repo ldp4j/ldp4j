@@ -40,9 +40,12 @@ import static com.google.common.base.Preconditions.*;
 
 public final class ApplicationContext {
 
-	private static class ApplicationEngineSingleton {
+	private static final class ApplicationEngineSingleton {
 
 		private static final ApplicationContext SINGLETON=new ApplicationContext();
+
+		private ApplicationEngineSingleton() {
+		}
 
 	}
 

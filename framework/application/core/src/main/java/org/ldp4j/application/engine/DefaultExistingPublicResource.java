@@ -66,6 +66,83 @@ import com.google.common.collect.Multimap;
 
 abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 
+	private static final class AdditionalValidationConstraintConfigurator implements PublicResourceVisitor<Void> {
+
+		private final DataSet metadata;
+		private final Individual<?, ?> individual;
+		private final ValidatorBuilder builder;
+
+		private AdditionalValidationConstraintConfigurator(DataSet metadata,
+				Individual<?, ?> individual, ValidatorBuilder builder) {
+			this.metadata = metadata;
+			this.individual = individual;
+			this.builder = builder;
+		}
+
+		@Override
+		public Void visitRDFSource(PublicRDFSource resource) {
+			// Nothing to do
+			return null;
+		}
+
+		@Override
+		public Void visitBasicContainer(PublicBasicContainer resource) {
+			// Nothing to do
+			return null;
+		}
+
+		@Override
+		public Void visitDirectContainer(PublicDirectContainer resource) {
+			((DefaultPublicDirectContainer)resource).configureMemberValidationConstraints(builder,individual,metadata);
+			return null;
+		}
+
+		@Override
+		public Void visitIndirectContainer(PublicIndirectContainer resource) {
+			((DefaultPublicIndirectContainer)resource).configureMemberValidationConstraints(builder,individual,metadata);
+			return null;
+		}
+	}
+
+	private static final class AdditionalMetadataPopulator implements PublicResourceVisitor<Void> {
+
+		private final Context ctx;
+		private final ContentPreferences contentPreferences;
+		private final Individual<?, ?> individual;
+
+		private AdditionalMetadataPopulator(Context ctx,
+				ContentPreferences contentPreferences,
+				Individual<?, ?> individual) {
+			this.ctx = ctx;
+			this.contentPreferences = contentPreferences;
+			this.individual = individual;
+		}
+
+		@Override
+		public Void visitRDFSource(PublicRDFSource resource) {
+			// Nothing to do
+			return null;
+		}
+
+		@Override
+		public Void visitBasicContainer(PublicBasicContainer resource) {
+			// Nothing to do
+			return null;
+		}
+
+		@Override
+		public Void visitDirectContainer(PublicDirectContainer resource) {
+			((DefaultPublicDirectContainer)resource).fillInMemberMetadata(contentPreferences,individual,ctx);
+			return null;
+		}
+
+		@Override
+		public Void visitIndirectContainer(PublicIndirectContainer resource) {
+			((DefaultPublicIndirectContainer)resource).fillInMemberMetadata(contentPreferences,individual,ctx);
+			return null;
+		}
+	}
+
 	private static final URI HAS_ATTACHMENT = URI.create("http://www.ldp4j.org/ns/application#hasAttachment");
 
 	private final ManagedIndividualId individualId;
@@ -181,30 +258,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 	}
 
 	private void populateAdditionalMetadata(final ContentPreferences contentPreferences, final Individual<?, ?> individual, final Context ctx, PublicResource resource) {
-		resource.accept(
-			new PublicResourceVisitor<Void>() {
-				@Override
-				public Void visitRDFSource(PublicRDFSource resource) {
-					// Nothing to do
-					return null;
-				}
-				@Override
-				public Void visitBasicContainer(PublicBasicContainer resource) {
-					// Nothing to do
-					return null;
-				}
-				@Override
-				public Void visitDirectContainer(PublicDirectContainer resource) {
-					((DefaultPublicDirectContainer)resource).fillInMemberMetadata(contentPreferences,individual,ctx);
-					return null;
-				}
-				@Override
-				public Void visitIndirectContainer(PublicIndirectContainer resource) {
-					((DefaultPublicIndirectContainer)resource).fillInMemberMetadata(contentPreferences,individual,ctx);
-					return null;
-				}
-			}
-		);
+		resource.accept(new AdditionalMetadataPopulator(ctx, contentPreferences, individual));
 	}
 
 	@Override
@@ -233,30 +287,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 	}
 
 	private void configureAdditionalValidationConstraints(final ValidatorBuilder builder, final Individual<?, ?> individual, final DataSet metadata, PublicResource resource) {
-		resource.accept(
-			new PublicResourceVisitor<Void>() {
-				@Override
-				public Void visitRDFSource(PublicRDFSource resource) {
-					// Nothing to do
-					return null;
-				}
-				@Override
-				public Void visitBasicContainer(PublicBasicContainer resource) {
-					// Nothing to do
-					return null;
-				}
-				@Override
-				public Void visitDirectContainer(PublicDirectContainer resource) {
-					((DefaultPublicDirectContainer)resource).configureMemberValidationConstraints(builder,individual,metadata);
-					return null;
-				}
-				@Override
-				public Void visitIndirectContainer(PublicIndirectContainer resource) {
-					((DefaultPublicIndirectContainer)resource).configureMemberValidationConstraints(builder,individual,metadata);
-					return null;
-				}
-			}
-		);
+		resource.accept(new AdditionalValidationConstraintConfigurator(metadata,individual,builder));
 	}
 
 	private void validate(DataSet dataSet, DataSet metadata) throws InvalidContentException {
@@ -278,6 +309,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 		}
 	}
 
+	@Override
 	protected final ManagedIndividualId indirectIndividualId() {
 		ManagedIndividualId result=this.individualId;
 		URI indirectId = resolveAs(Resource.class).indirectId();

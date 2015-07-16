@@ -30,20 +30,17 @@ import org.ldp4j.application.engine.lifecycle.LifecycleException;
 
 final class ComponentLifecycleException extends LifecycleException {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 598862209574453730L;
 
-	private final Object component;
+	private final Class<?> component;
 
 	public ComponentLifecycleException(Object component, Throwable cause) {
 		super(cause);
-		this.component = component;
+		this.component=component.getClass();
 	}
 
-	public Object getComponent() {
-		return component;
+	public Class<?> getComponent() {
+		return this.component;
 	}
 
 }

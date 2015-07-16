@@ -27,8 +27,11 @@
 package org.ldp4j.application.engine.template;
 
 import java.net.URI;
+import java.util.Objects;
 
 import org.ldp4j.application.ext.ContainerHandler;
+
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 final class MutableIndirectContainerTemplate extends MutableMembershipAwareContainerTemplate implements IndirectContainerTemplate {
 
@@ -39,14 +42,54 @@ final class MutableIndirectContainerTemplate extends MutableMembershipAwareConta
 		this.insertedContentRelation = insertedContentRelation;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void accept(TemplateVisitor visitor) {
 		visitor.visitIndirectContainerTemplate(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public URI insertedContentRelation() {
 		return this.insertedContentRelation;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return
+			Objects.
+				hash(super.hashCode(),this.insertedContentRelation);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=super.equals(obj);
+		if(result) {
+			MutableIndirectContainerTemplate that = (MutableIndirectContainerTemplate) obj;
+			result=Objects.equals(this.insertedContentRelation, that.insertedContentRelation);
+		}
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected ToStringHelper stringHelper() {
+		return
+			super.
+				stringHelper().
+					add("insertedContentRelation",this.insertedContentRelation);
 	}
 
 }

@@ -134,7 +134,10 @@ public final class WriteSessionService implements Service {
 				case COMPLETED:
 					// Nothing to do
 					break;
-
+				default:
+					String errorMessage = "Unsupported status "+session.status();
+					LOGGER.error(errorMessage);
+					throw new IllegalStateException(errorMessage);
 			}
 		} catch (WriteSessionException e) {
 			LOGGER.error("Could not force termination of active session",e);

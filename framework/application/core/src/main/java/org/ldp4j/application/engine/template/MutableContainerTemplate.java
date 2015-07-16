@@ -26,9 +26,12 @@
  */
 package org.ldp4j.application.engine.template;
 
+import java.util.Objects;
+
 import org.ldp4j.application.ext.ContainerHandler;
 
 import com.google.common.base.Optional;
+import com.google.common.base.MoreObjects.ToStringHelper;
 
 public class MutableContainerTemplate extends AbstractMutableTemplate<ContainerHandler> implements ContainerTemplate {
 
@@ -47,21 +50,58 @@ public class MutableContainerTemplate extends AbstractMutableTemplate<ContainerH
 		this.memberPath = memberPath;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void accept(TemplateVisitor visitor) {
 		visitor.visitContainerTemplate(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ResourceTemplate memberTemplate() {
 		return this.memberTemplate;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Optional<String> memberPath() {
 		return Optional.fromNullable(this.memberPath);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return
+			Objects.
+				hash(super.hashCode(),this.memberTemplate,this.memberPath);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=super.equals(obj);
+		if(result) {
+			MutableContainerTemplate that = (MutableContainerTemplate) obj;
+			result=
+				Objects.equals(this.memberTemplate, that.memberTemplate) &&
+				Objects.equals(this.memberPath, that.memberPath);
+		}
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return
@@ -69,6 +109,18 @@ public class MutableContainerTemplate extends AbstractMutableTemplate<ContainerH
 				add("memberTemplate.id()",this.memberTemplate.id()).
 				add("memberPath",this.memberPath).
 				toString();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	protected ToStringHelper stringHelper() {
+		return
+			super.
+				stringHelper().
+					add("memberTemplate",this.memberTemplate.id()).
+					add("memberPath",this.memberPath);
 	}
 
 }

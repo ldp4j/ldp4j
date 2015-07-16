@@ -113,7 +113,7 @@ final class InMemorySlug implements Slug {
 			String strVersion = matcher.group(3);
 			if(strVersion!=null) {
 				String strPath = matcher.group(1);
-				if(!strPath.equals("")) {
+				if(!strPath.isEmpty()) {
 					path=strPath;
 					version=Long.parseLong(strVersion);
 				}

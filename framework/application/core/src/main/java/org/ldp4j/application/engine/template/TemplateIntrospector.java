@@ -32,6 +32,52 @@ import org.ldp4j.application.ext.annotations.MembershipRelation;
 
 public final class TemplateIntrospector {
 
+	private static final class TemplateIntrospectorInitializer implements TemplateVisitor {
+
+		private final TemplateIntrospector introspector;
+
+		TemplateIntrospectorInitializer(TemplateIntrospector introspector) {
+			this.introspector = introspector;
+		}
+
+		@Override
+		public void visitResourceTemplate(ResourceTemplate template) {
+			this.introspector.container=false;
+		}
+
+		@Override
+		public void visitContainerTemplate(ContainerTemplate template) {
+			this.introspector.container=true;
+		}
+
+		@Override
+		public void visitBasicContainerTemplate(BasicContainerTemplate template) {
+			visitContainerTemplate(template);
+			this.introspector.basicContainer=true;
+		}
+
+		@Override
+		public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
+			visitContainerTemplate(template);
+			this.introspector.membershipAware=true;
+			this.introspector.membershipPredicate=template.membershipPredicate();
+			this.introspector.membershipRelation=template.membershipRelation();
+		}
+
+		@Override
+		public void visitDirectContainerTemplate(DirectContainerTemplate template) {
+			visitMembershipAwareContainerTemplate(template);
+			this.introspector.directContainer=true;
+		}
+
+		@Override
+		public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
+			visitMembershipAwareContainerTemplate(template);
+			this.introspector.indirectContainer=true;
+			this.introspector.insertedContentRelation=template.insertedContentRelation();
+		}
+	}
+
 	private final ResourceTemplate template;
 
 	private boolean container;
@@ -89,42 +135,8 @@ public final class TemplateIntrospector {
 	}
 
 	public static TemplateIntrospector newInstance(ResourceTemplate template) {
-		final TemplateIntrospector introspector = new TemplateIntrospector(template);
-		template.accept(
-			new TemplateVisitor() {
-				@Override
-				public void visitResourceTemplate(ResourceTemplate template) {
-					introspector.container=false;
-				}
-				@Override
-				public void visitContainerTemplate(ContainerTemplate template) {
-					introspector.container=true;
-				}
-				@Override
-				public void visitBasicContainerTemplate(BasicContainerTemplate template) {
-					visitContainerTemplate(template);
-					introspector.basicContainer=true;
-				}
-				@Override
-				public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
-					visitContainerTemplate(template);
-					introspector.membershipAware=true;
-					introspector.membershipPredicate=template.membershipPredicate();
-					introspector.membershipRelation=template.membershipRelation();
-				}
-				@Override
-				public void visitDirectContainerTemplate(DirectContainerTemplate template) {
-					visitMembershipAwareContainerTemplate(template);
-					introspector.directContainer=true;
-				}
-				@Override
-				public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
-					visitMembershipAwareContainerTemplate(template);
-					introspector.indirectContainer=true;
-					introspector.insertedContentRelation=template.insertedContentRelation();
-				}
-			}
-		);
+		TemplateIntrospector introspector = new TemplateIntrospector(template);
+		template.accept(new TemplateIntrospectorInitializer(introspector));
 		return introspector;
 	}
 
