@@ -75,6 +75,7 @@ public final class Introspection {
 		private static Method findMethod(final Class<?> clazz, final Class<?> type, final String methodName) {
 			return java.security.AccessController.doPrivileged(
 				new PrivilegedAction<Method>() {
+					@Override
 					public Method run() {
 						Method method=null;
 						try {

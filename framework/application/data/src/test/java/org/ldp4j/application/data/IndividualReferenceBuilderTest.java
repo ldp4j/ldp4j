@@ -26,6 +26,9 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
+import java.net.URI;
+
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.*;
@@ -35,13 +38,47 @@ public class IndividualReferenceBuilderTest {
 
 	@Test
 	public void testRelative() {
-		IndividualReference<?, ?> reference = IndividualReferenceBuilder.
-			newReference().
-				toRelativeIndividual().
-					atLocation("..").
-					ofIndividualManagedBy("template").
-					named(23);
-		assertThat(reference.ref(),instanceOf(ManagedIndividualId.class));
+		IndividualReference<?, ?> reference =
+			IndividualReferenceBuilder.
+				newReference().
+					toRelativeIndividual().
+						atLocation("..").
+						ofIndividualManagedBy("template").
+						named(23);
+		assertThat(reference.ref(),instanceOf(RelativeIndividualId.class));
+		System.out.println(reference.ref());
+	}
+
+	@Test
+	public void testExternal() {
+		IndividualReference<?, ?> reference =
+			IndividualReferenceBuilder.
+				newReference().
+					toExternalIndividual().
+						atLocation("http://localhost:7080/test");
+		assertThat((Serializable) reference.ref(),instanceOf(URI.class));
+		System.out.println(reference.ref());
+	}
+
+	@Test
+	public void testLocal() {
+		IndividualReference<?, ?> reference =
+			IndividualReferenceBuilder.
+				newReference().
+					toLocalIndividual().
+						named(URI.class,"myresource");
+		assertThat((Serializable) reference.ref(),instanceOf(Name.class));
+		System.out.println(reference.ref());
+	}
+
+	@Test
+	public void testManaged() {
+		IndividualReference<?, ?> reference =
+			IndividualReferenceBuilder.
+				newReference().
+					toManagedIndividual("template").
+						named(23);
+		assertThat((Serializable) reference.ref(),instanceOf(ManagedIndividualId.class));
 		System.out.println(reference.ref());
 	}
 

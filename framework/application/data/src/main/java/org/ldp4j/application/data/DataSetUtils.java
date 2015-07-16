@@ -48,9 +48,10 @@ public final class DataSetUtils {
 			this.dataSet = dataSet;
 		}
 
-		Individual<?,?> findOrCreate(Individual<?,?> individual) {
+		@SuppressWarnings("unchecked")
+		<T extends Serializable> Individual<T,?> findOrCreate(Individual<T,?> individual) {
 			individual.accept(this);
-			return found;
+			return (Individual<T,?>)found;
 		}
 
 		@Override
@@ -132,6 +133,7 @@ public final class DataSetUtils {
 
 		@Override
 		public void visitIndividual(Individual<?, ?> value) {
+			// No to be processed
 		}
 
 	}
@@ -146,6 +148,7 @@ public final class DataSetUtils {
 
 		@Override
 		public void visitLiteral(Literal<?> value) {
+			// No to be processed
 		}
 
 		@Override

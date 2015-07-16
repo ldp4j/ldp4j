@@ -41,7 +41,7 @@ public interface Individual<T extends Serializable, S extends Individual<T,S>> e
 
 	boolean hasProperties();
 
-	Collection<? extends Property> properties();
+	Collection<Property> properties();
 
 	boolean hasProperty(URI propertyId);
 

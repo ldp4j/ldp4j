@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
@@ -36,16 +37,17 @@ import org.ldp4j.application.vocabulary.Term;
 
 public final class IndividualReferenceBuilder {
 
-	private static final class LocalIndividualReferenceBuilder implements NamedIndividualReferenceBuilder.NameConsumer {
+	@SuppressWarnings("rawtypes")
+	private static final class LocalIndividualReferenceBuilder implements NameConsumer<Name,LocalIndividual> {
 
 		@Override
-		public IndividualReference<?,?> useName(Name<?> name) {
+		public IndividualReference<Name,LocalIndividual> useName(Name<?> name) {
 			return IndividualReference.anonymous(name);
 		}
 
 	}
 
-	private static final class ManagedIndividualReferenceBuilder implements NamedIndividualReferenceBuilder.NameConsumer {
+	private static final class ManagedIndividualReferenceBuilder implements NameConsumer<ManagedIndividualId,ManagedIndividual> {
 
 		private final String managerId;
 
@@ -54,26 +56,26 @@ public final class IndividualReferenceBuilder {
 		}
 
 		@Override
-		public IndividualReference<?,?> useName(Name<?> name) {
+		public IndividualReference<ManagedIndividualId,ManagedIndividual> useName(Name<?> name) {
 			return IndividualReference.managed(ManagedIndividualId.createId(name, this.managerId));
 		}
 
 	}
 
-	private static final class RelativeManagedIndividualReferenceBuilder implements NamedIndividualReferenceBuilder.NameConsumer {
+	private static final class RelativeManagedIndividualReferenceBuilder implements NameConsumer<RelativeIndividualId,RelativeIndividual> {
 
 		private final String managerId;
-		private URI location;
+		private URI path;
 
 		private RelativeManagedIndividualReferenceBuilder(URI location, String managerId) {
-			this.location = location;
+			this.path = location;
 			this.managerId = managerId;
 		}
 
 		@Override
-		public IndividualReference<?,?> useName(Name<?> name) {
+		public IndividualReference<RelativeIndividualId,RelativeIndividual> useName(Name<?> name) {
 			ManagedIndividualId parent = ManagedIndividualId.createId(name, this.managerId);
-			return IndividualReference.managed(ManagedIndividualId.createId(this.location,parent));
+			return IndividualReference.relative(parent,this.path);
 		}
 
 	}
@@ -88,8 +90,8 @@ public final class IndividualReferenceBuilder {
 				this.location = location;
 			}
 
-			public NamedIndividualReferenceBuilder ofIndividualManagedBy(String managerId) {
-				return new NamedIndividualReferenceBuilder(new RelativeManagedIndividualReferenceBuilder(this.location,managerId));
+			public NamedIndividualReferenceBuilder<RelativeIndividualId,RelativeIndividual> ofIndividualManagedBy(String managerId) {
+				return new NamedIndividualReferenceBuilder<RelativeIndividualId,RelativeIndividual>(new RelativeManagedIndividualReferenceBuilder(this.location,managerId));
 			}
 
 		}
@@ -123,43 +125,43 @@ public final class IndividualReferenceBuilder {
 
 	}
 
-	public static final class NamedIndividualReferenceBuilder {
+	private interface NameConsumer<T extends Serializable, S extends Individual<T,S>> {
+		IndividualReference<T,S> useName(Name<?> name);
+	}
 
-		private final NameConsumer consumer;
+	public static final class NamedIndividualReferenceBuilder<T extends Serializable, S extends Individual<T,S>> {
 
-		public interface NameConsumer {
-			IndividualReference<?,?> useName(Name<?> name);
-		}
+		private final NameConsumer<T,S> consumer;
 
-		private NamedIndividualReferenceBuilder(NameConsumer consumer) {
+		private NamedIndividualReferenceBuilder(NameConsumer<T,S> consumer) {
 			this.consumer = consumer;
 		}
 
-		private IndividualReference<?,?> createName(Name<?> name) {
+		private IndividualReference<T,S> createName(Name<?> name) {
 			return this.consumer.useName(name);
 		}
 
-		public IndividualReference<?,?> named(URI id) {
+		public IndividualReference<T,S> named(URI id) {
 			return createName(NamingScheme.getDefault().name(id));
 		}
 
-		public IndividualReference<?,?> named(QName id) {
+		public IndividualReference<T,S> named(QName id) {
 			return createName(NamingScheme.getDefault().name(id));
 		}
 
-		public IndividualReference<?,?> named(Term id) {
+		public IndividualReference<T,S> named(Term id) {
 			return createName(NamingScheme.getDefault().name(id));
 		}
 
-		public IndividualReference<?,?> named(String name, String... names) {
+		public IndividualReference<T,S> named(String name, String... names) {
 			return createName(NamingScheme.getDefault().name(name, names));
 		}
 
-		public IndividualReference<?,?> named(Class<?> clazz, String... names) {
+		public IndividualReference<T,S> named(Class<?> clazz, String... names) {
 			return createName(NamingScheme.getDefault().name(clazz, names));
 		}
 
-		public <T extends Number> IndividualReference<?,?> named(T id) {
+		public <V extends Number> IndividualReference<T,S> named(V id) {
 			return createName(NamingScheme.getDefault().name(id));
 		}
 
@@ -167,18 +169,18 @@ public final class IndividualReferenceBuilder {
 
 	public static final class ExternalIndividualReferenceBuilder {
 
-		public IndividualReference<?,?> atLocation(URI location) {
+		public IndividualReference<URI,ExternalIndividual> atLocation(URI location) {
 			return IndividualReference.external(location);
 		}
 
-		public IndividualReference<?,?> atLocation(String location) {
+		public IndividualReference<URI,ExternalIndividual> atLocation(String location) {
 			try {
 				return atLocation(new URI(location));
 			} catch (URISyntaxException e) {
 				throw new IllegalStateException("Could not encode URI from String '"+location+"'",e);
 			}
 		}
-		public IndividualReference<?,?> atLocation(QName location) {
+		public IndividualReference<URI,ExternalIndividual> atLocation(QName location) {
 			try {
 				return atLocation(new URI(location.getNamespaceURI()+""+location.getLocalPart()));
 			} catch (URISyntaxException e) {
@@ -186,7 +188,7 @@ public final class IndividualReferenceBuilder {
 			}
 		}
 
-		public IndividualReference<?,?> atLocation(URL location) {
+		public IndividualReference<URI,ExternalIndividual> atLocation(URL location) {
 			try {
 				return atLocation(location.toURI());
 			} catch (URISyntaxException e) {
@@ -200,13 +202,13 @@ public final class IndividualReferenceBuilder {
 
 	}
 
-	public NamedIndividualReferenceBuilder toLocalIndividual() {
-		return new NamedIndividualReferenceBuilder(new LocalIndividualReferenceBuilder());
-
+	@SuppressWarnings("rawtypes")
+	public NamedIndividualReferenceBuilder<Name,LocalIndividual> toLocalIndividual() {
+		return new NamedIndividualReferenceBuilder<Name,LocalIndividual>(new LocalIndividualReferenceBuilder());
 	}
 
-	public NamedIndividualReferenceBuilder toManagedIndividual(String templateId) {
-		return new NamedIndividualReferenceBuilder(new ManagedIndividualReferenceBuilder(templateId));
+	public NamedIndividualReferenceBuilder<ManagedIndividualId,ManagedIndividual> toManagedIndividual(String templateId) {
+		return new NamedIndividualReferenceBuilder<ManagedIndividualId,ManagedIndividual>(new ManagedIndividualReferenceBuilder(templateId));
 	}
 
 	public RelativeIndividualReferenceBuilder toRelativeIndividual() {
@@ -220,6 +222,5 @@ public final class IndividualReferenceBuilder {
 	public static IndividualReferenceBuilder newReference() {
 		return new IndividualReferenceBuilder();
 	}
-
 
 }

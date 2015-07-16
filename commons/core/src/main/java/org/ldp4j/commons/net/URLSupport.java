@@ -62,6 +62,7 @@ final class URLSupport {
 			return out.toString();
 		}
 
+		@Override
 		public Void run() {
 			final String value=formatProtocolHandlerProviders(providers);
 			System.setProperty(URL_PROTOCOL_HANDLER_PACKAGES,value);
@@ -83,6 +84,7 @@ final class URLSupport {
 			return providers;
 		}
 
+		@Override
 		public List<String> run() {
 			String protocolHandlerPackages = System.getProperty(URL_PROTOCOL_HANDLER_PACKAGES);
 			if(protocolHandlerPackages==null) {
@@ -94,7 +96,7 @@ final class URLSupport {
 
 	private URLSupport() {
 	}
-	
+
 	private static void trace(String format, Object... args) {
 		if(LOGGER.isTraceEnabled()) {
 			LOGGER.trace(String.format(format,args));

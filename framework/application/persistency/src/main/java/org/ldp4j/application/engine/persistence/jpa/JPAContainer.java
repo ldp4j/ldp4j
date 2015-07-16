@@ -81,17 +81,10 @@ final class JPAContainer extends JPAResource implements Container {
 		return Key.newInstance(id());
 	}
 
-	private Member createMember(JPAResource newResource, Key memberId) {
+	private void createMember(Key memberId) {
 		long memberIndex=this.memberCounter++;
 		JPAMember member = new JPAMember(key(), memberId, memberIndex);
 		this.members.put(memberId, member);
-		return member;
-	}
-
-	private JPAResource createMemberResource(ResourceId resourceId, Key memberId) {
-		checkNotNull(resourceId,"Member resource identifier cannot be null");
-		checkState(!this.members.containsKey(memberId),"A resource with id '%s' is already a member of the container",resourceId);
-		return createChild(resourceId,template().memberTemplate());
 	}
 
 	private ContainerTemplate template() {
@@ -105,9 +98,11 @@ final class JPAContainer extends JPAResource implements Container {
 
 	@Override
 	public Resource addMember(ResourceId resourceId) {
-		Key memberId=Key.newInstance(resourceId);
-		JPAResource newResource=createMemberResource(resourceId,memberId);
-		createMember(newResource,memberId);
+		checkNotNull(resourceId,"Member resource identifier cannot be null");
+		Key memberId = Key.newInstance(resourceId);
+		checkState(!this.members.containsKey(memberId),"A resource with id '%s' is already a member of the container",resourceId);
+		JPAResource newResource=createChild(resourceId,template().memberTemplate());
+		createMember(memberId);
 		return newResource;
 	}
 

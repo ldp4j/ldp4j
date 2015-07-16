@@ -33,6 +33,7 @@ public abstract class AbstractSourceProcessor<S, E extends Throwable> implements
 		R getResult();
 	}
 
+	@Override
 	public <T> S process(Source<T> source) throws E {
 		ExtendedSourceVisitor<S,E> visitor = newVisitor();
 		source.accept(visitor);

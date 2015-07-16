@@ -30,10 +30,11 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
+
+import com.google.common.collect.Maps;
 
 
 final class MutableDataSet implements DataSet {
@@ -41,12 +42,12 @@ final class MutableDataSet implements DataSet {
 	private static final String NL=System.lineSeparator();
 
 	private final Name<?> name;
-	private final Map<Object,Individual<?,?>> individuals;
+	private final Map<Serializable,Individual<?,?>> individuals;
 	private final IndividualFactory factory;
 
 	public MutableDataSet(Name<?> name) {
 		this.name = name;
-		this.individuals=new LinkedHashMap<Object, Individual<?,?>>();
+		this.individuals=Maps.newLinkedHashMap();
 		this.factory=new IndividualFactory(this);
 	}
 
@@ -71,8 +72,8 @@ final class MutableDataSet implements DataSet {
 	}
 
 	@Override
-	public Set<Object> individualIds() {
-		return new LinkedHashSet<Object>(this.individuals.keySet());
+	public Set<Serializable> individualIds() {
+		return new LinkedHashSet<Serializable>(this.individuals.keySet());
 	}
 
 	@Override
@@ -82,8 +83,8 @@ final class MutableDataSet implements DataSet {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Serializable> Individual<T,?> individualOfId(T id) {
-		return (Individual<T,?>)this.individuals.get(id);
+	public <T extends Serializable, S extends Individual<T,S>> S individualOfId(T id) {
+		return (S)this.individuals.get(id);
 	}
 
 	@Override

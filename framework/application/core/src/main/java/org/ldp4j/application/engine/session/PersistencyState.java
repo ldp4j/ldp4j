@@ -557,6 +557,7 @@ abstract class PersistencyState {
 
 		@Override
 		void saveChanges(DelegatedResourceSnapshot ctx) {
+			// Nothing to do
 		}
 
 		@Override

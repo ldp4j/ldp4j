@@ -175,13 +175,14 @@ final class DataSetHelperImpl extends DataSetHelper {
 	}
 
 	@Override
-	public Individual<URI,?> self() {
+	public <T extends Individual<URI,T>> T self() {
 		return relative(SELF);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Individual<URI,?> relative(URI path) {
-		return this.dataSet.individualOfId(path);
+	public <T extends Individual<URI,T>> T relative(URI path) {
+		return (T)this.dataSet.individualOfId(path);
 	}
 
 	/**

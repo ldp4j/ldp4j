@@ -86,14 +86,12 @@ public final class DataTransformator {
 	}
 
 	private Namespaces defaultNamespaces() {
-		Namespaces namespaces=
+		return
 			new Namespaces().
 				addPrefix("rdf", RDF.NAMESPACE).
 				addPrefix("rdfs", RDFS.NAMESPACE).
 				addPrefix("xsd", "http://www.w3.org/2001/XMLSchema#").
 				addPrefix("ldp", LDP.NAMESPACE);
-
-		return namespaces;
 	}
 
 	private DataTransformator(DataTransformator dataTransformation) {

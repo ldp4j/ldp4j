@@ -115,9 +115,9 @@ class DumpableTable {
 	}
 
 	private String[] adjust(String value, int length) {
-		int module=value.length()%length;
-		int rows=(value.length()-module)/length+(module>0?1:0);
-		String[] result=new String[rows];
+		int tModule=value.length()%length;
+		int tRows=(value.length()-tModule)/length+(tModule>0?1:0);
+		String[] result=new String[tRows];
 		for(int i=0;i<result.length;i++) {
 			int j = (i+1)*length;
 			if(j>value.length()) {
@@ -204,7 +204,7 @@ class DumpableTable {
 		out.println(titleSeparator);
 		for(List<String> row:sort(rows)) {
 			String[][] cellRows=new String[columnTitles.length][];
-			int rows=0;
+			int tRows=0;
 			for(int i=0;i<columnTitles.length;i++) {
 				String cell=
 					align(
@@ -213,9 +213,9 @@ class DumpableTable {
 						configurations[i].getAlignment(),
 						' ');
 				cellRows[i]=adjust(cell,columnWidths[i]);
-				rows=Math.max(rows, cellRows[i].length);
+				tRows=Math.max(tRows, cellRows[i].length);
 			}
-			for(int i=0;i<rows;i++) {
+			for(int i=0;i<tRows;i++) {
 				StringBuilder rowBuilder=new StringBuilder();
 				rowBuilder.append("|");
 				for(int j=0;j<columnTitles.length;j++) {

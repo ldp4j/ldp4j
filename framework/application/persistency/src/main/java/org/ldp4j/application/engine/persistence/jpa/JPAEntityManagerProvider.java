@@ -80,10 +80,8 @@ final class JPAEntityManagerProvider implements EntityManagerProvider {
 	}
 
 	void dispose() {
-		if(this.emf!=null) {
-			if(this.emf.isOpen()) {
-				this.emf.close();
-			}
+		if(this.emf!=null && this.emf.isOpen()) {
+			this.emf.close();
 		}
 	}
 

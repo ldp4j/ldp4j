@@ -54,9 +54,9 @@ public abstract class DataSetHelper {
 
 	public abstract ManagedIndividual manage(ManagedIndividualId id) throws DataSetModificationException;
 
-	public abstract Individual<?, ?> self();
+	public abstract <T extends Individual<URI,T>> T self();
 
-	public abstract Individual<?, ?> relative(URI path);
+	public abstract <T extends Individual<URI,T>> T relative(URI path);
 
 	public abstract IndividualHelper managedIndividual(Name<?> name, String managerId);
 

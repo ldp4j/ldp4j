@@ -191,19 +191,19 @@ public final class URI {
 		}
 
 		private void setFile(String file) {
-			String fileName=null;
-			String fileExtension=null;
+			String tFileName=null;
+			String tFileExtension=null;
 			if(file!=null && !file.isEmpty()) {
 				int ext = file.lastIndexOf(CURRENT_CHAR);
 				if(ext>=0) {
-					fileName=file.substring(0,ext);
-					fileExtension=file.substring(ext+1);
+					tFileName=file.substring(0,ext);
+					tFileExtension=file.substring(ext+1);
 				} else {
-					fileName=file;
+					tFileName=file;
 				}
 			}
-			setFileName(fileName);
-			setFileExtension(fileExtension);
+			setFileName(tFileName);
+			setFileExtension(tFileExtension);
 		}
 
 		private void setFileExtension(String fileExtension) {

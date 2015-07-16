@@ -40,11 +40,11 @@ public interface DataSet extends Iterable<Individual<?,?>> {
 
 	Collection<? extends Individual<?,?>> individuals();
 
-	Set<Object> individualIds();
+	Set<Serializable> individualIds();
 
 	boolean hasIndividual(Object id);
 
-	<T extends Serializable> Individual<T,?> individualOfId(T id);
+	<T extends Serializable, S extends Individual<T,S>> S individualOfId(T id);
 
 	<T extends Serializable, S extends Individual<T,S>> S individual(T id, Class<? extends S> clazz);
 

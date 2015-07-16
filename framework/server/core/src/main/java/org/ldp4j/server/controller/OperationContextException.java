@@ -36,7 +36,7 @@ import org.ldp4j.application.engine.context.PublicResource;
 
 public class OperationContextException extends RuntimeException {
 
-	static final class SerializableCapabilities implements Capabilities, Serializable {
+	private static final class SerializableCapabilities implements Capabilities, Serializable {
 
 		private static final long serialVersionUID = 3550471347041282150L;
 
@@ -82,8 +82,7 @@ public class OperationContextException extends RuntimeException {
 	private final Date lastModified;
 	private final EntityTag entityTag;
 	private final Class<? extends PublicResource> clazz;
-
-	private SerializableCapabilities capabilities;
+	private final SerializableCapabilities capabilities;
 
 	public OperationContextException(String message, Throwable cause, PublicResource resource, OperationContext context) {
 		super(message, cause);

@@ -127,20 +127,21 @@ final class ConfigurationSummary {
 		ResourceSource source = getResourceSource(resource);
 		String id=resource.toString();
 		switch(source) {
-		case CLASSPATH:
-		case FILE_SYSTEM:
-		case REMOTE:
-			id=id.substring(id.indexOf("[")+1,id.indexOf("]"));
-			break;
-		case OSGI_BUNDLE:
-			id=id.substring(id.indexOf("[")+1,id.indexOf("]"));
-			id=id.split("\\|")[0];
-			break;
-		case RAW:
-		case STREAM:
-		case UNKNOWN:
-			break;
-
+			case CLASSPATH:
+			case FILE_SYSTEM:
+			case REMOTE:
+				id=id.substring(id.indexOf("[")+1,id.indexOf("]"));
+				break;
+			case OSGI_BUNDLE:
+				id=id.substring(id.indexOf("[")+1,id.indexOf("]"));
+				id=id.split("\\|")[0];
+				break;
+			case RAW:
+			case STREAM:
+			case UNKNOWN:
+				break;
+			default:
+				throw new AssertionError("Unsupported resource source '"+source+"'");
 		}
 		return id;
 	}
@@ -149,21 +150,22 @@ final class ConfigurationSummary {
 		ResourceSource source = getResourceSource(resource);
 		String result=source.getTag();
 		switch(source){
-		case OSGI_BUNDLE:
-			String id=resource.toString();
-			id=id.substring(id.indexOf("[")+1,id.indexOf("]"));
-			String[] parts = id.split("\\|");
-			String bundle=parts[1];
-			result=result.concat(" (").concat(bundle.split("=")[1]).concat(")");
-			break;
-		case CLASSPATH:
-		case FILE_SYSTEM:
-		case RAW:
-		case REMOTE:
-		case STREAM:
-		case UNKNOWN:
-			break;
-
+			case OSGI_BUNDLE:
+				String id=resource.toString();
+				id=id.substring(id.indexOf("[")+1,id.indexOf("]"));
+				String[] parts = id.split("\\|");
+				String bundle=parts[1];
+				result=result.concat(" (").concat(bundle.split("=")[1]).concat(")");
+				break;
+			case CLASSPATH:
+			case FILE_SYSTEM:
+			case RAW:
+			case REMOTE:
+			case STREAM:
+			case UNKNOWN:
+				break;
+			default:
+				throw new AssertionError("Unsupported resource source '"+source+"'");
 		}
 		return result;
 	}

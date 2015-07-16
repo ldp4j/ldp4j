@@ -47,7 +47,7 @@ public final class FormatUtils implements IndividualVisitor {
 	}
 
 	public String getId() {
-		return id;
+		return this.id;
 	}
 
 	private void log(String message, Object... args) {
@@ -73,8 +73,8 @@ public final class FormatUtils implements IndividualVisitor {
 	@Override
 	public void visitLocalIndividual(LocalIndividual individual) {
 		Name<?> name = individual.id();
-		Object id=name.id();
-		log(LOCAL_ID_FORMAT,id,id.getClass().getCanonicalName());
+		Object localId=name.id();
+		log(LOCAL_ID_FORMAT,localId,localId.getClass().getCanonicalName());
 	}
 
 	@Override
@@ -139,11 +139,11 @@ public final class FormatUtils implements IndividualVisitor {
 			Name<?> name=(Name<?>)id;
 			result=String.format(LOCAL_ID_FORMAT,name,name.getClass().getCanonicalName());
 		} else if(id instanceof ManagedIndividualId) {
-			ManagedIndividualId mid = (ManagedIndividualId)id;
-			if(mid.indirectId()==null) {
-				result=String.format(MANAGED_ID_FORMAT,mid.name(),mid.managerId());
+			ManagedIndividualId mId = (ManagedIndividualId)id;
+			if(mId.indirectId()==null) {
+				result=String.format(MANAGED_ID_FORMAT,mId.name(),mId.managerId());
 			} else {
-				result=String.format(MANAGED_ID_INDIRECT_FORMAT,mid.name(),mid.managerId(),mid.indirectId());
+				result=String.format(MANAGED_ID_INDIRECT_FORMAT,mId.name(),mId.managerId(),mId.indirectId());
 			}
 		} else if(id instanceof RelativeIndividualId){
 			RelativeIndividualId rid = (RelativeIndividualId)id;

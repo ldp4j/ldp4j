@@ -33,9 +33,10 @@ import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Stack;
+import java.util.Deque;
 import java.util.StringTokenizer;
 
 import org.ldp4j.commons.Assertions;
@@ -323,7 +324,7 @@ public final class URIUtils {
 	 *        remove_dot_segments.
 	 */
 	private static String remove_dot_segments(String path) {
-		Stack<String> outputBuffer=new Stack<String>();
+		Deque<String> outputBuffer=new LinkedList<String>();
 		String input=path==null?EMPTY:path;
 		while(!input.isEmpty()) {
 			String next=null;
@@ -363,8 +364,8 @@ public final class URIUtils {
 		return assembleInOrder(outputBuffer);
 	}
 
-	private static String assembleInOrder(Stack<String> outputBuffer) {
-		Stack<String> reverse=new Stack<String>();
+	private static String assembleInOrder(Deque<String> outputBuffer) {
+		Deque<String> reverse=new LinkedList<String>();
 		for(String item:outputBuffer) {
 			reverse.push(item);
 		}
@@ -375,18 +376,16 @@ public final class URIUtils {
 		return builder.toString();
 	}
 
-	private static void addSegment(Stack<String> outputBuffer, String nextSegment) {
+	private static void addSegment(Deque<String> outputBuffer, String nextSegment) {
 		outputBuffer.push(nextSegment);
 	}
 
-	private static String discardSegment(Stack<String> outputBuffer, String input, String prefix) {
+	private static String discardSegment(Deque<String> outputBuffer, String input, String prefix) {
 		if(!outputBuffer.isEmpty()) {
 			outputBuffer.pop();
 		}
-		if(!outputBuffer.isEmpty()) {
-			if(SLASH.equals(outputBuffer.peek())) {
-				outputBuffer.pop();
-			}
+		if(!outputBuffer.isEmpty() && SLASH.equals(outputBuffer.peek())) {
+			outputBuffer.pop();
 		}
 		return SLASH+input.substring(prefix.length());
 	}

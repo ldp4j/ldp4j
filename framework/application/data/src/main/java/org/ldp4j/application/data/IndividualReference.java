@@ -130,39 +130,39 @@ public abstract class IndividualReference<T extends Serializable, S extends Indi
 	abstract void accept(IndividualReferenceVisitor visitor);
 
 	@SuppressWarnings("rawtypes")
-	public static IndividualReference<Name,?> anonymous(Name<?> name) {
+	public static IndividualReference<Name,LocalIndividual> anonymous(Name<?> name) {
 		return new LocalIndividualReference(name);
 	}
 
-	public static IndividualReference<ManagedIndividualId,?> managed(ManagedIndividualId individualId) {
+	public static IndividualReference<ManagedIndividualId,ManagedIndividual> managed(ManagedIndividualId individualId) {
 		return new ManagedIndividualReference(individualId);
 	}
 
-	public static IndividualReference<ManagedIndividualId,?> managed(Name<?> name, String templateId) {
+	public static IndividualReference<ManagedIndividualId,ManagedIndividual> managed(Name<?> name, String templateId) {
 		return managed(ManagedIndividualId.createId(name, templateId));
 	}
 
-	public static IndividualReference<ManagedIndividualId,?> managed(Name<?> name, String templateId, URI indirectId) {
+	public static IndividualReference<ManagedIndividualId,ManagedIndividual> managed(Name<?> name, String templateId, URI indirectId) {
 		return managed(indirectId,ManagedIndividualId.createId(name, templateId));
 	}
 
-	public static IndividualReference<ManagedIndividualId,?> managed(URI indirectId, ManagedIndividualId parent) {
+	public static IndividualReference<ManagedIndividualId,ManagedIndividual> managed(URI indirectId, ManagedIndividualId parent) {
 		return managed(ManagedIndividualId.createId(indirectId, parent));
 	}
 
-	public static IndividualReference<RelativeIndividualId,?> relative(ManagedIndividualId parentId, URI path) {
+	public static IndividualReference<RelativeIndividualId,RelativeIndividual> relative(ManagedIndividualId parentId, URI path) {
 		return relative(RelativeIndividualId.createId(parentId,path));
 	}
 
-	public static IndividualReference<RelativeIndividualId,?> relative(RelativeIndividualId individualId) {
+	public static IndividualReference<RelativeIndividualId,RelativeIndividual> relative(RelativeIndividualId individualId) {
 		return new RelativeIndividualReference(individualId);
 	}
 
-	public static IndividualReference<URI,?> external(URI location) {
+	public static IndividualReference<URI,ExternalIndividual> external(URI location) {
 		return new ExternalIndividualReference(location);
 	}
 
-	public static IndividualReference<URI,?> newIndividual(URI location) {
+	public static IndividualReference<URI,NewIndividual> newIndividual(URI location) {
 		return new NewIndividualReference(location);
 	}
 

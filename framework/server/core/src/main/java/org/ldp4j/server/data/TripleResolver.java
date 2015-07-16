@@ -152,8 +152,7 @@ final class TripleResolver {
 			for(int i=0;i<endpointTriples.size();i++) {
 				builder.add(resolveTriple(endpointTriples.get(i), alternativeTriples.get(i)));
 			}
-			List<TripleResolution> resolutions = builder.build();
-			return resolutions;
+			return builder.build();
 		}
 
 		private TripleResolution resolveTriple(Triple tEndpoint, Triple tAlternative) {

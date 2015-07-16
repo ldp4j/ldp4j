@@ -74,7 +74,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 		}
 
 
-		public M preProcess(Annotation annotation, Class<? extends R> handler, TemplateResolver resolver) {
+		public M preProcess(Annotation annotation, Class<? extends R> handler) {
 			if(!annotationClass.isInstance(annotation)) {
 				throw new IllegalArgumentException("Invalid annotation");
 			}
@@ -373,7 +373,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 		}
 
 		ResourceTemplate toTemplate(Annotation annotation, Class<? extends ResourceHandler> targetClass, TemplateRegistry templateRegistry, TemplateResolver templateResolver) {
-			AbstractMutableTemplate<?> template = this.processor.preProcess(annotation,targetClass,templateResolver);
+			AbstractMutableTemplate<?> template = this.processor.preProcess(annotation,targetClass);
 			templateRegistry.register(targetClass, template);
 			this.processor.postProcess(annotation, template, templateResolver);
 			return template;

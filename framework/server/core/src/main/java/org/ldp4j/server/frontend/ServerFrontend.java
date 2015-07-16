@@ -96,7 +96,7 @@ public final class ServerFrontend {
 	private final LocalApplicationEngineLifecycleListener lifecyleListener;
 
 	@Context
-	private ServletContext context;
+	private ServletContext servletContext;
 
 	private void checkApplicationEngineAvailable() {
 		if(!this.lifecyleListener.available()) {
@@ -112,7 +112,7 @@ public final class ServerFrontend {
 	}
 
 	private ApplicationContext currentContext() {
-		ApplicationContext currentContext = (ApplicationContext)this.context.getAttribute(LDP4J_APPLICATION_CONTEXT);
+		ApplicationContext currentContext = (ApplicationContext)this.servletContext.getAttribute(LDP4J_APPLICATION_CONTEXT);
 		if(currentContext==null) {
 			Response failure =
 				Response.
