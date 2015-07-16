@@ -42,6 +42,7 @@ final class GoneEndpointController extends FixedResponseEndpointController {
 		this.resource = resource;
 	}
 
+	@Override
 	protected Response defaultResponse(OperationContext context) {
 		return
 			Response.

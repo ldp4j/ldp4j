@@ -86,7 +86,7 @@ public class ResourceAttachment implements Serializable {
 	}
 
 	public void setVersion(long version) {
-		this.version.set(version);;
+		this.version.set(version);
 	}
 
 	@ManyToOne

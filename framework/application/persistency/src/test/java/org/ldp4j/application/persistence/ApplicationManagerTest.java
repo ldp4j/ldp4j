@@ -422,7 +422,7 @@ public class ApplicationManagerTest {
 			Template attachingTemplate=template51();
 			Template attachedTemplate=simpleRDFSourceTemplate();
 			String rootPath = "/attaching/rdfsource/rdfsource/path";
-			Resource attachingResource=resManager.createRootResource(attachingTemplate,rootPath,rootPath,entityTag(rootPath),null);;
+			Resource attachingResource=resManager.createRootResource(attachingTemplate,rootPath,rootPath,entityTag(rootPath),null);
 			LOGGER.debug("Before creating attached resource:");
 			LOGGER.debug("- Parent resource: "+attachingResource);
 			LOGGER.debug("  + Endpoint.....: "+attachingResource.getEndpoint());
@@ -455,7 +455,7 @@ public class ApplicationManagerTest {
 			Template attachingTemplate=template51();
 			Template attachedTemplate=simpleBasicContainerTemplate();
 			String rootPath = "/attaching/rdfsource/basic_container/path";
-			Resource attachingResource=resManager.createRootResource(attachingTemplate,rootPath,rootPath,entityTag(rootPath),null);;
+			Resource attachingResource=resManager.createRootResource(attachingTemplate,rootPath,rootPath,entityTag(rootPath),null);
 			LOGGER.debug("Before creating attached resource:");
 			LOGGER.debug("- Parent resource: "+attachingResource);
 			LOGGER.debug("  + Endpoint.....: "+attachingResource.getEndpoint());
@@ -488,7 +488,7 @@ public class ApplicationManagerTest {
 			Template attachingTemplate=template51();
 			Template attachedTemplate=simpleDirectContainerTemplate();
 			String rootPath = "/attaching/rdfsource/direct_container/path";
-			Resource attachingResource=resManager.createRootResource(attachingTemplate,rootPath,rootPath,entityTag(rootPath),null);;
+			Resource attachingResource=resManager.createRootResource(attachingTemplate,rootPath,rootPath,entityTag(rootPath),null);
 			LOGGER.debug("Before creating attached resource:");
 			LOGGER.debug("- Parent resource: "+attachingResource);
 			LOGGER.debug("  + Endpoint.....: "+attachingResource.getEndpoint());

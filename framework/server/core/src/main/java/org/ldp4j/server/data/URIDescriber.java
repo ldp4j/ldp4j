@@ -84,6 +84,7 @@ final class URIDescriber {
 		return URIDescriptor.newDescriptor(scope, type);
 	}
 
+	@Override
 	public String toString() {
 		return
 			MoreObjects.

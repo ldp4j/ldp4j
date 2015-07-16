@@ -45,6 +45,8 @@ public class BootstrapContainerInitializer implements ServletContainerInitialize
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(BootstrapContainerInitializer.class);
 
+	private final AtomicBoolean initialized=new AtomicBoolean();
+
 	@Override
 	public void onStartup(Set<Class<?>> classes, final ServletContext context) throws ServletException {
 		initializeContainer(context);
@@ -67,8 +69,6 @@ public class BootstrapContainerInitializer implements ServletContainerInitialize
 		);
 	}
 
-	private final AtomicBoolean initialized=new AtomicBoolean();
-
 	private void initializeContainer(final ServletContext context) {
 		if(!initialized.compareAndSet(false, true)) {
 			return;
@@ -81,6 +81,7 @@ public class BootstrapContainerInitializer implements ServletContainerInitialize
 			getRuntime().
 				addShutdownHook(
 					new Thread() {
+						@Override
 						public void run() {
 							LOGGER.debug("Shutting down container {} {}.{}",serverInfo,majorVersion,minorVersion);
 						}

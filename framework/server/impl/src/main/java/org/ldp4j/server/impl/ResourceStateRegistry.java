@@ -106,7 +106,7 @@ final class ResourceStateRegistry {
 
 			private final ReentrantReadWriteLock lock;
 
-			private final ConcurrentMap<Long,AtomicLong> readingThreads=new ConcurrentHashMap<Long, AtomicLong>();
+			private final ConcurrentMap<Long,AtomicLong> readingThreads=new ConcurrentHashMap<Long, AtomicLong>(); // NOSONAR
 
 			public LoggingReadLock(ReentrantReadWriteLock lock, String containerId, String resourceId) {
 				super(lock);

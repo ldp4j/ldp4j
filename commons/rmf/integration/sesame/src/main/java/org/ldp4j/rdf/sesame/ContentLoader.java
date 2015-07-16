@@ -46,7 +46,7 @@ final class ContentLoader implements SourceVisitor<SesameUtilsException> {
 	private static final String STORAGE_EXCEPTION = "Could not store data";
 	private static final String PARSE_EXCEPTION = "Provided data does not meet specified format";
 	private static final String READ_EXCEPTION = "Could not read source data";
-	
+
 	private final RepositoryConnection connection;
 	private final String base;
 	private final URI context;
@@ -85,18 +85,22 @@ final class ContentLoader implements SourceVisitor<SesameUtilsException> {
 		}
 	}
 
+	@Override
 	public void visitFile(Source<File> source) throws SesameUtilsException  {
 		loadFrom(source.getData().toURI());
 	}
 
+	@Override
 	public void visitURL(Source<URL> source) throws SesameUtilsException {
 		loadFrom(source.getData());
 	}
 
+	@Override
 	public void visitURI(Source<java.net.URI> source) throws SesameUtilsException {
 		loadFrom(source.getData());
 	}
 
+	@Override
 	public void visitString(Source<String> source) throws SesameUtilsException {
 		StringReader reader=new StringReader(source.getData());
 		try {

@@ -42,7 +42,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public final class Introspection<T> {
+public final class Introspection {
 
 	private static final class IntrospectorUtil {
 
@@ -446,7 +446,7 @@ public final class Introspection<T> {
 		}
 	}
 
-	private abstract static class TypeCapture<T> {
+	private abstract static class TypeCapture<T> { // NOSONAR
 		/** Returns the captured type. */
 		final Type capture() {
 			Type superclass = getClass().getGenericSuperclass();

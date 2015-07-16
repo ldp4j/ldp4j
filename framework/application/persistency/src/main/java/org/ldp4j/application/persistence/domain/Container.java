@@ -81,7 +81,7 @@ public class Container extends RDFSource implements Serializable {
 	}
 
 	public void setMemberCount(long counter) {
-		this.memberCount.set(counter);;
+		this.memberCount.set(counter);
 	}
 
 	@OneToMany(mappedBy="container")

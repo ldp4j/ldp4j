@@ -34,6 +34,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Stack;
 import java.util.StringTokenizer;
 
@@ -43,6 +44,9 @@ import org.slf4j.LoggerFactory;
 
 public final class URIUtils {
 
+	private static final String SLASH = "/";
+	private static final String PARENT = "..";
+	private static final String EMPTY = "";
 	private static final Logger LOGGER=LoggerFactory.getLogger(URIUtils.class);
 
 	private URIUtils() {
@@ -57,15 +61,6 @@ public final class URIUtils {
 		}
 	}
 
-	private static boolean equal(Object one, Object other) {
-		return
-			one==null?
-				other==null:
-				other==null?
-					false:
-					one.equals(other);
-	}
-
 	public static URI relativize(URI base, URI target) {
 		if(base==null) {
 			throw new NullPointerException("Base URI cannot be null");
@@ -76,16 +71,16 @@ public final class URIUtils {
 		if(base.isOpaque() || target.isOpaque()) {
 			return target;
 		}
-		if(!equal(base.getScheme(),target.getScheme()) || !equal(base.getAuthority(),target.getAuthority())) {
+		if(!Objects.equals(base.getScheme(),target.getScheme()) || !Objects.equals(base.getAuthority(),target.getAuthority())) {
 			return target;
 		}
 		URI nBase = base.normalize();
 		URI nTarget = target.normalize();
 		if(nBase.equals(nTarget)) {
-			return URI.create("");
+			return URI.create(EMPTY);
 		}
 		URI walkthrough = absoluteRelativization(nBase,nTarget);
-		if(walkthrough.getPath().startsWith("..") && nTarget.getPath().equals("")) {
+		if(walkthrough.getPath().startsWith(PARENT) && nTarget.getPath().isEmpty()) {
 			return nTarget;
 		}
 		return walkthrough;
@@ -115,7 +110,7 @@ public final class URIUtils {
 		if(ProtocolHandlerConfigurator.isSupported(scheme)) {
 			URLStreamHandler handler = ProtocolHandlerConfigurator.getHandler(scheme);
 			try {
-				fallback=new URL(scheme,null,0,uri.toString().replace(scheme+":",""),handler);
+				fallback=new URL(scheme,null,0,uri.toString().replace(scheme+":",EMPTY),handler);
 			} catch (MalformedURLException fatal) {
 				if(LOGGER.isWarnEnabled()) {
 					LOGGER.warn(String.format("Fallback solution for supported custom '%s' protocol failed. Full stack trace follows.",scheme),fatal);
@@ -235,7 +230,7 @@ public final class URIUtils {
 				T.path      = remove_dot_segments(R.path);
 				T.query     = R.query;
 			} else {
-				if(R.path.equals("")) {
+				if(R.path.isEmpty()) {
 					T.path=Base.path;
 					if(defined(R.query)) {
 						T.query=R.query;
@@ -243,7 +238,7 @@ public final class URIUtils {
 						T.query=Base.query;
 					}
 				} else {
-					if(R.path.startsWith("/")) {
+					if(R.path.startsWith(SLASH)) {
 						T.path=remove_dot_segments(R.path);
 					} else {
 						T.path=merge(Base.path,R.path,defined(Base.authority));
@@ -279,8 +274,8 @@ public final class URIUtils {
 	 */
 	private static String merge(String path, String relativePath, boolean hasAuthority) {
 		String parent=path;
-		if(hasAuthority && parent.equals("")) {
-			parent="/";
+		if(hasAuthority && parent.isEmpty()) {
+			parent=SLASH;
 		}
 		return parent.substring(0,parent.lastIndexOf('/')+1).concat(relativePath);
 	}
@@ -329,7 +324,7 @@ public final class URIUtils {
 	 */
 	private static String remove_dot_segments(String path) {
 		Stack<String> outputBuffer=new Stack<String>();
-		String input=path==null?"":path;
+		String input=path==null?EMPTY:path;
 		while(!input.isEmpty()) {
 			String next=null;
 			if(input.startsWith("../")) {
@@ -338,17 +333,17 @@ public final class URIUtils {
 				next=input.substring(2);
 			} else if(input.startsWith("/./")) {
 				next=input.substring(2);
-			} else if(input.equals("/.")) {
-				next="/";
+			} else if("/.".equals(input)) {
+				next=SLASH;
 			} else if(input.startsWith("/../")) {
 				next=discardSegment(outputBuffer, input, "/../");
-			} else if(input.equals("/..")) {
+			} else if("/..".equals(input)) {
 				next=discardSegment(outputBuffer, input, "/..");
-			} else if(input.equals("..") || input.equals(".")) {
-				next="";
+			} else if(PARENT.equals(input) || ".".equals(input)) {
+				next=EMPTY;
 			} else {
 				int nextSlash=0;
-				if(input.startsWith("/")) {
+				if(input.startsWith(SLASH)) {
 					nextSlash=input.indexOf('/',1);
 				} else {
 					nextSlash=input.indexOf('/',0);
@@ -356,7 +351,7 @@ public final class URIUtils {
 				String nextSegment=null;
 				if(nextSlash<0) {
 					nextSegment=input;
-					next="";
+					next=EMPTY;
 				} else {
 					nextSegment=input.substring(0,nextSlash);
 					next=input.substring(nextSlash);
@@ -377,8 +372,7 @@ public final class URIUtils {
 		for(String item:reverse) {
 			builder.append(item);
 		}
-		String result = builder.toString();
-		return result;
+		return builder.toString();
 	}
 
 	private static void addSegment(Stack<String> outputBuffer, String nextSegment) {
@@ -390,11 +384,11 @@ public final class URIUtils {
 			outputBuffer.pop();
 		}
 		if(!outputBuffer.isEmpty()) {
-			if(outputBuffer.peek().equals("/")) {
+			if(SLASH.equals(outputBuffer.peek())) {
 				outputBuffer.pop();
 			}
 		}
-		return "/"+input.substring(prefix.length());
+		return SLASH+input.substring(prefix.length());
 	}
 
 	private static URI absoluteRelativization(URI base, URI target) {
@@ -402,7 +396,7 @@ public final class URIUtils {
 		URIDescriptor dBase=URIDescriptor.create(base);
 		URIDescriptor dTarget=URIDescriptor.create(target);
 		if(dBase.getDir().equals(dTarget.getDir())) {
-			String rawURI="";
+			String rawURI=EMPTY;
 			if(!dBase.getFile().equals(dTarget.getFile())) {
 				rawURI=dTarget.getFile();
 			}
@@ -424,10 +418,10 @@ public final class URIUtils {
 	}
 
 	private static String[] tokenize(String path) {
-		StringTokenizer tokenizer=new StringTokenizer(path,"/");
+		StringTokenizer tokenizer=new StringTokenizer(path,SLASH);
 		List<String> segments=new ArrayList<String>();
-		if(path.contains("/")) {
-			segments.add("");
+		if(path.contains(SLASH)) {
+			segments.add(EMPTY);
 			while(tokenizer.hasMoreTokens()) {
 				segments.add(tokenizer.nextToken());
 			}
@@ -464,7 +458,7 @@ public final class URIUtils {
 			int discardedSegments) {
 		List<String> segments=new ArrayList<String>();
 		for(int j=0;j<discardedSegments;j++) {
-			segments.add("..");
+			segments.add(PARENT);
 		}
 		segments.
 			addAll(
@@ -483,9 +477,9 @@ public final class URIUtils {
 			String last = it.next();
 			builder.append(last);
 			if(it.hasNext()) {
-				builder.append("/");
+				builder.append(SLASH);
 			} else {
-				ancestor=last.equals("..");
+				ancestor=last.equals(PARENT);
 			}
 		}
 
@@ -496,7 +490,7 @@ public final class URIUtils {
 				toString();
 
 		if(!ancestor || !file.isEmpty()) {
-			builder.append("/");
+			builder.append(SLASH);
 		}
 		builder.append(file);
 

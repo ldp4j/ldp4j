@@ -33,6 +33,7 @@ final class StringSource extends AbstractSource<String> {
 		super(data,metadata);
 	}
 
+	@Override
 	public <E extends Throwable> void accept(SourceVisitor<E> handler) throws E {
 		handler.visitString(this);
 	}

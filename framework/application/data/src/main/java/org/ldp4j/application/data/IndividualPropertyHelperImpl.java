@@ -102,7 +102,7 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withLiteral(T rawValue) {
+	public IndividualPropertyHelper withLiteral(Object rawValue) {
 		return this.pHelper.withLiteral(rawValue);
 	}
 
@@ -110,7 +110,7 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Name<?> id) {
+	public IndividualPropertyHelper withIndividual(Name<?> id) {
 		return this.pHelper.withIndividual(id);
 	}
 
@@ -118,7 +118,7 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId) {
+	public IndividualPropertyHelper withIndividual(Name<?> id, String managerId) {
 		return this.pHelper.withIndividual(id,managerId);
 	}
 
@@ -126,7 +126,7 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, URI path) {
+	public IndividualPropertyHelper withIndividual(Name<?> id, String managerId, URI path) {
 		return this.pHelper.withIndividual(id,managerId,path);
 	}
 
@@ -134,7 +134,7 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, String path) {
+	public IndividualPropertyHelper withIndividual(Name<?> id, String managerId, String path) {
 		return this.pHelper.withIndividual(id,managerId,path);
 	}
 
@@ -142,7 +142,7 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(URI id) {
+	public IndividualPropertyHelper withIndividual(URI id) {
 		return this.pHelper.withIndividual(id);
 	}
 
@@ -150,7 +150,7 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(String id) {
+	public IndividualPropertyHelper withIndividual(String id) {
 		return this.pHelper.withIndividual(id);
 	}
 
@@ -158,7 +158,7 @@ final class IndividualPropertyHelperImpl implements IndividualPropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Term id) {
+	public IndividualPropertyHelper withIndividual(Term id) {
 		return this.pHelper.withIndividual(id);
 	}
 

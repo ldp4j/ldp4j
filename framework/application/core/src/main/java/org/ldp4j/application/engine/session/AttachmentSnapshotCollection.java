@@ -91,7 +91,7 @@ final class AttachmentSnapshotCollection {
 
 	}
 
-	public static enum Attachability {
+	public enum Attachability {
 		ATTACHABLE("Not attached") {
 			@Override
 			public boolean canAttach() {
@@ -142,7 +142,7 @@ final class AttachmentSnapshotCollection {
 
 	boolean remove(DelegatedAttachmentSnapshot attachment) {
 		checkNotNull(attachment,"Attachment snapshot cannot be null");
-		boolean result = attachments.remove(attachment);;
+		boolean result = attachments.remove(attachment);
 		if(result) {
 			attachmentsByName.remove(attachment.resource().name());
 			attachmentsById.remove(attachment.id());

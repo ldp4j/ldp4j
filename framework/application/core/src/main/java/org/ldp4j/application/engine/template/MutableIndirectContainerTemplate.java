@@ -74,7 +74,7 @@ final class MutableIndirectContainerTemplate extends MutableMembershipAwareConta
 	@Override
 	public boolean equals(Object obj) {
 		boolean result=super.equals(obj);
-		if(result) {
+		if(result && this.getClass()==obj.getClass()) {
 			MutableIndirectContainerTemplate that = (MutableIndirectContainerTemplate) obj;
 			result=Objects.equals(this.insertedContentRelation, that.insertedContentRelation);
 		}

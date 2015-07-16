@@ -26,53 +26,103 @@
  */
 package org.ldp4j.server.controller;
 
+import java.io.Serializable;
 import java.net.URI;
+import java.util.Date;
 
+import org.ldp4j.application.engine.context.Capabilities;
+import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.context.PublicResource;
 
 public class OperationContextException extends RuntimeException {
 
+	static final class SerializableCapabilities implements Capabilities, Serializable {
+
+		private static final long serialVersionUID = 3550471347041282150L;
+
+		private final boolean modifiable;
+		private final boolean deletable;
+		private final boolean patchable;
+		private final boolean factory;
+
+		SerializableCapabilities(Capabilities capabilities) {
+			this.modifiable=capabilities.isModifiable();
+			this.deletable=capabilities.isDeletable();
+			this.patchable=capabilities.isPatchable();
+			this.factory=capabilities.isFactory();
+		}
+
+		@Override
+		public boolean isModifiable() {
+			return this.modifiable;
+		}
+
+		@Override
+		public boolean isDeletable() {
+			return this.deletable;
+		}
+
+		@Override
+		public boolean isPatchable() {
+			return this.patchable;
+		}
+
+		@Override
+		public boolean isFactory() {
+			return this.factory;
+		}
+
+	}
+
 	private static final String DEFAULT_ERROR_MESSAGE = "Unexpected operation context failure";
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 5924666884556832771L;
 
-	private final OperationContext operationContext;
+	private final URI location;
+	private final Date lastModified;
+	private final EntityTag entityTag;
+	private final Class<? extends PublicResource> clazz;
 
-	private final PublicResource resource;
+	private SerializableCapabilities capabilities;
 
-	public OperationContextException(String message, Throwable cause, PublicResource resource, OperationContext operationContext) {
+	public OperationContextException(String message, Throwable cause, PublicResource resource, OperationContext context) {
 		super(message, cause);
-		this.resource = resource;
-		this.operationContext = operationContext;
+		this.capabilities=new SerializableCapabilities(resource.capabilities());
+		this.location = context.base().resolve(resource.path());
+		this.lastModified=resource.lastModified();
+		this.entityTag=resource.entityTag();
+		this.clazz=resource.getClass();
 	}
 
-	public OperationContextException(PublicResource resource, OperationContext operationContext) {
-		this(DEFAULT_ERROR_MESSAGE,resource,operationContext);
+	public OperationContextException(PublicResource resource, OperationContext context) {
+		this(DEFAULT_ERROR_MESSAGE,resource,context);
 	}
 
-
-	public OperationContextException(String message, PublicResource resource, OperationContext operationContext) {
-		this(message,null,resource,operationContext);
+	public OperationContextException(String message, PublicResource resource, OperationContext context) {
+		this(message,null,resource,context);
 	}
 
-	public OperationContextException(Throwable cause, PublicResource resource, OperationContext operationContext) {
-		this(DEFAULT_ERROR_MESSAGE,cause,resource,operationContext);
+	public OperationContextException(Throwable cause, PublicResource resource, OperationContext context) {
+		this(DEFAULT_ERROR_MESSAGE,cause,resource,context);
 	}
 
-	@Deprecated
-	public OperationContext getOperationContext() {
-		return operationContext;
+	public Class<? extends PublicResource> resourceClass() {
+		return clazz;
 	}
 
 	public final URI resourceLocation() {
-		return operationContext.base().resolve(resource.path());
+		return location;
 	}
 
-	public final PublicResource getResource() {
-		return resource;
+	public final Capabilities resourceCapabilities() {
+		return this.capabilities;
+	}
+	public final Date resourceLastModified() {
+		return this.lastModified;
+	}
+
+	public final EntityTag resourceEntityTag() {
+		return this.entityTag;
 	}
 
 }

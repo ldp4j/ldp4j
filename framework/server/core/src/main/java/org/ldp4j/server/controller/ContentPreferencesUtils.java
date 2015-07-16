@@ -67,9 +67,9 @@ public class ContentPreferencesUtils {
 			}
 			String hint=matcher.group(1);
 			boolean include=true;
-			if(hint.equals("omit")) {
+			if("omit".equals(hint)) {
 				include=false;
-			} else if(hint.equals("include")) {
+			} else if("include".equals(hint)) {
 				include=true;
 			} else {
 				throw new InvalidPreferenceHeaderException("Invalid preference hint '"+hint+"'");
@@ -97,14 +97,14 @@ public class ContentPreferencesUtils {
 		if(items.length!=2) {
 			throw new IllegalArgumentException("Could not parse preferences ("+value+"): could not find return representation");
 		}
-		if(!items[0].trim().equals("return")) {
+		if(!"return".equals(items[0].trim())) {
 			throw new IllegalArgumentException("Could not parse preferences ("+value+"): unexpected token '"+items[0].trim()+"'");
 		}
-		if(!items[1].trim().equals("representation")) {
+		if(!"representation".equals(items[1].trim())) {
 			throw new IllegalArgumentException("Could not parse preferences ("+value+"): unexpected return type '"+items[1].trim()+"'");
 		}
 	}
-	
+
 	public static String asPreferenceHeader(ContentPreferences contentPreferences) {
 		checkNotNull("Content preferences cannot be null");
 		StringBuilder header=new StringBuilder();

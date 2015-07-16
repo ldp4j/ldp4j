@@ -34,6 +34,7 @@ final class FileSource extends AbstractSource<File> {
 		super(file,metadata);
 	}
 
+	@Override
 	public <E extends Throwable> void accept(SourceVisitor<E> handler) throws E{
 		handler.visitFile(this);
 	}

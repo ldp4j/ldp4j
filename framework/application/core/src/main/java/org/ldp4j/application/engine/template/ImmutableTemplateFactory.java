@@ -234,7 +234,7 @@ final class ImmutableTemplateFactory {
 	private ImmutableTemplateFactory() {
 	}
 
-	static <T extends ResourceTemplate> ResourceTemplate newImmutable(ResourceTemplate template) {
+	static ResourceTemplate newImmutable(ResourceTemplate template) {
 		TemplateCreator creator = new TemplateCreator();
 		template.accept(creator);
 		return creator.getCreatedTemplate();

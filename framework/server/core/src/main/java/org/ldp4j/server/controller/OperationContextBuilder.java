@@ -33,7 +33,7 @@ import javax.ws.rs.core.Request;
 import javax.ws.rs.core.UriInfo;
 
 import org.ldp4j.application.engine.context.ApplicationContext;
-import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;;
+import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
 
 public final class OperationContextBuilder {
 

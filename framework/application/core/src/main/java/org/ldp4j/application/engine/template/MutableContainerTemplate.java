@@ -90,7 +90,7 @@ public class MutableContainerTemplate extends AbstractMutableTemplate<ContainerH
 	@Override
 	public boolean equals(Object obj) {
 		boolean result=super.equals(obj);
-		if(result) {
+		if(result && this.getClass()==obj.getClass()) {
 			MutableContainerTemplate that = (MutableContainerTemplate) obj;
 			result=
 				Objects.equals(this.memberTemplate, that.memberTemplate) &&

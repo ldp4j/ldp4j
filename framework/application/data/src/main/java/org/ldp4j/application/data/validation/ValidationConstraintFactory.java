@@ -55,7 +55,7 @@ public final class ValidationConstraintFactory {
 
 		private final Map<Property,Value> removedValues;
 		private final Map<Property,Value> addedValues;
-		private boolean checked;;
+		private boolean checked;
 
 		private ValidationLogImpl() {
 			this.removedValues=Maps.newHashMap();

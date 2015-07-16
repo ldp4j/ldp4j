@@ -33,13 +33,14 @@ import org.ldp4j.application.engine.context.PublicResource;
 
 public class UnsupportedContentException extends ContentProcessingException {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -7271633668400276805L;
 
 	public UnsupportedContentException(PublicResource resource, OperationContext context, Variant variant) {
-		super("Unsupported content exception ("+variant+")",resource,context);
+		this(resource,context,variant,null);
+	}
+
+	public UnsupportedContentException(PublicResource resource, OperationContext context, Variant variant, Throwable cause) {
+		super("Unsupported content exception ("+variant+")",cause,resource,context);
 	}
 
 }

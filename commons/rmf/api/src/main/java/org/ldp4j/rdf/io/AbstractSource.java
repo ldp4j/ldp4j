@@ -33,13 +33,15 @@ abstract class AbstractSource<T> implements Source<T> {
 
 	protected AbstractSource(T data, Metadata metadata) {
 		this.data = data;
-		this.metadata = metadata;		
+		this.metadata = metadata;
 	}
 
+	@Override
 	public final Metadata getMetadata() {
 		return metadata;
 	}
 
+	@Override
 	public final T getData() {
 		return data;
 	}

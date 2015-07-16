@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
 
 
 public final class RDFOperations {
-	
+
 	private static final String TRIPLES_PARAM = "triples";
 
 	private static final String OLD_NODE_PARAM = "oldNode";
@@ -51,11 +51,11 @@ public final class RDFOperations {
 	private static final String NEW_NODE_PARAM = "newNode";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(RDFOperations.class);
-	
+
 	private static final String NEW_LINE = System.getProperty("line.separator");
 
 	private abstract static class AbstractReplacer implements ITripleTransformation {
-	
+
 		@Override
 		public final Triple transform(Triple t) {
 			Triple triple = new Triple(
@@ -65,25 +65,25 @@ public final class RDFOperations {
 			);
 			return triple;
 		}
-		
+
 		protected abstract <T extends Node> T update(T original, Class<T> clazz);
-	
+
 	}
 
 	private static class NodeReplacer<O extends Node, N extends Node> extends AbstractReplacer{
-		
+
 		private final N newNode;
 		private final O replacedNode;
-		
+
 		public NodeReplacer(O replacedNode, N newNode) {
 			this.replacedNode = replacedNode;
 			this.newNode = newNode;
 		}
-		
+
 		protected final O getReplacedNode() {
 			return replacedNode;
 		}
-	
+
 		@Override
 		protected <T extends Node> T update(T original, Class<T> clazz) {
 			T result=original;
@@ -97,13 +97,13 @@ public final class RDFOperations {
 	}
 
 	private static class MultiNodeReplacer extends AbstractReplacer{
-		
+
 		private final Map<Node,Node> replacements;
-	
+
 		public MultiNodeReplacer(Map<Node,Node> replacements) {
 			this.replacements=replacements;
 		}
-		
+
 		@Override
 		protected <T extends Node> T update(T original, Class<T> clazz) {
 			T result=original;
@@ -130,7 +130,7 @@ public final class RDFOperations {
 		Map<Node,Node> targetReplacements=replacements;
 		if(resolvable) {
 			targetReplacements=compact(replacements);
-		} 
+		}
 		return newNodeReplacer(targetReplacements);
 	}
 	private static void trace(String format, Object... args) {
@@ -193,7 +193,7 @@ public final class RDFOperations {
 		return result;
 	}
 
-	public static <T extends Iterable<Triple>> TripleSet union(Triple[] original, Triple... triples) {
+	public static TripleSet union(Triple[] original, Triple... triples) {
 		TripleSet result=toTripleSet(original);
 		result.add(triples);
 		return result;
@@ -225,7 +225,7 @@ public final class RDFOperations {
 			Triple newTriple = tripleTransformation.transform(t);
 			if(newTriple!=null) {
 				result.add(newTriple);
-			} 
+			}
 		}
 		return new InmutableTripleSet(result);
 	}

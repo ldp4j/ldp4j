@@ -105,7 +105,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withLiteral(T rawValue) {
+	public IndividualPropertyHelper withLiteral(Object rawValue) {
 		if(rawValue!=null) {
 			Literal<?> value = Literals.newLiteral(rawValue);
 			this.individual.addValue(this.propertyId,value);
@@ -117,7 +117,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Name<?> id) {
+	public IndividualPropertyHelper withIndividual(Name<?> id) {
 		if(id!=null) {
 			@SuppressWarnings("rawtypes")
 			Individual<?,?> srcIndividual = this.individual.dataSet().individual((Name)id, LocalIndividual.class);
@@ -130,7 +130,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId) {
+	public IndividualPropertyHelper withIndividual(Name<?> id, String managerId) {
 		if(id!=null) {
 			Individual<?,?> srcIndividual =
 				this.individual.
@@ -147,7 +147,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, URI path) {
+	public IndividualPropertyHelper withIndividual(Name<?> id, String managerId, URI path) {
 		if(id!=null) {
 			ManagedIndividualId parentId=ManagedIndividualId.createId(id,managerId);
 			RelativeIndividualId individualId=RelativeIndividualId.createId(parentId, path);
@@ -166,7 +166,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, String path) {
+	public IndividualPropertyHelper withIndividual(Name<?> id, String managerId, String path) {
 		if(id!=null) {
 			return withIndividual(id, managerId, URI.create(path));
 		}
@@ -177,7 +177,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(URI id) {
+	public IndividualPropertyHelper withIndividual(URI id) {
 		if(id!=null) {
 			Individual<?,?> srcIndividual=this.individual.dataSet().individual(id, ExternalIndividual.class);
 			this.individual.addValue(this.propertyId,srcIndividual);
@@ -189,7 +189,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(String id) {
+	public IndividualPropertyHelper withIndividual(String id) {
 		if(id!=null) {
 			withIndividual(URI.create(id));
 		}
@@ -200,7 +200,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Term id) {
+	public IndividualPropertyHelper withIndividual(Term id) {
 		if(id!=null) {
 			withIndividual(id.qualifiedEntityName());
 		}

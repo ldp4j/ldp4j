@@ -34,6 +34,7 @@ final class URISource extends AbstractSource<URI> {
 		super(data,metadata);
 	}
 
+	@Override
 	public <E extends Throwable> void accept(SourceVisitor<E> c) throws E {
 		c.visitURI(this);
 	}

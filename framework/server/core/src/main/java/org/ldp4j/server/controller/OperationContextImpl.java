@@ -324,9 +324,9 @@ final class OperationContextImpl implements OperationContext {
 				}
 				this.dataSet=transformator.unmarshall(this.entity);
 			} catch(UnsupportedMediaTypeException e) {
-				throw new UnsupportedContentException(this.resource,this,contentVariant());
+				throw new UnsupportedContentException(this.resource,this,contentVariant(),e);
 			} catch(IOException e) {
-				throw new InvalidRequestContentException("Entity cannot be parsed as '"+mediaType+"' ("+Throwables.getRootCause(e).getMessage()+")",this.resource,this);
+				throw new InvalidRequestContentException("Entity cannot be parsed as '"+mediaType+"' ("+Throwables.getRootCause(e).getMessage()+")",e,this.resource,this);
 			}
 		}
 		return this.dataSet;
@@ -369,9 +369,9 @@ final class OperationContextImpl implements OperationContext {
 					permanentEndpoint(endpoint());
 			return transformator.marshall(representation);
 		} catch(UnsupportedMediaTypeException e) {
-			throw new UnsupportedContentException(this.resource,this,contentVariant());
+			throw new UnsupportedContentException(this.resource,this,contentVariant(),e);
 		} catch(IOException e) {
-			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",this.resource,this);
+			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",e,this.resource,this);
 		}
 	}
 

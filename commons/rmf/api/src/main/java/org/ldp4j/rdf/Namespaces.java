@@ -90,7 +90,8 @@ public final class Namespaces {
 		}
 		return list;
 	}
-	
+
+	@Override
 	public String toString() {
 		StringBuilder builder=new StringBuilder();
 		builder.append("Namespaces {");

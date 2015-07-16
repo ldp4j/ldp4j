@@ -64,7 +64,8 @@ public final class URIHelper {
 	}
 
 	private static boolean isRoot(URI base) {
-		return base.getPath().equals("/") || base.getPath().equals("");
+		String path = base.getPath();
+		return "/".equals(path) || path.isEmpty();
 	}
 
 }

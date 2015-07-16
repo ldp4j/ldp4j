@@ -88,11 +88,13 @@ public final class TurtlePrettyPrinter implements RDFWriter {
 		}
 	}
 
+	@Override
 	public void startRDF() throws RDFHandlerException {
 		trace("Started RDF processing...");
 		graph=new GraphImpl(base);
 	}
 
+	@Override
 	public void handleStatement(Statement st) throws RDFHandlerException {
 		Resource subject = st.getSubject();
 		URI predicate = st.getPredicate();
@@ -101,15 +103,18 @@ public final class TurtlePrettyPrinter implements RDFWriter {
 		graph.add(subject, predicate, object);
 	}
 
+	@Override
 	public void handleNamespace(String prefix, String uri) throws RDFHandlerException {
 		graph.addNamespace(prefix, uri);
 		trace("Added prefix '%s' for namespace '%s'.",prefix,uri);
 	}
 
+	@Override
 	public void handleComment(String comment) throws RDFHandlerException {
 		trace("Discarded comment '%s'.",comment);
 	}
 
+	@Override
 	public void endRDF() throws RDFHandlerException {
 		GraphRenderer renderer=new GraphRenderer(graph,writerConfig.get(ENABLE_FOLDING));
 		out.append(renderer.render());

@@ -115,6 +115,7 @@ final class SelectQueryExecutionStrategy<R> extends QueryExecutionStrategy<R,Map
 		return query;
 	}
 
+	@Override
 	protected void doExecute(
 			RepositoryConnection connection,
 			String instantiatedQuery,

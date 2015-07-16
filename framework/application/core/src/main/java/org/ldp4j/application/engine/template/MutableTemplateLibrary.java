@@ -355,6 +355,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 		}
 	}
 
+	// TODO: Change to a regular class to prevent serialization warnings
 	private enum SupportedAnnotations {
 		RESOURCE(Resource.class,new ResourceProcessor()),
 		BASIC_CONTAINER(BasicContainer.class,new BasicContainerProcessor()),
@@ -363,7 +364,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 		;
 
 		private final Class<? extends Annotation> annotationClass;
-		private final transient Processor<?,ResourceHandler,AbstractMutableTemplate<?>> processor;
+		private final Processor<?,ResourceHandler,AbstractMutableTemplate<?>> processor; // NOSONAR
 
 		@SuppressWarnings("unchecked")
 		private <A extends Annotation, R extends ResourceHandler, M extends AbstractMutableTemplate<?>> SupportedAnnotations(Class<? extends A> annotationClass, Processor<A,R,M> processor) {

@@ -66,8 +66,8 @@ final class ContentProcessingExceptionSupport {
 					getFailureMessage(
 						message,
 						throwable.getSupportedVariants()));
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.getResource());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.getResource());
+		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
+		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.resourceClass());
 		return builder.build();
 	}
 

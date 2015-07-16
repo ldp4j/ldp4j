@@ -31,15 +31,19 @@ import java.net.URI;
 import javax.ws.rs.core.Link;
 
 import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class InteractionModelUtils {
-		
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(InteractionModelUtils.class);
+
 	private static final String INTERACTION_MODEL_LINK_REL = "type";
 
 	static String asLink(InteractionModel interactionModel) {
 		return Link.fromUri(interactionModel.asURI()).rel(INTERACTION_MODEL_LINK_REL).build().toString();
 	}
-	
+
 	static InteractionModel fromLink(String strLink) {
 		InteractionModel result=null;
 		try {
@@ -54,7 +58,7 @@ final class InteractionModelUtils {
 				}
 			}
 		} catch (IllegalArgumentException e) {
-			// Nothing to do
+			LOGGER.trace("Could not parse link '"+strLink+"'",e);
 		}
 		return result;
 	}

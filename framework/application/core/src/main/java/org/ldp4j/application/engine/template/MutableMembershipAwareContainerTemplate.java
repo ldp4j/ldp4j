@@ -103,7 +103,7 @@ class MutableMembershipAwareContainerTemplate extends MutableContainerTemplate i
 	@Override
 	public boolean equals(Object obj) {
 		boolean result=super.equals(obj);
-		if(result) {
+		if(result && this.getClass()==obj.getClass()) {
 			MutableMembershipAwareContainerTemplate that = (MutableMembershipAwareContainerTemplate) obj;
 			result=
 				Objects.equals(this.membershipPredicate, that.membershipPredicate) &&

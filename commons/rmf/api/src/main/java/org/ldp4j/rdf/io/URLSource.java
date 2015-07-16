@@ -34,6 +34,7 @@ final class URLSource extends AbstractSource<URL> {
 		super(data,metadata);
 	}
 
+	@Override
 	public <E extends Throwable> void accept(SourceVisitor<E> handler) throws E {
 		handler.visitURL(this);
 	}
