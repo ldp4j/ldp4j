@@ -73,7 +73,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-application-engine</artifactId>
+			<artifactId>ldp4j-application-engine-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
@@ -86,7 +86,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-application-sdk</artifactId>
+			<artifactId>ldp4j-application-engine-sdk</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

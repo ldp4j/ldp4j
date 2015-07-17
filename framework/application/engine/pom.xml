@@ -22,7 +22,7 @@
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
       Artifact    : org.ldp4j.framework:ldp4j-application-engine:1.0.0-SNAPSHOT
-      Bundle      : ldp4j-application-engine-1.0.0-SNAPSHOT.jar
+      Bundle      : ldp4j-application-engine-1.0.0-SNAPSHOT.pom
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
@@ -41,6 +41,7 @@
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
+	<packaging>pom</packaging>
 	<artifactId>ldp4j-application-engine</artifactId>
 
 	<!-- =================================================================== -->
@@ -54,23 +55,9 @@
 	<!--   BUILD SETTINGS                                                    -->
 	<!-- =================================================================== -->
 
-	<dependencyManagement>
-		<dependencies>
-			<dependency>
-				<groupId>org.ldp4j.framework</groupId>
-				<artifactId>ldp4j-application-bom</artifactId>
-				<version>${project.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-		</dependencies>
-	</dependencyManagement>
-
-	<dependencies>
-		<dependency>
-			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-application-api</artifactId>
-		</dependency>
-	</dependencies>
+	<modules>
+		<module>api</module>
+		<module>sdk</module>
+	</modules>
 
 </project>

@@ -78,10 +78,6 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-application-engine</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-data</artifactId>
 		</dependency>
 		<dependency>
@@ -90,7 +86,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-application-sdk</artifactId>
+			<artifactId>ldp4j-application-engine-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-engine-sdk</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
