@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      This file is part of the LDP4j Project:
+        http://www.ldp4j.org/
+
+      Center for Open Middleware
+        http://www.centeropenmiddleware.com/
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Copyright (C) 2014 Center for Open Middleware.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+                http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Artifact    : org.ldp4j.framework:ldp4j-application-kernel-jpa:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-application-kernel-jpa-1.0.0-SNAPSHOT.jar
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+
+-->
+<persistence
+	xmlns="http://xmlns.jcp.org/xml/ns/persistence"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/persistence http://xmlns.jcp.org/xml/ns/persistence/persistence_2_1.xsd"
+	version="2.1">
+	<persistence-unit
+		name="kernel"
+		transaction-type="RESOURCE_LOCAL">
+		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
+		<mapping-file>META-INF/ldp4j/ldp4j.orm.xml</mapping-file>
+		<exclude-unlisted-classes>true</exclude-unlisted-classes>
+		<properties>
+			<!-- Default HSQLDB connection settings -->
+			<property name="javax.persistence.jdbc.driver"   value="org.hsqldb.jdbc.JDBCDriver"/>
+			<property name="javax.persistence.jdbc.url"      value="jdbc:hsqldb:mem:kernel"/>
+			<property name="javax.persistence.jdbc.user"     value="sa"/>
+			<property name="javax.persistence.jdbc.password" value=""/>
+
+			<!-- DDL Script generation settings -->
+			<property name="javax.persistence.schema-generation.database.action" value="drop-and-create" />
+
+			<!-- JDBC connection pool (use the built-in) -->
+			<property name="connection.pool_size" value="1"/>
+
+			<!-- SQL dialect -->
+			<property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
+
+			<!-- Enable Hibernate's automatic session context management -->
+			<property name="hibernate.current_session_context_class" value="thread"/>
+
+			<!-- Disable the second-level cache -->
+			<property name="hibernate.cache.provider_class" value="org.hibernate.cache.internal.NoCacheProvider"/>
+
+			<!-- Echo all executed SQL to stdout -->
+			<property name="hibernate.show_sql" value="false"/>
+			<!-- Pretty print echoed SQL -->
+			<property name="hibernate.format_sql" value="true"/>
+
+			<!-- Drop and re-create the database schema on startup -->
+			<property name="hibernate.hbm2ddl.auto" value="update"/>
+		</properties>
+	</persistence-unit>
+</persistence>

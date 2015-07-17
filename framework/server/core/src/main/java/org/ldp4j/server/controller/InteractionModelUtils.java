@@ -40,6 +40,9 @@ final class InteractionModelUtils {
 
 	private static final String INTERACTION_MODEL_LINK_REL = "type";
 
+	private InteractionModelUtils() {
+	}
+
 	static String asLink(InteractionModel interactionModel) {
 		return Link.fromUri(interactionModel.asURI()).rel(INTERACTION_MODEL_LINK_REL).build().toString();
 	}

@@ -65,8 +65,7 @@
 		<module>util</module>
 		<module>examples</module>
 		<module>engine</module>
-		<module>core</module>
-		<module>persistency</module>
+		<module>kernel</module>
 		<module>depchain</module>
 	</modules>
 

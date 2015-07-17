@@ -54,7 +54,7 @@ final class MediaTypeSupport {
 			this.provider = provider;
 		}
 
-		public String marshall(Context context, ResourceResolver resourceResolver, DataSet content) throws ContentTransformationException {
+		String marshall(Context context, ResourceResolver resourceResolver, DataSet content) throws ContentTransformationException {
 			checkNotNull(content,"Content cannot be null");
 			TripleSetBuilder tripleSetBuilder =
 				new TripleSetBuilder(resourceResolver,context.getBase());
@@ -77,7 +77,7 @@ final class MediaTypeSupport {
 			this.provider = provider;
 		}
 
-		public DataSet unmarshall(Context context, ResourceResolver resourceResolver, String content) throws ContentTransformationException {
+		DataSet unmarshall(Context context, ResourceResolver resourceResolver, String content) throws ContentTransformationException {
 			checkNotNull(content,"Content cannot be null");
 			Iterable<Triple> triples=
 				this.provider.
@@ -101,6 +101,9 @@ final class MediaTypeSupport {
 			return dataSet;
 		}
 
+	}
+
+	private MediaTypeSupport() {
 	}
 
 	static Marshaller newMarshaller(MediaType mediaType) {

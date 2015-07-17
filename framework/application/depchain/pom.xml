@@ -94,14 +94,27 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-application-core</artifactId>
+			<artifactId>ldp4j-application-kernel-api</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-application-persistency</artifactId>
+			<artifactId>ldp4j-application-kernel-core</artifactId>
 			<scope>runtime</scope>
 		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-kernel-mem</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		<!-- Unavailable until we finish the implementation -->
+		<!--
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-kernel-jpa</artifactId>
+			<scope>runtime</scope>
+		</dependency>
+		 -->
 	</dependencies>
 
 </project>

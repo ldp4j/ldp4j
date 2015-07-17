@@ -29,7 +29,7 @@ package org.ldp4j.application.engine.context;
 import org.junit.Ignore;
 
 @Ignore("Implementation currently failing")
-public class LegacyImplementationTest extends AbstractEntityTagHelperTest {
+public class LegacyImplementationTest extends AbstractEntityTagHelperTest { // NOSONAR
 
 	@Override
 	protected EntityTag fromString(String testCase) {

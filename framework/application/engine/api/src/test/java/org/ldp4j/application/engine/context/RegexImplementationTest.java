@@ -30,7 +30,7 @@ import org.junit.Ignore;
 
 
 @Ignore("Implementation currently failing")
-public class RegexImplementationTest extends AbstractEntityTagHelperTest {
+public class RegexImplementationTest extends AbstractEntityTagHelperTest { // NOSONAR
 
 	@Override
 	protected EntityTag fromString(String testCase) {

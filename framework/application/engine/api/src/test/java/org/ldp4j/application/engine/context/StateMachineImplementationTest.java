@@ -27,7 +27,7 @@
 package org.ldp4j.application.engine.context;
 
 
-public class StateMachineImplementationTest extends AbstractEntityTagHelperTest {
+public class StateMachineImplementationTest extends AbstractEntityTagHelperTest { // NOSONAR
 
 	@Override
 	protected EntityTag fromString(String testCase) {

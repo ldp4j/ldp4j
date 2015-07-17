@@ -39,11 +39,15 @@ import org.ldp4j.application.engine.context.ContentPreferences.Preference;
 
 import static com.google.common.base.Preconditions.*;
 
-public class ContentPreferencesUtils {
+final class ContentPreferencesUtils {
 
 	public static final String PREFERENCE_APPLIED_HEADER = "Preference-Applied";
 	public static final String PREFER_HEADER = "Prefer";
+
 	private static String PARAMETER="^\\s*(\\w*)\\s*=\\s*\"([^\"]+)\"\\s*$";
+
+	private ContentPreferencesUtils() {
+	}
 
 	public static ContentPreferences fromPreferenceHeader(String header) {
 		checkNotNull("Preference header cannot be null");

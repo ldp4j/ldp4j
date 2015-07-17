@@ -21,8 +21,8 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-application-persistency:1.0.0-SNAPSHOT
-      Bundle      : ldp4j-application-persistency-1.0.0-SNAPSHOT.jar
+      Artifact    : org.ldp4j.framework:ldp4j-application:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-application-1.0.0-SNAPSHOT.pom
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
@@ -81,7 +81,11 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-application-core</artifactId>
+			<artifactId>ldp4j-application-kernel-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-kernel-core</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.hibernate</groupId>

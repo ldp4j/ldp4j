@@ -79,41 +79,4 @@
 			<property name="hibernate.hbm2ddl.auto" value="update"/>
 		</properties>
 	</persistence-unit>
-	<persistence-unit
-		name="kernel"
-		transaction-type="RESOURCE_LOCAL">
-		<provider>org.hibernate.jpa.HibernatePersistenceProvider</provider>
-		<mapping-file>META-INF/ldp4j/ldp4j.orm.xml</mapping-file>
-		<exclude-unlisted-classes>true</exclude-unlisted-classes>
-		<properties>
-			<!-- Default HSQLDB connection settings -->
-			<property name="javax.persistence.jdbc.driver"   value="org.hsqldb.jdbc.JDBCDriver"/>
-			<property name="javax.persistence.jdbc.url"      value="jdbc:hsqldb:mem:kernel"/>
-			<property name="javax.persistence.jdbc.user"     value="sa"/>
-			<property name="javax.persistence.jdbc.password" value=""/>
-
-			<!-- DDL Script generation settings -->
-			<property name="javax.persistence.schema-generation.database.action" value="drop-and-create" />
-
-			<!-- JDBC connection pool (use the built-in) -->
-			<property name="connection.pool_size" value="1"/>
-
-			<!-- SQL dialect -->
-			<property name="hibernate.dialect" value="org.hibernate.dialect.HSQLDialect"/>
-
-			<!-- Enable Hibernate's automatic session context management -->
-			<property name="hibernate.current_session_context_class" value="thread"/>
-
-			<!-- Disable the second-level cache -->
-			<property name="hibernate.cache.provider_class" value="org.hibernate.cache.internal.NoCacheProvider"/>
-
-			<!-- Echo all executed SQL to stdout -->
-			<property name="hibernate.show_sql" value="false"/>
-			<!-- Pretty print echoed SQL -->
-			<property name="hibernate.format_sql" value="true"/>
-
-			<!-- Drop and re-create the database schema on startup -->
-			<property name="hibernate.hbm2ddl.auto" value="update"/>
-		</properties>
-	</persistence-unit>
 </persistence>
