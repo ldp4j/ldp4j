@@ -37,7 +37,7 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetFactory;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
-import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.server.resources.IndirectContainer;
 import org.ldp4j.server.resources.MembershipAwareContainer;
 import org.ldp4j.server.resources.MembershipRelation;

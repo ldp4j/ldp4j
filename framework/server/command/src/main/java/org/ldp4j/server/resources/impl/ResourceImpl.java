@@ -42,7 +42,7 @@ import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.Value;
-import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.RDF;
 import org.ldp4j.application.vocabulary.Term;

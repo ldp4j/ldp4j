@@ -1,1 +1,1 @@
-org.ldp4j.application.engine.DefaultApplicationEngine
+org.ldp4j.application.kernel.engine.DefaultApplicationEngine

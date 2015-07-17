@@ -31,7 +31,7 @@ import java.util.Date;
 
 import javax.ws.rs.core.EntityTag;
 
-import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.server.Entity;
 
 public interface Resource {

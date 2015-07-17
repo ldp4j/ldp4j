@@ -31,7 +31,7 @@ import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.engine.resource.ResourceId;
+import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.server.blueprint.ComponentRegistry;
 
 import com.google.common.annotations.VisibleForTesting;
