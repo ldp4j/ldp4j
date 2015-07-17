@@ -155,7 +155,7 @@ final class Key implements Serializable {
 		return Encoder.valueEncoder().encode(name);
 	}
 
-	static Name<?> fromBase64(String data) {
+	static <T extends Serializable> Name<T> fromBase64(String data) {
 		return Encoder.valueEncoder().decode(data);
 	}
 

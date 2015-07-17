@@ -26,47 +26,153 @@
  */
 package org.ldp4j.application.engine.context;
 
+import static com.google.common.base.Preconditions.*;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 final class EntityTagHelper {
 
-	private static final String EMPTY = "";
+	private static final String  ETAG_REGEX  ="(W/)?\"(([\\x20-\\x21]|[\\x23-\\x7E]|[\\x80-\\xFF]|\\[\\x00-\\x7f])*)\"";
+	private static final Pattern ETAG_PATTERN=Pattern.compile(ETAG_REGEX);
+
+	private static final String EMPTY          = "";
 	private static final String QUOTATION_MARK = "\"";
-	private static final String WILDCARD_ETAG = "*";
-	private static final String WEAK_PREFIX = "W/";
+	private static final String WILDCARD_ETAG  = "*";
+	private static final String WEAK_PREFIX    = "W/";
 
 	private EntityTagHelper() {
 	}
-	
-	static EntityTag fromString(String header) {
-		if(header==null) {
-			throw new IllegalArgumentException("Entity tag value cannot be null");
-		}
+
+	static EntityTag fromString0(String header) {
+		checkNotNull(header,"Entity tag value cannot be null");
 
 		if(WILDCARD_ETAG.equals(header)) {
-			return new EntityTag(WILDCARD_ETAG);
+			return new EntityTag(WILDCARD_ETAG,false);
 		}
 
-		String tag = null;
 		boolean weak = false;
-		int i = header.indexOf(WEAK_PREFIX);
-        if (i != -1) {
-            weak = true;
-            if (i + 2 < header.length()) {
-                tag = header.substring(i + 2);
-            } else {
-                return new EntityTag(EMPTY, weak);
-            }
-        }  else {
-            tag = header;
-        }
-        if (tag.length() > 0 && !tag.startsWith(QUOTATION_MARK) && !tag.endsWith(QUOTATION_MARK)) {
-            return new EntityTag(tag, weak);
-        }
-        if (tag.length() < 2 || !tag.startsWith(QUOTATION_MARK) || !tag.endsWith(QUOTATION_MARK)) {
-            throw new IllegalArgumentException("Misformatted entity tag : " + header);
-        }
-        tag = tag.length() == 2 ? EMPTY : tag.substring(1, tag.length() - 1); 
-        return new EntityTag(tag, weak);
-    }
+		String tag=header;
+		if(tag.startsWith(WEAK_PREFIX)) {
+			weak=true;
+			tag=tag.substring(2);
+		}
+
+		if(tag.isEmpty()) {
+			return new EntityTag(EMPTY,weak);
+		}
+
+		EntityTag result = createUnquoted(header, tag, weak);
+		if(result!=null) {
+			return result;
+		}
+
+		return createQuoted(header, tag, weak);
+	}
+
+	private static EntityTag createQuoted(String header, String tag, boolean weak) {
+		assertIsProperlyQuoted(header,tag);
+		tag=tag.length()==2?EMPTY:tag.substring(1,tag.length()-1);
+		assertHasNoInnerQuotationMarks(header, tag);
+		return new EntityTag(tag, weak);
+	}
+
+	private static void assertHasNoInnerQuotationMarks(String header, String tag) {
+		if(tag.contains(QUOTATION_MARK)) {
+			throw new IllegalArgumentException("Misformatted entity tag : "+ header);
+		}
+	}
+
+	private static void assertIsProperlyQuoted(String header, String tag) {
+		if (tag.length() < 2 || !tag.startsWith(QUOTATION_MARK) || !tag.endsWith(QUOTATION_MARK)) {
+			throw new IllegalArgumentException("Misformatted entity tag : "+ header);
+		}
+	}
+
+	private static EntityTag createUnquoted(String header, String tag, boolean weak) {
+		EntityTag unquoted=null;
+		if (tag.length() > 0 && !tag.startsWith(QUOTATION_MARK) && !tag.endsWith(QUOTATION_MARK)) {
+			if(tag.contains(QUOTATION_MARK)) {
+				throw new IllegalArgumentException("Misformatted entity tag : "+ header);
+			} else {
+				unquoted=new EntityTag(tag, weak);
+			}
+		}
+		return unquoted;
+	}
+
+	static EntityTag fromString(String header) {
+		checkNotNull(header,"Entity tag value cannot be null");
+		boolean weak=false;
+		String tag=header;
+		if(tag.startsWith(WEAK_PREFIX)) {
+			weak=true;
+			tag=tag.substring(2);
+		}
+		if(EMPTY.equals(tag)) {
+			return new EntityTag(tag,weak);
+		}
+		return new EntityTag(normalizeValue(tag),weak);
+	}
+
+	static String normalizeValue(String tag) {
+		String value = preprocessTag(tag);
+		validateTag(value);
+		return value;
+	}
+
+	private static void validateTag(String tag) {
+		boolean mark=false;
+		char[] chars=new char[tag.length()];
+		tag.getChars(0, tag.length(), chars,0);
+		for(int i=0;i<chars.length;i++) {
+			char next=chars[i];
+			if(mark) {
+				if(next>0x7f) {
+					fail(i,"Invalid quoted character 0x%02x ('%c'). Expected one of 0x00-x7f",next,next);
+				}
+				mark=false;
+			} else if(next=='\\') {
+				mark=true;
+			} else if(next<0x20 || next==0x22 || next==0x7f) {
+				fail(i,"Invalid character 0x%02x ('%c'). Expected one of 0x20-0x21, 0x23-x7e, 0x80-0xff",next,next);
+			}
+		}
+		if(mark) {
+			fail(chars.length,"expected the character to be quoted");
+		}
+	}
+
+	private static String preprocessTag(String value) {
+		String tag=value;
+		boolean quotationStart=tag.startsWith(QUOTATION_MARK);
+		boolean quotationEnd=tag.endsWith(QUOTATION_MARK);
+		if(quotationStart!=quotationEnd) {
+			if(quotationEnd && tag.charAt(tag.length()-2)!='\\') {
+				throw new IllegalArgumentException("Entity tag value not properly quoted ("+tag+")");
+			}
+		} else if(quotationStart) {
+			if (value.length()==1) {
+				throw new IllegalArgumentException("Entity tag value not properly quoted ("+tag+")");
+			} else {
+				tag=tag.substring(1,tag.length()-1);
+			}
+		}
+		return tag;
+	}
+
+	private static void fail(int i, String format, Object... args) {
+		throw new IllegalArgumentException("Error at "+i+": "+String.format(format,args));
+	}
+
+	static EntityTag fromString1(String header) {
+		EntityTag result=null;
+		Matcher matcher = ETAG_PATTERN.matcher(header);
+		if(matcher.matches()) {
+			result=new EntityTag(matcher.group(2),matcher.group(1)!=null);
+		}
+		return result;
+	}
 
 	static String toString(EntityTag tag) {
 		StringBuilder sb = new StringBuilder();

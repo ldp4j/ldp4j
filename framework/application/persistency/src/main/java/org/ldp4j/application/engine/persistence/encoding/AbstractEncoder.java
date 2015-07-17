@@ -56,7 +56,7 @@ abstract class AbstractEncoder extends Encoder {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final Name<?> decode(String data) {
+	public final <T extends Serializable> Name<T> decode(String data) {
 		if(data==null) {
 			return null;
 		}
@@ -71,6 +71,6 @@ abstract class AbstractEncoder extends Encoder {
 
 	protected abstract Serializable prepare(Name<?> name);
 
-	protected abstract Name<?> assemble(Serializable subject) throws IOException;
+	protected abstract <T extends Serializable> Name<T> assemble(Serializable subject) throws IOException;
 
 }

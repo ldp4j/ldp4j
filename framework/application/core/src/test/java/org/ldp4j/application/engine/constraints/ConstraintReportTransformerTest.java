@@ -63,7 +63,7 @@ public class ConstraintReportTransformerTest {
 						"path",
 						resource,
 						new Date(),
-						new EntityTag("mytag")));
+						EntityTag.createStrong("mytag")));
 
 		assertThat(result,notNullValue());
 		assertThat(result.individualOfId(TestHelper.managedIndividualId(resource.id())),notNullValue());

@@ -153,7 +153,7 @@ final class EnvironmentImpl implements Environment {
 		if(prevResource==null && prevEndpoint==null) {
 			Resource resource=this.modelFactory.createResource(rootResource.template(),rootResource.name());
 			this.resourceRepository.add(resource);
-			Endpoint endpoint=this.modelFactory.createEndpoint(path,resource,creationDate,new EntityTag(path));
+			Endpoint endpoint=this.modelFactory.createEndpoint(path,resource,creationDate,EntityTag.createStrong(path));
 			this.endpointRepository.add(endpoint);
 		}
 

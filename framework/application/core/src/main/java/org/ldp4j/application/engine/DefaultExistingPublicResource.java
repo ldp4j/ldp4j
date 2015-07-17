@@ -273,15 +273,24 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 			URI propertyId=entry.getKey();
 			Property property = individual.property(propertyId);
 			if(property!=null) {
-				builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(property));
-				for(AttachedTemplate attachedTemplate:entry.getValue()) {
-					PublicResource resource = attachments().get(attachedTemplate.id());
-					if(resource!=null) {
-						configureAdditionalValidationConstraints(builder,individual,metadata,resource);
-					}
-				}
+				configurePropertyValidationConstraints(builder,individual,metadata,property,entry.getValue());
 			} else {
 				builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(individual.id(),propertyId));
+			}
+		}
+	}
+
+	private void configurePropertyValidationConstraints(
+			ValidatorBuilder builder,
+			Individual<?, ?> individual,
+			DataSet metadata,
+			Property property,
+			Collection<AttachedTemplate> value) {
+		builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(property));
+		for(AttachedTemplate attachedTemplate:value) {
+			PublicResource resource = attachments().get(attachedTemplate.id());
+			if(resource!=null) {
+				configureAdditionalValidationConstraints(builder,individual,metadata,resource);
 			}
 		}
 	}

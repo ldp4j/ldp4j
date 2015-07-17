@@ -133,7 +133,7 @@ public abstract class AbstractJPARepositoryTest<T> {
 	}
 
 	protected final Endpoint endpoint(String path, Resource resource) {
-		return this.delegate.getModelFactory().createEndpoint(path, resource, new Date(),new EntityTag("tag"));
+		return this.delegate.getModelFactory().createEndpoint(path, resource, new Date(),EntityTag.createStrong("tag"));
 	}
 
 	protected final Logger logger() {
@@ -274,7 +274,7 @@ public abstract class AbstractJPARepositoryTest<T> {
 					withAbsolutePath("service/resource/").
 					withEntity("body").
 					withHeader("accept","text/turtle").
-					withHeader("if-none-match",new EntityTag("asdjkkl",true).toString()).
+					withHeader("if-none-match",EntityTag.createWeak("asdjkkl").toString()).
 					build();
 	}
 

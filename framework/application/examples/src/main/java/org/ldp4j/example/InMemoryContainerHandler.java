@@ -115,7 +115,7 @@ public class InMemoryContainerHandler extends InMemoryResourceHandler implements
 			return result;
 		}
 
-		public List<Name<?>> pendingResourceNames(String attachmentId) {
+		public List<Name<?>> pendingResourceNames() {
 			return new ArrayList<Name<?>>(this.resourceNamesSource.pendingNames);
 		}
 

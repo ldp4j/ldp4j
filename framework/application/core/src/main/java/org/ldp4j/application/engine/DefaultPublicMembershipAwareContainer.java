@@ -30,6 +30,7 @@ import java.net.URI;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.validation.ValidationConstraint;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
@@ -72,14 +73,14 @@ abstract class DefaultPublicMembershipAwareContainer<T extends MembershipAwareCo
 
 	private void populateIsMemberOf(Individual<?, ?> individual, Context ctx, URI predicate) {
 		for(PublicResource member:members()) {
-			Individual<?,?> tmp=createMemberIndividual(ctx, member);
+			ManagedIndividual tmp=createMemberIndividual(ctx, member);
 			tmp.addValue(
 				predicate,
 				individual);
 		}
 	}
 
-	protected abstract Individual<?, ?> createMemberIndividual(Context ctx, PublicResource member);
+	protected abstract ManagedIndividual createMemberIndividual(Context ctx, PublicResource member);
 
 	private void populateHasMember(Individual<?, ?> individual, Context ctx, URI predicate) {
 		for(PublicResource member:members()) {
@@ -125,11 +126,11 @@ abstract class DefaultPublicMembershipAwareContainer<T extends MembershipAwareCo
 				configureIsMemberOfValidationConstraints(builder,individual,metadata,predicate);
 				break;
 			default:
-				throw new IllegalStateException("Unsupported membership relation "+containerTemplate().membershipRelation());
+				throw new AssertionError("Unsupported membership relation "+containerTemplate().membershipRelation());
 		}
 	}
 
-	private void configureIsMemberOfValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata, URI predicate) {
+	private void configureIsMemberOfValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata, URI predicate) { // NOSONAR
 		if(members().isEmpty()) {
 			builder.withPropertyConstraint(ValidationConstraintFactory.readOnlyProperty(predicate));
 		} else {
@@ -140,7 +141,7 @@ abstract class DefaultPublicMembershipAwareContainer<T extends MembershipAwareCo
 		}
 	}
 
-	private void configureHasMemberValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata, URI predicate) {
+	private void configureHasMemberValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata, URI predicate) { // NOSONAR
 		ValidationConstraint<Property> constraint=null;
 		Property property = individual.property(predicate);
 		if(property!=null) {

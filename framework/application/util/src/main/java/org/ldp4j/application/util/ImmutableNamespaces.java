@@ -89,7 +89,7 @@ public final class ImmutableNamespaces implements Namespaces {
 	public String getPrefix(String namespaceURI) {
 		for(Entry<String,String> entry:this.map.entrySet()) {
 			if(entry.getValue().equals(namespaceURI)) {
-				return (String)entry.getKey();
+				return entry.getKey();
 			}
 		}
 		return null;
@@ -117,7 +117,7 @@ public final class ImmutableNamespaces implements Namespaces {
 		StringBuilder builder=new StringBuilder();
 		builder.append("Namespaces {");
 		for(Entry<String,String> entry:this.map.entrySet()) {
-			Object namespaceURI = entry.getValue();
+			String namespaceURI = entry.getValue();
 			String prefix = entry.getKey();
 			String line=String.format("  - \"%s\" : \"%s\" [%s]",prefix,namespaceURI,namespaceURI.getClass().getName());
 			builder.append(LINE_SEPARATOR).append(line);

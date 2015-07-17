@@ -88,7 +88,7 @@ public final class TestHelper {
 					withAbsolutePath("service/resource/").
 					withEntity("body").
 					withHeader("accept","text/turtle").
-					withHeader("if-none-match",new EntityTag("asdjkkl",true).toString()).
+					withHeader("if-none-match",EntityTag.createWeak("asdjkkl").toString()).
 					build();
 	}
 

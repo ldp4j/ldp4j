@@ -153,16 +153,7 @@ class DelegatedResourceSnapshot implements ResourceSnapshot {
 				snapshot.softDetach(attachment);
 				UnitOfWork.getCurrent().registerDirty(snapshot);
 			} else {
-				TemplateIntrospector introspector = TemplateIntrospector.newInstance(parent().template());
-				if(introspector.isContainer()) {
-					DelegatedContainerSnapshot parent=(DelegatedContainerSnapshot)snapshot;
-					if(parent.softRemoveMember(this)) {
-						UnitOfWork.getCurrent().registerDirty(parent);
-						if(introspector.isMembershipAwareContainer() && !parent.isRoot()) {
-							UnitOfWork.getCurrent().registerDirty(parent.parent());
-						}
-					}
-				}
+				deleteAttachedResource(snapshot);
 			}
 		}
 		ChildrenCollector collector = new ChildrenCollector();
@@ -170,6 +161,20 @@ class DelegatedResourceSnapshot implements ResourceSnapshot {
 			toRemove.setParentState(ParentState.orphan());
 			toRemove.setPersistencyState(PersistencyState.deleted(toRemove));
 			UnitOfWork.getCurrent().registerDeleted(toRemove);
+		}
+	}
+
+	private void deleteAttachedResource(DelegatedResourceSnapshot snapshot) {
+		TemplateIntrospector introspector = TemplateIntrospector.newInstance(parent().template());
+		if(!introspector.isContainer()) {
+			return;
+		}
+		DelegatedContainerSnapshot parent=(DelegatedContainerSnapshot)snapshot;
+		if(parent.softRemoveMember(this)) {
+			UnitOfWork.getCurrent().registerDirty(parent);
+			if(introspector.isMembershipAwareContainer() && !parent.isRoot()) {
+				UnitOfWork.getCurrent().registerDirty(parent.parent());
+			}
 		}
 	}
 

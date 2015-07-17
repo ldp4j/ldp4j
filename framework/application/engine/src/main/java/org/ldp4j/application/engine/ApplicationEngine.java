@@ -201,7 +201,7 @@ public abstract class ApplicationEngine {
 		return this.state;
 	}
 
-	public synchronized final void start() throws ApplicationEngineLifecycleException {
+	public final synchronized void start() throws ApplicationEngineLifecycleException {
 		if(ApplicationEngineState.STARTED.equals(this.state)) {
 			return;
 		}
@@ -214,7 +214,7 @@ public abstract class ApplicationEngine {
 		}
 	}
 
-	public synchronized final void shutdown() throws ApplicationEngineLifecycleException {
+	public final synchronized void shutdown() throws ApplicationEngineLifecycleException {
 		if(!ApplicationEngineState.STARTED.equals(this.state)) {
 			return;
 		}

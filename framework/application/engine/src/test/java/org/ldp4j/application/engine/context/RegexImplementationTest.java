@@ -26,69 +26,15 @@
  */
 package org.ldp4j.application.engine.context;
 
-import java.io.Serializable;
-import java.util.Objects;
+import org.junit.Ignore;
 
-public final class EntityTag implements Serializable {
 
-	private static final long serialVersionUID = 1537356414568176655L;
-
-	private final boolean weak;
-	private final String value;
-
-	EntityTag(String value, boolean weak) {
-		this.value=Objects.requireNonNull(value);
-		this.weak=weak;
-	}
-
-	public String getValue() {
-		return this.value;
-	}
-
-	public boolean isWeak() {
-		return this.weak;
-	}
+@Ignore("Implementation currently failing")
+public class RegexImplementationTest extends AbstractEntityTagHelperTest {
 
 	@Override
-	public int hashCode() {
-		return Objects.hash(this.value,this.weak);
-	}
-
-	@Override
-	public boolean equals(Object obj) {
-		if(this==obj) {
-			return true;
-		}
-
-		if(!(obj instanceof EntityTag)) {
-			return false;
-		}
-
-		EntityTag that=(EntityTag) obj;
-		return
-			this.weak==that.weak &&
-			this.value.equals(that.value);
-	}
-
-	@Override
-	public String toString() {
-		return EntityTagHelper.toString(this);
-	}
-
-	public static EntityTag valueOf(String value) {
-		return EntityTagHelper.fromString(value);
-	}
-
-	public static EntityTag createWeak(String value) {
-		return create(value, true);
-	}
-
-	public static EntityTag createStrong(String value) {
-		return create(value,false);
-	}
-
-	private static EntityTag create(String value, boolean weak) {
-		return new EntityTag(EntityTagHelper.normalizeValue(value),weak);
+	protected EntityTag fromString(String testCase) {
+		return EntityTagHelper.fromString1(testCase);
 	}
 
 }

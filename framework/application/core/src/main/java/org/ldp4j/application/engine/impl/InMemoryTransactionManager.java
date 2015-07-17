@@ -26,6 +26,8 @@
  */
 package org.ldp4j.application.engine.impl;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.ldp4j.application.engine.transaction.Transaction;
@@ -52,7 +54,8 @@ final class InMemoryTransactionManager implements TransactionManager {
 	}
 
 	void disposeTransaction(InMemoryTransaction transaction) {
-		// TODO: Double check we are not sharing transactions among threads
+		Transaction current=this.currentTransaction.get();
+		checkArgument(transaction==current,"Transactions can only be disposed by the their owner thread");
 		this.currentTransaction.remove();
 	}
 

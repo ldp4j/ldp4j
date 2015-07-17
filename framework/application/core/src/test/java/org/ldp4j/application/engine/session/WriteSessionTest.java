@@ -250,7 +250,7 @@ public class WriteSessionTest {
 				this.modelFactory.createResource(
 					this.templateManagementService.templateOfId("personTemplate"),
 					name("me"));
-			Endpoint rootEndpoint=this.modelFactory.createEndpoint("root",rootResource,new Date(),new EntityTag("root"));
+			Endpoint rootEndpoint=this.modelFactory.createEndpoint("root",rootResource,new Date(),EntityTag.createStrong("root"));
 			RuntimeDelegate.getInstance().getResourceRepository().add(rootResource);
 			RuntimeDelegate.getInstance().getEndpointRepository().add(rootEndpoint);
 			UnitOfWork.setCurrent(null);

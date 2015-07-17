@@ -71,7 +71,7 @@ public class MyApplication extends Application<Configuration> {
 	}
 
 	private DataSet getInitialData(String templateId, String name) throws DatatypeConfigurationException {
-		DataSet initial=
+		return
 			DataDSL.
 				dataSet().
 					individual(newReference().toManagedIndividual(templateId).named(name)).
@@ -84,7 +84,6 @@ public class MyApplication extends Application<Configuration> {
 								hasLink("http://www.ldp4j.org/vocabulary/example#hasWife").
 									referringTo(newReference().toLocalIndividual().named("Consuelo")).
 						build();
-		return initial;
 	}
 
 	@Override

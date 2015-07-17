@@ -50,9 +50,10 @@ final class ValueEncoder extends AbstractEncoder {
 	/**
 	 * {@inheritDoc}
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	protected Name<?> assemble(Serializable subject) throws IOException {
-		return NamingScheme.getDefault().name(subject);
+	protected <T extends Serializable> Name<T> assemble(Serializable subject) throws IOException {
+		return (Name<T>)NamingScheme.getDefault().name(subject);
 	}
 
 }

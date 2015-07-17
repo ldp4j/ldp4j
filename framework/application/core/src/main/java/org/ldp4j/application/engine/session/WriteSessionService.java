@@ -183,8 +183,12 @@ public final class WriteSessionService implements Service {
 		}
 	}
 
-	private EntityTag generateEntityTag(Resource resource) {
-		return new EntityTag(UUID.randomUUID().toString());
+	/**
+	 * TODO: Devise a mechanism for generating the entity tags using meaningful
+	 * information from the client
+	 */
+	private EntityTag generateEntityTag(Resource resource) { // NOSONAR
+		return EntityTag.createStrong(UUID.randomUUID().toString());
 	}
 
 	private void createResource(Resource resource, Date lastModified, String relativePath, URI indirectId) {

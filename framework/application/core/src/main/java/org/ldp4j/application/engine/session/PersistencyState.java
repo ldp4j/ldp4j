@@ -202,7 +202,7 @@ abstract class PersistencyState {
 			UnitOfWork.getCurrent().registerDirty(ctx);
 			newSnapshot.markNew();
 			if(LOGGER.isTraceEnabled()) {
-				LOGGER.trace("Attached '"+newSnapshot.resourceId()+" as '"+attachmentId+"' to '"+ctx.resourceId());
+				LOGGER.trace("Attached '{}' as '{}' to '{}'",newSnapshot.resourceId(),attachmentId,ctx.resourceId());
 			}
 			return snapshotClass.cast(newSnapshot);
 		}
@@ -218,14 +218,14 @@ abstract class PersistencyState {
 		}
 
 		@Override
-		boolean softDetach(DelegatedAttachmentSnapshot attachment, DelegatedResourceSnapshot ctx) {
-			if(attachment==null) return false;
-			checkArgument(attachment instanceof DelegatedAttachmentSnapshot,"Unsupported attachment type");
-			DelegatedAttachmentSnapshot delegatedAttachment = (DelegatedAttachmentSnapshot)attachment;
-			boolean result = this.attachments.remove(delegatedAttachment);
+		boolean softDetach(DelegatedAttachmentSnapshot delegatedAttachment, DelegatedResourceSnapshot ctx) {
+			if(delegatedAttachment==null) {
+				return false;
+			}
+			boolean result=this.attachments.remove(delegatedAttachment);
 			if(result) {
 				if(LOGGER.isTraceEnabled()) {
-					LOGGER.trace("Dettached '"+delegatedAttachment.resource().resourceId()+" ('"+delegatedAttachment.id()+") from '"+ctx.resourceId());
+					LOGGER.trace("Dettached '{}' ({}) from '{}'",delegatedAttachment.resource().resourceId(),delegatedAttachment.id(),ctx.resourceId());
 				}
 				UnitOfWork.getCurrent().registerDirty(ctx);
 			}
@@ -251,7 +251,7 @@ abstract class PersistencyState {
 			newMember.markNew();
 			ctx.markDirty();
 			if(LOGGER.isTraceEnabled()) {
-				LOGGER.trace("Added member '"+newMember.resourceId()+"' to '"+ctx.resourceId());
+				LOGGER.trace("Added member '{}' to '{}'",newMember.resourceId(),ctx.resourceId());
 			}
 			return newMember;
 		}
@@ -273,7 +273,7 @@ abstract class PersistencyState {
 			boolean result = this.members.removeMember(delegatedSnapshot);
 			if(result) {
 				if(LOGGER.isTraceEnabled()) {
-					LOGGER.trace("Removed member '"+delegatedSnapshot.resourceId()+" from '"+ctx.resourceId());
+					LOGGER.trace("Removed member '{}' from '{}'",delegatedSnapshot.resourceId(),ctx.resourceId());
 				}
 				UnitOfWork.getCurrent().registerDirty(ctx);
 			}

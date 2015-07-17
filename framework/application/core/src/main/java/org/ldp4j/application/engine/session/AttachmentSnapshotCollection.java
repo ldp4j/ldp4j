@@ -168,7 +168,14 @@ final class AttachmentSnapshotCollection {
 		return attachmentsById.get(attachmentId);
 	}
 
-	Attachability attachability(String attachmentId, Name<?> name) {
+	/**
+	 * TODO: For the time being the name is not used in here, because the
+	 * checking should not just be local: we should check that that name has not
+	 * been used for any other resource of the same template, and that requires
+	 * a global checking. Whenever the check is done somewhere else, get rid of
+	 * this parameter
+	 */
+	Attachability attachability(String attachmentId, Name<?> name) { // NOSONAR
 		Attachability result=null;
 		if(this.attachmentsById.containsKey(attachmentId)) {
 			result=Attachability.ID_ALREADY_USED;

@@ -30,6 +30,7 @@ import java.net.URI;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.Validator.ValidatorBuilder;
 import org.ldp4j.application.engine.context.ContentPreferences;
@@ -72,7 +73,7 @@ final class DefaultPublicDirectContainer extends DefaultPublicMembershipAwareCon
 	}
 
 	@Override
-	protected Individual<?, ?> createMemberIndividual(Context ctx, PublicResource member) {
+	protected ManagedIndividual createMemberIndividual(Context ctx, PublicResource member) {
 		return ctx.newIndividual(member);
 	}
 

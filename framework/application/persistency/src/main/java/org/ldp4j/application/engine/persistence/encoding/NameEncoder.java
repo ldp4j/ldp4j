@@ -49,9 +49,10 @@ final class NameEncoder extends AbstractEncoder {
 	/**
 	 * {@inheritDoc}
 	 */
+	@SuppressWarnings("unchecked")
 	@Override
-	protected Name<?> assemble(Serializable subject) throws IOException {
-		return (Name<?>)subject;
+	protected <T extends Serializable> Name<T> assemble(Serializable subject) throws IOException {
+		return (Name<T>)subject;
 	}
 
 }

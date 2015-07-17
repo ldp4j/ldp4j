@@ -98,18 +98,22 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 		protected void doPostprocess(A annotation, M template, TemplateResolver resolver) {
 			for(Attachment attachment:attachments(annotation)) {
 				try {
-
 					MutableAttachedTemplate attachedTemplate = template.attachTemplate(attachment.id(), resolver.resolve(attachment.handler()), attachment.path());
-					String predicate = attachment.predicate();
-					if(predicate!=null && predicate.length()>0) {
-						try {
-							attachedTemplate.setPredicate(new URI(predicate));
-						} catch (URISyntaxException e) {
-							throw new InvalidAttachmentDefinitionException(template.id(),attachment.id(),"Predicate value '"+predicate+"' is not valid",e);
-						}
-					}
+					updateAttachmentPredicate(template,attachment,attachedTemplate);
 				} catch (IllegalArgumentException e) {
 					throw new InvalidAttachmentDefinitionException(template.id(),attachment.id(),"Invalid attachment definition",e);
+				}
+			}
+		}
+
+		private void updateAttachmentPredicate(M template,
+				Attachment attachment, MutableAttachedTemplate attachedTemplate) {
+			String predicate = attachment.predicate();
+			if(predicate!=null && predicate.length()>0) {
+				try {
+					attachedTemplate.setPredicate(new URI(predicate));
+				} catch (URISyntaxException e) {
+					throw new InvalidAttachmentDefinitionException(template.id(),attachment.id(),"Predicate value '"+predicate+"' is not valid",e);
 				}
 			}
 		}

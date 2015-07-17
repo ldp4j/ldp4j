@@ -80,7 +80,7 @@ public class ResourceControllerServiceTest {
 		Resource newResource=this.modelFactory.createResource(this.tms.templateOfId(templateId),resourceName);
 		T resource=clazz.cast(newResource);
 		RuntimeDelegate.getInstance().getResourceRepository().add(resource);
-		Endpoint endpoint=this.modelFactory.createEndpoint(path,resource,new Date(),new EntityTag(path));
+		Endpoint endpoint=this.modelFactory.createEndpoint(path,resource,new Date(),EntityTag.createStrong(path));
 		RuntimeDelegate.getInstance().getEndpointRepository().add(endpoint);
 
 		transaction.commit();

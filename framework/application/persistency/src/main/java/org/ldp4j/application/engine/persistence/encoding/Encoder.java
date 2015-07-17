@@ -26,6 +26,8 @@
  */
 package org.ldp4j.application.engine.persistence.encoding;
 
+import java.io.Serializable;
+
 import org.ldp4j.application.data.Name;
 
 public abstract class Encoder {
@@ -35,7 +37,7 @@ public abstract class Encoder {
 
 	public abstract String encode(Name<?> name);
 
-	public abstract Name<?> decode(String data);
+	public abstract <T extends Serializable> Name<T> decode(String data);
 
 	public static Encoder nameEncoder() {
 		return Encoder.NAME_ENCODER;
