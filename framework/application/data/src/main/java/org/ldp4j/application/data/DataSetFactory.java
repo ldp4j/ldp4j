@@ -26,13 +26,18 @@
  */
 package org.ldp4j.application.data;
 
+/**
+ * @deprecated
+ * @see DataSets
+ */
+@Deprecated
 public final class DataSetFactory {
 
 	private DataSetFactory() {
 	}
-	
+
 	public static DataSet createDataSet(Name<?> id) {
-		return new MutableDataSet(id);
+		return DataSets.createDataSet(id);
 	}
-	
+
 }

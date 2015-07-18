@@ -26,14 +26,31 @@
  */
 package org.ldp4j.application.data;
 
-public interface ValueVisitor {
+import java.net.URI;
 
-	// TODO: generify method:
-	// <T extends Serializable> void visitLiteral(Literal<T> value);
-	void visitLiteral(Literal<?> value);
+public class DatatypeCohercionException extends RuntimeException {
 
-	// TODO: generify method:
-	// <T extends Serializable, S extends Individual<T,S>> void visitIndividual(S value);
-	void visitIndividual(Individual<?,?> value);
+	private static final long serialVersionUID = 4890445503107565445L;
+
+	private final String value;
+	private final URI datatype;
+
+	public DatatypeCohercionException(Object value, URI datatype) {
+		this(value,datatype,null);
+	}
+
+	public DatatypeCohercionException(Object value, URI datatype, Throwable cause) {
+		super(String.format("Value %s (%s) cannot be coherced to %s",value,value.getClass().getName(),datatype),cause);
+		this.value = value.toString();
+		this.datatype = datatype;
+	}
+
+	public String getValue() {
+		return value;
+	}
+
+	public URI getDatatype() {
+		return datatype;
+	}
 
 }

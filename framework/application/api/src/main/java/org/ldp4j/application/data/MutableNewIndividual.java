@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -32,13 +32,16 @@ import java.util.Iterator;
 import java.util.Set;
 
 
-final class MutableLocalIndividual implements LocalIndividual {
+final class MutableNewIndividual implements NewIndividual {
 
-	private final Name<?> id;
+	private final URI id;
 	private final PropertyCollection properties;
 	private final MutableDataSet context;
-	
-	protected MutableLocalIndividual(Name<?> id, MutableDataSet context) {
+
+	protected MutableNewIndividual(URI id, MutableDataSet context) {
+		if(id.isAbsolute()) {
+			throw new IllegalArgumentException("New individual URIs must be relative");
+		}
 		this.id=id;
 		this.context = context;
 		this.properties=new PropertyCollection(this,context);
@@ -50,12 +53,12 @@ final class MutableLocalIndividual implements LocalIndividual {
 	}
 
 	@Override
-	public Name<?> name() {
+	public URI path() {
 		return this.id;
 	}
 
 	@Override
-	public Name<?> id() {
+	public URI id() {
 		return this.id;
 	}
 
@@ -85,13 +88,13 @@ final class MutableLocalIndividual implements LocalIndividual {
 	}
 
 	@Override
-	public LocalIndividual addValue(URI propertyId, Value value) {
+	public NewIndividual addValue(URI propertyId, Value value) {
 		this.properties.addValue(propertyId, value);
 		return this;
 	}
 
 	@Override
-	public LocalIndividual removeValue(URI propertyId, Value value) {
+	public NewIndividual removeValue(URI propertyId, Value value) {
 		this.properties.removeValue(propertyId, value);
 		return this;
 	}
@@ -103,7 +106,7 @@ final class MutableLocalIndividual implements LocalIndividual {
 
 	@Override
 	public void accept(IndividualVisitor visitor) {
-		visitor.visitLocalIndividual(this);
+		visitor.visitNewIndividual(this);
 	}
 
 	@Override

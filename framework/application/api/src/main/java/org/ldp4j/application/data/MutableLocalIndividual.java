@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -31,35 +31,31 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-final class MutableManagedIndividual implements ManagedIndividual {
 
-	private final ManagedIndividualId id;
+final class MutableLocalIndividual implements LocalIndividual {
+
+	private final Name<?> id;
 	private final PropertyCollection properties;
-	private final MutableDataSet dataSet;
+	private final MutableDataSet context;
 	
-	protected MutableManagedIndividual(ManagedIndividualId id, MutableDataSet dataSet) {
-		this.id = id;
-		this.dataSet = dataSet;
-		this.properties=new PropertyCollection(this,this.dataSet);
+	protected MutableLocalIndividual(Name<?> id, MutableDataSet context) {
+		this.id=id;
+		this.context = context;
+		this.properties=new PropertyCollection(this,context);
 	}
 
 	@Override
 	public DataSet dataSet() {
-		return this.dataSet;
+		return this.context;
 	}
 
 	@Override
 	public Name<?> name() {
-		return this.id.name();
-	}
-	
-	@Override
-	public String managerId() {
-		return this.id.managerId();
+		return this.id;
 	}
 
 	@Override
-	public ManagedIndividualId id() {
+	public Name<?> id() {
 		return this.id;
 	}
 
@@ -89,13 +85,13 @@ final class MutableManagedIndividual implements ManagedIndividual {
 	}
 
 	@Override
-	public ManagedIndividual addValue(URI propertyId, Value value) {
+	public LocalIndividual addValue(URI propertyId, Value value) {
 		this.properties.addValue(propertyId, value);
 		return this;
 	}
 
 	@Override
-	public ManagedIndividual removeValue(URI propertyId, Value value) {
+	public LocalIndividual removeValue(URI propertyId, Value value) {
 		this.properties.removeValue(propertyId, value);
 		return this;
 	}
@@ -107,7 +103,7 @@ final class MutableManagedIndividual implements ManagedIndividual {
 
 	@Override
 	public void accept(IndividualVisitor visitor) {
-		visitor.visitManagedIndividual(this);
+		visitor.visitLocalIndividual(this);
 	}
 
 	@Override

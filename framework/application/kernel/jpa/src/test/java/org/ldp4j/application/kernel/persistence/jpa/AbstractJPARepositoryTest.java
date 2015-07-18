@@ -36,7 +36,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Literals;
 import org.ldp4j.application.data.LocalIndividual;
@@ -59,7 +59,6 @@ import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.lifecycle.LifecycleException;
-import org.ldp4j.application.kernel.persistence.jpa.JPARuntimeDelegate;
 import org.ldp4j.application.kernel.resource.Container;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.kernel.service.ServiceRegistry;
@@ -180,7 +179,7 @@ public abstract class AbstractJPARepositoryTest<T> { // NOSONAR
 	protected abstract T getSubjectUnderTest(JPARuntimeDelegate delegate);
 
 	protected Constraints constraints() {
-		DataSet dataSet=DataSetFactory.createDataSet(name("dataSet"));
+		DataSet dataSet=DataSets.createDataSet(name("dataSet"));
 		PropertyConstraint pc=
 			Constraints.
 				propertyConstraint(uri("property")).

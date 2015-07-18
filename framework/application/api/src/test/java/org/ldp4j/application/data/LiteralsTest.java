@@ -20,55 +20,27 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
-final class ImmutableLanguageLiteral implements LanguageLiteral {
+import java.util.Date;
 
-	private static final long serialVersionUID = -8602353246169016363L;
+import org.junit.Test;
 
-	private final String value;
-	private final String language;
+public class LiteralsTest {
 
-	ImmutableLanguageLiteral(String value, String language) {
-		this.value = value;
-		this.language = language;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void accept(ValueVisitor visitor) {
-		visitor.visitLiteral(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String get() {
-		return this.value;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public void accept(LiteralVisitor visitor) {
-		visitor.visitLanguageLiteral(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String language() {
-		return this.language;
+	@Test
+	public void testDate() {
+		Date date = new Date();
+		DateTimeLiteral dateTime = Literals.of(date).dateTime();
+		Literal<?> literal=Literals.newLiteral(date);
+		assertThat((Object)literal.get(),equalTo((Object)dateTime.get()));
 	}
 
 }

@@ -39,7 +39,7 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.vocabulary.LDP;
@@ -157,7 +157,7 @@ public final class DataTransformator {
 					withEntity(entity, this.mediaType).
 					build();
 
-		DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(endpoint));
+		DataSet dataSet=DataSets.createDataSet(NamingScheme.getDefault().name(endpoint));
 		ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet);
 		for(TripleResolution tripleResolution:tripleResolver.tripleResolutions()) {
 			Triple triple=tripleResolution.triple();

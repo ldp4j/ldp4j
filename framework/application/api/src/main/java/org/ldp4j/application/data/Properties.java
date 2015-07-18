@@ -26,14 +26,29 @@
  */
 package org.ldp4j.application.data;
 
-public interface ValueVisitor {
+import java.util.Collection;
 
-	// TODO: generify method:
-	// <T extends Serializable> void visitLiteral(Literal<T> value);
-	void visitLiteral(Literal<?> value);
 
-	// TODO: generify method:
-	// <T extends Serializable, S extends Individual<T,S>> void visitIndividual(S value);
-	void visitIndividual(Individual<?,?> value);
+final class Properties {
+
+	private Properties(){
+	}
+
+	private static boolean hasValue(ValueMatcher matcher, Collection<? extends Value> values) {
+		for(Value value:values) {
+			if(matcher.matchesValue(value)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	static boolean hasLiteral(Property property, Literal<?> literal) {
+		return hasValue(new LiteralMatcher(literal),property.values());
+	}
+
+	static boolean hasIdentifiedIndividual(Property property, Object id) {
+		return hasValue(new IndividualReferenceMatcher(id),property.values());
+	}
 
 }

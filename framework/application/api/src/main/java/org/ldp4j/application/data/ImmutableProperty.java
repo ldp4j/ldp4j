@@ -20,85 +20,67 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
-import java.io.Serializable;
-import java.util.Objects;
+import java.net.URI;
+import java.util.Collection;
+import java.util.Iterator;
 
-import com.google.common.base.MoreObjects;
+final class ImmutableProperty implements Property {
 
-final class ImmutableLiteral<T extends Serializable> implements Literal<T> {
+	private final Property property;
 
-	private static final long serialVersionUID = 7931003982852019934L;
-
-	private final T value;
-
-	ImmutableLiteral(T value) {
-		this.value = value;
+	ImmutableProperty(MutableProperty property) {
+		this.property = new MutableProperty(property);
+	}
+	
+	@Override
+	public Iterator<Value> iterator() {
+		return this.property.iterator();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
+	@Override
+	public Individual<?, ?> individual() {
+		return this.property.individual();
+	}
+
+	@Override
+	public URI predicate() {
+		return this.property.predicate();
+	}
+
+	@Override
+	public Collection<? extends Value> values() {
+		return this.property.values();
+	}
+
+	@Override
+	public int numberOfValues() {
+		return this.property.numberOfValues();
+	}
+
+	@Override
+	public boolean hasValues() {
+		return this.property.hasValues();
+	}
+
 	@Override
 	public void accept(ValueVisitor visitor) {
-		visitor.visitLiteral(this);
+		this.property.accept(visitor);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public T get() {
-		return this.value;
+	public boolean hasLiteralValue(Literal<?> value) {
+		return this.property.hasLiteralValue(value);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public void accept(LiteralVisitor visitor) {
-		visitor.visitLiteral(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int hashCode() {
-		return Objects.hash(this.value);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		boolean result=false;
-		if(obj instanceof Literal) {
-			Literal<?> that=(Literal<?>)obj;
-			result=
-				Objects.equals(this.value, that.get()) &&
-				!(obj instanceof TypedLiteral<?>) &&
-				!(obj instanceof LanguageLiteral);
-		}
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return
-			MoreObjects.
-				toStringHelper(getClass()).
-					add("value", this.value).
-					toString();
+	public boolean hasIdentifiedIndividual(Object id) {
+		return this.property.hasIdentifiedIndividual(id);
 	}
 
 }

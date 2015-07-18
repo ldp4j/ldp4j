@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -31,36 +31,35 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
-final class MutableRelativeIndividual implements RelativeIndividual {
 
-	private final RelativeIndividualId id;
+final class MutableExternalIndividual implements ExternalIndividual {
+
+	private final URI id;
 	private final PropertyCollection properties;
-	private final MutableDataSet dataSet;
+	private final MutableDataSet context;
 
-	protected MutableRelativeIndividual(RelativeIndividualId id, MutableDataSet dataSet) {
-		this.id = id;
-		this.dataSet = dataSet;
-		this.properties=new PropertyCollection(this,this.dataSet);
+	protected MutableExternalIndividual(URI id, MutableDataSet context) {
+		if(!id.isAbsolute()) {
+			throw new IllegalArgumentException("External individual URIs must be absolute");
+		}
+		this.id=id;
+		this.context = context;
+		this.properties=new PropertyCollection(this,context);
 	}
 
 	@Override
 	public DataSet dataSet() {
-		return this.dataSet;
+		return this.context;
 	}
 
 	@Override
-	public RelativeIndividualId id() {
+	public URI location() {
 		return this.id;
 	}
 
 	@Override
-	public URI path() {
-		return this.id.path();
-	}
-
-	@Override
-	public ManagedIndividualId parentId() {
-		return this.id.parentId();
+	public URI id() {
+		return this.id;
 	}
 
 	@Override
@@ -89,13 +88,13 @@ final class MutableRelativeIndividual implements RelativeIndividual {
 	}
 
 	@Override
-	public RelativeIndividual addValue(URI propertyId, Value value) {
+	public ExternalIndividual addValue(URI propertyId, Value value) {
 		this.properties.addValue(propertyId, value);
 		return this;
 	}
 
 	@Override
-	public RelativeIndividual removeValue(URI propertyId, Value value) {
+	public ExternalIndividual removeValue(URI propertyId, Value value) {
 		this.properties.removeValue(propertyId, value);
 		return this;
 	}
@@ -107,7 +106,7 @@ final class MutableRelativeIndividual implements RelativeIndividual {
 
 	@Override
 	public void accept(IndividualVisitor visitor) {
-		visitor.visitRelativeIndividual(this);
+		visitor.visitExternalIndividual(this);
 	}
 
 	@Override

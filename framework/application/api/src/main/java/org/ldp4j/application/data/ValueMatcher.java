@@ -20,67 +20,24 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
-import java.net.URI;
-import java.util.Collection;
-import java.util.Iterator;
+abstract class ValueMatcher implements ValueVisitor {
 
-final class ImmutableProperty implements Property {
+	private boolean matches;
 
-	private final Property property;
-
-	ImmutableProperty(MutableProperty property) {
-		this.property = new MutableProperty(property);
-	}
-	
-	@Override
-	public Iterator<Value> iterator() {
-		return this.property.iterator();
+	public final boolean matchesValue(Value propertyValue) {
+		this.setMatches(false);
+		propertyValue.accept(this);
+		return this.matches;
 	}
 
-	@Override
-	public Individual<?, ?> individual() {
-		return this.property.individual();
-	}
-
-	@Override
-	public URI predicate() {
-		return this.property.predicate();
-	}
-
-	@Override
-	public Collection<? extends Value> values() {
-		return this.property.values();
-	}
-
-	@Override
-	public int numberOfValues() {
-		return this.property.numberOfValues();
-	}
-
-	@Override
-	public boolean hasValues() {
-		return this.property.hasValues();
-	}
-
-	@Override
-	public void accept(ValueVisitor visitor) {
-		this.property.accept(visitor);
-	}
-
-	@Override
-	public boolean hasLiteralValue(Literal<?> value) {
-		return this.property.hasLiteralValue(value);
-	}
-
-	@Override
-	public boolean hasIdentifiedIndividual(Object id) {
-		return this.property.hasIdentifiedIndividual(id);
+	protected final void setMatches(boolean matches) {
+		this.matches = matches;
 	}
 
 }

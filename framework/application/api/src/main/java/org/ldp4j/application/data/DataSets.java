@@ -26,14 +26,32 @@
  */
 package org.ldp4j.application.data;
 
-public interface ValueVisitor {
+import java.io.Serializable;
 
-	// TODO: generify method:
-	// <T extends Serializable> void visitLiteral(Literal<T> value);
-	void visitLiteral(Literal<?> value);
+public final class DataSets {
 
-	// TODO: generify method:
-	// <T extends Serializable, S extends Individual<T,S>> void visitIndividual(S value);
-	void visitIndividual(Individual<?,?> value);
+	private DataSets() {
+	}
+
+	public static <T extends Serializable> DataSet createDataSet(Name<T> id) {
+		return new MutableDataSet(id);
+	}
+
+	public static void merge(DataSet source, DataSet target) {
+		IndividualFinder finder=new IndividualFinder(target);
+		for(Individual<?,?> individual:source) {
+			Individuals.merge(individual,finder.findOrCreate(individual));
+		}
+
+	}
+
+
+	public static void remove(DataSet source, DataSet target) {
+		IndividualFinder finder=new IndividualFinder(target);
+		for(Individual<?,?> individual:source) {
+			Individuals.remove(individual,finder.findOrCreate(individual));
+		}
+
+	}
 
 }

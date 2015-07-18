@@ -34,7 +34,7 @@ import java.util.Date;
 import javax.ws.rs.core.EntityTag;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.kernel.resource.ResourceId;
@@ -49,7 +49,7 @@ public abstract class ResourceBuilder<T extends ResourceImpl> {
 		private SimpleResourceBuilder(ResourceId name) {
 			super(name);
 		}
-		
+
 		@Override
 		protected void postProcess(ResourceImpl resource) {
 			// Nothing to do
@@ -59,11 +59,11 @@ public abstract class ResourceBuilder<T extends ResourceImpl> {
 		protected ResourceImpl createResource() {
 			return new ResourceImpl();
 		}
-		
+
 	}
-	
+
 	public static class ContainerBuilder extends ResourceBuilder<ContainerImpl> {
-		
+
 		private URI membershipPredicate;
 		private MembershipRelation membershipRelation;
 		private Name<?> membershipTarget;
@@ -72,7 +72,7 @@ public abstract class ResourceBuilder<T extends ResourceImpl> {
 		private ContainerBuilder(ResourceId name) {
 			super(name);
 		}
-		
+
 		public ContainerBuilder withMembershipPredicate(String membershipPredicate) {
 			return withMembershipPredicate(URI.create(filterString(membershipPredicate)));
 		}
@@ -81,16 +81,16 @@ public abstract class ResourceBuilder<T extends ResourceImpl> {
 			this.membershipPredicate = membershipPredicate;
 			return this;
 		}
-		
+
 		public ContainerBuilder withMembershipRelation(MembershipRelation membershipRelation) {
 			this.membershipRelation = membershipRelation;
 			return this;
 		}
-		
+
 		public ContainerBuilder withMembershipTarget(String membershipTarget) {
 			return withMembershipTarget(NamingScheme.getDefault().name(filterString(membershipTarget)));
 		}
-		
+
 		public ContainerBuilder withMembershipTarget(Name<?> membershipTarget) {
 			this.membershipTarget = membershipTarget;
 			return this;
@@ -133,7 +133,7 @@ public abstract class ResourceBuilder<T extends ResourceImpl> {
 		}
 
 	}
-	
+
 	private final ResourceId id;
 
 	private EntityTag etag;
@@ -143,17 +143,17 @@ public abstract class ResourceBuilder<T extends ResourceImpl> {
 	private ResourceBuilder(ResourceId id) {
 		this.id = id;
 	}
-	
+
 	public ResourceBuilder<T> withEntityTag(EntityTag etag) {
 		this.etag = etag;
 		return this;
 	}
-	
+
 	public ResourceBuilder<T> withLastModified(Date date) {
 		this.lastModified = new Date(date.getTime());
 		return this;
 	}
-	
+
 	public ResourceBuilder<T> withContent(DataSet content) {
 		this.content = content;
 		return this;
@@ -185,7 +185,7 @@ public abstract class ResourceBuilder<T extends ResourceImpl> {
 	}
 
 	private void setEntityTag(ResourceImpl resource) {
-		EntityTag realEntityTag = 
+		EntityTag realEntityTag =
 			etag!=null?
 				etag :
 				new EntityTag(
@@ -194,13 +194,13 @@ public abstract class ResourceBuilder<T extends ResourceImpl> {
 	}
 
 	private void setContent(ResourceImpl resource) {
-		DataSet realContent = 
+		DataSet realContent =
 			content!=null?
 				content:
-				DataSetFactory.createDataSet(resource.id().name());
+				DataSets.createDataSet(resource.id().name());
 		resource.setContent(realContent);
 	}
-	
+
 	private void setLastModified(ResourceImpl resource) {
 		Date realLastModified=
 			lastModified!=null?

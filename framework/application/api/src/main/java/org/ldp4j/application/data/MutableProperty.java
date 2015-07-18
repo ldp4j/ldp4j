@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -97,12 +97,12 @@ final class MutableProperty implements Property {
 
 	@Override
 	public boolean hasLiteralValue(Literal<?> value) {
-		return DataSetUtils.hasLiteral(value, this);
+		return Properties.hasLiteral(this,value);
 	}
 
 	@Override
 	public boolean hasIdentifiedIndividual(Object id) {
-		return DataSetUtils.hasIdentifiedIndividual(id, this);
+		return Properties.hasIdentifiedIndividual(this,id);
 	}
 
 	void addValue(Value value) {

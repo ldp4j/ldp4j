@@ -20,29 +20,23 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
-import java.net.URI;
-import java.util.Objects;
 
-import org.joda.time.Duration;
+final class ImmutableLanguageLiteral implements LanguageLiteral {
 
-import com.google.common.base.MoreObjects;
+	private static final long serialVersionUID = -8602353246169016363L;
 
-final class ImmutableDurationLiteral implements DurationLiteral {
+	private final String value;
+	private final String language;
 
-	private static final long serialVersionUID = -7312919003663624256L;
-
-	private final Duration duration;
-	private final URI dataType;
-
-	ImmutableDurationLiteral(Duration duration, URI dataType) {
-		this.duration = duration;
-		this.dataType = dataType;
+	ImmutableLanguageLiteral(String value, String language) {
+		this.value = value;
+		this.language = language;
 	}
 
 	/**
@@ -57,8 +51,8 @@ final class ImmutableDurationLiteral implements DurationLiteral {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Duration get() {
-		return this.duration;
+	public String get() {
+		return this.value;
 	}
 
 	/**
@@ -66,52 +60,15 @@ final class ImmutableDurationLiteral implements DurationLiteral {
 	 */
 	@Override
 	public void accept(LiteralVisitor visitor) {
-		visitor.visitTypedLiteral(this);
+		visitor.visitLanguageLiteral(this);
 	}
 
 	/**
 	 * {@inheritDoc}
 	 */
 	@Override
-	public URI type() {
-		return this.dataType;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int hashCode() {
-		return Objects.hash(this.duration,this.dataType);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		boolean result=false;
-		if(obj instanceof TypedLiteral) {
-			TypedLiteral<?> that=(TypedLiteral<?>)obj;
-			result=
-				Objects.equals(this.duration, that.get()) &&
-				Objects.equals(this.dataType, that.type()) &&
-				!(obj instanceof LanguageLiteral);
-		}
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return
-			MoreObjects.
-				toStringHelper(getClass()).
-					add("duration",this.duration).
-					add("dataType", this.dataType).
-					toString();
+	public String language() {
+		return this.language;
 	}
 
 }

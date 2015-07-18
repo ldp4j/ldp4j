@@ -32,7 +32,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.rdf.Triple;
@@ -83,7 +83,7 @@ final class MediaTypeSupport {
 				this.provider.
 					unmarshallContent(context,content,this.targetMediaType);
 			DataSet dataSet=
-				DataSetFactory.
+				DataSets.
 					createDataSet(
 						NamingScheme.getDefault().name(context.getBase()));
 			ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet);

@@ -37,7 +37,7 @@ import java.util.Queue;
 import java.util.Set;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.IndividualVisitor;
@@ -61,7 +61,6 @@ import org.ldp4j.application.data.constraints.Constraints.PropertyConstraint;
 import org.ldp4j.application.data.constraints.Constraints.Shape;
 import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.context.HttpRequest.Header;
-import org.ldp4j.application.kernel.constraints.ConstraintReport;
 import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.vocabulary.RDF;
@@ -214,7 +213,7 @@ public final class ConstraintReportTransformer {
 		this.report = report;
 		ManagedIndividualId tId = ManagedIndividualId.createId(resource.id().name(), resource.id().templateId());
 		ManagedIndividualId rId = ManagedIndividualId.createId(URI.create("?ldp:constrainedBy="+report.id().failureId()), tId);
-		this.dataset=DataSetFactory.createDataSet(rId.name());
+		this.dataset=DataSets.createDataSet(rId.name());
 		this.constraintReport= dataset.individual(rId, ManagedIndividual.class);
 		this.targetResource = dataset.individual(tId, ManagedIndividual.class);
 		this.failedRequest=dataset.individual((Name)NamingScheme.getDefault().name("request"), LocalIndividual.class);

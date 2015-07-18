@@ -20,14 +20,28 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
-import org.joda.time.Duration;
+final class IndividualReferenceMatcher extends ValueMatcher {
 
-public interface DurationLiteral extends TypedLiteral<Duration> {
+	private final Object id;
+
+	IndividualReferenceMatcher(Object id) {
+		this.id = id;
+	}
+
+	@Override
+	public void visitLiteral(Literal<?> value) {
+		// No to be processed
+	}
+
+	@Override
+	public void visitIndividual(Individual<?, ?> value) {
+		super.setMatches(value.id().equals(this.id));
+	}
 
 }

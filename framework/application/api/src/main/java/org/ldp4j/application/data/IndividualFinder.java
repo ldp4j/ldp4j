@@ -26,14 +26,46 @@
  */
 package org.ldp4j.application.data;
 
-public interface ValueVisitor {
+import java.io.Serializable;
 
-	// TODO: generify method:
-	// <T extends Serializable> void visitLiteral(Literal<T> value);
-	void visitLiteral(Literal<?> value);
+final class IndividualFinder implements IndividualVisitor {
 
-	// TODO: generify method:
-	// <T extends Serializable, S extends Individual<T,S>> void visitIndividual(S value);
-	void visitIndividual(Individual<?,?> value);
+	private final DataSet dataSet;
+	private Individual<?,?> found=null;
 
+	IndividualFinder(DataSet dataSet) {
+		this.dataSet = dataSet;
+	}
+
+	@SuppressWarnings("unchecked")
+	// TODO: fully generify when Vistor is generic
+	<T extends Serializable> Individual<T,?> findOrCreate(Individual<T,?> individual) {
+		individual.accept(this);
+		return (Individual<T,?>)this.found;
+	}
+
+	@Override
+	public void visitManagedIndividual(ManagedIndividual individual) {
+		this.found=this.dataSet.individual(individual.id(),ManagedIndividual.class);
+	}
+
+	@Override
+	public void visitLocalIndividual(LocalIndividual individual) {
+		this.found=this.dataSet.individual(individual.id(),LocalIndividual.class);
+	}
+
+	@Override
+	public void visitExternalIndividual(ExternalIndividual individual) {
+		this.found=this.dataSet.individual(individual.id(),ExternalIndividual.class);
+	}
+
+	@Override
+	public void visitRelativeIndividual(RelativeIndividual individual) {
+		this.found=this.dataSet.individual(individual.id(),RelativeIndividual.class);
+	}
+
+	@Override
+	public void visitNewIndividual(NewIndividual individual) {
+		this.found=this.dataSet.individual(individual.id(),NewIndividual.class);
+	}
 }

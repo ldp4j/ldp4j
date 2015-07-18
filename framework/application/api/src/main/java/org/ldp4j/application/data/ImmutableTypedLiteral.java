@@ -20,32 +20,28 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Objects;
 
-import org.joda.time.DateTime;
-
 import com.google.common.base.MoreObjects;
 
-final class ImmutableDateTimeLiteral implements DateTimeLiteral {
+final class ImmutableTypedLiteral<T extends Serializable> implements TypedLiteral<T> {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 2311445959339832121L;
+	private static final long serialVersionUID = -7467201601402003544L;
 
-	private final DateTime dateTime;
-	private final URI dataType;
+	private final T value;
+	private final URI type;
 
-	ImmutableDateTimeLiteral(DateTime dateTime, URI dataType) {
-		this.dateTime = dateTime;
-		this.dataType = dataType;
+	ImmutableTypedLiteral(T value, URI type) {
+		this.value = value;
+		this.type = type;
 	}
 
 	/**
@@ -60,8 +56,8 @@ final class ImmutableDateTimeLiteral implements DateTimeLiteral {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DateTime get() {
-		return this.dateTime;
+	public T get() {
+		return value;
 	}
 
 	/**
@@ -77,7 +73,7 @@ final class ImmutableDateTimeLiteral implements DateTimeLiteral {
 	 */
 	@Override
 	public URI type() {
-		return this.dataType;
+		return this.type;
 	}
 
 	/**
@@ -85,7 +81,7 @@ final class ImmutableDateTimeLiteral implements DateTimeLiteral {
 	 */
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.dateTime,this.dataType);
+		return Objects.hash(this.value,this.type);
 	}
 
 	/**
@@ -97,8 +93,8 @@ final class ImmutableDateTimeLiteral implements DateTimeLiteral {
 		if(obj instanceof TypedLiteral) {
 			TypedLiteral<?> that=(TypedLiteral<?>)obj;
 			result=
-				Objects.equals(this.dateTime, that.get()) &&
-				Objects.equals(this.dataType, that.type()) &&
+				Objects.equals(this.value, that.get()) &&
+				Objects.equals(this.type, that.type()) &&
 				!(obj instanceof LanguageLiteral);
 		}
 		return result;
@@ -112,9 +108,8 @@ final class ImmutableDateTimeLiteral implements DateTimeLiteral {
 		return
 			MoreObjects.
 				toStringHelper(getClass()).
-					add("dateTime",this.dateTime).
-					add("dataType", this.dataType).
+					add("value",this.value).
+					add("type", this.type).
 					toString();
 	}
-
 }

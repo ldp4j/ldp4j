@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -45,7 +45,7 @@ final class MutableDataSet implements DataSet {
 	private final Map<Serializable,Individual<?,?>> individuals;
 	private final IndividualFactory factory;
 
-	public MutableDataSet(Name<?> name) {
+	MutableDataSet(Name<?> name) {
 		this.name = name;
 		this.individuals=Maps.newLinkedHashMap();
 		this.factory=new IndividualFactory(this);
@@ -158,7 +158,7 @@ final class MutableDataSet implements DataSet {
 							new ValueVisitor() {
 								@Override
 								public void visitLiteral(Literal<?> value) {
-									// Nothing todo
+									// Nothing to do
 								}
 								@Override
 								public void visitIndividual(Individual<?, ?> value) {

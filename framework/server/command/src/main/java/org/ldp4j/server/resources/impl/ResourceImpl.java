@@ -32,8 +32,7 @@ import java.util.Date;
 import javax.ws.rs.core.EntityTag;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
-import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.ExternalIndividual;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Literals;
@@ -158,7 +157,7 @@ public class ResourceImpl implements Resource {
 	}
 
 	private DataSet createDataSet() {
-		return DataSetFactory.createDataSet(id().name());
+		return DataSets.createDataSet(id().name());
 	}
 
 	void setContent(DataSet content) {
@@ -188,8 +187,8 @@ public class ResourceImpl implements Resource {
 	@Override
 	public final Entity entity(URI applicationBase) {
 		DataSet dataSet=createDataSet();
-		DataSetUtils.merge(metadata(), dataSet);
-		DataSetUtils.merge(content(), dataSet);
+		DataSets.merge(metadata(), dataSet);
+		DataSets.merge(content(), dataSet);
 		return EntityFactory.createEntity(dataSet,applicationBase);
 
 	}

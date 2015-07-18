@@ -26,14 +26,8 @@
  */
 package org.ldp4j.application.data;
 
-public interface ValueVisitor {
+import org.joda.time.Duration;
 
-	// TODO: generify method:
-	// <T extends Serializable> void visitLiteral(Literal<T> value);
-	void visitLiteral(Literal<?> value);
-
-	// TODO: generify method:
-	// <T extends Serializable, S extends Individual<T,S>> void visitIndividual(S value);
-	void visitIndividual(Individual<?,?> value);
+public interface DurationLiteral extends TypedLiteral<Duration> {
 
 }

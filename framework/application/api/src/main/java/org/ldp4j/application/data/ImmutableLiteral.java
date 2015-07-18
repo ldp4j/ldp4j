@@ -20,28 +20,25 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
 import java.io.Serializable;
-import java.net.URI;
 import java.util.Objects;
 
 import com.google.common.base.MoreObjects;
 
-final class ImmutableTypedLiteral<T extends Serializable> implements TypedLiteral<T> {
+final class ImmutableLiteral<T extends Serializable> implements Literal<T> {
 
-	private static final long serialVersionUID = -7467201601402003544L;
+	private static final long serialVersionUID = 7931003982852019934L;
 
 	private final T value;
-	private final URI type;
 
-	ImmutableTypedLiteral(T value, URI type) {
+	ImmutableLiteral(T value) {
 		this.value = value;
-		this.type = type;
 	}
 
 	/**
@@ -57,7 +54,7 @@ final class ImmutableTypedLiteral<T extends Serializable> implements TypedLitera
 	 */
 	@Override
 	public T get() {
-		return value;
+		return this.value;
 	}
 
 	/**
@@ -65,15 +62,7 @@ final class ImmutableTypedLiteral<T extends Serializable> implements TypedLitera
 	 */
 	@Override
 	public void accept(LiteralVisitor visitor) {
-		visitor.visitTypedLiteral(this);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public URI type() {
-		return this.type;
+		visitor.visitLiteral(this);
 	}
 
 	/**
@@ -81,7 +70,7 @@ final class ImmutableTypedLiteral<T extends Serializable> implements TypedLitera
 	 */
 	@Override
 	public int hashCode() {
-		return Objects.hash(this.value,this.type);
+		return Objects.hash(this.value);
 	}
 
 	/**
@@ -90,11 +79,11 @@ final class ImmutableTypedLiteral<T extends Serializable> implements TypedLitera
 	@Override
 	public boolean equals(Object obj) {
 		boolean result=false;
-		if(obj instanceof TypedLiteral) {
-			TypedLiteral<?> that=(TypedLiteral<?>)obj;
+		if(obj instanceof Literal) {
+			Literal<?> that=(Literal<?>)obj;
 			result=
 				Objects.equals(this.value, that.get()) &&
-				Objects.equals(this.type, that.type()) &&
+				!(obj instanceof TypedLiteral<?>) &&
 				!(obj instanceof LanguageLiteral);
 		}
 		return result;
@@ -108,8 +97,8 @@ final class ImmutableTypedLiteral<T extends Serializable> implements TypedLitera
 		return
 			MoreObjects.
 				toStringHelper(getClass()).
-					add("value",this.value).
-					add("type", this.type).
+					add("value", this.value).
 					toString();
 	}
+
 }

@@ -27,7 +27,8 @@
 package org.ldp4j.application.data;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference;
 
 import java.net.URI;
@@ -38,19 +39,10 @@ import org.junit.Test;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.RDF;
 
-public class LiteralsTest {
-
+public class DataDSLTest {
 
 	private static final String TEMPLATE_ID = "template";
 	private static final String READ_ONLY_PROPERTY = "my:property";
-
-	@Test
-	public void testDate() {
-		Date date = new Date();
-		Literal<?> dateTime = Literals.of(date).dateTime();
-		Literal<?> literal=Literals.newLiteral(date);
-		assertThat((Object)literal.get(),equalTo((Object)dateTime.get()));
-	}
 
 	@Test
 	public void testDataDSL() {
@@ -90,5 +82,6 @@ public class LiteralsTest {
 		}
 		return initial;
 	}
+
 
 }

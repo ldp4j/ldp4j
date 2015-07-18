@@ -20,37 +20,28 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
-import java.net.URI;
+final class LiteralMatcher extends ValueMatcher {
 
-public class DatatypeCohercionException extends RuntimeException {
+	private final Literal<?> literal;
 
-	private static final long serialVersionUID = 4890445503107565445L;
-
-	private final String value;
-	private final URI datatype;
-
-	public DatatypeCohercionException(Object value, URI datatype) {
-		this(value,datatype,null);
+	LiteralMatcher(Literal<?> literal) {
+		this.literal = literal;
 	}
 
-	public DatatypeCohercionException(Object value, URI datatype, Throwable cause) {
-		super(String.format("Value %s (%s) cannot be coherced to %s",value,value.getClass().getName(),datatype),cause);
-		this.value = value.toString();
-		this.datatype = datatype;
+	@Override
+	public void visitLiteral(Literal<?> value) {
+		super.setMatches(literal.get().equals(value.get()));
 	}
 
-	public String getValue() {
-		return value;
-	}
-
-	public URI getDatatype() {
-		return datatype;
+	@Override
+	public void visitIndividual(Individual<?, ?> value) {
+		// No to be processed
 	}
 
 }

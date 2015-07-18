@@ -33,8 +33,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
-import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Property;
@@ -173,8 +172,8 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 	@Override
 	public final DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException {
 		DataSet dataSet=resourceData(contentPreferences);
-		DataSet representation = DataSetFactory.createDataSet(id().name());
-		DataSetUtils.
+		DataSet representation = DataSets.createDataSet(id().name());
+		DataSets.
 			merge(
 				dataSet,
 				representation);
@@ -201,7 +200,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 
 			// Second, remove the framework/protocol metadata from the
 			// representation that will be handed to the application
-			DataSetUtils.remove(metadata, dataSet);
+			DataSets.remove(metadata, dataSet);
 
 			// Third, request the modification using the cleansed and validated data
 			applicationContext().modifyResource(endpoint(),dataSet);
@@ -219,7 +218,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 	@Override
 	protected DataSet metadata() {
 		DataSet metadata =
-			DataSetFactory.
+			DataSets.
 				createDataSet(id().name());
 
 		Context ctx = new Context(metadata);

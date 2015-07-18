@@ -159,7 +159,7 @@ final class TurtleValueUtils {
 			URI datatype = lit.getDatatype();
 			if(datatype!=null) {
 				// TODO: This should be configurable
-				if(!canOmmitDatatype(datatype)) {
+				if(!canOmmitDatatype(datatype)) { // NOSONAR
 					/**
 					 * Append the literal's datatype (possibly written as an abbreviated
 					 * URI)

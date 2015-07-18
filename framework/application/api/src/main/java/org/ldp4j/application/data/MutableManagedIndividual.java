@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -31,34 +31,35 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 
+final class MutableManagedIndividual implements ManagedIndividual {
 
-final class MutableNewIndividual implements NewIndividual {
-
-	private final URI id;
+	private final ManagedIndividualId id;
 	private final PropertyCollection properties;
-	private final MutableDataSet context;
-
-	protected MutableNewIndividual(URI id, MutableDataSet context) {
-		if(id.isAbsolute()) {
-			throw new IllegalArgumentException("New individual URIs must be relative");
-		}
-		this.id=id;
-		this.context = context;
-		this.properties=new PropertyCollection(this,context);
+	private final MutableDataSet dataSet;
+	
+	protected MutableManagedIndividual(ManagedIndividualId id, MutableDataSet dataSet) {
+		this.id = id;
+		this.dataSet = dataSet;
+		this.properties=new PropertyCollection(this,this.dataSet);
 	}
 
 	@Override
 	public DataSet dataSet() {
-		return this.context;
+		return this.dataSet;
 	}
 
 	@Override
-	public URI path() {
-		return this.id;
+	public Name<?> name() {
+		return this.id.name();
+	}
+	
+	@Override
+	public String managerId() {
+		return this.id.managerId();
 	}
 
 	@Override
-	public URI id() {
+	public ManagedIndividualId id() {
 		return this.id;
 	}
 
@@ -88,13 +89,13 @@ final class MutableNewIndividual implements NewIndividual {
 	}
 
 	@Override
-	public NewIndividual addValue(URI propertyId, Value value) {
+	public ManagedIndividual addValue(URI propertyId, Value value) {
 		this.properties.addValue(propertyId, value);
 		return this;
 	}
 
 	@Override
-	public NewIndividual removeValue(URI propertyId, Value value) {
+	public ManagedIndividual removeValue(URI propertyId, Value value) {
 		this.properties.removeValue(propertyId, value);
 		return this;
 	}
@@ -106,7 +107,7 @@ final class MutableNewIndividual implements NewIndividual {
 
 	@Override
 	public void accept(IndividualVisitor visitor) {
-		visitor.visitNewIndividual(this);
+		visitor.visitManagedIndividual(this);
 	}
 
 	@Override

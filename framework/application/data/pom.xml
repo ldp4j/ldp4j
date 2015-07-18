@@ -71,10 +71,6 @@
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-api</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>joda-time</groupId>
-			<artifactId>joda-time</artifactId>
-		</dependency>
 	</dependencies>
 
 </project>
