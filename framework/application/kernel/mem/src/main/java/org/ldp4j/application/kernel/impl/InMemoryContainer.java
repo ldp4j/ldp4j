@@ -114,8 +114,7 @@ final class InMemoryContainer extends InMemoryResource implements Container {
 	private InMemoryResource createMemberResource(ResourceId resourceId) {
 		checkNotNull(resourceId,"Member resource identifier cannot be null");
 		checkState(!this.members.containsKey(resourceId),"A resource with id '%s' is already a member of the container",resourceId);
-		InMemoryResource newResource=createChild(resourceId,template().memberTemplate());
-		return newResource;
+		return createChild(resourceId,template().memberTemplate());
 	}
 
 	private ContainerTemplate template() {

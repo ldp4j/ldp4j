@@ -46,6 +46,8 @@ import org.springframework.core.io.UrlResource;
 
 final class ConfigurationSummary {
 
+	private static final String CLAZZ_NAME = "class org.springframework.osgi.io.OsgiBundleResource";
+
 	public enum ResourceSource {
 		CLASSPATH("classpath"),
 		REMOTE("remote"),
@@ -184,7 +186,7 @@ final class ConfigurationSummary {
 			source=ResourceSource.RAW;
 		} else {
 			String type=resource.getClass().toString();
-			if(type.equals("class org.springframework.osgi.io.OsgiBundleResource")) {
+			if(CLAZZ_NAME.equals(type)) {
 				source=ResourceSource.OSGI_BUNDLE;
 			} else {
 				source=ResourceSource.UNKNOWN;

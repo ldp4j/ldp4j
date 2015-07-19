@@ -109,8 +109,8 @@ public class MonitorizedPropertyPlaceholderConfigurerTest {
 		sut.setModuleName("module");
 		sut.setIgnoreResourceNotFound(true);
 		sut.setLocations(this.locations);
-		System.setProperty(MonitorizedPropertyPlaceholderConfigurer.LDP4j_CONFIG_DUMP, Boolean.TRUE.toString());
-		System.setProperty(MonitorizedPropertyPlaceholderConfigurer.LDP4j_CONFIG_MODULES, "modules, module");
+		System.setProperty(MonitorizedPropertyPlaceholderConfigurer.LDP4J_CONFIG_DUMP, Boolean.TRUE.toString());
+		System.setProperty(MonitorizedPropertyPlaceholderConfigurer.LDP4J_CONFIG_MODULES, "modules, module");
 		Properties mergeProperties = sut.mergeProperties();
 		assertThat(mergeProperties.size(),is(4));
 	}

@@ -27,9 +27,126 @@
 package org.ldp4j.application.data;
 
 import java.net.URI;
-import java.util.concurrent.atomic.AtomicReference;
 
-public final class FormatUtils implements IndividualVisitor {
+public final class FormatUtils {
+
+	private static final class IdFormatter implements IndividualVisitor {
+
+		private String format;
+
+		private IdFormatter() {
+		}
+
+		private String getFormat() {
+			return this.format;
+		}
+
+		@Override
+		public void visitManagedIndividual(ManagedIndividual individual) {
+			this.format=formatManagedIndividualId(individual.id());
+		}
+
+		@Override
+		public void visitRelativeIndividual(RelativeIndividual individual) {
+			this.format=formatRelativeIndividualId(individual.id());
+		}
+
+		@Override
+		public void visitLocalIndividual(LocalIndividual individual) {
+			this.format=formatLocalIndividualId(individual.id());
+		}
+
+		@Override
+		public void visitExternalIndividual(ExternalIndividual individual) {
+			this.format=formatExternalIndividualId(individual.id());
+		}
+
+		@Override
+		public void visitNewIndividual(NewIndividual individual) {
+			this.format=formatNewIndividualId(individual.id());
+		}
+
+	}
+
+	private static final class LiteralFormatter implements LiteralVisitor {
+
+		private String format;
+
+		private LiteralFormatter() {
+		}
+
+		@Override
+		public void visitLiteral(Literal<?> literal) {
+			this.format=String.format(SIMPLE_FORMAT,literal.get(),literal.get().getClass().getCanonicalName());
+		}
+
+		@Override
+		public void visitTypedLiteral(TypedLiteral<?> literal) {
+			this.format=String.format(COMPOSITE_FORMAT,literal.get(),literal.type(),literal.get().getClass().getCanonicalName());
+		}
+
+		@Override
+		public void visitLanguageLiteral(LanguageLiteral literal) {
+			this.format=String.format(COMPOSITE_FORMAT,literal.get(),literal.language(),literal.get().getClass().getCanonicalName());
+		}
+
+		private String getFormat() {
+			return this.format;
+		}
+
+	}
+
+	private static final class ValueFormatter implements ValueVisitor {
+
+		private String format=null;
+
+		private ValueFormatter() {
+		}
+
+		private String getFormat() {
+			return this.format;
+		}
+
+		@Override
+		public void visitLiteral(Literal<?> value) {
+			this.format=FormatUtils.formatLiteral(value);
+		}
+		@Override
+		public void visitIndividual(Individual<?, ?> value) {
+			this.format=FormatUtils.formatId(value);
+		}
+
+	}
+
+	private static final class PropertyValueFormatter implements ValueVisitor {
+
+		private final StringBuilder builder;
+
+		private PropertyValueFormatter(StringBuilder builder) {
+			this.builder = builder;
+		}
+
+		private void formatValue(String str) {
+			this.builder.append(TAB).append(TAB).append(TAB).append("* ").append(str).append(NL);
+		}
+
+		@Override
+		public void visitLiteral(Literal<?> value) {
+			formatValue(FormatUtils.formatLiteral(value));
+		}
+
+		@Override
+		public void visitIndividual(Individual<?, ?> value) {
+			formatValue(FormatUtils.formatId(value));
+		}
+
+	}
+
+	private static final String BLOCK_START = ") {";
+	private static final String BLOCK_END   = "}";
+	private static final String TAB         = "\t";
+	private static final String NL          =System.lineSeparator();
+
 
 	private static final String NEW_ID_FORMAT              = "<%s> {New}";
 	private static final String RELATIVE_ID_FORMAT         = "<%s> {Parent: %s}";
@@ -41,90 +158,58 @@ public final class FormatUtils implements IndividualVisitor {
 	private static final String SIMPLE_FORMAT              = "%s [%s]";
 	private static final String NULL                       = "<null>";
 
-	private String id;
-
 	private FormatUtils() {
 	}
 
-	public String getId() {
-		return this.id;
+	private static String formatNewIndividualId(Object id) {
+		return String.format(NEW_ID_FORMAT, id);
 	}
 
-	private void log(String message, Object... args) {
-		this.id=String.format(message,args);
+	private static String formatExternalIndividualId(Object id) {
+		return String.format(EXTERNAL_ID_FORMAT,id);
 	}
 
-	@Override
-	public void visitManagedIndividual(ManagedIndividual individual) {
-		ManagedIndividualId mId = individual.id();
+	private static String formatLocalIndividualId(Name<?> name) {
+		return String.format(LOCAL_ID_FORMAT,name,name.getClass().getCanonicalName());
+	}
+
+	private static String formatRelativeIndividualId(RelativeIndividualId rid) {
+		return String.format(RELATIVE_ID_FORMAT,rid.path(),rid.parentId());
+	}
+
+	private static String formatManagedIndividualId(ManagedIndividualId mId) {
+		String result=null;
 		if(mId.indirectId()==null) {
-			log(MANAGED_ID_FORMAT,mId.name(),mId.managerId());
+			result=String.format(MANAGED_ID_FORMAT,mId.name(),mId.managerId());
 		} else {
-			log(MANAGED_ID_INDIRECT_FORMAT,mId.name(),mId.managerId(),mId.indirectId());
+			result=String.format(MANAGED_ID_INDIRECT_FORMAT,mId.name(),mId.managerId(),mId.indirectId());
 		}
-	}
-
-	@Override
-	public void visitRelativeIndividual(RelativeIndividual individual) {
-		RelativeIndividualId rId = individual.id();
-		log(RELATIVE_ID_FORMAT,rId.path(),formatId(rId.parentId()));
-	}
-
-	@Override
-	public void visitLocalIndividual(LocalIndividual individual) {
-		Name<?> name = individual.id();
-		Object localId=name.id();
-		log(LOCAL_ID_FORMAT,localId,localId.getClass().getCanonicalName());
-	}
-
-	@Override
-	public void visitExternalIndividual(ExternalIndividual individual) {
-		log(EXTERNAL_ID_FORMAT,individual.id());
-	}
-
-	@Override
-	public void visitNewIndividual(NewIndividual individual) {
-		log(NEW_ID_FORMAT,individual.id());
+		return result;
 	}
 
 	public static String formatLiteral(final Literal<?> literal) {
-		class LiteralFormatter implements LiteralVisitor {
-			private String format;
-			@Override
-			public void visitLiteral(Literal<?> literal) {
-				this.format=String.format(SIMPLE_FORMAT,literal.get(),literal.get().getClass().getCanonicalName());
-			}
-			@Override
-			public void visitTypedLiteral(TypedLiteral<?> literal) {
-				this.format=String.format(COMPOSITE_FORMAT,literal.get(),literal.type(),literal.get().getClass().getCanonicalName());
-			}
-			@Override
-			public void visitLanguageLiteral(LanguageLiteral literal) {
-				this.format=String.format(COMPOSITE_FORMAT,literal.get(),literal.language(),literal.get().getClass().getCanonicalName());
-			}
-			String format() {
-				return this.format;
-			}
+		if(literal==null) {
+			return NULL;
 		}
 		LiteralFormatter literalFormatter = new LiteralFormatter();
 		literal.accept(literalFormatter);
-		return literalFormatter.format();
+		return literalFormatter.getFormat();
 	}
 
-	public static String formatName(Name<?> tmp) {
-		if(tmp==null) {
+	public static String formatName(Name<?> name) {
+		if(name==null) {
 			return NULL;
 		}
-		return String.format(SIMPLE_FORMAT,tmp.id(),tmp.id().getClass().getCanonicalName());
+		return String.format(SIMPLE_FORMAT,name.id(),name.id().getClass().getCanonicalName());
 	}
 
-	public static String formatIndividualId(Individual<?, ?> individual) {
+	public static String formatId(Individual<?, ?> individual) {
 		if(individual==null) {
 			return NULL;
 		}
-		FormatUtils visitor = new FormatUtils();
-		individual.accept(visitor);
-		return visitor.getId();
+		IdFormatter formatter = new IdFormatter();
+		individual.accept(formatter);
+		return formatter.getFormat();
 	}
 
 	public static String formatId(Object id) {
@@ -134,41 +219,55 @@ public final class FormatUtils implements IndividualVisitor {
 		}
 
 		if(id instanceof URI) {
-			result=String.format(EXTERNAL_ID_FORMAT,id);
+			result=formatExternalIndividualId(id);
 		} else if(id instanceof Name<?>) {
-			Name<?> name=(Name<?>)id;
-			result=String.format(LOCAL_ID_FORMAT,name,name.getClass().getCanonicalName());
+			result=formatLocalIndividualId((Name<?>)id);
 		} else if(id instanceof ManagedIndividualId) {
-			ManagedIndividualId mId = (ManagedIndividualId)id;
-			if(mId.indirectId()==null) {
-				result=String.format(MANAGED_ID_FORMAT,mId.name(),mId.managerId());
-			} else {
-				result=String.format(MANAGED_ID_INDIRECT_FORMAT,mId.name(),mId.managerId(),mId.indirectId());
-			}
+			result=formatManagedIndividualId((ManagedIndividualId)id);
 		} else if(id instanceof RelativeIndividualId){
-			RelativeIndividualId rid = (RelativeIndividualId)id;
-			result=String.format(RELATIVE_ID_FORMAT,rid.path(),rid.parentId());
+			result=formatRelativeIndividualId((RelativeIndividualId)id);
 		} else {
-			result=id.toString();
+			result=formatNewIndividualId(id);
 		}
 		return result;
 	}
 
 	public static String formatValue(Value value) {
-		final AtomicReference<String> strValue=new AtomicReference<String>();
-		value.accept(
-			new ValueVisitor() {
-				@Override
-				public void visitLiteral(Literal<?> value) {
-					strValue.set(FormatUtils.formatLiteral(value));
-				}
-				@Override
-				public void visitIndividual(Individual<?, ?> value) {
-					strValue.set(FormatUtils.formatIndividualId(value));
-				}
-			}
-		);
-		return strValue.get();
+		if(value==null) {
+			return NULL;
+		}
+		ValueFormatter formatter=new ValueFormatter();
+		value.accept(formatter);
+		return formatter.getFormat();
 	}
+	public static String formatDataSet(DataSet dataSet) {
+		if(dataSet==null) {
+			return NULL;
+		}
+
+		StringBuilder builder=new StringBuilder();
+		builder.append("DataSet(").append(FormatUtils.formatName(dataSet.name())).append(BLOCK_START).append(NL);
+		for(Individual<?,?> individual:dataSet.individuals()) {
+			if(individual.hasProperties()) {
+				formatIndividual(builder, individual);
+			}
+		}
+		builder.append(BLOCK_END);
+		return builder.toString();
+	}
+
+	private static void formatIndividual(StringBuilder builder, Individual<?, ?> individual) {
+		PropertyValueFormatter formatter=new PropertyValueFormatter(builder);
+		builder.append(TAB).append("- Individual(").append(FormatUtils.formatId(individual)).append(BLOCK_START).append(NL);
+		for(Property property:individual) {
+			builder.append(TAB).append(TAB).append("+ Property(").append(property.predicate()).append(BLOCK_START).append(NL);
+			for(Value value:property) {
+				value.accept(formatter);
+			}
+			builder.append(TAB).append(TAB).append(BLOCK_END).append(NL);
+		}
+		builder.append(TAB).append(BLOCK_END).append(NL);
+	}
+
 
 }

@@ -36,9 +36,9 @@ import org.springframework.core.io.Resource;
 
 public class MonitorizedPropertyPlaceholderConfigurer extends PropertyPlaceholderConfigurer {
 
-	public static final String LDP4j_CONFIG_DUMP = "ldp4j.config.dump";
+	public static final String LDP4J_CONFIG_DUMP = "ldp4j.config.dump";
 
-	public static final String LDP4j_CONFIG_MODULES = "ldp4j.config.modules";
+	public static final String LDP4J_CONFIG_MODULES = "ldp4j.config.modules";
 
 	private ConfigurationSummary table;
 	private String moduleName;
@@ -68,11 +68,11 @@ public class MonitorizedPropertyPlaceholderConfigurer extends PropertyPlaceholde
 
 	private boolean canShowConfiguration(String moduleName) {
 		boolean canShow=false;
-		if(System.getProperty(LDP4j_CONFIG_DUMP)!=null ||
-		   System.getenv().get(LDP4j_CONFIG_DUMP)!=null) {
+		if(System.getProperty(LDP4J_CONFIG_DUMP)!=null ||
+		   System.getenv().get(LDP4J_CONFIG_DUMP)!=null) {
 			Set<String> modules=new HashSet<String>();
-			splitModules(modules, System.getProperty(LDP4j_CONFIG_MODULES,""));
-			splitModules(modules, System.getenv().get(LDP4j_CONFIG_MODULES));
+			splitModules(modules, System.getProperty(LDP4J_CONFIG_MODULES,""));
+			splitModules(modules, System.getenv().get(LDP4J_CONFIG_MODULES));
 			if(modules.contains(moduleName)) {
 				canShow=true;
 			}

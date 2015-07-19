@@ -39,7 +39,30 @@ import com.google.common.collect.Maps;
 
 final class MutableDataSet implements DataSet {
 
-	private static final String NL=System.lineSeparator();
+	private final class IndividualRemover implements ValueVisitor {
+
+		private final Property property;
+		private final Individual<?, ?> src;
+		private final Individual<?, ?> individual;
+
+		private IndividualRemover(Property property, Individual<?, ?> src, Individual<?, ?> individual) {
+			this.property = property;
+			this.src = src;
+			this.individual = individual;
+		}
+
+		@Override
+		public void visitLiteral(Literal<?> value) {
+			// Nothing to do
+		}
+
+		@Override
+		public void visitIndividual(Individual<?, ?> value) {
+			if(value==this.src) {
+				this.individual.removeValue(this.property.predicate(), value);
+			}
+		}
+	}
 
 	private final Name<?> name;
 	private final Map<Serializable,Individual<?,?>> individuals;
@@ -117,62 +140,23 @@ final class MutableDataSet implements DataSet {
 	}
 
 	@Override
-	public String toString() {
-		final StringBuilder builder=new StringBuilder();
-		builder.append("DataSet(").append(FormatUtils.formatName(name)).append(") {").append(NL);
+	public void remove(final Individual<?, ?> src) {
+		if(this!=src.dataSet()) {
+			return;
+		}
 		for(Individual<?,?> individual:this) {
-			if(individual.hasProperties()) {
-				builder.append("\t").append("- Individual(").append(FormatUtils.formatIndividualId(individual)).append(") {").append(NL);
-				for(Property property:individual) {
-					builder.append("\t").append("\t").append("+ Property(").append(property.predicate()).append(") {").append(NL);
-					for(Value value:property) {
-						value.accept(
-							new ValueVisitor() {
-								@Override
-								public void visitLiteral(Literal<?> value) {
-									builder.append("\t").append("\t").append("\t").append("* ").append(FormatUtils.formatLiteral(value)).append(NL);
-								}
-								@Override
-								public void visitIndividual(Individual<?, ?> value) {
-									builder.append("\t").append("\t").append("\t").append("* ").append(FormatUtils.formatIndividualId(value)).append(NL);
-								}
-							}
-						);
-					}
-					builder.append("\t").append("\t").append("}").append(NL);
+			for(Property property:individual) {
+				for(Value value:property) {
+					value.accept(new IndividualRemover(property,src,individual));
 				}
-			builder.append("\t").append("}").append(NL);
 			}
 		}
-		builder.append("}");
-		return builder.toString();
+		this.individuals.remove(src.id());
 	}
 
 	@Override
-	public void remove(final Individual<?, ?> src) {
-		if(this==src.dataSet()) {
-			for(final Individual<?,?> individual:this) {
-				for(final Property property:individual) {
-					for(Value value:property) {
-						value.accept(
-							new ValueVisitor() {
-								@Override
-								public void visitLiteral(Literal<?> value) {
-									// Nothing to do
-								}
-								@Override
-								public void visitIndividual(Individual<?, ?> value) {
-									if(value==src) {
-										individual.removeValue(property.predicate(), value);
-									}
-								}
-							}
-						);
-					}
-				}
-				this.individuals.remove(src.id());
-			}
-		}
+	public String toString() {
+		return FormatUtils.formatDataSet(this);
 	}
 
 }

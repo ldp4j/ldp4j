@@ -220,8 +220,7 @@ final class TripleSetBuilder {
 					} else if(indirectId!=null) {
 						path=path.resolve(indirectId);
 					}
-					URIRef resolved = uriRef(base.resolve(path));
-					return resolved;
+					return uriRef(base.resolve(path));
 				}
 				@Override
 				public void visitManagedIndividual(ManagedIndividual individual) {

@@ -145,7 +145,16 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	}
 
-	private static Logger LOGGER=LoggerFactory.getLogger(DefaultApplicationContext.class);
+	private static final String APPLICATION_LIFECYCLE_LISTENER_CANNOT_BE_NULL = "Application lifecycle listener cannot be null";
+	private static final String APPLICATION_INITILIZATION_FAILED              = "Application '{}' initilization failed";
+	private static final String COULD_NOT_FIND_CONTAINER_FOR_ENDPOINT         = "Could not find container for endpoint '%s'";
+	private static final String COULD_NOT_FIND_RESOURCE_FOR_ENDPOINT          = "Could not find resource for endpoint '%s'";
+	private static final String RESOURCE_RETRIEVAL_FAILED                     = "Resource '%s' retrieval failed ";
+	private static final String RESOURCE_CREATION_FAILED                      = "Resource creation failed at '%s'";
+	private static final String RESOURCE_DELETION_FAILED                      = "Resource deletion failed at '%s'";
+	private static final String RESOURCE_MODIFICATION_FAILED                  = "Resource modification failed at '%s'";
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(DefaultApplicationContext.class);
 
 	private Application<Configuration> application;
 
@@ -249,7 +258,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = loadResource(resourceId);
 		if(resource==null) {
-			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
+			String errorMessage = applicationFailureMessage(COULD_NOT_FIND_RESOURCE_FOR_ENDPOINT,endpoint);
 			LOGGER.error(errorMessage);
 			throw new ApplicationExecutionException(errorMessage);
 		}
@@ -260,7 +269,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 						createConfiguration(resource);
 			return this.engine().resourceControllerService().getResource(resource,config);
 		} catch (Exception e) {
-			String errorMessage = applicationFailureMessage("Resource '%s' retrieval failed ",endpoint);
+			String errorMessage = applicationFailureMessage(RESOURCE_RETRIEVAL_FAILED,endpoint);
 			throw createException(errorMessage,e);
 		}
 	}
@@ -281,7 +290,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		ResourceId resourceId=endpoint.resourceId();
 		Container resource = this.resourceRepository.containerOfId(resourceId);
 		if(resource==null) {
-			String errorMessage = applicationFailureMessage("Could not find container for endpoint '%s'",endpoint);
+			String errorMessage = applicationFailureMessage(COULD_NOT_FIND_CONTAINER_FOR_ENDPOINT,endpoint);
 			LOGGER.error(errorMessage);
 			throw new ApplicationExecutionException(errorMessage);
 		}
@@ -293,10 +302,10 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			return this.engine().resourceControllerService().createResource(resource,dataSet,config);
 		} catch (FeatureExecutionException e) {
 			processConstraintValidationFailure(resource, e);
-			String errorMessage = applicationFailureMessage("Resource create failed at '%s'",endpoint);
+			String errorMessage = applicationFailureMessage(RESOURCE_CREATION_FAILED,endpoint);
 			throw createException(errorMessage,e);
 		} catch (Exception e) {
-			String errorMessage = applicationFailureMessage("Resource create failed at '%s'",endpoint);
+			String errorMessage = applicationFailureMessage(RESOURCE_CREATION_FAILED,endpoint);
 			throw createException(errorMessage,e);
 		}
 	}
@@ -305,7 +314,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = loadResource(resourceId);
 		if(resource==null) {
-			String errorMessage = applicationFailureMessage("Could not find container for endpoint '%s'",endpoint);
+			String errorMessage = applicationFailureMessage(COULD_NOT_FIND_CONTAINER_FOR_ENDPOINT,endpoint);
 			LOGGER.error(errorMessage);
 			throw new ApplicationExecutionException(errorMessage);
 		}
@@ -316,7 +325,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 						createConfiguration(resource);
 			this.engine().resourceControllerService().deleteResource(resource,config);
 		} catch (Exception e) {
-			String errorMessage = applicationFailureMessage("Resource deletion failed at '%s'",endpoint);
+			String errorMessage = applicationFailureMessage(RESOURCE_DELETION_FAILED,endpoint);
 			throw createException(errorMessage,e);
 		}
 	}
@@ -325,7 +334,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = loadResource(resourceId);
 		if(resource==null) {
-			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
+			String errorMessage = applicationFailureMessage(COULD_NOT_FIND_RESOURCE_FOR_ENDPOINT,endpoint);
 			LOGGER.error(errorMessage);
 			throw new ApplicationExecutionException(errorMessage);
 		}
@@ -337,10 +346,10 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			this.engine().resourceControllerService().updateResource(resource,dataSet,config);
 		} catch (FeatureExecutionException e) {
 			processConstraintValidationFailure(resource, e);
-			String errorMessage = applicationFailureMessage("Resource modification failed at '%s'",endpoint);
+			String errorMessage = applicationFailureMessage(RESOURCE_MODIFICATION_FAILED,endpoint);
 			throw createException(errorMessage,e);
 		} catch (Exception e) {
-			String errorMessage = applicationFailureMessage("Resource modification failed at '%s'",endpoint);
+			String errorMessage = applicationFailureMessage(RESOURCE_MODIFICATION_FAILED,endpoint);
 			throw createException(errorMessage,e);
 		}
 	}
@@ -350,7 +359,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		// TODO: Check if it is really necessary
 		Resource resource = loadResource(resourceId);
 		if(resource==null) {
-			String errorMessage = applicationFailureMessage("Could not find resource for endpoint '%s'",endpoint);
+			String errorMessage = applicationFailureMessage(COULD_NOT_FIND_RESOURCE_FOR_ENDPOINT,endpoint);
 			LOGGER.error(errorMessage);
 			throw new ApplicationExecutionException(errorMessage);
 		}
@@ -394,8 +403,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			this.application=this.engine().applicationLifecycleService().initialize(applicationClassName);
 			this.configuration=this.engine().applicationLifecycleService().configuration();
 		} catch (ApplicationContextCreationException e) {
-			String errorMessage = "Application '"+applicationClassName+"' initilization failed";
-			LOGGER.error(errorMessage,e);
+			LOGGER.error(APPLICATION_INITILIZATION_FAILED,applicationClassName,e);
 			throw e;
 		}
 	}
@@ -450,7 +458,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	 */
 	@Override
 	public void registerApplicationLifecycleListener(ApplicationLifecycleListener listener) {
-		checkNotNull(listener,"Application lifecycle listener cannot be null");
+		checkNotNull(listener,APPLICATION_LIFECYCLE_LISTENER_CANNOT_BE_NULL);
 		this.engine().applicationLifecycleService().registerApplicationLifecycleListener(listener);
 	}
 
@@ -459,7 +467,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	 */
 	@Override
 	public void deregisterApplicationLifecycleListener(ApplicationLifecycleListener listener) {
-		checkNotNull(listener,"Application lifecycle listener cannot be null");
+		checkNotNull(listener,APPLICATION_LIFECYCLE_LISTENER_CANNOT_BE_NULL);
 		this.engine().applicationLifecycleService().deregisterApplicationLifecycleListener(listener);
 	}
 

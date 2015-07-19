@@ -205,6 +205,14 @@ final class TripleResolver {
 	private TripleResolver() {
 	}
 
+	private TripleResolver(TripleResolver other) {
+		setApplication(other.application);
+		setEndpoint(other.endpoint);
+		setAlternative(other.alternative);
+		setEntity(other.entity,other.type);
+		setTripleResolutions(other.resolutions);
+	}
+
 	private void setEntity(String entity, MediaType type) {
 		this.entity=entity;
 		this.type=type;
@@ -216,14 +224,6 @@ final class TripleResolver {
 
 	private void setEndpoint(URI endpoint) {
 		this.endpoint = endpoint;
-	}
-
-	private TripleResolver(TripleResolver other) {
-		setApplication(other.application);
-		setEndpoint(other.endpoint);
-		setAlternative(other.alternative);
-		setEntity(other.entity,other.type);
-		setTripleResolutions(other.resolutions);
 	}
 
 	private void setApplication(URI application) {

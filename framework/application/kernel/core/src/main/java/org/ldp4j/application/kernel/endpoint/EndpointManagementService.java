@@ -96,8 +96,15 @@ public final class EndpointManagementService implements Service {
 
 	}
 
-	private static Logger LOGGER=LoggerFactory.getLogger(EndpointManagementService.class);
+	private static final String RESOURCE_IDENTIFIER_CANNOT_BE_NULL = "Resource identifier cannot be null";
+	private static final String PATH_CANNOT_BE_NULL                = "Path cannot be null";
+	private static final String LAST_MODIFIED_CANNOT_BE_NULL       = "Last modified cannot be null";
+	private static final String ENTITY_TAG_CANNOT_BE_NULL          = "Entity tag cannot be null";
+	private static final String RESOURCE_CANNOT_BE_NULL            = "Resource cannot be null";
 
+	private static final Logger LOGGER=LoggerFactory.getLogger(EndpointManagementService.class);
+
+	// TODO: Make this configurable, or subject to a policy
 	private static final int MAX_ENDPOINT_CREATION_FAILURE = 3;
 
 	private final TemplateManagementService templateManagementService;
@@ -220,7 +227,7 @@ public final class EndpointManagementService implements Service {
 	}
 
 	public Endpoint getResourceEndpoint(ResourceId resourceId) throws EndpointNotFoundException {
-		checkNotNull(resourceId,"Resource identifier cannot be null");
+		checkNotNull(resourceId,RESOURCE_IDENTIFIER_CANNOT_BE_NULL);
 		Endpoint endpoint = this.endpointRepository.endpointOfResource(resourceId);
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resourceId);
@@ -229,7 +236,7 @@ public final class EndpointManagementService implements Service {
 	}
 
 	public Endpoint resolveEndpoint(String path) {
-		checkNotNull(path,"Path cannot be null");
+		checkNotNull(path,PATH_CANNOT_BE_NULL);
 		return this.endpointRepository.endpointOfPath(path);
 	}
 
@@ -241,9 +248,9 @@ public final class EndpointManagementService implements Service {
 	 * a generated date from the origin server
 	 */
 	public Endpoint createEndpointForResource(Resource resource, String relativePath, EntityTag entityTag, Date lastModified) throws EndpointCreationException {
-		checkNotNull(resource,"Resource cannot be null");
-		checkNotNull(entityTag,"Entity tag cannot be null");
-		checkNotNull(lastModified,"Last modified cannot be null");
+		checkNotNull(resource,RESOURCE_CANNOT_BE_NULL);
+		checkNotNull(entityTag,ENTITY_TAG_CANNOT_BE_NULL);
+		checkNotNull(lastModified,LAST_MODIFIED_CANNOT_BE_NULL);
 		Endpoint newEndpoint = createEndpoint(resource, relativePath, entityTag, lastModified);
 		this.listenerManager.notify(new EndpointCreationNotification(newEndpoint));
 		return newEndpoint;
@@ -257,9 +264,9 @@ public final class EndpointManagementService implements Service {
 	 * a generated date from the origin server
 	 */
 	public Endpoint modifyResourceEndpoint(Resource resource, EntityTag entityTag, Date lastModified) throws EndpointNotFoundException {
-		checkNotNull(resource,"Resource cannot be null");
-		checkNotNull(entityTag,"Entity tag cannot be null");
-		checkNotNull(lastModified,"Last modified cannot be null");
+		checkNotNull(resource,RESOURCE_CANNOT_BE_NULL);
+		checkNotNull(entityTag,ENTITY_TAG_CANNOT_BE_NULL);
+		checkNotNull(lastModified,LAST_MODIFIED_CANNOT_BE_NULL);
 		Endpoint endpoint = this.endpointRepository.endpointOfResource(resource.id());
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resource.id());
@@ -269,7 +276,7 @@ public final class EndpointManagementService implements Service {
 	}
 
 	public Endpoint deleteResourceEndpoint(Resource resource, Date deletionDate) throws EndpointNotFoundException {
-		checkNotNull(resource,"Resource cannot be null");
+		checkNotNull(resource,RESOURCE_CANNOT_BE_NULL);
 		Endpoint endpoint = this.endpointRepository.endpointOfResource(resource.id());
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resource.id());

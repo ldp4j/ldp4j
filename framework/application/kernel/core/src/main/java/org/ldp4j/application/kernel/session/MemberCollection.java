@@ -76,7 +76,9 @@ final class MemberCollection {
 	}
 
 	boolean removeMember(ResourceSnapshot member) {
-		if(member==null) return false;
+		if(member==null) {
+			return false;
+		}
 		boolean result = this.members.containsValue(member);
 		if(result) {
 			this.newMembers.remove(member);

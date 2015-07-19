@@ -62,7 +62,7 @@ public final class VariantUtils {
 	 * @return A list of acceptable variants.
 	 */
 	public static List<Variant> createVariants(MediaType... mediaTypes) {
-		List<Variant> variants =
+		return
 			Variant.VariantListBuilder.
 				newInstance().
 					mediaTypes(mediaTypes).
@@ -70,7 +70,6 @@ public final class VariantUtils {
 					languages().
 					add().
 					build();
-		return variants;
 	}
 
 	public static List<Variant> createVariants(Collection<? extends MediaType> mediaTypes) {

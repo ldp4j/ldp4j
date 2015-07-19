@@ -79,6 +79,14 @@ public final class DataTransformator {
 
 	private Namespaces namespaces;
 
+	private DataTransformator(DataTransformator dataTransformation) {
+		setApplicationBase(dataTransformation.applicationBase);
+		setEndpoint(dataTransformation.endpoint, dataTransformation.permanent);
+		setResourceResolver(dataTransformation.resourceResolver);
+		setMediaType(dataTransformation.mediaType);
+		setNamespaces(dataTransformation.namespaces);
+	}
+
 	private DataTransformator() {
 		setResourceResolver(DEFAULT_RESOLVER);
 		setEndpoint(DEFAULT_ENDPOINT, true);
@@ -92,14 +100,6 @@ public final class DataTransformator {
 				addPrefix("rdfs", RDFS.NAMESPACE).
 				addPrefix("xsd", "http://www.w3.org/2001/XMLSchema#").
 				addPrefix("ldp", LDP.NAMESPACE);
-	}
-
-	private DataTransformator(DataTransformator dataTransformation) {
-		setApplicationBase(dataTransformation.applicationBase);
-		setEndpoint(dataTransformation.endpoint, dataTransformation.permanent);
-		setResourceResolver(dataTransformation.resourceResolver);
-		setMediaType(dataTransformation.mediaType);
-		setNamespaces(dataTransformation.namespaces);
 	}
 
 	private void setMediaType(MediaType mediaType) {

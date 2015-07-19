@@ -57,7 +57,7 @@ final class UnitOfWork {
 	}
 
 	public interface EventHandler {
-		
+
 		public void notifyObjectCreation(DelegatedResourceSnapshot obj);
 
 		public void notifyObjectUpdate(DelegatedResourceSnapshot obj);
@@ -69,17 +69,27 @@ final class UnitOfWork {
 	public interface Visitor {
 
 		void visitNew(DelegatedResourceSnapshot obj);
-		
+
 		void visitDirty(DelegatedResourceSnapshot obj);
 
 		void visitDeleted(DelegatedResourceSnapshot obj);
-		
+
 	}
-	
+
+	private static final String NEW     = "new";
+	private static final String DIRTY   = "dirty";
+	private static final String DELETED = "deleted";
+
+	private static final String REGISTERED_OBJECT_OF_TYPE            = "Registered {} object '{}' of type '{}'";
+	private static final String SNAPSHOT_CANNOT_BE_NULL              = "Snapshot cannot be null";
+	private static final String SNAPSHOT_HAS_BEEN_ALREADY_DELETED    = "Snapshot has been already deleted";
+	private static final String SNAPSHOT_HAS_BEEN_ALREADY_REGISTERED = "Snapshot has been already registered";
+	private static final String SNAPSHOT_HAS_BEEN_ALREADY_MODIFIED   = "Snapshot has been already modified";
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(UnitOfWork.class);
-	
+
 	private static ThreadLocal<UnitOfWork> CURRENT=new ThreadLocal<UnitOfWork>();
-	
+
 	private final List<DelegatedResourceSnapshot> newObjects=new ArrayList<DelegatedResourceSnapshot>();
 	private final List<DelegatedResourceSnapshot> dirtyObjects=new ArrayList<DelegatedResourceSnapshot>();
 	private final List<DelegatedResourceSnapshot> deletedObjects=new ArrayList<DelegatedResourceSnapshot>();
@@ -92,7 +102,7 @@ final class UnitOfWork {
 
 	private void traceRegistration(DelegatedResourceSnapshot resource, String category) {
 		if(LOGGER.isTraceEnabled()) {
-			LOGGER.trace("Registered "+category+" object '"+resource.name()+"' of type '"+resource.getClass().getCanonicalName()+"'");
+			LOGGER.trace(REGISTERED_OBJECT_OF_TYPE,category,resource.name(),resource.getClass().getCanonicalName());
 		}
 	}
 
@@ -109,38 +119,38 @@ final class UnitOfWork {
 	}
 
 	public void registerNew(DelegatedResourceSnapshot snapshot) {
-		checkNotNull(snapshot,"Snapshot cannot be null");
-		checkState(!newObjects.contains(snapshot),"Snapshot has been already registered");
-		checkState(!dirtyObjects.contains(snapshot),"Snapshot has been already modified");
-		checkState(!deletedObjects.contains(snapshot),"Snapshot has been already deleted");
+		checkNotNull(snapshot,SNAPSHOT_CANNOT_BE_NULL);
+		checkState(!newObjects.contains(snapshot),SNAPSHOT_HAS_BEEN_ALREADY_REGISTERED);
+		checkState(!dirtyObjects.contains(snapshot),SNAPSHOT_HAS_BEEN_ALREADY_MODIFIED);
+		checkState(!deletedObjects.contains(snapshot),SNAPSHOT_HAS_BEEN_ALREADY_DELETED);
 		newObjects.add(snapshot);
-		traceRegistration(snapshot, "new");
+		traceRegistration(snapshot,NEW);
 		handler.notifyObjectCreation(snapshot);
 	}
 
 	public void registerDirty(DelegatedResourceSnapshot resource) {
-		checkNotNull(resource,"Snapshot cannot be null");
-		checkState(!deletedObjects.contains(resource),"Snapshot has been already deleted");
+		checkNotNull(resource,SNAPSHOT_CANNOT_BE_NULL);
+		checkState(!deletedObjects.contains(resource),SNAPSHOT_HAS_BEEN_ALREADY_DELETED);
 		if(!dirtyObjects.contains(resource) && !newObjects.contains(resource)) {
 			dirtyObjects.add(resource);
-			traceRegistration(resource, "dirty");
+			traceRegistration(resource,DIRTY);
 			handler.notifyObjectUpdate(resource);
 		}
 	}
 
 	public void registerDeleted(DelegatedResourceSnapshot snapshot) {
-		checkNotNull(snapshot,"Snapshot cannot be null");
+		checkNotNull(snapshot,SNAPSHOT_CANNOT_BE_NULL);
 		if(newObjects.remove(snapshot)) {
 			return;
 		}
 		dirtyObjects.remove(snapshot);
 		if(!deletedObjects.contains(snapshot)) {
 			deletedObjects.add(snapshot);
-			traceRegistration(snapshot, "deleted");
+			traceRegistration(snapshot,DELETED);
 			handler.notifyObjectDeletion(snapshot);
 		}
 	}
-	
+
 	public void setEventHandler(EventHandler handler) {
 		if(handler==null) {
 			this.handler=new NullEventHandler();
@@ -148,17 +158,17 @@ final class UnitOfWork {
 			this.handler = handler;
 		}
 	}
-	
+
 	public static UnitOfWork newCurrent() {
 		UnitOfWork uow = new UnitOfWork();
 		setCurrent(uow);
 		return uow;
 	}
-	
+
 	public static void setCurrent(UnitOfWork uow) {
 		CURRENT.set(uow);
 	}
-	
+
 	public static UnitOfWork getCurrent() {
 		return CURRENT.get();
 	}

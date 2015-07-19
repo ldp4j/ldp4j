@@ -42,6 +42,8 @@ import org.ldp4j.application.kernel.resource.ResourceId;
 
 final class DefaultGonePublicResource extends DefaultPublicResource {
 
+	private static final String THE_ENDPOINT_IS_GONE = "The endpoint is gone";
+
 	DefaultGonePublicResource(DefaultApplicationContext applicationContext, Endpoint endpoint) {
 		super(applicationContext,endpoint);
 	}
@@ -53,62 +55,62 @@ final class DefaultGonePublicResource extends DefaultPublicResource {
 
 	@Override
 	public ManagedIndividualId individualId() {
-		throw new UnsupportedOperationException("The endpoint is gone");
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 
 	@Override
 	public <T> T accept(PublicResourceVisitor<T> visitor) {
-		throw new UnsupportedOperationException("The endpoint is gone");
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 
 	@Override
 	public DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException {
-		throw new UnsupportedOperationException("The endpoint is gone");
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 
 	@Override
 	public void delete() throws ApplicationExecutionException {
-		throw new UnsupportedOperationException("The endpoint is gone");
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 
 	@Override
 	public void modify(DataSet dataSet) throws ApplicationExecutionException {
-		throw new UnsupportedOperationException("The endpoint is gone");
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 
 	@Override
 	public DataSet getConstraintReport(String failureId) {
-		throw new UnsupportedOperationException("The endpoint is gone");
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 
 	@Override
 	protected DataSet metadata() {
-		throw new UnsupportedOperationException("The endpoint is gone");
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 
 	@Override
 	protected DataSet resourceData(ContentPreferences contentPreferences) throws ApplicationExecutionException {
-		throw new UnsupportedOperationException("The endpoint is gone");
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 
 	@Override
 	protected ResourceId id() {
-		throw new UnsupportedOperationException("The endpoint is gone");
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 
 	@Override
 	protected void fillInMetadata(ContentPreferences contentPreferences, Individual<?, ?> individual, Context ctx) {
-		throw new UnsupportedOperationException("The endpoint is gone");
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 
 	@Override
 	protected void configureValidationConstraints(ValidatorBuilder builder, Individual<?, ?> individual, DataSet metadata) {
-		throw new UnsupportedOperationException("The endpoint is gone");
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 
 	@Override
 	protected ManagedIndividualId indirectIndividualId() {
-		throw new UnsupportedOperationException("The endpoint is gone");
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 
 }

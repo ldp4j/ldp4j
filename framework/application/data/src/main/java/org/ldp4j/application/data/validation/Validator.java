@@ -146,7 +146,7 @@ public final class Validator {
 			if(constraint.mustBeChecked() && !isChecked(constraint)) {
 				report.addUncheckedValidationConstraint(constraint);
 				if(LOGGER.isTraceEnabled()) {
-					LOGGER.trace("Validation constraint '"+constraint+"' has not been checked");
+					LOGGER.trace("Validation constraint '{}' has not been checked"+constraint);
 				}
 			}
 		}
@@ -171,12 +171,12 @@ public final class Validator {
 			}
 			if(LOGGER.isTraceEnabled()) {
 				if(!log.checked()) {
-					LOGGER.trace("Validation constraint '"+constraint+"' was not checked for element '"+format(item)+"'");
+					LOGGER.trace("Validation constraint '{}' was not checked for element '{}' ",constraint,format(item));
 				} else {
 					if(log.success()) {
-						LOGGER.trace("Validation constraint '"+constraint+"' for element '"+format(item)+"' succeded");
+						LOGGER.trace("Validation constraint '{}' for element '{}' succeded",constraint,format(item));
 					} else {
-						LOGGER.trace("Validation constraint '"+constraint+"' failed for element '"+format(item)+"': "+log.validationFailure());
+						LOGGER.trace("Validation constraint '{}' failed for element '{}': {}",constraint,format(item),log.validationFailure());
 					}
 				}
 			}
@@ -188,7 +188,7 @@ public final class Validator {
 		if(item instanceof DataSet) {
 			result="DataSet {"+FormatUtils.formatName(((DataSet)item).name())+"}";
 		} else  if(item instanceof Individual<?,?>) {
-			result="Individual {"+FormatUtils.formatIndividualId((Individual<?,?>)item)+"}";
+			result="Individual {"+FormatUtils.formatId((Individual<?,?>)item)+"}";
 		} else  if(item instanceof Property) {
 			result="Property {"+((Property)item).predicate()+"}";
 		}

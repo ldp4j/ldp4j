@@ -26,7 +26,7 @@
  */
 package org.ldp4j.application.data;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.Serializable;
 import java.net.URI;
@@ -45,17 +45,6 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
 public final class Literals {
-
-	private static final String DATATYPE_CANNOT_BE_NULL = "Datatype cannot be null";
-	private static final String LANGUAGE_CANNOT_BE_NULL = "Language cannot be null";
-	private static final String STRING_CANNOT_BE_NULL = "String cannot be null";
-	private static final String TIME_UNIT_CANNOT_BE_NULL = "Time unit cannot be null";
-	private static final String DATE_TIME_CANNOT_BE_NULL = "Date-time cannot be null";
-	private static final String LITERAL_VALUE_CANNOT_BE_NULL = "Literal value cannot be null";
-	private static final String CALENDAR_CANNOT_BE_NULL = "Calendar cannot be null";
-	private static final String TIME_CANNOT_BE_NULL = "Time cannot be null";
-	private static final String DATE_CANNOT_BE_NULL = "Date cannot be null";
-	private static final String DURATION_CANNOT_BE_NULL = "Duration cannot be null";
 
 	public abstract static class AbstractDateTimeLiteralBuilder {
 
@@ -149,6 +138,17 @@ public final class Literals {
 
 	}
 
+	private static final String DATATYPE_CANNOT_BE_NULL = "Datatype cannot be null";
+	private static final String LANGUAGE_CANNOT_BE_NULL = "Language cannot be null";
+	private static final String STRING_CANNOT_BE_NULL = "String cannot be null";
+	private static final String TIME_UNIT_CANNOT_BE_NULL = "Time unit cannot be null";
+	private static final String DATE_TIME_CANNOT_BE_NULL = "Date-time cannot be null";
+	private static final String LITERAL_VALUE_CANNOT_BE_NULL = "Literal value cannot be null";
+	private static final String CALENDAR_CANNOT_BE_NULL = "Calendar cannot be null";
+	private static final String TIME_CANNOT_BE_NULL = "Time cannot be null";
+	private static final String DATE_CANNOT_BE_NULL = "Date cannot be null";
+	private static final String DURATION_CANNOT_BE_NULL = "Duration cannot be null";
+
 	private static final URI STRING = URI.create("http://www.w3.org/2001/XMLSchema#string");
 	private static final URI DATE_TIME=toURI(DatatypeConstants.DATETIME);
 	private static final URI DATE=toURI(DatatypeConstants.DATE);
@@ -169,6 +169,7 @@ public final class Literals {
 		Calendar.class,
 		XMLGregorianCalendar.class
 	};
+
 	private static final Class<?>[] DURATION_CLASSES={
 		Duration.class,
 		javax.xml.datatype.Duration.class
@@ -187,7 +188,7 @@ public final class Literals {
 
 	private static boolean isTemporalDatatype(URI datatype) {
 		return
-			Literals.DATE_TIME.equals(datatype) ||
+			Literals.DATE_TIME.equals(datatype) || // NOSONAR
 			Literals.DATE.equals(datatype) ||
 			Literals.TIME.equals(datatype) ||
 			Literals.GYEAR.equals(datatype) ||

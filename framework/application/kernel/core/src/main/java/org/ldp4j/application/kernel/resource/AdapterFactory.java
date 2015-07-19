@@ -155,8 +155,7 @@ final class AdapterFactory {
 		public Resource create(DataSet content) throws FeatureException {
 			try {
 				ResourceSnapshot create = as(ContainerHandler.class).create(resource(),content,writeSession());
-				Resource detach = detach(create);
-				return detach;
+				return detach(create);
 			} catch (ApplicationUsageException e) {
 				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),ContainerHandler.class.getCanonicalName(),e);
 			} catch (ApplicationRuntimeException e) {

@@ -33,6 +33,9 @@ import java.util.regex.Pattern;
 
 final class EntityTagHelper {
 
+	private static final String  ENTITY_TAG_VALUE_NOT_PROPERLY_QUOTED_S = "Entity tag value not properly quoted (%s)";
+	private static final String  ENTITY_TAG_VALUE_CANNOT_BE_NULL = "Entity tag value cannot be null";
+	private static final String  MISFORMATTED_ENTITY_TAG = "Misformatted entity tag : ";
 	private static final String  ETAG_REGEX  ="(W/)?\"(([\\x20-\\x21]|[\\x23-\\x7E]|[\\x80-\\xFF]|\\[\\x00-\\x7f])*)\"";
 	private static final Pattern ETAG_PATTERN=Pattern.compile(ETAG_REGEX);
 
@@ -45,7 +48,7 @@ final class EntityTagHelper {
 	}
 
 	static EntityTag fromString0(String header) {
-		checkNotNull(header,"Entity tag value cannot be null");
+		checkNotNull(header,ENTITY_TAG_VALUE_CANNOT_BE_NULL);
 
 		if(WILDCARD_ETAG.equals(header)) {
 			return new EntityTag(WILDCARD_ETAG,false);
@@ -79,13 +82,13 @@ final class EntityTagHelper {
 
 	private static void assertHasNoInnerQuotationMarks(String header, String tag) {
 		if(tag.contains(QUOTATION_MARK)) {
-			throw new IllegalArgumentException("Misformatted entity tag : "+ header);
+			throw new IllegalArgumentException(MISFORMATTED_ENTITY_TAG+header);
 		}
 	}
 
 	private static void assertIsProperlyQuoted(String header, String tag) {
 		if (tag.length() < 2 || !tag.startsWith(QUOTATION_MARK) || !tag.endsWith(QUOTATION_MARK)) {
-			throw new IllegalArgumentException("Misformatted entity tag : "+ header);
+			throw new IllegalArgumentException(MISFORMATTED_ENTITY_TAG+header);
 		}
 	}
 
@@ -93,7 +96,7 @@ final class EntityTagHelper {
 		EntityTag unquoted=null;
 		if (tag.length() > 0 && !tag.startsWith(QUOTATION_MARK) && !tag.endsWith(QUOTATION_MARK)) {
 			if(tag.contains(QUOTATION_MARK)) {
-				throw new IllegalArgumentException("Misformatted entity tag : "+ header);
+				throw new IllegalArgumentException(MISFORMATTED_ENTITY_TAG+header);
 			} else {
 				unquoted=new EntityTag(tag, weak);
 			}
@@ -102,7 +105,7 @@ final class EntityTagHelper {
 	}
 
 	static EntityTag fromString(String header) {
-		checkNotNull(header,"Entity tag value cannot be null");
+		checkNotNull(header,ENTITY_TAG_VALUE_CANNOT_BE_NULL);
 		boolean weak=false;
 		String tag=header;
 		if(tag.startsWith(WEAK_PREFIX)) {
@@ -149,11 +152,11 @@ final class EntityTagHelper {
 		boolean quotationEnd=tag.endsWith(QUOTATION_MARK);
 		if(quotationStart!=quotationEnd) {
 			if(quotationEnd && tag.charAt(tag.length()-2)!='\\') {
-				throw new IllegalArgumentException("Entity tag value not properly quoted ("+tag+")");
+				throw new IllegalArgumentException(String.format(ENTITY_TAG_VALUE_NOT_PROPERLY_QUOTED_S,tag));
 			}
 		} else if(quotationStart) {
 			if (value.length()==1) {
-				throw new IllegalArgumentException("Entity tag value not properly quoted ("+tag+")");
+				throw new IllegalArgumentException(String.format(ENTITY_TAG_VALUE_NOT_PROPERLY_QUOTED_S,tag));
 			} else {
 				tag=tag.substring(1,tag.length()-1);
 			}

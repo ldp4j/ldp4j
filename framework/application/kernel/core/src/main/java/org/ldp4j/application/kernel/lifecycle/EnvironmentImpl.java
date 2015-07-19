@@ -147,7 +147,7 @@ final class EnvironmentImpl implements Environment {
 		final Date creationDate = new Date();
 		for(RootResource entry:this.candidates) {
 			publish(entry, creationDate);
-			LOGGER.debug("Published resource '"+entry.resourceId()+"' at '"+entry.path()+"'");
+			LOGGER.debug("Published resource '{}' at '{}'",entry.resourceId(),entry.path());
 		}
 	}
 
@@ -159,11 +159,11 @@ final class EnvironmentImpl implements Environment {
 		Endpoint prevEndpoint = this.endpointRepository.endpointOfPath(path);
 
 		if(prevEndpoint!=null && !prevEndpoint.resourceId().equals(resourceId)) {
-			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+" cannot be published at '"+path+"' as that path is already in use by a resource "+toString(prevEndpoint.resourceId()));
+			throw new ApplicationConfigurationException(String.format("Resource %s cannot be published at '%s' as that path is already in use by a resource %s",toString(resourceId),path,toString(prevEndpoint.resourceId())));
 		}
 
 		if(prevEndpoint==null && prevResource!=null) {
-			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+" cannot be published at '"+path+"' as it is already published at '"+this.endpointRepository.endpointOfResource(resourceId).path()+"'");
+			throw new ApplicationConfigurationException(String.format("Resource %s cannot be published at '%s' as it is already published at '%s'",toString(resourceId),path,this.endpointRepository.endpointOfResource(resourceId).path()));
 		}
 
 		if(prevResource==null && prevEndpoint==null) {
@@ -188,11 +188,11 @@ final class EnvironmentImpl implements Environment {
 		String path = candidateResource.path();
 		String prevPath=rootResourceMap.get(resourceId);
 		if(prevPath!=null && !prevPath.equals(path)) {
-			throw new ApplicationConfigurationException("Resource "+toString(resourceId)+"' is already published ("+prevPath+")");
+			throw new ApplicationConfigurationException(String.format("Resource %s is already published (%s)",toString(resourceId),prevPath));
 		}
 		ResourceId prevResource=rootResourceMap.inverse().get(path);
 		if(prevResource!=null && !prevResource.equals(resourceId)) {
-			throw new ApplicationConfigurationException("Path '"+path+"' is already used for resource "+toString(prevResource));
+			throw new ApplicationConfigurationException(String.format("Path '%s' is already used by resource %s",path,toString(prevResource)));
 		}
 		rootResourceMap.put(resourceId, path);
 	}

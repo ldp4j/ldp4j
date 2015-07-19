@@ -116,7 +116,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 				try {
 					attachedTemplate.setPredicate(new URI(predicate));
 				} catch (URISyntaxException e) {
-					throw new InvalidAttachmentDefinitionException(template.id(),attachment.id(),"Predicate value '"+predicate+"' is not valid",e);
+					throw new InvalidAttachmentDefinitionException(template.id(),attachment.id(),String.format("Predicate value '%s' is not valid",predicate),e);
 				}
 			}
 		}
@@ -182,7 +182,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 			try {
 				template.setMembershipPredicate(new URI(membershipPredicate(annotation)));
 			} catch (URISyntaxException e) {
-				throw new TemplateCreationException(template.id(),"Membership predicate value '"+membershipPredicate(annotation)+"' is not valid",e);
+				throw new TemplateCreationException(template.id(),String.format("Membership predicate value '%s' is not valid",membershipPredicate(annotation)),e);
 			}
 			return template;
 		}
@@ -322,7 +322,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 				}
 				return new MutableIndirectContainerTemplate(annotation.id(), handler,insertedContentRelation);
 			} catch (URISyntaxException e) {
-				throw new TemplateCreationException(annotation.id(),"Inserted content relation value '"+annotation.insertedContentRelation()+"' is not valid",e);
+				throw new TemplateCreationException(annotation.id(),String.format("Inserted content relation value '%s' is not valid",annotation.insertedContentRelation()),e);
 			}
 		}
 

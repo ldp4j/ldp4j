@@ -84,19 +84,23 @@ public final class ServerFrontend {
 
 	}
 
-	public static final String LDP4J_APPLICATION_CONTEXT = "ldp4jApplicationContext";
-
 	private static final Logger LOGGER=LoggerFactory.getLogger(ServerFrontend.class);
 
-	public static final String PATH="/";
-
 	private static final String ENDPOINT_PATH_PARAM = "path";
-	private static final String ENDPOINT_PATH = "/{"+ENDPOINT_PATH_PARAM+":.*}";
+	private static final String ENDPOINT_PATH       = "/{"+ENDPOINT_PATH_PARAM+":.*}";
+
+	public static final String LDP4J_APPLICATION_CONTEXT = "ldp4jApplicationContext";
+	public static final String PATH                      = "/";
 
 	private final LocalApplicationEngineLifecycleListener lifecyleListener;
 
 	@Context
 	private ServletContext servletContext;
+
+	public ServerFrontend() {
+		this.lifecyleListener=new LocalApplicationEngineLifecycleListener();
+		ApplicationEngine.registerLifecycleListener(this.lifecyleListener);
+	}
 
 	private void checkApplicationEngineAvailable() {
 		if(!this.lifecyleListener.available()) {
@@ -132,11 +136,6 @@ public final class ServerFrontend {
 			new OperationContextBuilder().
 				withApplicationContext(currentContext()).
 				withOperation(operation);
-	}
-
-	public ServerFrontend() {
-		this.lifecyleListener=new LocalApplicationEngineLifecycleListener();
-		ApplicationEngine.registerLifecycleListener(this.lifecyleListener);
 	}
 
 	/**

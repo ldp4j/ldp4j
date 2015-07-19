@@ -115,7 +115,9 @@ class DelegatedResourceSnapshot implements ResourceSnapshot {
 	}
 
 	private final boolean softDetach(AttachmentSnapshot attachment) {
-		if(attachment==null) return false;
+		if(attachment==null) {
+			return false;
+		}
 		checkArgument(attachment instanceof DelegatedAttachmentSnapshot,"Unsupported attachment type");
 		return this.persistencyState.softDetach((DelegatedAttachmentSnapshot)attachment, this);
 	}
@@ -284,7 +286,9 @@ class DelegatedResourceSnapshot implements ResourceSnapshot {
 
 	@Override
 	public final boolean removeAttachment(AttachmentSnapshot attachment) {
-		if(attachment==null) return false;
+		if(attachment==null) {
+			return false;
+		}
 		checkArgument(attachment instanceof DelegatedAttachmentSnapshot,"Unsupported attachment type");
 		DelegatedAttachmentSnapshot delegatedAttachment = (DelegatedAttachmentSnapshot)attachment;
 		return this.persistencyState.removeAttachment(delegatedAttachment,this);

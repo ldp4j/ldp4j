@@ -45,6 +45,9 @@ final class InMemoryTransaction implements Transaction {
 	}
 
 	private final class PendingTransactionState implements TransactionState {
+
+		private static final String TRANSACTION_NOT_INITIATED = "Transaction not initiated";
+
 		@Override
 		public TransactionState begin() {
 			return new InFlightTransactionState();
@@ -52,12 +55,12 @@ final class InMemoryTransaction implements Transaction {
 
 		@Override
 		public TransactionState commit() {
-			throw new IllegalStateException("Transaction not initiated");
+			throw new IllegalStateException(TRANSACTION_NOT_INITIATED);
 		}
 
 		@Override
 		public TransactionState rollback() {
-			throw new IllegalStateException("Transaction not initiated");
+			throw new IllegalStateException(TRANSACTION_NOT_INITIATED);
 		}
 
 		@Override
@@ -73,6 +76,7 @@ final class InMemoryTransaction implements Transaction {
 	}
 
 	private final class InFlightTransactionState implements TransactionState {
+
 		@Override
 		public TransactionState begin() {
 			throw new IllegalStateException("Transaction already initiated");
@@ -103,6 +107,8 @@ final class InMemoryTransaction implements Transaction {
 
 	private final class CompletedTransactionState implements TransactionState {
 
+		private static final String TRANSACTION_ALREADY_FINISHED = "Transaction already finished";
+
 		private String message;
 
 		private CompletedTransactionState(String message) {
@@ -111,17 +117,17 @@ final class InMemoryTransaction implements Transaction {
 
 		@Override
 		public TransactionState begin() {
-			throw new IllegalStateException("Transaction already finished");
+			throw new IllegalStateException(TRANSACTION_ALREADY_FINISHED);
 		}
 
 		@Override
 		public TransactionState commit() {
-			throw new IllegalStateException("Transaction already finished");
+			throw new IllegalStateException(TRANSACTION_ALREADY_FINISHED);
 		}
 
 		@Override
 		public TransactionState rollback() {
-			throw new IllegalStateException("Transaction already finished");
+			throw new IllegalStateException(TRANSACTION_ALREADY_FINISHED);
 		}
 
 		@Override

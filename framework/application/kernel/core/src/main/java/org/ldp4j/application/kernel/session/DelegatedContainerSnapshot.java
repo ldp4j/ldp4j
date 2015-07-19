@@ -43,6 +43,8 @@ import org.ldp4j.application.session.SnapshotVisitor;
 
 final class DelegatedContainerSnapshot extends DelegatedResourceSnapshot implements ContainerSnapshot {
 
+	private static final String UNSUPPORTED_SNAPSHOT_TYPE = "Unsupported snapshot type";
+
 	protected DelegatedContainerSnapshot(ResourceId resourceId,Class<? extends ContainerHandler> handlerClass) {
 		super(resourceId,handlerClass);
 	}
@@ -79,7 +81,7 @@ final class DelegatedContainerSnapshot extends DelegatedResourceSnapshot impleme
 
 	@Override
 	public boolean hasMember(ResourceSnapshot resource) {
-		checkArgument(resource instanceof DelegatedResourceSnapshot,"Unsupported snapshot type");
+		checkArgument(resource instanceof DelegatedResourceSnapshot,UNSUPPORTED_SNAPSHOT_TYPE);
 		return super.persistencyState().hasMember((DelegatedResourceSnapshot)resource,this);
 	}
 
@@ -90,12 +92,12 @@ final class DelegatedContainerSnapshot extends DelegatedResourceSnapshot impleme
 
 	@Override
 	public boolean removeMember(ResourceSnapshot member) {
-		checkArgument(member instanceof DelegatedResourceSnapshot,"Unsupported snapshot type");
+		checkArgument(member instanceof DelegatedResourceSnapshot,UNSUPPORTED_SNAPSHOT_TYPE);
 		return super.persistencyState().removeMember((DelegatedResourceSnapshot)member,this);
 	}
 
 	boolean softRemoveMember(ResourceSnapshot member) {
-		checkArgument(member instanceof DelegatedResourceSnapshot,"Unsupported snapshot type");
+		checkArgument(member instanceof DelegatedResourceSnapshot,UNSUPPORTED_SNAPSHOT_TYPE);
 		return super.persistencyState().softRemoveMember((DelegatedResourceSnapshot)member,this);
 	}
 

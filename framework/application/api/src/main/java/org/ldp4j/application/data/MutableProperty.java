@@ -32,10 +32,58 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 final class MutableProperty implements Property {
+
+	private final class ValueAdder implements ValueVisitor {
+
+		@Override
+		public void visitLiteral(Literal<?> value) {
+			addLiteral(value);
+		}
+
+		@Override
+		public void visitIndividual(Individual<?, ?> value) {
+			addIndividual(value);
+		}
+
+	}
+
+	private final class IndividualTranslator implements IndividualVisitor {
+
+		private Individual<?,?> newIndividual=null;
+
+		private Individual<?,?> getIndividual() {
+			return this.newIndividual;
+		}
+
+		@Override
+		public void visitManagedIndividual(ManagedIndividual individual) {
+			this.newIndividual=dataSet().individual(individual.id(), ManagedIndividual.class);
+		}
+
+		@Override
+		public void visitLocalIndividual(LocalIndividual individual) {
+			this.newIndividual=dataSet().individual(individual.id(), LocalIndividual.class);
+		}
+
+		@Override
+		public void visitExternalIndividual(ExternalIndividual individual) {
+			this.newIndividual=dataSet().individual(individual.id(), ExternalIndividual.class);
+		}
+
+		@Override
+		public void visitRelativeIndividual(RelativeIndividual individual) {
+			this.newIndividual=dataSet().individual(individual.id(), RelativeIndividual.class);
+		}
+
+		@Override
+		public void visitNewIndividual(NewIndividual individual) {
+			this.newIndividual=dataSet().individual(individual.id(), NewIndividual.class);
+		}
+
+	}
 
 	private final URI predicate;
 	private final Individual<?,?> individual;
@@ -54,8 +102,51 @@ final class MutableProperty implements Property {
 		this.values.addAll(property.values());
 	}
 
+	void addValue(Value value) {
+		value.accept(new ValueAdder());
+	}
+
+	void removeValue(Value value) {
+		this.values.remove(value);
+	}
+
+	private void addLiteral(Literal<?> value) {
+		this.values.add(value);
+	}
+
 	private MutableDataSet dataSet() {
 		return this.dataSet;
+	}
+
+	private void addIndividual(Individual<?, ?> value) {
+		Individual<?,?> target=null;
+		if(dataSet().hasIndividual(value.id())) {
+			if(dataSet().equals(value.dataSet())) {
+				target=value;
+			} else {
+				target=dataSet().individualOfId(value.id());
+			}
+		} else {
+			target=addIndividualToDataset(value);
+		}
+		if(target!=value) {
+			mergeIndividuals(value,target);
+		}
+		this.values.add(target);
+	}
+
+	private Individual<?, ?> addIndividualToDataset(Individual<?, ?> value) {
+		IndividualTranslator translator=new IndividualTranslator();
+		value.accept(translator);
+		return translator.getIndividual();
+	}
+
+	private void mergeIndividuals(Individual<?, ?> source, Individual<?, ?> target) {
+		for(Property property:source.properties()) {
+			for(Value value:property) {
+				target.addValue(property.predicate(), value);
+			}
+		}
 	}
 
 	@Override
@@ -103,73 +194,6 @@ final class MutableProperty implements Property {
 	@Override
 	public boolean hasIdentifiedIndividual(Object id) {
 		return Properties.hasIdentifiedIndividual(this,id);
-	}
-
-	void addValue(Value value) {
-		value.accept(
-			new ValueVisitor() {
-				@Override
-				public void visitLiteral(Literal<?> value) {
-					MutableProperty.this.values.add(value);
-				}
-				@Override
-				public void visitIndividual(Individual<?, ?> value) {
-					Individual<?,?> target=null;
-					if(dataSet().hasIndividual(value.id())) {
-						if(dataSet().equals(value.dataSet())) {
-							target=value;
-						} else {
-							target=dataSet().individualOfId(value.id());
-						}
-					} else {
-						target=addIndividualToDataset(value);
-					}
-					if(target!=value) {
-						mergeIndividuals(value,target);
-					}
-					values.add(target);
-				}
-				private Individual<?, ?> addIndividualToDataset(Individual<?, ?> value) {
-					final AtomicReference<Individual<?,?>> newIndividual=new AtomicReference<Individual<?,?>>();
-					value.accept(
-						new IndividualVisitor() {
-							@Override
-							public void visitManagedIndividual(ManagedIndividual individual) {
-								newIndividual.set(dataSet().individual(individual.id(), ManagedIndividual.class));
-							}
-							@Override
-							public void visitLocalIndividual(LocalIndividual individual) {
-								newIndividual.set(dataSet().individual(individual.id(), LocalIndividual.class));
-							}
-							@Override
-							public void visitExternalIndividual(ExternalIndividual individual) {
-								newIndividual.set(dataSet().individual(individual.id(), ExternalIndividual.class));
-							}
-							@Override
-							public void visitRelativeIndividual(RelativeIndividual individual) {
-								newIndividual.set(dataSet().individual(individual.id(), RelativeIndividual.class));
-							}
-							@Override
-							public void visitNewIndividual(NewIndividual individual) {
-								newIndividual.set(dataSet().individual(individual.id(), NewIndividual.class));
-							}
-						}
-					);
-					return newIndividual.get();
-				}
-				private void mergeIndividuals(final Individual<?, ?> source, final Individual<?, ?> target) {
-					for(final Property property:source.properties()) {
-						for(final Value value:property) {
-							target.addValue(property.predicate(), value);
-						}
-					}
-				}
-			}
-		);
-	}
-
-	void removeValue(Value value) {
-		this.values.remove(value);
 	}
 
 }

@@ -312,8 +312,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 		if(!report.isValid()) {
 			// TODO: Add validation constraints
 			Constraints constraints = Constraints.constraints();
-			InvalidContentException error = new InconsistentContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures(),constraints);
-			throw error;
+			throw new InconsistentContentException("Protocol/framework managed metadata validation failed: "+report.validationFailures(),constraints);
 		}
 	}
 
