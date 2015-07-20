@@ -68,16 +68,14 @@ import com.google.common.collect.Lists;
 
 final class OperationContextImpl implements OperationContext {
 
-	private static final Logger LOGGER=LoggerFactory.getLogger(OperationContextImpl.class);
-
 	private final class OperationContextResourceResolver implements ResourceResolver {
 
 		@Override
 		public URI resolveResource(ManagedIndividualId id) {
 			URI result=null;
-			PublicResource resource=applicationContextOperation.resolveResource(id);
-			if(resource!=null) {
-				result=base().resolve(resource.path());
+			PublicResource resolvedResource=applicationContextOperation.resolveResource(id);
+			if(resolvedResource!=null) {
+				result=base().resolve(resolvedResource.path());
 				LOGGER.trace("Resolved resource {} URI to '{}'",id,result);
 			}
 			return result;
@@ -85,13 +83,13 @@ final class OperationContextImpl implements OperationContext {
 
 		@Override
 		public ManagedIndividualId resolveLocation(URI path) {
-			PublicResource resource =
+			PublicResource resolvedResource =
 				applicationContextOperation.
 					resolveResource(base().relativize(path).toString());
 
 			ManagedIndividualId result = null;
-			if(resource!=null) {
-				result=resource.individualId();
+			if(resolvedResource!=null) {
+				result=resolvedResource.individualId();
 				LOGGER.trace("Resolved location '{}' to resource {}",path,result);
 			}
 			return result;
@@ -99,6 +97,7 @@ final class OperationContextImpl implements OperationContext {
 
 	}
 
+	private static final Logger LOGGER=LoggerFactory.getLogger(OperationContextImpl.class);
 	private final ApplicationContext applicationContext;
 	private final String             endpointPath;
 	private final HttpMethod         method;
@@ -280,27 +279,29 @@ final class OperationContextImpl implements OperationContext {
 	public OperationContext checkOperationSupport() {
 		boolean allowed=false;
 		switch(method) {
-		case GET:
-			allowed=true;
-			break;
-		case HEAD:
-			allowed=true;
-			break;
-		case OPTIONS:
-			allowed=true;
-			break;
-		case DELETE:
-			allowed=resource().capabilities().isDeletable();
-			break;
-		case PATCH:
-			allowed=resource().capabilities().isPatchable();
-			break;
-		case POST:
-			allowed=resource().capabilities().isFactory();
-			break;
-		case PUT:
-			allowed=resource().capabilities().isModifiable();
-			break;
+			case GET:
+				allowed=true;
+				break;
+			case HEAD:
+				allowed=true;
+				break;
+			case OPTIONS:
+				allowed=true;
+				break;
+			case DELETE:
+				allowed=resource().capabilities().isDeletable();
+				break;
+			case PATCH:
+				allowed=resource().capabilities().isPatchable();
+				break;
+			case POST:
+				allowed=resource().capabilities().isFactory();
+				break;
+			case PUT:
+				allowed=resource().capabilities().isModifiable();
+				break;
+			default:
+				throw new MethodNotAllowedException(this,this.resource,this.method);
 		}
 		if(!allowed) {
 			throw new MethodNotAllowedException(this,this.resource,this.method);
@@ -325,9 +326,9 @@ final class OperationContextImpl implements OperationContext {
 				}
 				this.dataSet=transformator.unmarshall(this.entity);
 			} catch(UnsupportedMediaTypeException e) {
-				throw new UnsupportedContentException(this.resource,this,contentVariant());
+				throw new UnsupportedContentException(this.resource,this,contentVariant(),e);
 			} catch(IOException e) {
-				throw new InvalidRequestContentException("Entity cannot be parsed as '"+mediaType+"' ("+Throwables.getRootCause(e).getMessage()+")",this.resource,this);
+				throw new InvalidRequestContentException("Entity cannot be parsed as '"+mediaType+"' ("+Throwables.getRootCause(e).getMessage()+")",e,this.resource,this);
 			}
 		}
 		return this.dataSet;
@@ -370,9 +371,9 @@ final class OperationContextImpl implements OperationContext {
 					permanentEndpoint(endpoint());
 			return transformator.marshall(representation);
 		} catch(UnsupportedMediaTypeException e) {
-			throw new UnsupportedContentException(this.resource,this,contentVariant());
+			throw new UnsupportedContentException(this.resource,this,contentVariant(),e);
 		} catch(IOException e) {
-			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",this.resource,this);
+			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",e,this.resource,this);
 		}
 	}
 
@@ -399,11 +400,11 @@ final class OperationContextImpl implements OperationContext {
 		ContentPreferences result = null;
 		List<String> requestHeader = this.headers.getRequestHeader(ContentPreferencesUtils.PREFER_HEADER);
 		for(Iterator<String> it=requestHeader.iterator();it.hasNext() && result==null;) {
+			String header = it.next();
 			try {
-				String header = it.next();
 				result=ContentPreferencesUtils.fromPreferenceHeader(header);
 			} catch (InvalidPreferenceHeaderException e) {
-				// Ignore
+				LOGGER.debug("Ignored prefer header {}",header,e);
 			}
 		}
 		return result;
@@ -423,15 +424,13 @@ final class OperationContextImpl implements OperationContext {
 	public void startOperation() {
 		this.applicationContextOperation=
 			this.applicationContext.
-					createOperation(
-						DefaultHttpRequest.
-							create(
-								this.method,
-								this.uriInfo,
-								this.headers,
-								this.entity,
-								new Date(),
-								this.headers.getDate()));
+				createOperation(
+					HttpRequestFactory.
+						create(
+							this.method,
+							this.uriInfo,
+							this.headers,
+							this.entity));
 	}
 
 	@Override

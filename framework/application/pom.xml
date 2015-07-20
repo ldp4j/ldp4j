@@ -61,12 +61,11 @@
 	<modules>
 		<module>bom</module>
 		<module>api</module>
-		<module>engine</module>
 		<module>data</module>
 		<module>util</module>
 		<module>examples</module>
-		<module>persistency</module>
-		<module>core</module>
+		<module>engine</module>
+		<module>kernel</module>
 		<module>depchain</module>
 	</modules>
 

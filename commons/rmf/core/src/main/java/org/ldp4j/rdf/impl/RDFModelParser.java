@@ -221,9 +221,11 @@ final class RDFModelParser {
 							new RDFHandler() {
 								@Override
 								public void startRDF() throws RDFHandlerException {
+									// Nothing to do
 								}
 								@Override
 								public void endRDF() throws RDFHandlerException {
+									// Nothing to do
 								}
 								@Override
 								public void handleNamespace(String prefix, String uri) throws RDFHandlerException {
@@ -235,6 +237,7 @@ final class RDFModelParser {
 								}
 								@Override
 								public void handleComment(String comment) throws RDFHandlerException {
+									// Nothing to do
 								}
 							}
 						);
@@ -266,19 +269,21 @@ final class RDFModelParser {
 	}
 
 	private TripleProducer getProducer(String content) {
-		RDFFormat format =
+		RDFFormat sesameFormat =
 			Rio.
 				getParserFormatForMIMEType(
 					this.format.getMime(),
 					RDFFormat.TURTLE);
 		TripleProducer producer=null;
 		switch(unmarshallStyle) {
-		case PARSER_BASED:
-			producer=new ParserBasedTripleProducer(content,format,this.baseURI.toString());
-			break;
-		case REPOSITORY_BASED:
-			producer=new RepositoryBasedTripleProducer(content,format,this.baseURI.toString());
-			break;
+			case PARSER_BASED:
+				producer=new ParserBasedTripleProducer(content,sesameFormat,this.baseURI.toString());
+				break;
+			case REPOSITORY_BASED:
+				producer=new RepositoryBasedTripleProducer(content,sesameFormat,this.baseURI.toString());
+				break;
+			default:
+				throw new AssertionError("Unsupported unmarshalling style '"+unmarshallStyle+"'");
 		}
 		return producer;
 	}
@@ -286,12 +291,14 @@ final class RDFModelParser {
 	private TripleSink getTripleSink() {
 		TripleSink sink=null;
 		switch(ordering) {
-		case KEEP_TRIPLE_ORDER:
-			sink=new UnorderedTripleSink();
-			break;
-		case SORT_TRIPLES:
-			sink=new SortingTripleSink();
-			break;
+			case KEEP_TRIPLE_ORDER:
+				sink=new UnorderedTripleSink();
+				break;
+			case SORT_TRIPLES:
+				sink=new SortingTripleSink();
+				break;
+			default:
+				throw new AssertionError("Unsupported ordering '"+ordering+"'");
 		}
 		return sink;
 	}

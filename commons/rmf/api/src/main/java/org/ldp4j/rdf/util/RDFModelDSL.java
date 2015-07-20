@@ -45,7 +45,7 @@ import org.ldp4j.rdf.spi.Transformer;
 import javax.xml.namespace.QName;
 
 public final class RDFModelDSL {
-	
+
 	private static final String IDENTITY_PARAM = "identity";
 	private static final String TYPE_PARAM = "type";
 	private static final String LANGUAGE_PARAM = "language";
@@ -57,145 +57,145 @@ public final class RDFModelDSL {
 	}
 
 	public abstract static class AbstractBuilder<T> {
-	
+
 		protected abstract T build();
-	
+
 	}
 
 	private abstract static class AbstractCompositeBuilder<P, T, B extends AbstractBuilder<T>> {
-	
+
 		protected abstract B updateBuilder(P part);
-	
+
 	}
 
 	private abstract static class AbstractCompositeUpdater<T, B extends AbstractBuilder<T>, P> {
-	
+
 		protected abstract B updateComponent(P part);
-	
+
 	}
 
 	private static class CompositeBuilder<P, T, B extends AbstractBuilder<T>> extends AbstractCompositeBuilder<P, T, B> {
-	
+
 		private final AbstractCompositeUpdater<T, B, P> updater;
-	
+
 		protected CompositeBuilder(AbstractCompositeUpdater<T, B, P> updater) {
 			this.updater = updater;
 		}
-	
+
 		@Override
 		protected B updateBuilder(P part) {
 			return updater.updateComponent(part);
 		}
-	
+
 	}
 
 	public static class ResourceBuilder extends CompositeBuilder<Resource<?>, Triple, TripleBuilder> {
-	
+
 		private RDFFactory factory;
-	
+
 		private ResourceBuilder(
 				RDFFactory factory,
 				AbstractCompositeUpdater<Triple, TripleBuilder, Resource<?>> updater) {
 			super(updater);
 			this.factory = factory;
 		}
-	
+
 		public TripleBuilder blankNode() {
 			return blankNode(factory.newBlankNode());
 		}
-	
+
 		public TripleBuilder blankNode(BlankNode bn) {
 			return updateBuilder(bn);
 		}
-	
+
 		public TripleBuilder uriRef(String uriRef) {
 			return uriRef(factory.newURIRef(URI.create(uriRef)));
 		}
-	
+
 		public TripleBuilder uriRef(URIRef uriRef) {
 			return updateBuilder(uriRef);
 		}
-	
+
 	}
 
 	public static final class URIRefBuilder extends CompositeBuilder<URIRef, Triple, TripleBuilder> {
-	
+
 		private RDFFactory factory;
-	
+
 		private URIRefBuilder(RDFFactory factory,
 				AbstractCompositeUpdater<Triple, TripleBuilder, URIRef> updater) {
 			super(updater);
 			this.factory = factory;
 		}
-	
+
 		public TripleBuilder uriRef(String uriRef) {
 			return uriRef(factory.newURIRef(URI.create(uriRef)));
 		}
-	
+
 		public TripleBuilder uriRef(URIRef uriRef) {
 			return updateBuilder(uriRef);
 		}
-	
+
 	}
 
 	public static final class NodeBuilder extends CompositeBuilder<Node, Triple, TripleBuilder> {
-	
+
 		private RDFFactory factory;
-	
+
 		private NodeBuilder(RDFFactory factory,
 				AbstractCompositeUpdater<Triple, TripleBuilder, Node> updater) {
 			super(updater);
 			this.factory = factory;
 		}
-	
+
 		public TripleBuilder blankNode() {
 			return blankNode(factory.newBlankNode());
 		}
-	
+
 		public TripleBuilder blankNode(String identity) {
 			return blankNode(factory.newBlankNode(identity));
 		}
-	
+
 		private TripleBuilder blankNode(BlankNode bn) {
 			return updateBuilder(bn);
 		}
-	
+
 		public TripleBuilder uriRef(String uriRef) {
 			return uriRef(factory.newURIRef(URI.create(uriRef)));
 		}
-	
+
 		public TripleBuilder uriRef(URIRef uriRef) {
 			return updateBuilder(uriRef);
 		}
-	
+
 		public <T> TripleBuilder literal(T literal) {
 			return literal(factory.newLiteral(literal));
 		}
-	
+
 		public <T> TripleBuilder literal(Literal<T> literal) {
 			return updateBuilder(literal);
 		}
 	}
 
 	public static final class TripleBuilder extends AbstractBuilder<Triple> {
-	
+
 		private final RDFFactory factory;
-	
+
 		private Resource<?> subject;
 		private URIRef predicate;
 		private Node object;
-	
+
 		private TripleBuilder(RDFFactory factory) {
 			this.factory = factory;
 		}
-	
+
 		protected TripleBuilder(TripleBuilder builder) {
 			this.subject = builder.subject;
 			this.predicate = builder.predicate;
 			this.object = builder.object;
 			this.factory = builder.factory;
 		}
-	
+
 		public ResourceBuilder withSubject() {
 			AbstractCompositeUpdater<Triple, TripleBuilder, Resource<?>> updater = new AbstractCompositeUpdater<Triple, TripleBuilder, Resource<?>>() {
 				@Override
@@ -206,7 +206,7 @@ public final class RDFModelDSL {
 			};
 			return new ResourceBuilder(this.factory, updater);
 		}
-	
+
 		public URIRefBuilder withPredicate() {
 			AbstractCompositeUpdater<Triple, TripleBuilder, URIRef> updater = new AbstractCompositeUpdater<Triple, TripleBuilder, URIRef>() {
 				@Override
@@ -217,7 +217,7 @@ public final class RDFModelDSL {
 			};
 			return new URIRefBuilder(this.factory, updater);
 		}
-	
+
 		public NodeBuilder withObject() {
 			AbstractCompositeUpdater<Triple, TripleBuilder, Node> updater = new AbstractCompositeUpdater<Triple, TripleBuilder, Node>() {
 				@Override
@@ -228,12 +228,12 @@ public final class RDFModelDSL {
 			};
 			return new NodeBuilder(this.factory, updater);
 		}
-	
+
 		@Override
 		protected Triple build() {
 			return factory.newTriple(subject, predicate, object);
 		}
-	
+
 	}
 
 	private static void processTripleSource(TripleSet result, Object source) {
@@ -306,7 +306,7 @@ public final class RDFModelDSL {
 		} else {
 			result=asResource(value);
 		}
-		return 
+		return
 			result!=null?
 				result:
 				FACTORY.newLiteral(value);
@@ -330,10 +330,10 @@ public final class RDFModelDSL {
 		Assertions.notNull(subject, "subject");
 		Assertions.notNull(predicate, "predicate");
 		Assertions.notNull(object, "object");
-		return 
+		return
 			FACTORY.
 				newTriple(
-					asResource(subject), 
+					asResource(subject),
 					asURIRef(predicate),
 					asNode(object));
 	}
@@ -347,11 +347,15 @@ public final class RDFModelDSL {
 		return FACTORY.newBlankNode(identity);
 	}
 
+	/**
+	 * TODO: Check if this is an acceptable behaviour. Maybe it is better to
+	 * throw an exception
+	 */
 	public static URIRef uriRef(String identity) {
 		Assertions.notNull(identity, IDENTITY_PARAM);
 		try {
 			return uriRef(new URI(identity));
-		} catch (URISyntaxException e) {
+		} catch (URISyntaxException e) { // NOSONAR
 			return null;
 		}
 	}
@@ -381,7 +385,7 @@ public final class RDFModelDSL {
 		Assertions.notNull(language, LANGUAGE_PARAM);
 		return FACTORY.newLiteral(value,language);
 	}
-	
+
 	public static <T> Literal<T> typedLiteral(T value,String type) {
 		Assertions.notNull(value, VALUE_PARAM);
 		Assertions.notNull(type, TYPE_PARAM);

@@ -74,17 +74,17 @@ final class URIDescriptor {
 	private final Scope scope;
 	private final Type type;
 
+	private URIDescriptor(URIDescriptor.Scope scope, URIDescriptor.Type type) {
+		this.scope = scope;
+		this.type = type;
+	}
+
 	boolean isResolvable() {
 		return scope.equals(Scope.APPLICATION) || scope.equals(Scope.ENDPOINT) || scope.equals(Scope.RESOURCE);
 	}
 
 	boolean isTransient() {
 		return type.isRelative();
-	}
-
-	private URIDescriptor(URIDescriptor.Scope scope, URIDescriptor.Type type) {
-		this.scope = scope;
-		this.type = type;
 	}
 
 	@Override

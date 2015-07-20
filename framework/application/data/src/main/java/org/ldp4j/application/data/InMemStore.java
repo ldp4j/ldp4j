@@ -49,10 +49,10 @@ final class InMemStore implements Store {
 			LOGGER.debug("Added object property triple: <{}, {}, {}>",subjectReference,property,objectReference);
 		}
 	}
-	
+
 	@Override
 	public void addValue(IndividualReference<?,?> subjectReference, URI property, Object value) {
-		subjectReference.realize(this.dataSet).addValue(property, ValueFactory.newLiteral(value));
+		subjectReference.realize(this.dataSet).addValue(property,Literals.newLiteral(value));
 		if(LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Added datatype property triple: <{}, {}, {} ({})>",subjectReference,property,value,value.getClass().getCanonicalName());
 		}

@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 
 import com.google.common.base.MoreObjects;
@@ -33,7 +34,9 @@ import com.google.common.base.Objects;
 
 import static com.google.common.base.Preconditions.*;
 
-public final class ManagedIndividualId {
+public final class ManagedIndividualId implements Serializable {
+
+	private static final long serialVersionUID = 3320976326537867325L;
 
 	private final String managerId;
 	private final Name<?> name;

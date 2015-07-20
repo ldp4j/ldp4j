@@ -51,11 +51,39 @@ import com.google.common.collect.Maps;
 
 public final class ValidationConstraintFactory {
 
+	private static final String PROPERTY_CANNOT_BE_NULL              = "Property cannot be null";
+	private static final String INDIVIDUAL_IDENTIFIER_CANNOT_BE_NULL = "Individual identifier cannot be null";
+	private static final String PREDICATE_CANNOT_BE_NULL             = "Predicate cannot be null";
+
 	private static final class ValidationLogImpl implements ValidationLog {
+
+		private final class ValidationFailureImpl implements ValidationFailure {
+
+			@Override
+			public String toString() {
+				StringBuilder builder=new StringBuilder();
+				dump(builder, removedValues, "Removed required", "from");
+				if(!builder.toString().isEmpty() && !addedValues.isEmpty()) {
+					builder.append(", ");
+				}
+				dump(builder, addedValues, "Added undesired", "to");
+				return builder.toString();
+			}
+
+			private void dump(StringBuilder builder, Map<Property, Value> map, String prefix, String infix) {
+				for(Iterator<Entry<Property,Value>> it=map.entrySet().iterator();it.hasNext();) {
+					Entry<Property, Value> entry = it.next();
+					builder.append(prefix+" value '"+FormatUtils.formatValue(entry.getValue())+"' "+infix+" property '"+entry.getKey().predicate()+"'");
+					if(it.hasNext()) {
+						builder.append(", ");
+					}
+				}
+			}
+		}
 
 		private final Map<Property,Value> removedValues;
 		private final Map<Property,Value> addedValues;
-		private boolean checked;;
+		private boolean checked;
 
 		private ValidationLogImpl() {
 			this.removedValues=Maps.newHashMap();
@@ -87,29 +115,7 @@ public final class ValidationConstraintFactory {
 
 		@Override
 		public ValidationFailure validationFailure() {
-			return new ValidationFailure() {
-				@Override
-				public String toString() {
-					StringBuilder builder=new StringBuilder();
-					dump(builder, removedValues, "Removed required", "from");
-					if(!builder.toString().isEmpty() && !addedValues.isEmpty()) {
-						builder.append(", ");
-					}
-					dump(builder, addedValues, "Added undesired", "to");
-					return builder.toString();
-				}
-
-				protected void dump(StringBuilder builder, Map<Property, Value> map, String prefix, String infix) {
-					for(Iterator<Entry<Property,Value>> it=map.entrySet().iterator();it.hasNext();) {
-						Entry<Property, Value> entry = it.next();
-						builder.append(prefix+" value '"+FormatUtils.formatValue(entry.getValue())+"' "+infix+" property '"+entry.getKey().predicate()+"'");
-						if(it.hasNext()) {
-							builder.append(", ");
-						}
-					}
-				}
-
-			};
+			return new ValidationFailureImpl();
 		}
 
 	}
@@ -265,34 +271,34 @@ public final class ValidationConstraintFactory {
 	}
 
 	public static ValidationConstraint<Property> readOnlyProperty(Property property) {
-		checkNotNull(property,"Property cannot be null");
+		checkNotNull(property,PROPERTY_CANNOT_BE_NULL);
 		return new ReadOnlyPropertyValidationConstraint(property.individual().id(), property.predicate(), property.values());
 	}
 
 	public static ValidationConstraint<Property> readOnlyProperty(Object individualId, URI predicate, Value... values) {
-		checkNotNull(individualId,"Individual identifier cannot be null");
-		checkNotNull(predicate,"Predicate cannot be null");
+		checkNotNull(individualId,INDIVIDUAL_IDENTIFIER_CANNOT_BE_NULL);
+		checkNotNull(predicate,PREDICATE_CANNOT_BE_NULL);
 		return new ReadOnlyPropertyValidationConstraint(individualId, predicate, values);
 	}
 
 	public static ValidationConstraint<Property> readOnlyProperty(URI predicate, Value... values) {
-		checkNotNull(predicate,"Predicate cannot be null");
+		checkNotNull(predicate,PREDICATE_CANNOT_BE_NULL);
 		return new ReadOnlyPropertyValidationConstraint(null, predicate, values);
 	}
 
 	public static ValidationConstraint<Property> mandatoryPropertyValues(Property property) {
-		checkNotNull(property,"Individual identifier cannot be null");
+		checkNotNull(property,INDIVIDUAL_IDENTIFIER_CANNOT_BE_NULL);
 		return new MandatoryPropertyValuesValidationConstraint(property.individual().id(), property.predicate(), property.values());
 	}
 
 	public static ValidationConstraint<Property> mandatoryPropertyValues(Object individualId, URI predicate, Value... values) {
-		checkNotNull(individualId,"Individual identifier cannot be null");
-		checkNotNull(predicate,"Predicate cannot be null");
+		checkNotNull(individualId,INDIVIDUAL_IDENTIFIER_CANNOT_BE_NULL);
+		checkNotNull(predicate,PREDICATE_CANNOT_BE_NULL);
 		return new MandatoryPropertyValuesValidationConstraint(individualId, predicate, values);
 	}
 
 	public static ValidationConstraint<Property> mandatoryPropertyValues(URI predicate, Value... values) {
-		checkNotNull(predicate,"Predicate cannot be null");
+		checkNotNull(predicate,PREDICATE_CANNOT_BE_NULL);
 		return new MandatoryPropertyValuesValidationConstraint(null, predicate, values);
 	}
 

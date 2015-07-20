@@ -28,8 +28,10 @@ package org.ldp4j.application.data;
 
 public interface ValueVisitor {
 
+	// TODO: generify method
 	void visitLiteral(Literal<?> value);
-	
+
+	// TODO: generify method
 	void visitIndividual(Individual<?,?> value);
 
 }

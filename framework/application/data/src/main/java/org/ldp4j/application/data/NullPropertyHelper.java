@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 
 import org.ldp4j.application.vocabulary.Term;
@@ -63,7 +64,7 @@ final class NullPropertyHelper implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz) {
+	public <T extends Serializable, S extends Individual<T, S>> T firstIndividual(Class<? extends S> clazz) {
 		return null;
 	}
 
@@ -71,7 +72,7 @@ final class NullPropertyHelper implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withLiteral(T rawValue) {
+	public IndividualPropertyHelper withLiteral(Object rawValue) {
 		return new IndividualPropertyHelperImpl(new NullIndividualHelper(), this);
 	}
 
@@ -79,7 +80,7 @@ final class NullPropertyHelper implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Name<?> id) {
+	public IndividualPropertyHelper withIndividual(Name<?> id) {
 		return this.iph;
 	}
 
@@ -87,7 +88,7 @@ final class NullPropertyHelper implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId) {
+	public IndividualPropertyHelper withIndividual(Name<?> id, String managerId) {
 		return this.iph;
 	}
 
@@ -95,7 +96,7 @@ final class NullPropertyHelper implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, URI path) {
+	public IndividualPropertyHelper withIndividual(Name<?> id, String managerId, URI path) {
 		return this.iph;
 	}
 
@@ -103,7 +104,7 @@ final class NullPropertyHelper implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Name<?> id, String managerId, String path) {
+	public IndividualPropertyHelper withIndividual(Name<?> id, String managerId, String path) {
 		return this.iph;
 	}
 
@@ -111,7 +112,7 @@ final class NullPropertyHelper implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(URI id) {
+	public IndividualPropertyHelper withIndividual(URI id) {
 		return new IndividualPropertyHelperImpl(new NullIndividualHelper(), this);
 	}
 
@@ -119,7 +120,7 @@ final class NullPropertyHelper implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(String id) {
+	public IndividualPropertyHelper withIndividual(String id) {
 		return new IndividualPropertyHelperImpl(new NullIndividualHelper(), this);
 	}
 
@@ -127,7 +128,7 @@ final class NullPropertyHelper implements PropertyHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public <T> IndividualPropertyHelper withIndividual(Term id) {
+	public IndividualPropertyHelper withIndividual(Term id) {
 		return new IndividualPropertyHelperImpl(new NullIndividualHelper(), this);
 	}
 

@@ -1,0 +1,212 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      This file is part of the LDP4j Project:
+        http://www.ldp4j.org/
+
+      Center for Open Middleware
+        http://www.centeropenmiddleware.com/
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Copyright (C) 2014 Center for Open Middleware.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+                http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Artifact    : org.ldp4j.framework:ldp4j-application-kernel-jpa:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-application-kernel-jpa-1.0.0-SNAPSHOT.jar
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+
+-->
+<orm:entity-mappings
+	xmlns:orm="http://xmlns.jcp.org/xml/ns/persistence/orm"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="
+		http://xmlns.jcp.org/xml/ns/persistence/orm
+		http://xmlns.jcp.org/xml/ns/persistence/orm_2_1.xsd"
+	version="2.1">
+	<orm:description>Persistency for the LDP4j Application Engine Kernel</orm:description>
+	<orm:package>org.ldp4j.application.kernel.persistence.jpa</orm:package>
+	<orm:access>FIELD</orm:access>
+	<orm:entity class="org.ldp4j.application.kernel.persistence.jpa.JPAEndpoint">
+		<orm:table name="ENDPOINT">
+			<orm:unique-constraint name="UNIQUE_ENDPOINT_PER_RESOURCE">
+				<orm:column-name>templateId</orm:column-name>
+				<orm:column-name>type</orm:column-name>
+				<orm:column-name>value</orm:column-name>
+			</orm:unique-constraint>
+		</orm:table>
+		<orm:attributes>
+			<orm:id name="path"/>
+			<orm:basic name="created"/>
+			<orm:basic name="lastModified"/>
+			<orm:basic name="deleted"/>
+			<orm:basic name="entityTag"/>
+			<orm:embedded name="resourceId"/>
+		</orm:attributes>
+	</orm:entity>
+	<orm:entity class="org.ldp4j.application.kernel.persistence.jpa.JPAConstraintReport">
+		<orm:attributes>
+			<orm:id name="primaryKey">
+				<orm:generated-value/>
+				<orm:sequence-generator name="constraintReportPrimaryKeyGenerator" sequence-name="crSeq"/>
+			</orm:id>
+			<orm:basic name="date"/>
+			<orm:basic name="request">
+				<orm:column length="262144"/> <!-- 256KB -->
+				<orm:lob/>
+			</orm:basic>
+			<orm:basic name="constraints">
+				<orm:column length="262144"/> <!-- 256KB -->
+				<orm:lob/>
+			</orm:basic>
+			<orm:embedded name="id"/>
+		</orm:attributes>
+	</orm:entity>
+	<orm:entity class="org.ldp4j.application.kernel.persistence.jpa.JPAResource">
+		<orm:inheritance strategy="SINGLE_TABLE"/>
+		<orm:discriminator-value>resource</orm:discriminator-value>
+		<orm:discriminator-column name="type"/>
+		<orm:attributes>
+			<orm:id name="primaryKey">
+				<orm:generated-value/>
+				<orm:sequence-generator name="resourceKeyGenerator" sequence-name="resourceSeq"/>
+			</orm:id>
+			<orm:basic name="indirectId"/>
+			<orm:one-to-many name="attachments" fetch="EAGER">
+				<orm:cascade>
+					<orm:cascade-all/>
+				</orm:cascade>
+			</orm:one-to-many>
+			<orm:element-collection name="failures" fetch="EAGER"/>
+			<orm:embedded name="id">
+				<orm:attribute-override name="name">
+					<orm:column name="id_name" />
+				</orm:attribute-override>
+				<orm:attribute-override name="templateId">
+					<orm:column name="id_templateId"/>
+				</orm:attribute-override>
+			</orm:embedded>
+			<orm:embedded name="parentId">
+				<orm:attribute-override name="name">
+					<orm:column name="parentId_name"/>
+				</orm:attribute-override>
+				<orm:attribute-override name="templateId">
+					<orm:column name="parentId_templateId"/>
+				</orm:attribute-override>
+			</orm:embedded>
+			<orm:transient name="attachmentCollection"/>
+			<orm:transient name="versionGenerator"/>
+		</orm:attributes>
+	</orm:entity>
+	<orm:entity class="org.ldp4j.application.kernel.persistence.jpa.JPAAttachment">
+		<orm:attributes>
+			<orm:id name="primaryKey">
+				<orm:generated-value/>
+				<orm:sequence-generator name="attachmentKeyGenerator" sequence-name="attachmentSeq"/>
+			</orm:id>
+			<orm:basic name="version"/>
+			<orm:embedded name="resourceId"/>
+		</orm:attributes>
+	</orm:entity>
+	<orm:entity class="org.ldp4j.application.kernel.persistence.jpa.JPAContainer">
+		<orm:discriminator-value>container</orm:discriminator-value>
+		<orm:attributes>
+			<orm:basic name="memberCounter"/>
+			<orm:one-to-many name="slugs">
+				<orm:map-key name="preferredPath"/>
+				<orm:cascade>
+					<orm:cascade-all/>
+				</orm:cascade>
+			</orm:one-to-many>
+			<orm:one-to-many name="members">
+				<orm:map-key name="memberId"/>
+				<orm:cascade>
+					<orm:cascade-all/>
+				</orm:cascade>
+			</orm:one-to-many>
+		</orm:attributes>
+	</orm:entity>
+	<orm:entity class="org.ldp4j.application.kernel.persistence.jpa.JPAMember">
+		<orm:attributes>
+			<orm:id name="primaryKey">
+				<orm:generated-value/>
+				<orm:sequence-generator name="memberPrimaryKeyGenerator" sequence-name="memberSeq"/>
+			</orm:id>
+			<orm:basic name="number"/>
+			<orm:embedded name="memberId">
+				<orm:attribute-override name="templateId">
+					<orm:column name="memberId_templateId"/>
+				</orm:attribute-override>
+				<orm:attribute-override name="nameType">
+					<orm:column name="memberId_type"/>
+				</orm:attribute-override>
+				<orm:attribute-override name="nameValue">
+					<orm:column name="memberId_value"/>
+				</orm:attribute-override>
+			</orm:embedded>
+			<orm:embedded name="containerId">
+				<orm:attribute-override name="templateId">
+					<orm:column name="containerId_templateId"/>
+				</orm:attribute-override>
+				<orm:attribute-override name="nameType">
+					<orm:column name="containerId_type"/>
+				</orm:attribute-override>
+				<orm:attribute-override name="nameValue">
+					<orm:column name="containerId_value"/>
+				</orm:attribute-override>
+			</orm:embedded>
+		</orm:attributes>
+	</orm:entity>
+	<orm:entity class="org.ldp4j.application.kernel.persistence.jpa.JPASlug">
+		<orm:attributes>
+			<orm:id name="primaryKey">
+				<orm:generated-value/>
+				<orm:sequence-generator name="slugPrimaryKeyGenerator" sequence-name="slugSeq"/>
+			</orm:id>
+			<orm:basic name="preferredPath"/>
+			<orm:basic name="version"/>
+			<orm:embedded name="containerId"/>
+		</orm:attributes>
+	</orm:entity>
+	<orm:embeddable class="org.ldp4j.application.kernel.resource.ResourceId">
+		<orm:attributes>
+			<orm:basic name="name">
+				<orm:lob/>
+			</orm:basic>
+			<orm:basic name="templateId"/>
+		</orm:attributes>
+	</orm:embeddable>
+	<orm:embeddable class="org.ldp4j.application.kernel.constraints.ConstraintReportId">
+		<orm:attributes>
+			<orm:basic name="failureId"/>
+			<orm:embedded name="resourceId"/>
+		</orm:attributes>
+	</orm:embeddable>
+	<orm:embeddable class="org.ldp4j.application.kernel.persistence.jpa.Key">
+		<orm:attributes>
+			<orm:basic name="templateId">
+				<orm:column length="1024"/>
+			</orm:basic>
+			<orm:basic name="nameType">
+				<orm:column name="type" length="1024"/>
+			</orm:basic>
+			<orm:basic name="nameValue">
+				<orm:column name="value" length="4096"/>
+			</orm:basic>
+			<orm:transient name="cacheAvailable"/>
+			<orm:transient name="cachedId"/>
+		</orm:attributes>
+	</orm:embeddable>
+	<orm:converter class="org.ldp4j.application.kernel.persistence.jpa.DateConverter" auto-apply="true"/>
+	<orm:converter class="org.ldp4j.application.kernel.persistence.jpa.EntityTagConverter" auto-apply="true"/>
+</orm:entity-mappings>

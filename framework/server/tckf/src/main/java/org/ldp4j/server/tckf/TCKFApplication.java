@@ -96,7 +96,7 @@ public class TCKFApplication extends Application<Configuration> {
 					dataSet().
 						individual(newReference().toManagedIndividual(templateId).named(name)).
 							hasProperty(TCKFHelper.READ_ONLY_PROPERTY.toString()).
-								withValue(new Date().toString()).
+								withValue(new Date()).
 							build();
 		} else {
 			initial=
@@ -104,7 +104,7 @@ public class TCKFApplication extends Application<Configuration> {
 					dataSet().
 						individual(newReference().toManagedIndividual(templateId).named(name)).
 							hasProperty(TCKFHelper.READ_ONLY_PROPERTY.toString()).
-								withValue(new Date().toString()).
+								withValue(new Date()).
 							hasLink(RDF.TYPE.qualifiedEntityName()).
 								referringTo(newReference().toExternalIndividual().atLocation(LDP.BASIC_CONTAINER.as(URI.class))).
 							build();

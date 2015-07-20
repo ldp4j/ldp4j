@@ -152,8 +152,7 @@ final class TripleResolver {
 			for(int i=0;i<endpointTriples.size();i++) {
 				builder.add(resolveTriple(endpointTriples.get(i), alternativeTriples.get(i)));
 			}
-			List<TripleResolution> resolutions = builder.build();
-			return resolutions;
+			return builder.build();
 		}
 
 		private TripleResolution resolveTriple(Triple tEndpoint, Triple tAlternative) {
@@ -206,6 +205,14 @@ final class TripleResolver {
 	private TripleResolver() {
 	}
 
+	private TripleResolver(TripleResolver other) {
+		setApplication(other.application);
+		setEndpoint(other.endpoint);
+		setAlternative(other.alternative);
+		setEntity(other.entity,other.type);
+		setTripleResolutions(other.resolutions);
+	}
+
 	private void setEntity(String entity, MediaType type) {
 		this.entity=entity;
 		this.type=type;
@@ -217,14 +224,6 @@ final class TripleResolver {
 
 	private void setEndpoint(URI endpoint) {
 		this.endpoint = endpoint;
-	}
-
-	private TripleResolver(TripleResolver other) {
-		setApplication(other.application);
-		setEndpoint(other.endpoint);
-		setAlternative(other.alternative);
-		setEntity(other.entity,other.type);
-		setTripleResolutions(other.resolutions);
 	}
 
 	private void setApplication(URI application) {

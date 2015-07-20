@@ -26,30 +26,32 @@
  */
 package org.ldp4j.application.vocabulary;
 
+import java.io.Serializable;
+
 
 /**
  * A class for representing a vocabularies. The interface includes facilities
  * for discovering the terms defined in the vocabulary. methods for retrieving
  * the representation of the particular term in different formats.
- * 
+ *
  * @version 1.0
  * @since 1.0.0
  * @author Miguel Esteban Guti&eacute;rrez
  * @see Term
  */
-public interface Vocabulary<T extends Term> extends Iterable<T> {
+public interface Vocabulary<T extends Term> extends Iterable<T>, Serializable {
 
 	/**
 	 * Get the namespace of the vocabulary.
-	 * 
+	 *
 	 * @return the namespace of the vocabulary. It should never be {@code null}
 	 *         nor empty.
 	 */
 	String getNamespace();
-	
+
 	/**
 	 * Get the preferred prefix for the vocabulary namespace.
-	 * 
+	 *
 	 * @return the preferred prefix for the namespace. It should never be
 	 *         {@code null} nor empty.
 	 */
@@ -57,23 +59,23 @@ public interface Vocabulary<T extends Term> extends Iterable<T> {
 
 	/**
 	 * Get the number of terms defined in the vocabulary.
-	 * 
+	 *
 	 * @return the number of terms defined or {@code 0} if no term is defined.
 	 */
 	int size();
 
 	/**
 	 * Get the terms defined in the vocabulary.
-	 * 
+	 *
 	 * @return the terms defined for the vocabulary or an empty array if no
 	 *         terms are defined.
 	 */
 	T[] terms();
-	
+
 	/**
 	 * Returns the vocabulary term with the specified name. The name must match
 	 * exactly an identifier used to declare the term in this vocabulary.
-	 * 
+	 *
 	 * @param name
 	 *            the name of the term to return
 	 * @return the term of the vocabulary type with the specified name
@@ -81,10 +83,10 @@ public interface Vocabulary<T extends Term> extends Iterable<T> {
 	 *             if {@code name} is null.
 	 */
 	T fromName(String name);
-	
+
 	/**
 	 * Returns the vocabulary term specified in a given position.
-	 * 
+	 *
 	 * @param ordinal
 	 *            the position in which the desired term was declared.
 	 * @return the term that was declared in the specified position.
@@ -96,7 +98,7 @@ public interface Vocabulary<T extends Term> extends Iterable<T> {
 
 	/**
 	 * Returns the vocabulary term that matches the specified value.
-	 * 
+	 *
 	 * @param value
 	 *            a value to determine the desired term.
 	 * @return the term that upon transformation matches the specified

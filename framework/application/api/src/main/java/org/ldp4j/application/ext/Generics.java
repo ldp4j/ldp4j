@@ -79,28 +79,41 @@ final class Generics {
 		 * extension with single type parameter (as per [Issue-89]). And when it
 		 * fails to do that, will indicate with specific exception.
 		 */
-		if (t instanceof ParameterizedType) {
-			// should typically have one of type parameters (first one) that
-			// matches:
-			for (Type param : ((ParameterizedType) t).getActualTypeArguments()) {
-				if (param instanceof Class<?>) {
-					final Class<T> cls = determineClass(bound, param);
-					if (cls != null) {
-						return cls;
-					}
-				} else if (param instanceof TypeVariable) {
-					for (Type paramBound : ((TypeVariable<?>)param).getBounds()) {
-						if (paramBound instanceof Class<?>) {
-							final Class<T> cls = determineClass(bound,paramBound);
-							if (cls != null) {
-								return cls;
-							}
-						}
-					}
-				}
+		if(t instanceof ParameterizedType) {
+			Class<T> result=processParameterizedType(bound, (ParameterizedType) t);
+			if(result!=null) {
+				return result;
 			}
 		}
 		throw new IllegalStateException("Cannot figure out type parameterization for "+ clazz.getName());
+	}
+
+	protected static <T> Class<T> processParameterizedType(Class<? super T> bound, ParameterizedType parameterizedType) {
+		// should typically have one of type parameter (first one) that matches:
+		for(Type param : parameterizedType.getActualTypeArguments()) {
+			Class<T> cls = null;
+			if(param instanceof Class<?>) {
+				cls=determineClass(bound, param);
+			} else if(param instanceof TypeVariable) {
+				cls=processTypeVariable(bound, (TypeVariable<?>)param);
+			}
+			if(cls!=null) {
+				return cls;
+			}
+		}
+		return null;
+	}
+
+	protected static <T> Class<T> processTypeVariable(Class<? super T> bound, TypeVariable<?> typeVariable) {
+		for(Type paramBound:typeVariable.getBounds()) {
+			if(paramBound instanceof Class<?>) {
+				Class<T >cls=determineClass(bound,paramBound);
+				if(cls!=null) {
+					return cls;
+				}
+			}
+		}
+		return null;
 	}
 
 	@SuppressWarnings("unchecked")

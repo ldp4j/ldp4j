@@ -35,31 +35,19 @@ import java.util.Arrays;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Objects;
 
 import org.ldp4j.commons.net.URIUtils;
 
 public final class URI {
 
-	private static final class Objects {
+	private static final class MoreObjects {
 
-		private Objects() {
+		private MoreObjects() {
 		}
 
 		static boolean defined(Object value) {
 			return value!=null;
-		}
-
-		static int hashCode(Object obj) {
-			return obj!=null?obj.hashCode():0;
-		}
-
-		static boolean equals(Object one, Object other) {
-			return
-				one==null?
-					other==null:
-					other==null?
-						false:
-						one.equals(other);
 		}
 
 	}
@@ -180,7 +168,11 @@ public final class URI {
 
 	public static final class Path {
 
-		private static final Path EMPTY_PATH = Path.create("");
+		private static final char   CURRENT_CHAR = '.';
+		private static final String SLASH       = "/";
+		private static final String PARENT      = "..";
+		private static final String CURRENT     = ".";
+		private static final Path   EMPTY_PATH  = Path.create("");
 
 		private String directory;
 		private String fileName;
@@ -199,19 +191,19 @@ public final class URI {
 		}
 
 		private void setFile(String file) {
-			String fileName=null;
-			String fileExtension=null;
+			String tFileName=null;
+			String tFileExtension=null;
 			if(file!=null && !file.isEmpty()) {
-				int ext = file.lastIndexOf('.');
+				int ext = file.lastIndexOf(CURRENT_CHAR);
 				if(ext>=0) {
-					fileName=file.substring(0,ext);
-					fileExtension=file.substring(ext+1);
+					tFileName=file.substring(0,ext);
+					tFileExtension=file.substring(ext+1);
 				} else {
-					fileName=file;
+					tFileName=file;
 				}
 			}
-			setFileName(fileName);
-			setFileExtension(fileExtension);
+			setFileName(tFileName);
+			setFileExtension(tFileExtension);
 		}
 
 		private void setFileExtension(String fileExtension) {
@@ -230,7 +222,7 @@ public final class URI {
 			StringBuilder builder=new StringBuilder();
 			builder.append(nullable(this.fileName));
 			if(this.fileExtension!=null) {
-				builder.append(".");
+				builder.append(CURRENT);
 				builder.append(this.fileExtension);
 			}
 			return builder.toString();
@@ -239,13 +231,13 @@ public final class URI {
 		private String normalizePath(String[] segments, String file) {
 			LinkedList<String> buffer=new LinkedList<String>();
 			for(String segment:segments) {
-				if(segment.equals(".")) {
+				if(segment.equals(CURRENT)) {
 					// do nothing
-				} else if(segment.equals("..")) {
+				} else if(segment.equals(PARENT)) {
 					if(!buffer.isEmpty()) {
 						if(buffer.peekLast().equals(segment)) {
 							buffer.addLast(segment);
-						} else if(buffer.peekLast().equals("")){
+						} else if(buffer.peekLast().isEmpty()){
 							buffer.addLast(segment);
 						} else {
 							buffer.removeLast();
@@ -266,7 +258,7 @@ public final class URI {
 				String segment=it.next();
 				builder.append(segment);
 				if(it.hasNext() || !isDotSegment(segment) || file!=null) {
-					builder.append("/");
+					builder.append(SLASH);
 				}
 			}
 			if(file!=null) {
@@ -276,14 +268,14 @@ public final class URI {
 		}
 
 		private boolean isDotSegment(String segment) {
-			return segment.equals(".") || segment.equals("..");
+			return segment.equals(CURRENT) || segment.equals(PARENT);
 		}
 
 		private String[] segments() {
 			if(this.directory==null) {
 				return new String[0];
 			}
-			return this.directory.split("/");
+			return this.directory.split(SLASH);
 		}
 
 		public boolean isEmpty() {
@@ -291,7 +283,7 @@ public final class URI {
 		}
 
 		public boolean isRoot() {
-			return this.directory!=null && this.directory.startsWith("/");
+			return this.directory!=null && this.directory.startsWith(SLASH);
 		}
 
 		public boolean isOutOfScope() {
@@ -365,9 +357,9 @@ public final class URI {
 			String[] segments=
 				this.directory==null?
 					new String[0]:
-					this.directory.equals("/")?
+					SLASH.equals(this.directory)?
 						new String[] {""}:
-						this.directory.split("/");
+						this.directory.split(SLASH);
 			return Path.create(normalizePath(segments, getFile()));
 		}
 
@@ -395,7 +387,7 @@ public final class URI {
 				return defaultRelative;
 			}
 
-			// Beyound this point we need the normalized form
+			// Beyond this point we need the normalized form
 			Path nBase = base.normalize();
 
 			// If we are out of the scope...
@@ -404,7 +396,7 @@ public final class URI {
 				// scope
 				Path relative=defaultRelative;
 				if(nBase.equals(relative)) {
-					// ... unless the path is the same as ourselfs, in which
+					// ... unless the path is the same as ourselves, in which
 					// case it is safe to return the empty path
 					relative=EMPTY_PATH;
 				}
@@ -439,7 +431,7 @@ public final class URI {
 			// segments of the relative path
 			LinkedList<String> buffer=new LinkedList<String>();
 			for(int i=commonSegments;i<nBaseSegments.length;i++) {
-				buffer.add("..");
+				buffer.add(PARENT);
 			}
 
 			// Add each different segment of the input path to the segments of
@@ -452,7 +444,7 @@ public final class URI {
 			// to resolve a directory coming from a path, we have to make
 			// explicit that we want the directory
 			if(buffer.isEmpty() && path.isDirectory() && base.isFile()) {
-				buffer.add(".");
+				buffer.add(CURRENT);
 			}
 			return Path.create(assemblePath(buffer,path.getFile()));
 		}
@@ -478,10 +470,7 @@ public final class URI {
 
 		@Override
 		public int hashCode() {
-			return
-				13*Objects.hashCode(this.directory)+
-				17*Objects.hashCode(this.fileName)+
-				19*Objects.hashCode(this.fileExtension);
+			return Objects.hash(this.directory,this.fileName,this.fileExtension);
 		}
 
 		@Override
@@ -517,10 +506,10 @@ public final class URI {
 				String file=null;
 				int lastSegmentSeparator = path.lastIndexOf('/');
 				if(lastSegmentSeparator<0) {
-					if(path.equals(".")) {
-						directory=".";
-					} else if(path.equals("..")) {
-						directory="..";
+					if(CURRENT.equals(path)) {
+						directory=CURRENT;
+					} else if(PARENT.equals(path)) {
+						directory=PARENT;
 					} else {
 						file=path;
 					}
@@ -529,10 +518,10 @@ public final class URI {
 				} else {
 					directory=path.substring(0,lastSegmentSeparator+1);
 					String segment=path.substring(lastSegmentSeparator+1);
-					if(segment.equals(".")) {
-						directory+=".";
-					} else if(segment.equals("..")) {
-						directory+="..";
+					if(CURRENT.equals(segment)) {
+						directory+=CURRENT;
+					} else if(PARENT.equals(segment)) {
+						directory+=PARENT;
 					} else {
 						file=segment;
 					}
@@ -785,20 +774,20 @@ public final class URI {
 
 	private static URI relativeResolution(URI Base, URI R) {
 		URIRef T=URIRef.empty();
-		if(Objects.defined(R.getScheme())) {
+		if(MoreObjects.defined(R.getScheme())) {
 			T.scheme=R.getScheme();
 			T.authority=R.getAuthority();
 			T.path=R.getPath().normalize();
 			T.query=R.getQuery();
 		} else {
-			if(Objects.defined(R.getAuthority())) {
+			if(MoreObjects.defined(R.getAuthority())) {
 				T.authority=R.getAuthority();
 				T.path=R.getPath().normalize();
 				T.query=R.getQuery();
 			} else {
 				if(R.getPath().isEmpty()) {
 					T.path=Base.getPath().normalize();
-					if(Objects.defined(R.getQuery())) {
+					if(MoreObjects.defined(R.getQuery())) {
 						T.query=R.getQuery();
 					} else {
 						T.query=Base.getQuery();
@@ -808,7 +797,7 @@ public final class URI {
 						T.path=R.getPath().normalize();
 					} else {
 						Path base=Base.getPath();
-						if(base.isEmpty() && !Objects.defined(Base.getAuthority())) {
+						if(base.isEmpty() && !MoreObjects.defined(Base.getAuthority())) {
 							base=Path.create("/");
 						}
 						T.path=base.resolve(R.getPath());

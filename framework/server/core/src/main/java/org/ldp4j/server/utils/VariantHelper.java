@@ -107,7 +107,7 @@ public final class VariantHelper {
 	}
 
 	@SafeVarargs
-	public final static <T extends Variant> VariantHelper forVariants(T... supportedVariants) {
+	public static final <T extends Variant> VariantHelper forVariants(T... supportedVariants) {
 		return forVariants(Arrays.asList(supportedVariants));
 	}
 

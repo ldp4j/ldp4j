@@ -37,6 +37,7 @@ final class NotFoundEndpointController extends FixedResponseEndpointController {
 	NotFoundEndpointController() {
 	}
 
+	@Override
 	protected Response defaultResponse(OperationContext context) {
 		return
 			Response.

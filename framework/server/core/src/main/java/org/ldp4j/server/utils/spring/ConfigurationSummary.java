@@ -35,6 +35,8 @@ import java.util.Properties;
 import java.util.Map.Entry;
 
 import org.ldp4j.server.utils.spring.DumpableTable.Alignment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.FileSystemResource;
@@ -42,16 +44,18 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 
-class ConfigurationSummary {
+final class ConfigurationSummary {
 
-	public static enum ResourceSource {
-		ClassPath("classpath"),
-		Remote("remote"),
-		FileSystem("file system"),
-		Stream("stream"),
-		Raw("raw"),
-		OsgiBundle("osgi bundle"),
-		Unknown("<unknown>"),
+	private static final String CLAZZ_NAME = "class org.springframework.osgi.io.OsgiBundleResource";
+
+	public enum ResourceSource {
+		CLASSPATH("classpath"),
+		REMOTE("remote"),
+		FILE_SYSTEM("file system"),
+		STREAM("stream"),
+		RAW("raw"),
+		OSGI_BUNDLE("osgi bundle"),
+		UNKNOWN("<unknown>"),
 		;
 		private final String tag;
 
@@ -60,9 +64,11 @@ class ConfigurationSummary {
 		}
 
 		public String getTag() {
-			return tag;
+			return this.tag;
 		}
 	}
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(ConfigurationSummary.class);
 
 	private List<Resource> resources;
 	private Properties properties;
@@ -105,6 +111,7 @@ class ConfigurationSummary {
 			try {
 				uri=resource.getURI().toString();
 			} catch(IOException e) {
+				LOGGER.trace("Could not retrieve URI of resource {}",resource,e);
 				uri="---";
 			}
 			d.addRow(id,source,found,uri);
@@ -122,20 +129,21 @@ class ConfigurationSummary {
 		ResourceSource source = getResourceSource(resource);
 		String id=resource.toString();
 		switch(source) {
-		case ClassPath:
-		case FileSystem:
-		case Remote:
-			id=id.substring(id.indexOf("[")+1,id.indexOf("]"));
-			break;
-		case OsgiBundle:
-			id=id.substring(id.indexOf("[")+1,id.indexOf("]"));
-			id=id.split("\\|")[0];
-			break;
-		case Raw:
-		case Stream:
-		case Unknown:
-			break;
-
+			case CLASSPATH:
+			case FILE_SYSTEM:
+			case REMOTE:
+				id=id.substring(id.indexOf("[")+1,id.indexOf("]"));
+				break;
+			case OSGI_BUNDLE:
+				id=id.substring(id.indexOf("[")+1,id.indexOf("]"));
+				id=id.split("\\|")[0];
+				break;
+			case RAW:
+			case STREAM:
+			case UNKNOWN:
+				break;
+			default:
+				throw new AssertionError("Unsupported resource source '"+source+"'");
 		}
 		return id;
 	}
@@ -144,21 +152,22 @@ class ConfigurationSummary {
 		ResourceSource source = getResourceSource(resource);
 		String result=source.getTag();
 		switch(source){
-		case OsgiBundle:
-			String id=resource.toString();
-			id=id.substring(id.indexOf("[")+1,id.indexOf("]"));
-			String[] parts = id.split("\\|");
-			String bundle=parts[1];
-			result=result.concat(" (").concat(bundle.split("=")[1]).concat(")");
-			break;
-		case ClassPath:
-		case FileSystem:
-		case Raw:
-		case Remote:
-		case Stream:
-		case Unknown:
-			break;
-
+			case OSGI_BUNDLE:
+				String id=resource.toString();
+				id=id.substring(id.indexOf("[")+1,id.indexOf("]"));
+				String[] parts = id.split("\\|");
+				String bundle=parts[1];
+				result=result.concat(" (").concat(bundle.split("=")[1]).concat(")");
+				break;
+			case CLASSPATH:
+			case FILE_SYSTEM:
+			case RAW:
+			case REMOTE:
+			case STREAM:
+			case UNKNOWN:
+				break;
+			default:
+				throw new AssertionError("Unsupported resource source '"+source+"'");
 		}
 		return result;
 	}
@@ -166,21 +175,21 @@ class ConfigurationSummary {
 	private ResourceSource getResourceSource(Resource resource) {
 		ResourceSource source=null;
 		if(resource instanceof ClassPathResource) {
-			source=ResourceSource.ClassPath;
+			source=ResourceSource.CLASSPATH;
 		} else if(resource instanceof UrlResource) {
-			source=ResourceSource.Remote;
+			source=ResourceSource.REMOTE;
 		} else if(resource instanceof FileSystemResource) {
-			source=ResourceSource.FileSystem;
+			source=ResourceSource.FILE_SYSTEM;
 		} else if(resource instanceof InputStreamResource) {
-			source=ResourceSource.Stream;
+			source=ResourceSource.STREAM;
 		} else if(resource instanceof ByteArrayResource) {
-			source=ResourceSource.Raw;
+			source=ResourceSource.RAW;
 		} else {
 			String type=resource.getClass().toString();
-			if(type.equals("class org.springframework.osgi.io.OsgiBundleResource")) {
-				source=ResourceSource.OsgiBundle;
+			if(CLAZZ_NAME.equals(type)) {
+				source=ResourceSource.OSGI_BUNDLE;
 			} else {
-				source=ResourceSource.Unknown;
+				source=ResourceSource.UNKNOWN;
 			}
 		}
 		return source;

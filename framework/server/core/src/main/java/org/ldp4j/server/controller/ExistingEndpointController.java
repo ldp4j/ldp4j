@@ -90,10 +90,11 @@ final class ExistingEndpointController implements EndpointController {
 
 
 	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {
+		PublicResource resource = context.resource();
 		EndpointControllerUtils.
-			populateProtocolEndorsedHeaders(builder, context.resource());
+			populateProtocolEndorsedHeaders(builder,resource.lastModified(),resource.entityTag());
 		EndpointControllerUtils.
-			populateProtocolSpecificHeaders(builder, context.resource());
+			populateProtocolSpecificHeaders(builder,resource.getClass());
 	}
 
 	private void addOptionsMandatoryHeaders(OperationContext context, ResponseBuilder builder) {
@@ -298,7 +299,6 @@ final class ExistingEndpointController implements EndpointController {
 
 			LOGGER.trace("Constraints to serialize: \n {}",report);
 
-
 			String body=serialize(context, variant, report, NamespacesHelper.constraintReportNamespaces(context.applicationNamespaces()));
 
 			ResponseBuilder builder=Response.serverError();
@@ -329,8 +329,7 @@ final class ExistingEndpointController implements EndpointController {
 	}
 
 	private Response processExecutionException(OperationContext context, ApplicationExecutionException exception) {
-		ResponseBuilder builder=
-			Response.serverError();
+		ResponseBuilder builder=Response.serverError();
 
 		int statusCode=0;
 
@@ -370,6 +369,18 @@ final class ExistingEndpointController implements EndpointController {
 		return builder.build();
 	}
 
+	private Response processUnsupportedInteractionModelException(OperationContext context, UnsupportedInteractionModelException e) {
+		ResponseBuilder builder=
+			Response.
+				status(Status.FORBIDDEN).
+				type(MediaType.TEXT_PLAIN).
+				language(Locale.ENGLISH).
+				entity(e.getMessage());
+		addRequiredHeaders(context, builder);
+		return builder.build();
+	}
+
+	@Override
 	public Response options(OperationContext context) {
 		ResponseBuilder builder=
 			Response.
@@ -378,10 +389,12 @@ final class ExistingEndpointController implements EndpointController {
 		return builder.build();
 	}
 
+	@Override
 	public Response head(OperationContext context) {
 		return doGet(context, false);
 	}
 
+	@Override
 	public Response getResource(OperationContext context) {
 		return doGet(context, true);
 	}
@@ -423,7 +436,6 @@ final class ExistingEndpointController implements EndpointController {
 		} catch (ApplicationContextException e) {
 			return processRuntimeException(context, e);
 		}
-
 	}
 
 	@Override
@@ -435,12 +447,12 @@ final class ExistingEndpointController implements EndpointController {
 			checkPreconditions();
 
 		// Fail as we do not support PATCH yet
-		ResponseBuilder builder =
-			Response.serverError();
+		ResponseBuilder builder=Response.serverError();
 		addRequiredHeaders(context, builder);
 		return builder.build();
 	}
 
+	@Override
 	public Response createResource(OperationContext context) {
 		context.
 			checkOperationSupport().
@@ -460,14 +472,7 @@ final class ExistingEndpointController implements EndpointController {
 			addRequiredHeaders(context, builder);
 			return builder.build();
 		} catch (UnsupportedInteractionModelException e) {
-			ResponseBuilder builder=
-				Response.
-					status(Status.FORBIDDEN).
-					type(MediaType.TEXT_PLAIN).
-					language(Locale.ENGLISH).
-					entity(e.getMessage());
-			addRequiredHeaders(context, builder);
-			return builder.build();
+			return processUnsupportedInteractionModelException(context, e);
 		} catch (ApplicationExecutionException e) {
 			return processExecutionException(context, e);
 		} catch (ApplicationContextException e) {

@@ -37,14 +37,17 @@ final class ModuleImpl<T> implements Module<T>{
 		this.source = source;
 	}
 
+	@Override
 	public final String getBase() {
 		return context;
 	}
 
+	@Override
 	public final Source<T> getSource() {
 		return source;
 	}
 
+	@Override
 	public String toString() {
 		return "Module with base <"+getBase()+"> available at <"+getSource()+">";
 	}

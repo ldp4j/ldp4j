@@ -32,8 +32,8 @@ import java.util.Date;
 import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.ApplicationContextException;
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetUtils;
 import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.Literals;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.session.ResourceSnapshot;
@@ -70,7 +70,7 @@ final class TCKFDynamicResourceUpdater implements Runnable {
 			individual.
 				addValue(
 					URI.create("http://www.ldp4j.org/ns#refreshedOn"),
-					DataSetUtils.newLiteral(date.toString()));
+					Literals.of(date).dateTime());
 			this.handler.update(this.name, dataSet);
 			session.modify(snapshot);
 			session.saveChanges();

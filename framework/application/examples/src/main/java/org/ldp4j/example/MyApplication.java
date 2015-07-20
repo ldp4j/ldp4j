@@ -29,17 +29,16 @@ package org.ldp4j.example;
 import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference;
 
 import java.util.Date;
-import java.util.GregorianCalendar;
 
 import javax.xml.datatype.DatatypeConfigurationException;
-import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.ldp4j.application.data.DataDSL;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.Application;
+import org.ldp4j.application.ext.ApplicationInitializationException;
+import org.ldp4j.application.ext.ApplicationSetupException;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
@@ -72,15 +71,12 @@ public class MyApplication extends Application<Configuration> {
 	}
 
 	private DataSet getInitialData(String templateId, String name) throws DatatypeConfigurationException {
-		GregorianCalendar gc=new GregorianCalendar();
-		gc.setTime(new Date());
-		XMLGregorianCalendar date=DatatypeFactory.newInstance().newXMLGregorianCalendar(gc);
-		DataSet initial=
+		return
 			DataDSL.
 				dataSet().
 					individual(newReference().toManagedIndividual(templateId).named(name)).
 						hasProperty("http://www.ldp4j.org/vocabulary/example#creationDate").
-							withValue(date).
+							withValue(new Date()).
 						hasProperty("http://www.ldp4j.org/vocabulary/example#age").
 							withValue(34).
 						hasLink("http://www.ldp4j.org/vocabulary/example#hasFather").
@@ -88,13 +84,11 @@ public class MyApplication extends Application<Configuration> {
 								hasLink("http://www.ldp4j.org/vocabulary/example#hasWife").
 									referringTo(newReference().toLocalIndividual().named("Consuelo")).
 						build();
-		return initial;
 	}
 
 	@Override
-	public void setup(Environment environment, Bootstrap<Configuration> bootstrap) {
+	public void setup(Environment environment, Bootstrap<Configuration> bootstrap) throws ApplicationSetupException {
 		LOGGER.info("Configuring application: {}, {}",environment,bootstrap);
-
 		try {
 			PersonHandler resourceHandler = new PersonHandler();
 			PersonContainerHandler containerHandler=new PersonContainerHandler();
@@ -115,12 +109,12 @@ public class MyApplication extends Application<Configuration> {
 			environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
 			LOGGER.info("Configuration completed.");
 		} catch (DatatypeConfigurationException e) {
-			throw new IllegalStateException("Could not setup application",e);
+			throw new ApplicationSetupException("Could not setup application",e);
 		}
 	}
 
 	@Override
-	public void initialize(WriteSession session) {
+	public void initialize(WriteSession session) throws ApplicationInitializationException {
 		LOGGER.info("Initializing application: {}",session);
 		ResourceSnapshot person = session.find(ResourceSnapshot.class,this.personResourceName,PersonHandler.class);
 		LOGGER.info("Root resource.......: "+person);
@@ -131,7 +125,7 @@ public class MyApplication extends Application<Configuration> {
 		try {
 			session.saveChanges();
 		} catch (WriteSessionException e) {
-			throw new IllegalStateException("Could not initialize application");
+			throw new ApplicationInitializationException("Could not initialize application",e);
 		}
 		LOGGER.info("Initialization completed.");
 	}

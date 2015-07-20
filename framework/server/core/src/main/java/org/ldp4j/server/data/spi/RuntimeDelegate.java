@@ -48,7 +48,7 @@ public abstract class RuntimeDelegate {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(RuntimeDelegate.class);
 
-	public static final String LDP4j_SERVER_DATA_SPI_RUNTIMEDELEGATE_FINDER = "org.ldp4j.server.data.spi.RuntimeDelegate.finder";
+	public static final String LDP4J_SERVER_DATA_SPI_RUNTIMEDELEGATE_FINDER = "org.ldp4j.server.data.spi.RuntimeDelegate.finder";
 
 	/**
 	 * Name of the configuration file where the
@@ -164,7 +164,7 @@ public abstract class RuntimeDelegate {
 	}
 
 	private static RuntimeDelegate createRuntimeDelegateFromSPI() {
-		if(!"disable".equalsIgnoreCase(System.getProperty(LDP4j_SERVER_DATA_SPI_RUNTIMEDELEGATE_FINDER))) {
+		if(!"disable".equalsIgnoreCase(System.getProperty(LDP4J_SERVER_DATA_SPI_RUNTIMEDELEGATE_FINDER))) {
 			for (RuntimeDelegate delegate : ServiceLoader.load(RuntimeDelegate.class)) {
 				return delegate;
 			}

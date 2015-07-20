@@ -39,7 +39,7 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetFactory;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.vocabulary.LDP;
@@ -79,6 +79,14 @@ public final class DataTransformator {
 
 	private Namespaces namespaces;
 
+	private DataTransformator(DataTransformator dataTransformation) {
+		setApplicationBase(dataTransformation.applicationBase);
+		setEndpoint(dataTransformation.endpoint, dataTransformation.permanent);
+		setResourceResolver(dataTransformation.resourceResolver);
+		setMediaType(dataTransformation.mediaType);
+		setNamespaces(dataTransformation.namespaces);
+	}
+
 	private DataTransformator() {
 		setResourceResolver(DEFAULT_RESOLVER);
 		setEndpoint(DEFAULT_ENDPOINT, true);
@@ -86,22 +94,12 @@ public final class DataTransformator {
 	}
 
 	private Namespaces defaultNamespaces() {
-		Namespaces namespaces=
+		return
 			new Namespaces().
 				addPrefix("rdf", RDF.NAMESPACE).
 				addPrefix("rdfs", RDFS.NAMESPACE).
 				addPrefix("xsd", "http://www.w3.org/2001/XMLSchema#").
 				addPrefix("ldp", LDP.NAMESPACE);
-
-		return namespaces;
-	}
-
-	private DataTransformator(DataTransformator dataTransformation) {
-		setApplicationBase(dataTransformation.applicationBase);
-		setEndpoint(dataTransformation.endpoint, dataTransformation.permanent);
-		setResourceResolver(dataTransformation.resourceResolver);
-		setMediaType(dataTransformation.mediaType);
-		setNamespaces(dataTransformation.namespaces);
 	}
 
 	private void setMediaType(MediaType mediaType) {
@@ -159,7 +157,7 @@ public final class DataTransformator {
 					withEntity(entity, this.mediaType).
 					build();
 
-		DataSet dataSet=DataSetFactory.createDataSet(NamingScheme.getDefault().name(endpoint));
+		DataSet dataSet=DataSets.createDataSet(NamingScheme.getDefault().name(endpoint));
 		ValueAdapter adapter=new ValueAdapter(resourceResolver,dataSet);
 		for(TripleResolution tripleResolution:tripleResolver.tripleResolutions()) {
 			Triple triple=tripleResolution.triple();

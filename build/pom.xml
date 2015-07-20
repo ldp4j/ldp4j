@@ -110,7 +110,7 @@
 		<jena.version>2.13.0</jena.version>
 		<jaxb2-basics-runtime.version>0.6.3</jaxb2-basics-runtime.version>
 		<xalan.version>2.7.1</xalan.version>
-		<joda.time.version>2.7</joda.time.version>
+		<joda.time.version>2.8.1</joda.time.version>
 		<spring.version>3.0.7.RELEASE</spring.version>
 		<spring.osgi.version>1.2.0</spring.osgi.version>
 		<org.osgi.core.version>1.0.0</org.osgi.core.version>

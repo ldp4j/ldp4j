@@ -33,6 +33,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSetHelper;
 import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.Literals;
 import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
@@ -84,7 +85,7 @@ public class PersonContainerHandler extends InMemoryContainerHandler {
 		individual.
 			addValue(
 				URI.create("http://www.example.org/vocab#creationDate"),
-				DataSetUtils.newLiteral(new Date()));
+				Literals.of(new Date()).dateTime());
 		try {
 			this.handler.add(name, representation);
 			ResourceSnapshot member = container.addMember(name);

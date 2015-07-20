@@ -36,13 +36,14 @@ import org.ldp4j.server.utils.VariantUtils;
 
 public class ContentProcessingException extends OperationContextException {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -7271633668400276805L;
 
 	public ContentProcessingException(String message, PublicResource resource, OperationContext context) {
-		super(message,resource,context);
+		this(message,null,resource,context);
+	}
+
+	public ContentProcessingException(String message, Throwable cause, PublicResource resource, OperationContext context) {
+		super(message,cause,resource,context);
 	}
 
 	public final List<Variant> getSupportedVariants() {

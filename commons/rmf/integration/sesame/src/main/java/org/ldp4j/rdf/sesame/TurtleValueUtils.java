@@ -37,7 +37,7 @@ import org.openrdf.rio.turtle.TurtleUtil;
 
 final class TurtleValueUtils {
 
-	static enum Namespace {
+	enum Namespace {
 		RDF("http://www.w3.org/1999/02/22-rdf-syntax-ns#",1),
 		RDFS("http://www.w3.org/2000/01/rdf-schema#",2),
 		OWL("http://www.w3.org/2002/07/owl#",3),
@@ -159,7 +159,7 @@ final class TurtleValueUtils {
 			URI datatype = lit.getDatatype();
 			if(datatype!=null) {
 				// TODO: This should be configurable
-				if(!canOmmitDatatype(datatype)) {
+				if(!canOmmitDatatype(datatype)) { // NOSONAR
 					/**
 					 * Append the literal's datatype (possibly written as an abbreviated
 					 * URI)

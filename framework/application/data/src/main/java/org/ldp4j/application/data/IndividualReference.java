@@ -26,11 +26,11 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
-import java.util.concurrent.atomic.AtomicReference;
 
 
-public abstract class IndividualReference<T, S extends Individual<T,S>> {
+public abstract class IndividualReference<T extends Serializable, S extends Individual<T,S>> {
 
 	public static class ManagedIndividualReference extends IndividualReference<ManagedIndividualId,ManagedIndividual> {
 
@@ -98,6 +98,37 @@ public abstract class IndividualReference<T, S extends Individual<T,S>> {
 
 	}
 
+	private static final class ReferenceBuilder implements IndividualVisitor {
+		private IndividualReference<?,?> result=null;
+
+		private ReferenceBuilder() {
+		}
+
+		private IndividualReference<?,?> builtReference() {
+			return this.result;
+		}
+		@Override
+		public void visitManagedIndividual(ManagedIndividual individual) {
+			this.result=IndividualReference.managed(individual.id());
+		}
+		@Override
+		public void visitLocalIndividual(LocalIndividual individual) {
+			this.result=IndividualReference.anonymous(individual.id());
+		}
+		@Override
+		public void visitExternalIndividual(ExternalIndividual individual) {
+			this.result=IndividualReference.external(individual.id());
+		}
+		@Override
+		public void visitRelativeIndividual(RelativeIndividual individual) {
+			this.result=IndividualReference.relative(individual.id());
+		}
+		@Override
+		public void visitNewIndividual(NewIndividual individual) {
+			this.result=IndividualReference.newIndividual(individual.id());
+		}
+	}
+
 	private final T id;
 	private final Class<? extends S> clazz;
 
@@ -129,69 +160,46 @@ public abstract class IndividualReference<T, S extends Individual<T,S>> {
 	abstract void accept(IndividualReferenceVisitor visitor);
 
 	@SuppressWarnings("rawtypes")
-	public static IndividualReference<Name,?> anonymous(Name<?> name) {
+	public static IndividualReference<Name,LocalIndividual> anonymous(Name<?> name) {
 		return new LocalIndividualReference(name);
 	}
 
-	public static IndividualReference<ManagedIndividualId,?> managed(ManagedIndividualId individualId) {
+	public static IndividualReference<ManagedIndividualId,ManagedIndividual> managed(ManagedIndividualId individualId) {
 		return new ManagedIndividualReference(individualId);
 	}
 
-	public static IndividualReference<ManagedIndividualId,?> managed(Name<?> name, String templateId) {
+	public static IndividualReference<ManagedIndividualId,ManagedIndividual> managed(Name<?> name, String templateId) {
 		return managed(ManagedIndividualId.createId(name, templateId));
 	}
 
-	public static IndividualReference<ManagedIndividualId,?> managed(Name<?> name, String templateId, URI indirectId) {
+	public static IndividualReference<ManagedIndividualId,ManagedIndividual> managed(Name<?> name, String templateId, URI indirectId) {
 		return managed(indirectId,ManagedIndividualId.createId(name, templateId));
 	}
 
-	public static IndividualReference<ManagedIndividualId,?> managed(URI indirectId, ManagedIndividualId parent) {
+	public static IndividualReference<ManagedIndividualId,ManagedIndividual> managed(URI indirectId, ManagedIndividualId parent) {
 		return managed(ManagedIndividualId.createId(indirectId, parent));
 	}
 
-	public static IndividualReference<RelativeIndividualId,?> relative(ManagedIndividualId parentId, URI path) {
+	public static IndividualReference<RelativeIndividualId,RelativeIndividual> relative(ManagedIndividualId parentId, URI path) {
 		return relative(RelativeIndividualId.createId(parentId,path));
 	}
 
-	public static IndividualReference<RelativeIndividualId,?> relative(RelativeIndividualId individualId) {
+	public static IndividualReference<RelativeIndividualId,RelativeIndividual> relative(RelativeIndividualId individualId) {
 		return new RelativeIndividualReference(individualId);
 	}
 
-	public static IndividualReference<URI,?> external(URI location) {
+	public static IndividualReference<URI,ExternalIndividual> external(URI location) {
 		return new ExternalIndividualReference(location);
 	}
 
-	public static IndividualReference<URI,?> newIndividual(URI location) {
+	public static IndividualReference<URI,NewIndividual> newIndividual(URI location) {
 		return new NewIndividualReference(location);
 	}
 
 	@SuppressWarnings("unchecked")
-	public static <T,S extends Individual<T,S>> IndividualReference<T,S> fromIndividual(Individual<T,S> value) {
-		final AtomicReference<IndividualReference<?,?>> result=new AtomicReference<IndividualReference<?,?>>();
-		value.accept(
-			new IndividualVisitor() {
-				@Override
-				public void visitManagedIndividual(ManagedIndividual individual) {
-					result.set(IndividualReference.managed(individual.id()));
-				}
-				@Override
-				public void visitLocalIndividual(LocalIndividual individual) {
-					result.set(IndividualReference.anonymous(individual.id()));
-				}
-				@Override
-				public void visitExternalIndividual(ExternalIndividual individual) {
-					result.set(IndividualReference.external(individual.id()));
-				}
-				@Override
-				public void visitRelativeIndividual(RelativeIndividual individual) {
-					result.set(IndividualReference.relative(individual.id()));
-				}
-				@Override
-				public void visitNewIndividual(NewIndividual individual) {
-					result.set(IndividualReference.newIndividual(individual.id()));
-				}
-			}
-		);
-		return (IndividualReference<T, S>)result.get();
+	public static <T extends Serializable,S extends Individual<T,S>> IndividualReference<T,S> fromIndividual(Individual<T,S> value) {
+		ReferenceBuilder builder = new ReferenceBuilder();
+		value.accept(builder);
+		return (IndividualReference<T, S>)builder.builtReference();
 	}
 }

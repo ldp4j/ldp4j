@@ -26,26 +26,27 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.Set;
 
 public interface DataSet extends Iterable<Individual<?,?>> {
-	
+
 	Name<?> name();
-	
+
 	int numberOfIndividuals();
-	
+
 	boolean hasIndividuals();
-	
+
 	Collection<? extends Individual<?,?>> individuals();
 
-	Set<Object> individualIds();
+	Set<Serializable> individualIds();
 
 	boolean hasIndividual(Object id);
-	
-	<T> Individual<T,?> individualOfId(T id);
-	
-	<T, S extends Individual<T,S>> S individual(T id, Class<? extends S> clazz);
+
+	<T extends Serializable, S extends Individual<T,S>> S individualOfId(T id);
+
+	<T extends Serializable, S extends Individual<T,S>> S individual(T id, Class<? extends S> clazz);
 
 	boolean isEmpty();
 

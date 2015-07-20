@@ -44,15 +44,15 @@ import org.ldp4j.server.sdk.IndividualFormattedContent.Individual.Value;
 public final class IndividualFormattedContent implements IContent {
 	private static final String LINE_SEPARATOR = System.getProperty("line.separator");
 
-	private static final String EMPTY_TURTLE = 
+	private static final String EMPTY_TURTLE =
 		"@prefix dc: <http://purl.org/dc/elements/1.1/>."+LINE_SEPARATOR+
 		"@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#>.";
 
-	private static final String EMPTY_RDF_XML_HEADER = 
+	private static final String EMPTY_RDF_XML_HEADER =
 	"<rdf:RDFS xmlns:rdf=\"http://www.w3.org/1999/02/22-rdf-syntax-ns#\""+LINE_SEPARATOR+
 	"\txmlns:dc=\"http://purl.org/dc/elements/1.1/\">"+LINE_SEPARATOR;
 
-	private static final String EMPTY_RDF_XML_FOOTER = 
+	private static final String EMPTY_RDF_XML_FOOTER =
 	"</rdf:RDFS>";
 
 	private final Format format;
@@ -60,7 +60,7 @@ public final class IndividualFormattedContent implements IContent {
 	private final Individual[] individuals;
 
 	public static final class Individual {
-		
+
 		static final class Value {
 
 			private final QName resource;
@@ -87,7 +87,7 @@ public final class IndividualFormattedContent implements IContent {
 						result=literal;
 					}
 					break;
-				default: 
+				default:
 					// Is the case of TURTLE:
 					if(isResource()) {
 						result="<"+resource.getNamespaceURI()+resource.getLocalPart()+">";
@@ -107,9 +107,9 @@ public final class IndividualFormattedContent implements IContent {
 			public boolean isResource() {
 				return resource!=null;
 			}
-			
+
 		}
-		
+
 		private QName resource;
 		private final Map<QName,Set<Value>> properties=new HashMap<QName,Set<Value>>();
 		private boolean has_properties;
@@ -117,7 +117,7 @@ public final class IndividualFormattedContent implements IContent {
 		public QName getResource() {
 			return resource;
 		}
-		
+
 		private void setResource(QName resource) {
 			this.resource = resource;
 		}
@@ -131,7 +131,7 @@ public final class IndividualFormattedContent implements IContent {
 			set.add(value);
 			has_properties=true;
 		}
-		
+
 		public Collection<QName> getProperties() {
 			return properties.keySet();
 		}
@@ -146,25 +146,25 @@ public final class IndividualFormattedContent implements IContent {
 		public boolean hasProperties() {
 			return has_properties;
 		}
-		
+
 	}
-	
+
 	public interface Placeholder<T> {
 
 		T build();
 
 	}
 
-	
+
 	public static final class Placeholders {
-		
+
 		private Placeholders() {
 		}
-		
+
 		public static QNameBuilder qualifiedName(String name) {
 			return new QNameBuilder(name);
 		}
-		
+
 		public static Placeholder<Value> resource(final Placeholder<QName> qname) {
 			return new Placeholder<Value>() {
 
@@ -172,7 +172,7 @@ public final class IndividualFormattedContent implements IContent {
 				public Value build() {
 					return new Value(qname.build());
 				}
-				
+
 			};
 		}
 
@@ -183,17 +183,17 @@ public final class IndividualFormattedContent implements IContent {
 				public Value build() {
 					return new Value(literal);
 				}
-				
+
 			};
 		}
 
 	}
-		
+
 	public static final class QNameBuilder implements Placeholder<QName> {
-		
-		private static final AtomicLong NS_PREFIX_COUNTER=new AtomicLong(); 
-		private static final AtomicLong NS_COUNTER=new AtomicLong(); 
-		
+
+		private static final AtomicLong NS_PREFIX_COUNTER=new AtomicLong();
+		private static final AtomicLong NS_COUNTER=new AtomicLong();
+
 		private String namespaceURI;
 		private String localPart;
 		private String prefix;
@@ -211,7 +211,8 @@ public final class IndividualFormattedContent implements IContent {
 			this.prefix = prefix;
 			return this;
 		}
-		
+
+		@Override
 		public QName build() {
 			String localNamespace=namespaceURI;
 			if(localNamespace==null) {
@@ -223,24 +224,23 @@ public final class IndividualFormattedContent implements IContent {
 			}
 			return new QName(localNamespace, localPart, localPrefix);
 		}
-		
-		
+
 	}
-	
+
 	public static final class IndividualBuilder {
-		
+
 		private Individual individual=new Individual();
 
 		private IndividualBuilder(QName resource) {
 			individual=new Individual();
 			individual.setResource(resource);
 		}
-		
+
 		public IndividualBuilder withPropertyValue(Placeholder<QName> property, Placeholder<Value> value) {
 			individual.addProperty(property.build(), value.build());
 			return this;
 		}
-		
+
 		public Individual build() {
 			Individual result=individual;
 			individual=new Individual();
@@ -257,8 +257,8 @@ public final class IndividualFormattedContent implements IContent {
 	public static IndividualBuilder newIndividualBuilder(QName resource) {
 		return new IndividualBuilder(resource);
 	}
-	
-	
+
+
 	public IndividualFormattedContent(Format format,Individual...individuals) {
 		this.format = format;
 		this.individuals = individuals;

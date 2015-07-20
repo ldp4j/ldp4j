@@ -37,11 +37,11 @@ import java.util.List;
 public final class TypeUtils {
 
 	private final List<Type> visited;
-	
+
 	private TypeUtils() {
 		visited=new ArrayList<Type>();
 	}
-	
+
 	private String toString(Type type, boolean qualify) {
 		visited.add(type);
 		String result=null;
@@ -64,7 +64,7 @@ public final class TypeUtils {
 	public static String toString(Type type) {
 		return new TypeUtils().toString(type, false);
 	}
-	
+
 	private String printClass(Class<?> clazz, boolean qualify) {
 		String result=null;
 		if(qualify) {
@@ -77,13 +77,13 @@ public final class TypeUtils {
 
 	private String printGenericArrayDeclaration(GenericArrayType type, boolean qualify) {
 		String componentType = toString(type.getGenericComponentType(),qualify);
-		if(componentType.indexOf(' ')>0) {
+		if(componentType.indexOf(' ')>0) { // NOSONAR
 			return String.format("(%s)[]",componentType);
 		} else {
 			return componentType.concat("[]");
 		}
 	}
-	
+
 	private String printParameterizedType(ParameterizedType type, boolean qualify) {
 		StringBuilder builder = new StringBuilder();
 		builder.append(toString(type.getRawType(),qualify));
@@ -117,7 +117,7 @@ public final class TypeUtils {
 		builder.append(printBounds(variable.getName(),variable.getBounds(), false));
 		return builder.toString();
 	}
-	
+
 	private String printWildcardType(WildcardType type) {
 		Type[] bounds=type.getLowerBounds();
 		boolean hasLowerBounds = bounds.length>0;
@@ -143,5 +143,5 @@ public final class TypeUtils {
 		}
 		return builder.toString();
 	}
-	
+
 }

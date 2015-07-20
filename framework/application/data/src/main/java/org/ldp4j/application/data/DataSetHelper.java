@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 
 public abstract class DataSetHelper {
@@ -49,13 +50,13 @@ public abstract class DataSetHelper {
 	DataSetHelper() {
 	}
 
-	public abstract <T, S extends Individual<T, S>> S replace(Object from, T to, Class<? extends S> clazz);
+	public abstract <T extends Serializable, S extends Individual<T, S>> S replace(Serializable from, T to, Class<? extends S> clazz);
 
 	public abstract ManagedIndividual manage(ManagedIndividualId id) throws DataSetModificationException;
 
-	public abstract Individual<?, ?> self();
+	public abstract <T extends Individual<URI,T>> T self();
 
-	public abstract Individual<?, ?> relative(URI path);
+	public abstract <T extends Individual<URI,T>> T relative(URI path);
 
 	public abstract IndividualHelper managedIndividual(Name<?> name, String managerId);
 

@@ -252,7 +252,7 @@ public enum Datatype {
 	},
 	XML_LITERAL(Namespace.RDF,"XMLLiteral",null,ANY_TYPE,null, null),
 	;
-	
+
 	private static final String CLAZZ_PARAM = "clazz";
 	private final Datatype parent;
 	private final Datatype.BuiltInType type;
@@ -269,7 +269,7 @@ public enum Datatype {
 		this.parent = parent;
 		this.clazz=clazz;
 	}
-	
+
 	public void decode(String rawValue, ValueSink consumer) {
 		if(parent==null) {
 			consumer.consumeRawValue(rawValue);
@@ -277,7 +277,7 @@ public enum Datatype {
 			parent.decode(rawValue, consumer);
 		}
 	}
-	
+
 	boolean isSimple() {
 		return !isComplex();
 	}
@@ -297,7 +297,7 @@ public enum Datatype {
 	boolean isDerivedByList() {
 		return DerivationType.LIST.equals(derivation);
 	}
-	
+
 	boolean encodes(Class<?> clazz) {
 		Assertions.notNull(clazz, CLAZZ_PARAM);
 		if(this.clazz!=null) {
@@ -345,7 +345,7 @@ public enum Datatype {
 	public URI toURI() {
 		return namespace.toURI(localName);
 	}
-	
+
 	public static Datatype fromURI(URI uri) {
 		Datatype result = null;
 		if(uri!=null) {
@@ -411,39 +411,39 @@ public enum Datatype {
 	}
 
 	public static interface ValueSink {
-	
+
 		void consumeString(String value);
-	
+
 		void consumeQName(String prefix, String localName);
-	
+
 		void consumeDuration(Duration value);
-	
+
 		void consumeXMLGregorianCalendar(XMLGregorianCalendar value);
-	
+
 		void consumeByte(byte value);
-	
+
 		void consumeShort(short value);
-	
+
 		void consumeInteger(int value);
-	
+
 		void consumeLong(long value);
-	
+
 		void consumeBigInteger(BigInteger value);
-	
+
 		void consumeBigDecimal(BigDecimal value);
-	
+
 		void consumeURI(URI value);
-	
+
 		void consumeDouble(double value);
-	
+
 		void consumeFloat(float value);
-	
+
 		void consumeBoolean(boolean value);
-	
+
 		void consumeStringArray(String[] value);
-	
+
 		void consumeRawValue(String value);
-		
+
 	}
 
 	private static void encodeXMLGregorianCalender(Datatype type, String rawValue, ValueSink consumer) {
@@ -462,7 +462,7 @@ public enum Datatype {
 		}
 	}
 
-	private static enum Namespace {
+	private enum Namespace {
 
 		XML_SCHEMA("http://www.w3.org/2001/XMLSchema#"),
 		RDF("http://www.w3.org/1999/02/22-rdf-syntax-ns#"),
@@ -473,15 +473,15 @@ public enum Datatype {
 		Namespace(String value) {
 			this.value = value;
 		}
-		
+
 		public URI toURI(String localPart) {
 			return URI.create(value.concat(localPart));
 		}
-		
+
 		public boolean belongsToNamespace(String uri) {
 			return uri.startsWith(value);
 		}
-		
+
 		public String localName(String uri) {
 			String result = null;
 			if(belongsToNamespace(uri)) {
@@ -489,16 +489,16 @@ public enum Datatype {
 			}
 			return result;
 		}
-		
+
 	}
-	
-	private static enum BuiltInType {
+
+	private enum BuiltInType {
 		UR,
 		PRIMITIVE,
 		DERIVED
 	}
 
-	private static enum DerivationType {
+	private enum DerivationType {
 		RESTRICTION,
 		LIST,
 		EXTENSION_OR_RESTRICTION
@@ -511,10 +511,10 @@ public enum Datatype {
 			private Singleton() {
 			}
 		}
-		
+
 		private final ConcurrentMap<Datatype,List<Datatype>> ancestors;
 		private final Lock ancestorsLock;
-		
+
 		private DatatypeMetadata() {
 			ancestors=new ConcurrentHashMap<Datatype, List<Datatype>>();
 			ancestorsLock=new ReentrantLock();
@@ -526,13 +526,13 @@ public enum Datatype {
 				ancestors(type.parent,parents);
 			}
 		}
-		
+
 		private List<Datatype> ancestors(Datatype type) {
 			List<Datatype> result=new ArrayList<Datatype>();
 			ancestors(type,result);
 			return Collections.unmodifiableList(result);
 		}
-		
+
 		List<Datatype> getAncestors(Datatype type) {
 			List<Datatype> result = ancestors.get(type);
 			if(result==null) {
@@ -549,19 +549,19 @@ public enum Datatype {
 			}
 			return result;
 		}
-		
+
 		public static DatatypeMetadata getInstance() {
 			return Singleton.INSTANCE;
 		}
-		
+
 	}
 
 	private static class TypeSelector {
-	
+
 		private static class XSTComparator implements Comparator<Datatype>, Serializable {
-		
+
 			/**
-			 * 
+			 *
 			 */
 			private static final long serialVersionUID = -1261762409645119729L;
 
@@ -570,7 +570,7 @@ public enum Datatype {
 				if(o1.equals(o2)) {
 					return 0;
 				}
-				int result = compareByAncestors(o1, o2); 
+				int result = compareByAncestors(o1, o2);
 				if(result==0) {
 					assertEqualRawTypes(o1, o2);
 					result=compareByMeta(o1, o2);
@@ -610,7 +610,7 @@ public enum Datatype {
 					return o1.compareTo(o2);
 				}
 			}
-			
+
 			/**
 			 * @param o1
 			 * @param o2
@@ -635,7 +635,7 @@ public enum Datatype {
 				}
 				return result;
 			}
-		
+
 		}
 
 		private static interface Selector<T> {
@@ -658,7 +658,7 @@ public enum Datatype {
 			@Override
 			public List<Datatype> select(Long value) {
 				List<Datatype> result=new ArrayList<Datatype>();
-				if(value>=0) { 
+				if(value>=0) {
 					if(value<=4294967295L) {
 						result.add(Datatype.UNSIGNED_INT);
 					}
@@ -705,10 +705,10 @@ public enum Datatype {
 		private static LongSelector LONG_SELECTOR=new LongSelector();
 		private static ShortSelector SHORT_SELECTOR=new ShortSelector();
 		private static BigIntegerSelector BIG_INTEGER_SELECTOR=new BigIntegerSelector();
-		
+
 		private TypeSelector() {
 		}
-		
+
 		private static List<Datatype> classEncodings(Class<?> value) {
 			Collection<Datatype> result = new PriorityQueue<Datatype>(10,new XSTComparator());
 			if(value!=null) {
@@ -737,7 +737,7 @@ public enum Datatype {
 			}
 			return result;
 		}
-		
+
 	}
 
 }

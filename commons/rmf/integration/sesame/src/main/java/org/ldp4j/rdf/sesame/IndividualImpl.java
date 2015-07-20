@@ -52,11 +52,12 @@ final class IndividualImpl implements Individual {
 	private static final String PREDICATE_PARAM = "predicate";
 
 	private static final class PredicateComparator implements Comparator<URI>, Serializable {
-	
+
 		private static final long serialVersionUID = 2092671073721681488L;
-	
+
 		private static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
-	
+
+		@Override
 		public int compare(URI o1, URI o2) {
 			if(o1.toString().equals(RDF_TYPE)) {
 				return -1;
@@ -66,7 +67,7 @@ final class IndividualImpl implements Individual {
 				return TurtleValueUtils.compare(o1,o2);
 			}
 		}
-	
+
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(IndividualImpl.class);
@@ -132,7 +133,7 @@ final class IndividualImpl implements Individual {
 		findAssertions(predicate).add(individual);
 		individual.addReferrer(subject);
 	}
-	
+
 	@Override
 	public boolean isAnonymous() {
 		return anonymous;
@@ -150,10 +151,10 @@ final class IndividualImpl implements Individual {
 
 	@Override
 	public boolean isFoldable() {
-		return 
+		return
 			!isReference() &&
-			anonymous && 
-			referrers.size()==1 && 
+			anonymous &&
+			referrers.size()==1 &&
 			references==1;
 	}
 
@@ -173,7 +174,7 @@ final class IndividualImpl implements Individual {
 
 	@Override
 	public boolean canBeFoldedBy(Resource subject) {
-		return 
+		return
 			isFoldable() &&
 			referrers.contains(subject);
 	}
@@ -191,12 +192,12 @@ final class IndividualImpl implements Individual {
 	public long getReferences() {
 		return references;
 	}
-	
+
 	@Override
 	public Set<Resource> getReferrers() {
 		return Collections.unmodifiableSet(referrers);
 	}
-	
+
 	@Override
 	public String toString(){
 		String nl = System.getProperty("line.separator");

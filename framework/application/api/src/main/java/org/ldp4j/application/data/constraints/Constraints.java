@@ -29,13 +29,18 @@ package org.ldp4j.application.data.constraints;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.Serializable;
 import java.net.URI;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
+import org.ldp4j.application.data.Literal;
 import org.ldp4j.application.data.Value;
+import org.ldp4j.application.data.ValueVisitor;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
@@ -45,7 +50,7 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
-public final class Constraints {
+public final class Constraints implements Serializable {
 
 	public enum NodeKind {
 		NODE("Node"),
@@ -74,7 +79,9 @@ public final class Constraints {
 		String comment();
 	}
 
-	public static final class Cardinality {
+	public static final class Cardinality implements Serializable {
+
+		private static final long serialVersionUID = 7262473645776142538L;
 
 		private int min;
 		private int max;
@@ -92,6 +99,9 @@ public final class Constraints {
 			return this.max;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public String toString() {
 			return
@@ -129,13 +139,39 @@ public final class Constraints {
 	}
 
 
-	static abstract class AbstractPropertyConstraint<T extends AbstractPropertyConstraint<T>> {
+	public abstract static class AbstractPropertyConstraint<T extends AbstractPropertyConstraint<T>> implements Serializable {
+
+		private static final long serialVersionUID = 6473281395518369031L;
+
+		private static final class ValueCollector implements ValueVisitor {
+
+			private final Collection<Serializable> individuals;
+			private final Collection<Literal<?>> literals;
+
+			private ValueCollector(Collection<Serializable> individuals, Collection<Literal<?>> lLiterals) {
+				this.individuals = individuals;
+				this.literals = lLiterals;
+			}
+
+			@Override
+			public void visitLiteral(Literal<?> value) {
+				literals.add(value);
+			}
+
+			@Override
+			public void visitIndividual(Individual<?, ?> value) {
+				individuals.add(value.id());
+			}
+
+		}
 
 		private final URI predicate;
 		private String comment;
 		private String label;
-		private Set<Value> allowedValues;
-		private List<Value> values;
+		private Set<Serializable> allowedIndividuals;
+		private Set<Literal<?>> allowedLiterals;
+		private List<Serializable> individuals;
+		private List<Literal<?>> literals;
 		private URI datatype;
 		private NodeKind nodeKind;
 		private Shape valueShape;
@@ -188,16 +224,29 @@ public final class Constraints {
 
 		public T withAllowedValues(Value... allowedValues) {
 			checkNotNull(allowedValues,"Allowed values cannot be null");
-			this.allowedValues=Sets.newHashSet(allowedValues);
+			this.allowedLiterals=Sets.newLinkedHashSet();
+			this.allowedIndividuals=Sets.newLinkedHashSet();
+			ValueCollector valueCollector=new ValueCollector(this.allowedIndividuals,this.allowedLiterals);
+			for(Value value:allowedValues) {
+				value.accept(valueCollector);
+			}
 			return delegate();
 		}
 
-		public Set<Value> allowedValues() {
-			Set<Value> values=this.allowedValues;
-			if(values==null) {
-				values=Sets.newLinkedHashSet();
+		public Set<Literal<?>> allowedLiterals() {
+			Set<Literal<?>> result=this.allowedLiterals;
+			if(result==null) {
+				result=Sets.newLinkedHashSet();
 			}
-			return ImmutableSet.copyOf(values);
+			return ImmutableSet.copyOf(result);
+		}
+
+		public Set<Individual<?,?>> allowedIndividuals(DataSet dataSet) {
+			Set<Serializable> result=this.allowedIndividuals;
+			if(result==null) {
+				result=Sets.newLinkedHashSet();
+			}
+			return ConstraintsHelper.getOrCreateIndividuals(dataSet,result);
 		}
 
 		public T withDatatype(URI datatype) {
@@ -212,16 +261,29 @@ public final class Constraints {
 
 		public T withValue(Value... values) {
 			checkNotNull(values,"Value cannot be null");
-			this.values=Lists.newArrayList(values);
+			this.literals=Lists.newArrayList();
+			this.individuals=Lists.newArrayList();
+			ValueCollector valueCollector=new ValueCollector(this.individuals,this.literals);
+			for(Value value:values) {
+				value.accept(valueCollector);
+			}
 			return delegate();
 		}
 
-		public List<Value> values() {
-			List<Value> values=this.values;
-			if(values==null) {
-				values=Lists.newArrayList();
+		public List<Literal<?>> literals() {
+			List<Literal<?>> result=this.literals;
+			if(result==null) {
+				result=Lists.newArrayList();
 			}
-			return ImmutableList.copyOf(values);
+			return ImmutableList.copyOf(result);
+		}
+
+		public List<Individual<?,?>> individuals(DataSet dataSet) {
+			List<Serializable> result=this.individuals;
+			if(result==null) {
+				result=Lists.newArrayList();
+			}
+			return ConstraintsHelper.getOrCreateIndividuals(dataSet,result);
 		}
 
 		public T withNodeKind(NodeKind nodeKind) {
@@ -262,9 +324,11 @@ public final class Constraints {
 						add("label", this.label).
 						add("comment", this.comment).
 						add("cardinality", this.cardinality()).
-						add("allowedValues", this.allowedValues).
+						add("allowedLiterals", this.allowedLiterals).
+						add("allowedIndividuals", this.allowedIndividuals).
 						add("datatype", this.datatype).
-						add("values", this.values).
+						add("literals", this.literals).
+						add("literals", this.individuals).
 						add("nodeKind", this.nodeKind).
 						add("valueShape", this.valueShape).
 						add("valueType", this.valueType).
@@ -274,6 +338,8 @@ public final class Constraints {
 	}
 
 	public static final class PropertyConstraint extends AbstractPropertyConstraint<PropertyConstraint> implements Describable {
+
+		private static final long serialVersionUID = -2646499801130951583L;
 
 		private PropertyConstraint(URI predicate) {
 			super(predicate);
@@ -288,6 +354,8 @@ public final class Constraints {
 
 	public static final class InversePropertyConstraint extends AbstractPropertyConstraint<InversePropertyConstraint> implements Describable {
 
+		private static final long serialVersionUID = -6328974380403084873L;
+
 		private InversePropertyConstraint(URI predicate) {
 			super(predicate);
 		}
@@ -299,9 +367,11 @@ public final class Constraints {
 
 	}
 
-	public static final class Shape implements Describable {
+	public static final class Shape implements Describable, Serializable {
 
-		private Map<URI,AbstractPropertyConstraint<?>> constraints;
+		private static final long serialVersionUID = 3966457418001884744L;
+
+		private Map<URI,AbstractPropertyConstraint<?>> constraints; // NOSONAR
 		private String label;
 		private String comment;
 
@@ -314,6 +384,9 @@ public final class Constraints {
 			return this;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public String label() {
 			return this.label;
@@ -324,6 +397,9 @@ public final class Constraints {
 			return this;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public String comment() {
 			return this.comment;
@@ -379,8 +455,10 @@ public final class Constraints {
 
 	}
 
-	private Map<Individual<?,?>,Shape> nodeShapes;
-	private Map<URI,Shape> typeShapes;
+	private static final long serialVersionUID = 4368698694568719975L;
+
+	private Map<Serializable,Shape> nodeShapes; // NOSONAR
+	private Map<URI,Shape> typeShapes; // NOSONAR
 
 	private Constraints() {
 		this.nodeShapes=Maps.newLinkedHashMap();
@@ -400,8 +478,13 @@ public final class Constraints {
 		return ImmutableSet.copyOf(this.typeShapes.keySet());
 	}
 
-	public Set<Individual<?,?>> nodes() {
-		return ImmutableSet.copyOf(this.nodeShapes.keySet());
+	public Set<Individual<?,?>> nodes(DataSet dataSet) {
+		checkNotNull(dataSet,"Data set cannot be null");
+		return
+			ConstraintsHelper.
+				getOrCreateIndividuals(
+					dataSet,
+					this.nodeShapes.keySet());
 	}
 
 	public Shape typeShape(URI type) {
@@ -409,7 +492,7 @@ public final class Constraints {
 	}
 
 	public Shape nodeShape(Individual<?,?> individual) {
-		return this.nodeShapes.get(individual);
+		return this.nodeShapes.get(individual.id());
 	}
 
 	public Constraints withTypeShape(URI type, Shape shape) {
@@ -423,8 +506,8 @@ public final class Constraints {
 	public Constraints withNodeShape(Individual<?,?> individual, Shape shape) {
 		checkNotNull(individual,"Type URI cannot be null");
 		checkNotNull(shape,"Shape cannot be null");
-		checkArgument(!this.nodeShapes.containsKey(individual),"A shape is already defined for individual '"+individual.id()+"'");
-		this.nodeShapes.put(individual,shape);
+		checkArgument(!this.nodeShapes.containsKey(individual.id()),"A shape is already defined for individual '"+individual.id()+"'");
+		this.nodeShapes.put(individual.id(),shape);
 		return this;
 	}
 
@@ -450,8 +533,8 @@ public final class Constraints {
 		return new PropertyConstraint(predicate);
 	}
 
-	public static PropertyConstraint inversePropertyConstraint(URI predicate) {
-		return new PropertyConstraint(predicate);
+	public static InversePropertyConstraint inversePropertyConstraint(URI predicate) {
+		return new InversePropertyConstraint(predicate);
 	}
 
 }

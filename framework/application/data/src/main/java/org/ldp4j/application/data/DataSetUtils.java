@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
@@ -35,121 +36,8 @@ import com.google.common.base.Preconditions;
 
 public final class DataSetUtils {
 
-	private static final class IndividualFinder implements IndividualVisitor {
-
-		private final DataSet dataSet;
-		private Individual<?,?> found=null;
-
-		IndividualFinder(DataSet dataSet) {
-			this.dataSet = dataSet;
-		}
-
-		Individual<?,?> findOrCreate(Individual<?,?> individual) {
-			individual.accept(this);
-			return found;
-		}
-
-		@Override
-		public void visitManagedIndividual(ManagedIndividual individual) {
-			found=dataSet.individual(individual.id(),ManagedIndividual.class);
-		}
-
-		@Override
-		public void visitLocalIndividual(LocalIndividual individual) {
-			found=dataSet.individual(individual.id(),LocalIndividual.class);
-		}
-
-		@Override
-		public void visitExternalIndividual(ExternalIndividual individual) {
-			found=dataSet.individual(individual.id(),ExternalIndividual.class);
-		}
-
-		@Override
-		public void visitRelativeIndividual(RelativeIndividual individual) {
-			found=dataSet.individual(individual.id(),RelativeIndividual.class);
-		}
-
-		@Override
-		public void visitNewIndividual(NewIndividual individual) {
-			found=dataSet.individual(individual.id(),NewIndividual.class);
-		}
-	}
-
-	private static class ValueReplicator implements ValueVisitor {
-		private final IndividualFinder finder;
-		private Value result=null;
-
-		ValueReplicator(DataSet dataSet) {
-			finder=new IndividualFinder(dataSet);
-		}
-
-		Value replicate(Value value) {
-			value.accept(this);
-			return result;
-		}
-		@Override
-		public void visitLiteral(Literal<?> value) {
-			result=value;
-		}
-		@Override
-		public void visitIndividual(Individual<?, ?> value) {
-			result=finder.findOrCreate(value);
-		}
-	}
-
-	static abstract class ValueMatcher implements ValueVisitor {
-
-		private boolean matches;
-
-		public final boolean matchesValue(Value propertyValue) {
-			this.setMatches(false);
-			propertyValue.accept(this);
-			return this.matches;
-		}
-
-		protected final void setMatches(boolean matches) {
-			this.matches = matches;
-		}
-
-	}
-
-	static final class LiteralMatcher extends ValueMatcher {
-
-		private final Literal<?> literal;
-
-		LiteralMatcher(Literal<?> literal) {
-			this.literal = literal;
-		}
-
-		@Override
-		public void visitLiteral(Literal<?> value) {
-			super.setMatches(literal.get().equals(value.get()));
-		}
-
-		@Override
-		public void visitIndividual(Individual<?, ?> value) {
-		}
-
-	}
-
-	static final class IndividualReferenceMatcher extends ValueMatcher {
-
-		private final Object id;
-
-		IndividualReferenceMatcher(Object id) {
-			this.id = id;
-		}
-
-		@Override
-		public void visitLiteral(Literal<?> value) {
-		}
-
-		@Override
-		public void visitIndividual(Individual<?, ?> value) {
-			super.setMatches(value.id().equals(this.id));
-		}
-
-	}
+	private static final String LITERAL_DATATYPE_CANNOT_BE_NULL = "Literal datatype cannot be null";
+	private static final String LITERAL_VALUE_CANNOT_BE_NULL = "Literal value cannot be null";
 
 	private DataSetUtils() {
 	}
@@ -163,72 +51,108 @@ public final class DataSetUtils {
 		return false;
 	}
 
+	/**
+	 * Merge the individuals of the source dataset in the target dataset
+	 *
+	 * @deprecated
+	 * @param source
+	 *            The dataset which defines the individuals to be merged
+	 * @param target
+	 *            The dataset in which the individuals will be merged
+	 */
+	@Deprecated
 	public static void merge(DataSet source, DataSet target) {
-		IndividualFinder finder=new IndividualFinder(target);
-		for(Individual<?, ?> individual:source) {
-			merge(individual,finder.findOrCreate(individual));
-		}
+		DataSets.merge(source, target);
 
 	}
 
+	/**
+	 * Merge the properties of the source individual in the target individual
+	 *
+	 * @deprecated
+	 * @param source
+	 *            The individual which defines the properties to be merged
+	 * @param target
+	 *            The individual in which the properties will be merged
+	 */
+	@Deprecated
 	public static void merge(Individual<?,?> source, Individual<?,?> target) {
-		ValueReplicator replicator=new ValueReplicator(target.dataSet());
-		for(Property property:source.properties()) {
-			for(Value value:property) {
-				target.addValue(property.predicate(),replicator.replicate(value));
-			}
-		}
+		Individuals.merge(source, target);
 	}
 
+	/**
+	 * Remove the individuals of the source dataset from a target dataset
+	 *
+	 * @deprecated
+	 * @param source
+	 *            The dataset which defines the individuals to be removed
+	 * @param target
+	 *            The dataset whose individuals will be removed
+	 */
+	@Deprecated
 	public static void remove(DataSet source, DataSet target) {
-		IndividualFinder finder=new IndividualFinder(target);
-		for(Individual<?, ?> individual:source) {
-			remove(individual,finder.findOrCreate(individual));
-		}
-
+		DataSets.remove(source, target);
 	}
 
+	/**
+	 * Remove the content properties of the source individual from a target
+	 * individual
+	 *
+	 * @deprecated
+	 * @param source
+	 *            The individual which defines the properties to be removed
+	 * @param target
+	 *            The individual whose properties will be removed
+	 */
+	@Deprecated
 	public static void remove(Individual<?,?> source, final Individual<?,?> target) {
-		for(Property property:source.properties()) {
-			final URI propertyId=property.predicate();
-			ValueVisitor visitor = new ValueVisitor(){
-				@Override
-				public void visitLiteral(Literal<?> value) {
-					target.removeValue(propertyId, value);
-				}
-				@Override
-				public void visitIndividual(Individual<?, ?> value) {
-					Individual<?, ?> cValue = target.dataSet().individualOfId(value.id());
-					if(cValue!=null) {
-						target.removeValue(propertyId, cValue);
-					}
-				}
-			};
-			for(Value value:property) {
-				value.accept(visitor);
-			}
-		}
+		Individuals.remove(source, target);
 	}
 
-	public static <T> Literal<T> newLiteral(T value) {
-		Preconditions.checkNotNull(value,"Literal value cannot be null");
+	/**
+	 * Create a new literal
+	 * @deprecated
+	 * @param value The value for the literal
+	 * @return A literal wrapping the specified value
+	 */
+	@Deprecated
+	public static <T extends Serializable> Literal<T> newLiteral(T value) {
+		Preconditions.checkNotNull(value,LITERAL_VALUE_CANNOT_BE_NULL);
 		return new ImmutableLiteral<T>(value);
 	}
 
-	public static <T> TypedLiteral<T> newTypedLiteral(T value, URI datatype) {
-		Preconditions.checkNotNull(value,"Literal value cannot be null");
-		Preconditions.checkNotNull(datatype,"Literal datatype cannot be null");
+	/**
+	 * Create a new typed literal
+	 * @deprecated
+	 * @param value The value for the literal
+	 * @param datatype The datatype of the literal
+	 * @return A typed literal wrapping the specified value
+	 */
+	@Deprecated
+	public static <T extends Serializable> TypedLiteral<T> newTypedLiteral(T value, URI datatype) {
+		Preconditions.checkNotNull(value,LITERAL_VALUE_CANNOT_BE_NULL);
+		Preconditions.checkNotNull(datatype,LITERAL_DATATYPE_CANNOT_BE_NULL);
 		return new ImmutableTypedLiteral<T>(value,datatype);
 	}
 
-	public static LanguageLiteral newLanguageLiteral(String value, String datatype) {
-		Preconditions.checkNotNull(value,"Literal value cannot be null");
-		Preconditions.checkNotNull(datatype,"Literal languages cannot be null");
-		return new ImmutableLanguageLiteral(value,datatype);
+	/**
+	 * Create a new language literal
+	 * @deprecated
+	 * @param value The value for the literal
+	 * @param language The language in which the value is defined
+	 * @return A language literal wrapping the specified value
+	 */
+	@Deprecated
+	public static LanguageLiteral newLanguageLiteral(String value, String language) {
+		return Literals.newLanguageLiteral(value, language);
 	}
 
+	/**
+	 * @deprecated
+	 */
+	@Deprecated
 	public static boolean hasLiteral(Literal<?> literal, Property property) {
-		return hasLiteral(literal,property.values());
+		return property.hasLiteralValue(literal);
 	}
 
 	public static boolean hasLiteral(Literal<?> literal, Value... values) {
@@ -236,11 +160,15 @@ public final class DataSetUtils {
 	}
 
 	public static boolean hasLiteral(Literal<?> literal, Collection<? extends Value> values) {
-		return hasValue(new DataSetUtils.LiteralMatcher(literal),values);
+		return hasValue(new LiteralMatcher(literal),values);
 	}
 
+	/**
+	 * @deprecated
+	 */
+	@Deprecated
 	public static boolean hasIdentifiedIndividual(Object id, Property property) {
-		return hasIdentifiedIndividual(id,property.values());
+		return property.hasIdentifiedIndividual(id);
 	}
 
 	public static boolean hasIdentifiedIndividual(Object id, Value... values) {
@@ -248,7 +176,7 @@ public final class DataSetUtils {
 	}
 
 	public static boolean hasIdentifiedIndividual(Object id, Collection<? extends Value> values) {
-		return hasValue(new DataSetUtils.IndividualReferenceMatcher(id),values);
+		return hasValue(new IndividualReferenceMatcher(id),values);
 	}
 
 	public static boolean hasValue(Value value, Property property) {

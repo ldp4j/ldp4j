@@ -26,32 +26,33 @@
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Collection;
 import java.util.Set;
 
-public interface Individual<T, S extends Individual<T,S>> extends Value, Iterable<Property> {
-	
+public interface Individual<T extends Serializable, S extends Individual<T,S>> extends Value, Iterable<Property> {
+
 	DataSet dataSet();
-	
+
 	T id();
-	
+
 	int numberOfProperties();
-	
+
 	boolean hasProperties();
-	
-	Collection<? extends Property> properties();
+
+	Collection<Property> properties();
 
 	boolean hasProperty(URI propertyId);
-	
+
 	Property property(URI propertyId);
-	
+
 	S addValue(URI propertyId,  Value value);
 
 	S removeValue(URI propertyId,  Value value);
 
 	Set<URI> propertyIds();
-	
+
 	void accept(IndividualVisitor visitor);
-	
+
 }

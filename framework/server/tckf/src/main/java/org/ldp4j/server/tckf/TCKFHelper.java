@@ -184,7 +184,7 @@ final class TCKFHelper {
 				}
 				@Override
 				public void visitIndividual(Individual<?, ?> value) {
-					result.set(FormatUtils.formatIndividualId(value));
+					result.set(FormatUtils.formatId(value));
 				}
 			}
 		);

@@ -37,20 +37,22 @@ import javax.xml.namespace.QName;
  * in the RDFS SChema specification. Check the specification for normative
  * reference.
  * <p>
- * 
+ *
  * <b>Namespace:</b> {@code http://www.w3.org/2000/01/rdf-schema#} <br/>
  * <b>Prefix:</b> {@code rdfs}
- * 
+ *
  * @version 1.0
  * @since 1.0.0
  * @author Miguel Esteban Guti&eacute;rrez
  * @see <a href=http://www.w3.org/TR/2004/REC-rdf-schema-20040210/">http://www.w3.org/TR/2004/REC-rdf-schema-20040210/</a>
  */
 public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
-	
+
+	private static final long serialVersionUID = 1083533867342570283L;
+
 	/** The namespace of the vocabulary ({@code http://www.w3.org/2000/01/rdf-schema#}) **/
 	public static final String NAMESPACE = "http://www.w3.org/2000/01/rdf-schema#";
-	
+
 	/** The preferred prefix of the vocabulary ({@code rdfs}) **/
 	public static final String NS_PREFIX = "rdfs";
 
@@ -64,7 +66,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#subClassOf}.
 	 * <p>
 	 * The subject is a subclass of a class.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_subclassof">rdfs:subClassOf</a>
 	 */
@@ -76,7 +78,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#subPropertyOf}.
 	 * <p>
 	 * The subject is a subproperty of a property.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_subpropertyof">rdfs:subPropertyOf</a>
 	 */
@@ -88,7 +90,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#domain}.
 	 * <p>
 	 * A domain of the subject property.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_domain">rdfs:domain</a>
 	 */
@@ -100,7 +102,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#range}.
 	 * <p>
 	 * A range of the subject property.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_range">rdfs:range</a>
 	 */
@@ -112,7 +114,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#label}.
 	 * <p>
 	 * A human-readable name for the subject.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_label">rdfs:label</a>
 	 */
@@ -124,7 +126,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#comment}.
 	 * <p>
 	 * A description of the subject resource.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_comment">rdfs:comment</a>
 	 */
@@ -136,7 +138,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#member}.
 	 * <p>
 	 * A member of the subject resource.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_member">rdfs:member</a>
 	 */
@@ -148,7 +150,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#seeAlso}.
 	 * <p>
 	 * Further information about the subject resource.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_seealso">rdfs:seeAlso</a>
 	 */
@@ -160,7 +162,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#isDefinedBy}.
 	 * <p>
 	 * The definition of the subject resource.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_isdefinedby">rdfs:isDefinedBy</a>
 	 */
@@ -176,7 +178,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#Resource}.
 	 * <p>
 	 * The class resource, everything.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_resource">rdfs:Resource</a>
 	 */
@@ -188,7 +190,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#Literal}.
 	 * <p>
 	 * The class of literal values, e.g. textual strings and integers.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_literal">rdfs:Literal</a>
 	 */
@@ -200,7 +202,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#Class}.
 	 * <p>
 	 * The class of classes.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_class">rdfs:Class</a>
 	 */
@@ -212,19 +214,19 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * {@code http://www.w3.org/2000/01/rdf-schema#Datatype}.
 	 * <p>
 	 * The class of RDF datatypes.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_datatype">rdfs:Datatype</a>
 	 */
 	public static final Term DATATYPE;
-	
+
 	/**
 	 * SEQ
 	 * <p>
 	 * {@code http://www.w3.org/2000/01/rdf-schema#Container}.
 	 * <p>
 	 * The class of RDF containers.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_container">rdfs:Container</a>
 	 */
@@ -238,7 +240,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * The class of container membership properties, {@code rdf:_1},
 	 * {@code rdf:_2}, ..., all of which are sub-properties of
 	 * {@code rdfs:member}.
-	 * 
+	 *
 	 * @see <a
 	 *      href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/#ch_containermembershipproperty">rdfs:ContainerMembershipProperty</a>
 	 */
@@ -274,7 +276,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 
 	/**
 	 * Create a term
-	 * 
+	 *
 	 * @param localPart
 	 *            The local part of the term's URI
 	 * @return A {@code LDPTerm} instance that represents the term.
@@ -293,16 +295,16 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 
 	/**
 	 * Get the terms of the vocabulary
-	 * 
+	 *
 	 * @return An array with all the terms of the vocabulary.
 	 */
 	public static Term[] values() {
 		return getInstance().terms();
 	}
-	
+
 	/**
 	 * Find the term that matches the specified URI.
-	 * 
+	 *
 	 * @param term
 	 *            A {@code String}-based representation of the term's URI.
 	 * @return The {@code Term} that matches the specified URI.
@@ -310,10 +312,10 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	public static Term valueOf(String term) {
 		return getInstance().fromValue(term);
 	}
- 	
+
 	/**
 	 * Find the term that matches the specified URI.
-	 * 
+	 *
 	 * @param term
 	 *            A {@code QName}-based representation of the term's URI.
 	 * @return The {@code Term} that matches the specified URI.
@@ -325,7 +327,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 
 	/**
 	 * Find the term that matches the specified URI.
-	 * 
+	 *
 	 * @param term
 	 *            A {@code URI}-based representation of the term's URI.
 	 * @return The {@code LDPTerm} that matches the specified URI.
@@ -334,5 +336,5 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	public static Term valueOf(URI term) {
 		return getInstance().fromValue(term);
 	}
-	
+
 }

@@ -28,6 +28,7 @@ package org.ldp4j.server.controller;
 
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -35,12 +36,12 @@ import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.application.engine.context.Capabilities;
+import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.context.PublicBasicContainer;
 import org.ldp4j.application.engine.context.PublicDirectContainer;
 import org.ldp4j.application.engine.context.PublicIndirectContainer;
 import org.ldp4j.application.engine.context.PublicRDFSource;
 import org.ldp4j.application.engine.context.PublicResource;
-import org.ldp4j.application.engine.context.PublicResourceVisitor;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.server.data.DataTransformator;
@@ -112,48 +113,30 @@ public final class EndpointControllerUtils {
 		}
 	}
 
-	public static void populateProtocolEndorsedHeaders(ResponseBuilder builder, PublicResource resource) {
-		builder.header(EndpointControllerUtils.LAST_MODIFIED_HEADER,resource.lastModified());
-		builder.header(EndpointControllerUtils.ENTITY_TAG_HEADER,resource.entityTag());
+	public static void populateProtocolEndorsedHeaders(ResponseBuilder builder, Date lastModified, EntityTag entityTag) {
+		builder.header(EndpointControllerUtils.LAST_MODIFIED_HEADER,lastModified);
+		builder.header(EndpointControllerUtils.ENTITY_TAG_HEADER,entityTag);
 	}
 
-	public static void populateProtocolSpecificHeaders(ResponseBuilder builder, PublicResource resource) {
-		// LDP 1.0 - 5.2.1.4 : "LDP servers exposing LDPCs must advertise
-		// their LDP support by exposing a HTTP Link header with a target
-		// URI matching the type of container (see below) the server
-		// supports, and a link relation type of type (that is, rel='type')
-		// in all responses to requests made to the LDPC's HTTP Request-URI"
-		// LDP 1.0 - 5.2.1.4 : "LDP servers may provide additional HTTP
-		// Link: rel='type' headers"
-		List<Term> types = resource.accept(
-			new PublicResourceVisitor<List<Term>>() {
-				@Override
-				public List<Term> visitRDFSource(PublicRDFSource resource) {
-					List<Term> base=new ArrayList<Term>();
-					base.add(LDP.RESOURCE);
-					return base;
-				}
-				@Override
-				public List<Term> visitBasicContainer(PublicBasicContainer resource) {
-					List<Term> terms=visitRDFSource(resource);
-					terms.add(LDP.BASIC_CONTAINER);
-					return terms;
-				}
-				@Override
-				public List<Term> visitDirectContainer(PublicDirectContainer resource) {
-					List<Term> terms=visitRDFSource(resource);
-					terms.add(LDP.DIRECT_CONTAINER);
-					return terms;
-				}
-				@Override
-				public List<Term> visitIndirectContainer(PublicIndirectContainer resource) {
-					List<Term> terms=visitRDFSource(resource);
-					terms.add(LDP.INDIRECT_CONTAINER);
-					return terms;
-				}
-			}
-		);
-
+	// LDP 1.0 - 5.2.1.4 : "LDP servers exposing LDPCs must advertise
+	// their LDP support by exposing a HTTP Link header with a target
+	// URI matching the type of container (see below) the server
+	// supports, and a link relation type of type (that is, rel='type')
+	// in all responses to requests made to the LDPC's HTTP Request-URI"
+	// LDP 1.0 - 5.2.1.4 : "LDP servers may provide additional HTTP
+	// Link: rel='type' headers"
+	public static void populateProtocolSpecificHeaders(ResponseBuilder builder, Class<? extends PublicResource> clazz) {
+		List<Term> types=new ArrayList<Term>();
+		if(PublicRDFSource.class.isAssignableFrom(clazz)) {
+			types.add(LDP.RESOURCE);
+		}
+		if(PublicBasicContainer.class.isAssignableFrom(clazz)) {
+			types.add(LDP.BASIC_CONTAINER);
+		} else if(PublicDirectContainer.class.isAssignableFrom(clazz)) {
+			types.add(LDP.DIRECT_CONTAINER);
+		} else if(PublicIndirectContainer.class.isAssignableFrom(clazz)) {
+			types.add(LDP.INDIRECT_CONTAINER);
+		}
 		for(Term type:types) {
 			builder.header(EndpointControllerUtils.LINK_HEADER,createLink(type, "type"));
 		}

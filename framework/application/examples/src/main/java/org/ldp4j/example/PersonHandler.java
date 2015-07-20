@@ -52,8 +52,8 @@ import org.slf4j.LoggerFactory;
 	id=PersonHandler.ID,
 	attachments={
 		@Attachment(
-			id="address",
-			path="address",
+			id=PersonHandler.ADDRESS_ID,
+			path=PersonHandler.ADDRESS_PATH,
 			predicate="http://www.ldp4j.org/vocabularies/example#address",
 			handler=AddressHandler.class),
 		@Attachment(
@@ -74,6 +74,9 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 
 	public static final String RELATIVES_ID   = "personRelatives";
 	public static final String RELATIVES_PATH = "relatives";
+
+	public static final String ADDRESS_ID="address";
+	public static final String ADDRESS_PATH="address";
 
 	public static final URI READ_ONLY_PROPERTY = URI.create("http://www.example.org/vocab#creationDate");
 

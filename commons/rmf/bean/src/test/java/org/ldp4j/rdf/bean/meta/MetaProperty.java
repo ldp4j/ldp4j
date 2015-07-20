@@ -59,7 +59,7 @@ public abstract class MetaProperty<T extends AnnotatedMember<?>> extends MetaAnn
 		}
 	}
 
-	private static abstract class AbstractMetaProperty<T extends AnnotatedMember<?>> extends MetaProperty<T> {
+	private abstract static class AbstractMetaProperty<T extends AnnotatedMember<?>> extends MetaProperty<T> {
 
 		private final String name;
 		private final Class<?> type;

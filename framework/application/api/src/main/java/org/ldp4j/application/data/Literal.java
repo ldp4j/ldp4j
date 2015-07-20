@@ -26,7 +26,9 @@
  */
 package org.ldp4j.application.data;
 
-public interface Literal<T> extends Value {
+import java.io.Serializable;
+
+public interface Literal<T> extends Serializable, Value {
 
 	T get();
 
