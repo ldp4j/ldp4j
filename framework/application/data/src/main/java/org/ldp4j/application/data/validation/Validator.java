@@ -46,7 +46,7 @@ import static com.google.common.base.Preconditions.*;
 
 public final class Validator {
 
-	private final static Logger LOGGER=LoggerFactory.getLogger(Validator.class);
+	private static final Logger LOGGER=LoggerFactory.getLogger(Validator.class);
 
 	private static final class ValidationReportImpl implements ValidationReport {
 

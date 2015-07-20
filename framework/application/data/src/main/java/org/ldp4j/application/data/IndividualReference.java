@@ -28,7 +28,6 @@ package org.ldp4j.application.data;
 
 import java.io.Serializable;
 import java.net.URI;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 public abstract class IndividualReference<T extends Serializable, S extends Individual<T,S>> {
@@ -97,6 +96,37 @@ public abstract class IndividualReference<T extends Serializable, S extends Indi
 			visitor.visitNewIndividualReference(this);
 		}
 
+	}
+
+	private static final class ReferenceBuilder implements IndividualVisitor {
+		private IndividualReference<?,?> result=null;
+
+		private ReferenceBuilder() {
+		}
+
+		private IndividualReference<?,?> builtReference() {
+			return this.result;
+		}
+		@Override
+		public void visitManagedIndividual(ManagedIndividual individual) {
+			this.result=IndividualReference.managed(individual.id());
+		}
+		@Override
+		public void visitLocalIndividual(LocalIndividual individual) {
+			this.result=IndividualReference.anonymous(individual.id());
+		}
+		@Override
+		public void visitExternalIndividual(ExternalIndividual individual) {
+			this.result=IndividualReference.external(individual.id());
+		}
+		@Override
+		public void visitRelativeIndividual(RelativeIndividual individual) {
+			this.result=IndividualReference.relative(individual.id());
+		}
+		@Override
+		public void visitNewIndividual(NewIndividual individual) {
+			this.result=IndividualReference.newIndividual(individual.id());
+		}
 	}
 
 	private final T id;
@@ -168,31 +198,8 @@ public abstract class IndividualReference<T extends Serializable, S extends Indi
 
 	@SuppressWarnings("unchecked")
 	public static <T extends Serializable,S extends Individual<T,S>> IndividualReference<T,S> fromIndividual(Individual<T,S> value) {
-		final AtomicReference<IndividualReference<?,?>> result=new AtomicReference<IndividualReference<?,?>>();
-		value.accept(
-			new IndividualVisitor() {
-				@Override
-				public void visitManagedIndividual(ManagedIndividual individual) {
-					result.set(IndividualReference.managed(individual.id()));
-				}
-				@Override
-				public void visitLocalIndividual(LocalIndividual individual) {
-					result.set(IndividualReference.anonymous(individual.id()));
-				}
-				@Override
-				public void visitExternalIndividual(ExternalIndividual individual) {
-					result.set(IndividualReference.external(individual.id()));
-				}
-				@Override
-				public void visitRelativeIndividual(RelativeIndividual individual) {
-					result.set(IndividualReference.relative(individual.id()));
-				}
-				@Override
-				public void visitNewIndividual(NewIndividual individual) {
-					result.set(IndividualReference.newIndividual(individual.id()));
-				}
-			}
-		);
-		return (IndividualReference<T, S>)result.get();
+		ReferenceBuilder builder = new ReferenceBuilder();
+		value.accept(builder);
+		return (IndividualReference<T, S>)builder.builtReference();
 	}
 }

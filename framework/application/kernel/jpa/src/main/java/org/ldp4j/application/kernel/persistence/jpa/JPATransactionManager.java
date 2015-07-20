@@ -46,7 +46,7 @@ final class JPATransactionManager implements TransactionManager {
 		}
 
 		@Override
-		public void begin() throws TransactionException {
+		public void begin() {
 			try {
 				nativeTransaction().begin();
 			} catch (Exception e) {
@@ -55,7 +55,7 @@ final class JPATransactionManager implements TransactionManager {
 		}
 
 		@Override
-		public void commit() throws TransactionException {
+		public void commit() {
 			try {
 				nativeTransaction().commit();
 			} catch (Exception e) {
@@ -68,7 +68,7 @@ final class JPATransactionManager implements TransactionManager {
 		}
 
 		@Override
-		public void rollback() throws TransactionException {
+		public void rollback() {
 			if(provider.isActive()) {
 				try {
 					nativeTransaction().rollback();

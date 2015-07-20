@@ -29,12 +29,30 @@ package org.ldp4j.application.kernel.transaction;
 
 public interface Transaction {
 
-	void begin() throws TransactionException;
+	/**
+	 * Start the transaction
+	 * @throws TransactionException if the transaction cannot be started
+	 */
+	void begin();
 
-	void commit() throws TransactionException;
+	/**
+	 * Complete the transaction by commiting the changes
+	 * @throws TransactionException if the transaction cannot be committed
+	 */
+	void commit();
 
-	void rollback() throws TransactionException;
+	/**
+	 * Complete the transaction by discarding the changes
+	 * @throws TransactionException if the transaction cannot be rollbacked
+	 */
+	void rollback();
 
+	/**
+	 * Check whether the transaction is active, that is, started and not
+	 * completed.
+	 *
+	 * @return {@code true} if the transaction is active, {@code false} otherwise.
+	 */
 	boolean isActive();
 
 }

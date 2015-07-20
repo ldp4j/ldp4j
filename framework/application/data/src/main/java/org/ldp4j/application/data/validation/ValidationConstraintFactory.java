@@ -57,6 +57,30 @@ public final class ValidationConstraintFactory {
 
 	private static final class ValidationLogImpl implements ValidationLog {
 
+		private final class ValidationFailureImpl implements ValidationFailure {
+
+			@Override
+			public String toString() {
+				StringBuilder builder=new StringBuilder();
+				dump(builder, removedValues, "Removed required", "from");
+				if(!builder.toString().isEmpty() && !addedValues.isEmpty()) {
+					builder.append(", ");
+				}
+				dump(builder, addedValues, "Added undesired", "to");
+				return builder.toString();
+			}
+
+			private void dump(StringBuilder builder, Map<Property, Value> map, String prefix, String infix) {
+				for(Iterator<Entry<Property,Value>> it=map.entrySet().iterator();it.hasNext();) {
+					Entry<Property, Value> entry = it.next();
+					builder.append(prefix+" value '"+FormatUtils.formatValue(entry.getValue())+"' "+infix+" property '"+entry.getKey().predicate()+"'");
+					if(it.hasNext()) {
+						builder.append(", ");
+					}
+				}
+			}
+		}
+
 		private final Map<Property,Value> removedValues;
 		private final Map<Property,Value> addedValues;
 		private boolean checked;
@@ -91,29 +115,7 @@ public final class ValidationConstraintFactory {
 
 		@Override
 		public ValidationFailure validationFailure() {
-			return new ValidationFailure() {
-				@Override
-				public String toString() {
-					StringBuilder builder=new StringBuilder();
-					dump(builder, removedValues, "Removed required", "from");
-					if(!builder.toString().isEmpty() && !addedValues.isEmpty()) {
-						builder.append(", ");
-					}
-					dump(builder, addedValues, "Added undesired", "to");
-					return builder.toString();
-				}
-
-				protected void dump(StringBuilder builder, Map<Property, Value> map, String prefix, String infix) {
-					for(Iterator<Entry<Property,Value>> it=map.entrySet().iterator();it.hasNext();) {
-						Entry<Property, Value> entry = it.next();
-						builder.append(prefix+" value '"+FormatUtils.formatValue(entry.getValue())+"' "+infix+" property '"+entry.getKey().predicate()+"'");
-						if(it.hasNext()) {
-							builder.append(", ");
-						}
-					}
-				}
-
-			};
+			return new ValidationFailureImpl();
 		}
 
 	}

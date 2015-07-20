@@ -47,7 +47,7 @@ final class ImmutableHttpRequest implements HttpRequest {
 	private final Date serverDate;
 	private final Date clientDate;
 
-	ImmutableHttpRequest(HttpMethod method, ProtocolVersion protocolVersion, String absolutePath, String host, List<ImmutableHeader> headers, String entity, Date serverDate, Date clientaDate) {
+	ImmutableHttpRequest(HttpMethod method, ProtocolVersion protocolVersion, String absolutePath, String host, List<ImmutableHeader> headers, String entity, Date serverDate, Date clientaDate) { // NOSONAR
 		this.protocolVersion = protocolVersion;
 		this.method=method;
 		this.absolutePath = absolutePath;

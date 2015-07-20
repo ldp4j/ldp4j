@@ -35,6 +35,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.ExternalIndividual;
@@ -72,6 +73,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.Lists;
+
+import static org.hamcrest.MatcherAssert.*;
+import static org.hamcrest.Matchers.*;
 
 public abstract class AbstractJPARepositoryTest<T> { // NOSONAR
 
@@ -113,15 +117,21 @@ public abstract class AbstractJPARepositoryTest<T> { // NOSONAR
 
 	@Before
 	public void setUp() throws LifecycleException {
-		this.delegate = (JPARuntimeDelegate)RuntimeDelegate.getInstance();
+		this.delegate=(JPARuntimeDelegate)RuntimeDelegate.getInstance();
 		this.delegate.init();
 		this.txManager=delegate.getTransactionManager();
-		this.sut = getSubjectUnderTest(this.delegate);
+		this.sut=getSubjectUnderTest(this.delegate);
 	}
 
 	@After
 	public void tearDown() throws LifecycleException {
 		this.delegate.shutdown();
+	}
+
+	@Test
+	public void isReady() {
+		assertThat(this.txManager,notNullValue());
+		assertThat(this.delegate,notNullValue());
 	}
 
 	protected final Container rootContainer(Name<?> name, String templateId) {

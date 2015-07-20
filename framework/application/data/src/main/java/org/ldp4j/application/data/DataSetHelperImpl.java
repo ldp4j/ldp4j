@@ -29,11 +29,42 @@ package org.ldp4j.application.data;
 import java.io.Serializable;
 import java.net.URI;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.collect.Lists;
 
 final class DataSetHelperImpl extends DataSetHelper {
+
+	private final class IndividualRenamer implements TripleConsumer {
+
+		private final Individual<?, ?> from;
+		private final Individual<?, ?> to;
+
+		private IndividualRenamer(Individual<?, ?> from, Individual<?, ?> to) {
+			this.from = from;
+			this.to = to;
+		}
+
+		@Override
+		public void consume(Individual<?, ?> subject, URI predicate, Literal<?> object) {
+			if(subject==this.from) {
+				this.to.addValue(predicate,object);
+			}
+		}
+
+		@Override
+		public void consume(Individual<?, ?> subject, URI predicate, Individual<?, ?> object) {
+			if(subject==this.from) {
+				Value value=object;
+				if(value==this.from) {
+					value=this.to;
+				}
+				this.to.addValue(predicate,value);
+			} else if(subject!=this.to && object==this.from) {
+				subject.removeValue(predicate, object);
+				subject.addValue(predicate,this.to);
+			}
+		}
+	}
 
 	private static class DataSetIterator{
 
@@ -79,6 +110,61 @@ final class DataSetHelperImpl extends DataSetHelper {
 
 	}
 
+	private static final class NewIndividualIdCollector implements IndividualVisitor {
+
+		private final List<URI> newIds=Lists.newArrayList();
+		private final ManagedIndividualId id;
+
+		private boolean hasSelf=false;
+		private boolean idInUse=false;
+
+		private NewIndividualIdCollector(ManagedIndividualId id) {
+			this.id = id;
+		}
+
+		@Override
+		public void visitManagedIndividual(ManagedIndividual individual) {
+			this.idInUse=true;
+		}
+
+		@Override
+		public void visitRelativeIndividual(RelativeIndividual individual) {
+			// Nothing to do
+		}
+
+		@Override
+		public void visitLocalIndividual(LocalIndividual individual) {
+			// Nothing to do
+		}
+
+		@Override
+		public void visitExternalIndividual(ExternalIndividual individual) {
+			// Nothing to do
+		}
+
+		@Override
+		public void visitNewIndividual(NewIndividual individual) {
+			URI path=individual.path();
+			this.hasSelf=this.hasSelf || path.equals(SELF);
+			this.newIds.add(path);
+		}
+
+		List<URI> getCollectedIds() throws DataSetModificationException {
+			if(!this.hasSelf) {
+				throw new DataSetModificationException("No default new individual defined");
+			}
+			return this.newIds;
+		}
+
+		void collect(Individual<?, ?> individual) throws DataSetModificationException {
+			individual.accept(this);
+			if(this.idInUse) {
+				throw new DataSetModificationException("The data set already has an individual identified as '"+this.id+"'");
+			}
+		}
+
+	}
+
 	private final DataSet dataSet;
 
 	DataSetHelperImpl(DataSet dataSet) {
@@ -86,30 +172,18 @@ final class DataSetHelperImpl extends DataSetHelper {
 	}
 
 	private void rename(final Individual<?,?> from, final Individual<?,?> to) {
-		DataSetHelperImpl.DataSetIterator iterator = new DataSetIterator(this.dataSet);
-		DataSetHelperImpl.TripleConsumer consumer = new TripleConsumer(){
-			@Override
-			public void consume(Individual<?, ?> subject, URI predicate, Literal<?> object) {
-				if(subject==from) {
-					to.addValue(predicate,object);
-				}
-			}
-			@Override
-			public void consume(Individual<?, ?> subject, URI predicate, Individual<?, ?> object) {
-				if(subject==from) {
-					Value value=object;
-					if(value==from) {
-						value=to;
-					}
-					to.addValue(predicate,value);
-				} else if(subject!=to && object==from) {
-					subject.removeValue(predicate, object);
-					subject.addValue(predicate, to);
-				}
-			}
-		};
+		DataSetIterator iterator = new DataSetIterator(this.dataSet);
+		TripleConsumer consumer = new IndividualRenamer(from, to);
 		iterator.iterate(consumer);
 		this.dataSet.remove(from);
+	}
+
+	private List<URI> getNewIds(ManagedIndividualId id) throws DataSetModificationException {
+		NewIndividualIdCollector collector=new NewIndividualIdCollector(id);
+		for(Individual<?,?> individual:this.dataSet) {
+			collector.collect(individual);
+		}
+		return collector.getCollectedIds();
 	}
 
 	@Override
@@ -125,48 +199,9 @@ final class DataSetHelperImpl extends DataSetHelper {
 
 	@Override
 	public ManagedIndividual manage(final ManagedIndividualId id) throws DataSetModificationException {
-		final AtomicBoolean idInUse=new AtomicBoolean(false);
-		final AtomicBoolean hasSelf=new AtomicBoolean(false);
-		final List<URI> newIds=Lists.newArrayList();
-		for(Individual<?,?> individual:this.dataSet) {
-			individual.accept(
-				new IndividualVisitor() {
-					@Override
-					public void visitManagedIndividual(ManagedIndividual individual) {
-						idInUse.set(true);
-					}
-					@Override
-					public void visitRelativeIndividual(RelativeIndividual individual) {
-						// Nothing to do
-					}
-					@Override
-					public void visitLocalIndividual(LocalIndividual individual) {
-						// Nothing to do
-					}
-					@Override
-					public void visitExternalIndividual(ExternalIndividual individual) {
-						// Nothing to do
-					}
-					@Override
-					public void visitNewIndividual(NewIndividual individual) {
-						URI path = individual.path();
-						hasSelf.compareAndSet(false,path.equals(SELF));
-						newIds.add(path);
-					}
-				}
-			);
-			if(idInUse.get()) {
-				break;
-			}
-		}
-		if(idInUse.get()) {
-			throw new DataSetModificationException("The data set already has an individual identified as '"+id);
-		}
-		if(!hasSelf.get()) {
-			throw new DataSetModificationException("No default new individual defined");
-		}
+		List<URI> newIds=getNewIds(id);
 		newIds.remove(SELF);
-		ManagedIndividual self = replace(SELF,id,ManagedIndividual.class);
+		ManagedIndividual self=replace(SELF,id,ManagedIndividual.class);
 		for(URI newId:newIds) {
 			RelativeIndividualId relativeId=RelativeIndividualId.createId(id, newId);
 			replace(newId,relativeId,RelativeIndividual.class);

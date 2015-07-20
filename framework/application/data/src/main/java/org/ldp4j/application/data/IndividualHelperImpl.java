@@ -37,6 +37,60 @@ import com.google.common.collect.Sets;
 
 class IndividualHelperImpl implements IndividualHelper {
 
+	private static final class TypeCollector implements ValueVisitor {
+
+		private final class CollectorWorker implements IndividualVisitor {
+
+			@Override
+			public void visitManagedIndividual(ManagedIndividual individual) {
+				// Discard invalid types
+			}
+
+			@Override
+			public void visitRelativeIndividual(RelativeIndividual individual) {
+				// Discard invalid types
+			}
+
+			@Override
+			public void visitLocalIndividual(LocalIndividual individual) {
+				// Discard invalid types
+			}
+
+			@Override
+			public void visitExternalIndividual(ExternalIndividual individual) {
+				types.add(individual.id());
+			}
+
+			@Override
+			public void visitNewIndividual(NewIndividual individual) {
+				// Discard invalid types
+			}
+
+		}
+
+		private final Set<URI> types;
+		private final CollectorWorker worker;
+
+		private TypeCollector() {
+			this.types=Sets.newLinkedHashSet();
+			this.worker = new CollectorWorker();
+		}
+
+		private Set<URI> collectedTypes() {
+			return this.types;
+		}
+
+		@Override
+		public void visitLiteral(Literal<?> value) {
+			// Discard invalid types
+		}
+
+		@Override
+		public void visitIndividual(Individual<?, ?> value) {
+			value.accept(this.worker);
+		}
+	}
+
 	private final Individual<?, ?> individual;
 
 	IndividualHelperImpl(Individual<?,?> individual) {
@@ -46,45 +100,11 @@ class IndividualHelperImpl implements IndividualHelper {
 	@Override
 	public Set<URI> types() {
 		Property property = this.individual.property(RDF.TYPE.as(URI.class));
-		final Set<URI> types=Sets.newLinkedHashSet();
+		TypeCollector collector = new TypeCollector();
 		for(Value value:property) {
-			value.accept(
-				new ValueVisitor() {
-					@Override
-					public void visitLiteral(Literal<?> value) {
-						// Discard invalid types
-					}
-					@Override
-					public void visitIndividual(Individual<?, ?> value) {
-						value.accept(
-							new IndividualVisitor() {
-								@Override
-								public void visitManagedIndividual(ManagedIndividual individual) {
-									// Discard invalid types
-								}
-								@Override
-								public void visitRelativeIndividual(RelativeIndividual individual) {
-									// Discard invalid types
-								}
-								@Override
-								public void visitLocalIndividual(LocalIndividual individual) {
-									// Discard invalid types
-								}
-								@Override
-								public void visitExternalIndividual(ExternalIndividual individual) {
-									types.add(individual.id());
-								}
-								@Override
-								public void visitNewIndividual(NewIndividual individual) {
-									// Discard invalid types
-								}
-							}
-						);
-					}
-				}
-			);
+			value.accept(collector);
 		}
-		return types;
+		return collector.collectedTypes();
 	}
 
 	@Override

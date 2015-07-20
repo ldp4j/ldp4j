@@ -62,12 +62,12 @@ class InMemoryResource extends AbstractInMemoryResource implements Resource {
 
 	private static final class VersionGenerator {
 
-		private final ConcurrentMap<String,AtomicLong> ATTACHMENT_COUNTER=new ConcurrentHashMap<String, AtomicLong>();
+		private final ConcurrentMap<String,AtomicLong> attachmentCounter=new ConcurrentHashMap<String, AtomicLong>();
 
 		long nextVersion(String id) {
-			AtomicLong counter = ATTACHMENT_COUNTER.putIfAbsent(id, new AtomicLong(-1));
+			AtomicLong counter=this.attachmentCounter.putIfAbsent(id, new AtomicLong(-1));
 			if(counter==null) {
-				counter=ATTACHMENT_COUNTER.get(id);
+				counter=this.attachmentCounter.get(id);
 			}
 			return counter.incrementAndGet();
 		}

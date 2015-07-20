@@ -75,9 +75,9 @@ final class EntityTagHelper {
 
 	private static EntityTag createQuoted(String header, String tag, boolean weak) {
 		assertIsProperlyQuoted(header,tag);
-		tag=tag.length()==2?EMPTY:tag.substring(1,tag.length()-1);
-		assertHasNoInnerQuotationMarks(header, tag);
-		return new EntityTag(tag, weak);
+		String unquotedTag=tag.length()==2?EMPTY:tag.substring(1,tag.length()-1);
+		assertHasNoInnerQuotationMarks(header,unquotedTag);
+		return new EntityTag(unquotedTag,weak);
 	}
 
 	private static void assertHasNoInnerQuotationMarks(String header, String tag) {

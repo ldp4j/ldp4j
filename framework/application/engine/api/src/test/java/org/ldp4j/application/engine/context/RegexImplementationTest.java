@@ -26,15 +26,42 @@
  */
 package org.ldp4j.application.engine.context;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.fail;
+
 import org.junit.Ignore;
+import org.junit.Test;
 
 
 @Ignore("Implementation currently failing")
-public class RegexImplementationTest extends AbstractEntityTagHelperTest { // NOSONAR
+public class RegexImplementationTest extends AbstractEntityTagHelperTest {
 
 	@Override
 	protected EntityTag fromString(String testCase) {
 		return EntityTagHelper.fromString1(testCase);
 	}
 
+	@Test
+	public void testToString$nullETag() {
+		try {
+			EntityTagHelper.toString(null);
+			fail("Should not accept null");
+		} catch (NullPointerException e) {
+		}
+	}
+
+	@Test
+	public void testToString$regularETag() {
+		EntityTag tag = STRONG_ETAG;
+		String string = EntityTagHelper.toString(tag);
+		assertThat(string,equalTo(QUOTED_STRONG_ETAG));
+	}
+
+	@Test
+	public void testToString$weakETag() {
+		EntityTag tag = WEAK_ETAG;
+		String string = EntityTagHelper.toString(tag);
+		assertThat(string,equalTo(QUOTED_WEAK_ETAG));
+	}
 }

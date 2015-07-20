@@ -34,8 +34,8 @@ import org.junit.Test;
 
 public abstract class  AbstractEntityTagHelperTest {
 
-	private static final String QUOTED_STRONG_ETAG = "\"value\"";
-	private static final String QUOTED_WEAK_ETAG = "W/\"value\"";
+	protected static final String QUOTED_STRONG_ETAG = "\"value\"";
+	protected static final String QUOTED_WEAK_ETAG = "W/\"value\"";
 
 	private static final String QUOTED_STRONG_EMPTY = "\"\"";
 	private static final String QUOTED_WEAK_EMPTY = "W/\"\"";
@@ -58,13 +58,11 @@ public abstract class  AbstractEntityTagHelperTest {
 	private static final String UNQUOTED_QUOTATION_MARK = "\"";
 	private static final String UNQUOTED_DANGLING_MIDDLE_QUOTATION_MARK = "danglingMiddle\"QuotationMark";
 
-
-
 	private static final String DANGLING_FINAL_QUOTATION_MARK = "danglingFinalQuotationMark\"";
 	private static final String DANGLING_INITIAL_QUOTATION_MARK = "\"danglingInitialQuotationMark";
 
-	private static final EntityTag WEAK_ETAG = EntityTag.createWeak(UNQUOTED_REGULAR_VALUE);
-	private static final EntityTag STRONG_ETAG = EntityTag.createStrong(UNQUOTED_REGULAR_VALUE);
+	protected static final EntityTag WEAK_ETAG   = EntityTag.createWeak(UNQUOTED_REGULAR_VALUE);
+	protected static final EntityTag STRONG_ETAG = EntityTag.createStrong(UNQUOTED_REGULAR_VALUE);
 
 	protected abstract EntityTag fromString(String testCase);
 
@@ -265,26 +263,4 @@ public abstract class  AbstractEntityTagHelperTest {
 		fromString(new String(new char[] {'b','a','d',0x7f}));
 	}
 
-	@Test
-	public void testToString$nullETag() {
-		try {
-			EntityTagHelper.toString(null);
-			fail("Should not accept null");
-		} catch (NullPointerException e) {
-		}
-	}
-
-	@Test
-	public void testToString$regularETag() {
-		EntityTag tag = STRONG_ETAG;
-		String string = EntityTagHelper.toString(tag);
-		assertThat(string,equalTo(QUOTED_STRONG_ETAG));
-	}
-
-	@Test
-	public void testToString$weakETag() {
-		EntityTag tag = WEAK_ETAG;
-		String string = EntityTagHelper.toString(tag);
-		assertThat(string,equalTo(QUOTED_WEAK_ETAG));
-	}
 }
