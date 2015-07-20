@@ -26,97 +26,37 @@
  */
 package org.ldp4j.application.data;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.net.URI;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
 
+final class MutableExternalIndividual extends AbstractMutableIndividual<URI,ExternalIndividual> implements ExternalIndividual {
 
-final class MutableExternalIndividual implements ExternalIndividual {
-
-	private final URI id;
-	private final PropertyCollection properties;
-	private final MutableDataSet context;
-
-	protected MutableExternalIndividual(URI id, MutableDataSet context) {
-		if(!id.isAbsolute()) {
-			throw new IllegalArgumentException("External individual URIs must be absolute");
-		}
-		this.id=id;
-		this.context = context;
-		this.properties=new PropertyCollection(this,context);
-	}
-
-	@Override
-	public DataSet dataSet() {
-		return this.context;
+	MutableExternalIndividual(URI id, MutableDataSet context) {
+		super(id,context);
+		checkArgument(id.isAbsolute(),"External individual URIs must be absolute");
 	}
 
 	@Override
 	public URI location() {
-		return this.id;
-	}
-
-	@Override
-	public URI id() {
-		return this.id;
-	}
-
-	@Override
-	public int numberOfProperties() {
-		return this.properties.size();
-	}
-
-	@Override
-	public boolean hasProperties() {
-		return !this.properties.isEmpty();
-	}
-
-	@Override
-	public Collection<Property> properties() {
-		return this.properties.properties();
-	}
-
-	@Override
-	public boolean hasProperty(URI propertyId) {
-		return this.properties.hasProperty(propertyId);
-	}
-
-	@Override
-	public Property property(URI propertyId) {
-		return this.properties.property(propertyId);
+		return super.id();
 	}
 
 	@Override
 	public ExternalIndividual addValue(URI propertyId, Value value) {
-		this.properties.addValue(propertyId, value);
+		super.addPropertyValue(propertyId, value);
 		return this;
 	}
 
 	@Override
 	public ExternalIndividual removeValue(URI propertyId, Value value) {
-		this.properties.removeValue(propertyId, value);
+		super.removePropertyValue(propertyId, value);
 		return this;
-	}
-
-	@Override
-	public Set<URI> propertyIds() {
-		return this.properties.propertyIds();
 	}
 
 	@Override
 	public void accept(IndividualVisitor visitor) {
 		visitor.visitExternalIndividual(this);
-	}
-
-	@Override
-	public void accept(ValueVisitor visitor) {
-		visitor.visitIndividual(this);
-	}
-
-	@Override
-	public Iterator<Property> iterator() {
-		return properties().iterator();
 	}
 
 }

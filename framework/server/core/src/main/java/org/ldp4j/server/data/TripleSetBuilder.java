@@ -205,11 +205,16 @@ final class TripleSetBuilder {
 		this.timeUtils=TimeUtils.newInstance();
 	}
 
+	/**
+	 * TODO: Verify that the translation of managed individuals with indirect id
+	 * works as mandated by the specification
+	 */
 	private Resource<?> toResource(Individual<?,?> individual) {
 		final AtomicReference<Resource<?>> result=new AtomicReference<Resource<?>>();
 		individual.accept(
 			new IndividualVisitor() {
-				private URIRef resolveManagedIndividualId(ManagedIndividualId id) {
+				private URIRef resolveManagedIndividualId(ManagedIndividualId target) {
+					ManagedIndividualId id=target;
 					URI indirectId=id.indirectId();
 					if(indirectId!=null) {
 						id=ManagedIndividualId.createId(id.name(),id.managerId());

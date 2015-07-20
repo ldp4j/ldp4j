@@ -27,93 +27,34 @@
 package org.ldp4j.application.data;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
 
+@SuppressWarnings("rawtypes")
+final class MutableLocalIndividual extends AbstractMutableIndividual<Name, LocalIndividual> implements LocalIndividual {
 
-final class MutableLocalIndividual implements LocalIndividual {
-
-	private final Name<?> id;
-	private final PropertyCollection properties;
-	private final MutableDataSet context;
-	
-	protected MutableLocalIndividual(Name<?> id, MutableDataSet context) {
-		this.id=id;
-		this.context = context;
-		this.properties=new PropertyCollection(this,context);
-	}
-
-	@Override
-	public DataSet dataSet() {
-		return this.context;
+	MutableLocalIndividual(Name<?> id, MutableDataSet context) {
+		super(id,context);
 	}
 
 	@Override
 	public Name<?> name() {
-		return this.id;
-	}
-
-	@Override
-	public Name<?> id() {
-		return this.id;
-	}
-
-	@Override
-	public int numberOfProperties() {
-		return this.properties.size();
-	}
-
-	@Override
-	public boolean hasProperties() {
-		return !this.properties.isEmpty();
-	}
-
-	@Override
-	public Collection<Property> properties() {
-		return this.properties.properties();
-	}
-
-	@Override
-	public boolean hasProperty(URI propertyId) {
-		return this.properties.hasProperty(propertyId);
-	}
-
-	@Override
-	public Property property(URI propertyId) {
-		return this.properties.property(propertyId);
+		return super.id();
 	}
 
 	@Override
 	public LocalIndividual addValue(URI propertyId, Value value) {
-		this.properties.addValue(propertyId, value);
+		super.addPropertyValue(propertyId, value);
 		return this;
 	}
 
 	@Override
 	public LocalIndividual removeValue(URI propertyId, Value value) {
-		this.properties.removeValue(propertyId, value);
+		super.removePropertyValue(propertyId, value);
 		return this;
-	}
-
-	@Override
-	public Set<URI> propertyIds() {
-		return this.properties.propertyIds();
 	}
 
 	@Override
 	public void accept(IndividualVisitor visitor) {
 		visitor.visitLocalIndividual(this);
-	}
-
-	@Override
-	public void accept(ValueVisitor visitor) {
-		visitor.visitIndividual(this);
-	}
-
-	@Override
-	public Iterator<Property> iterator() {
-		return properties().iterator();
 	}
 
 }

@@ -26,6 +26,8 @@
  */
 package org.ldp4j.application.ext;
 
+import java.util.concurrent.atomic.AtomicReference;
+
 import org.ldp4j.application.data.constraints.Constraints;
 
 public class InvalidContentException extends ApplicationUsageException {
@@ -33,11 +35,12 @@ public class InvalidContentException extends ApplicationUsageException {
 	private static final long serialVersionUID = 1090034112299823594L;
 	private final Constraints constraints;
 
-	private String id;
+	private final AtomicReference<String> id;
 
 	public InvalidContentException(String message, Throwable cause, Constraints constraints) {
 		super(message, cause);
 		this.constraints = constraints;
+		this.id=new AtomicReference<String>(null);
 	}
 
 	public InvalidContentException(String message, Constraints constraints) {
@@ -53,11 +56,11 @@ public class InvalidContentException extends ApplicationUsageException {
 	}
 
 	public final void setConstraintsId(String id) {
-		this.id = id;
+		this.id.set(id);
 	}
 
 	public final String getConstraintsId() {
-		return this.id;
+		return this.id.get();
 	}
 
 }

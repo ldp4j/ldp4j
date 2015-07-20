@@ -172,12 +172,10 @@ public final class Validator {
 			if(LOGGER.isTraceEnabled()) {
 				if(!log.checked()) {
 					LOGGER.trace("Validation constraint '{}' was not checked for element '{}' ",constraint,format(item));
+				} else if(log.success()) {
+					LOGGER.trace("Validation constraint '{}' for element '{}' succeded",constraint,format(item));
 				} else {
-					if(log.success()) {
-						LOGGER.trace("Validation constraint '{}' for element '{}' succeded",constraint,format(item));
-					} else {
-						LOGGER.trace("Validation constraint '{}' failed for element '{}': {}",constraint,format(item),log.validationFailure());
-					}
+					LOGGER.trace("Validation constraint '{}' failed for element '{}': {}",constraint,format(item),log.validationFailure());
 				}
 			}
 		}

@@ -27,97 +27,38 @@
 package org.ldp4j.application.data;
 
 import java.net.URI;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.Set;
 
-final class MutableManagedIndividual implements ManagedIndividual {
+final class MutableManagedIndividual extends AbstractMutableIndividual<ManagedIndividualId, ManagedIndividual> implements ManagedIndividual {
 
-	private final ManagedIndividualId id;
-	private final PropertyCollection properties;
-	private final MutableDataSet dataSet;
-	
-	protected MutableManagedIndividual(ManagedIndividualId id, MutableDataSet dataSet) {
-		this.id = id;
-		this.dataSet = dataSet;
-		this.properties=new PropertyCollection(this,this.dataSet);
-	}
-
-	@Override
-	public DataSet dataSet() {
-		return this.dataSet;
+	MutableManagedIndividual(ManagedIndividualId id, MutableDataSet dataSet) {
+		super(id,dataSet);
 	}
 
 	@Override
 	public Name<?> name() {
-		return this.id.name();
+		return super.id().name();
 	}
-	
+
 	@Override
 	public String managerId() {
-		return this.id.managerId();
-	}
-
-	@Override
-	public ManagedIndividualId id() {
-		return this.id;
-	}
-
-	@Override
-	public int numberOfProperties() {
-		return this.properties.size();
-	}
-
-	@Override
-	public boolean hasProperties() {
-		return !this.properties.isEmpty();
-	}
-
-	@Override
-	public Collection<Property> properties() {
-		return this.properties.properties();
-	}
-
-	@Override
-	public boolean hasProperty(URI propertyId) {
-		return this.properties.hasProperty(propertyId);
-	}
-
-	@Override
-	public Property property(URI propertyId) {
-		return this.properties.property(propertyId);
+		return super.id().managerId();
 	}
 
 	@Override
 	public ManagedIndividual addValue(URI propertyId, Value value) {
-		this.properties.addValue(propertyId, value);
+		super.addPropertyValue(propertyId, value);
 		return this;
 	}
 
 	@Override
 	public ManagedIndividual removeValue(URI propertyId, Value value) {
-		this.properties.removeValue(propertyId, value);
+		super.removePropertyValue(propertyId, value);
 		return this;
-	}
-
-	@Override
-	public Set<URI> propertyIds() {
-		return this.properties.propertyIds();
 	}
 
 	@Override
 	public void accept(IndividualVisitor visitor) {
 		visitor.visitManagedIndividual(this);
-	}
-
-	@Override
-	public void accept(ValueVisitor visitor) {
-		visitor.visitIndividual(this);
-	}
-
-	@Override
-	public Iterator<Property> iterator() {
-		return properties().iterator();
 	}
 
 }
