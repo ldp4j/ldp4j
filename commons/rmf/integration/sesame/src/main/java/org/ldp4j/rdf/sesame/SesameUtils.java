@@ -28,8 +28,8 @@ package org.ldp4j.rdf.sesame;
 
 import java.io.StringWriter;
 import java.util.Collection;
+import java.util.Objects;
 
-import org.ldp4j.commons.Assertions;
 import org.ldp4j.rdf.io.Metadata;
 import org.ldp4j.rdf.io.Module;
 import org.ldp4j.rdf.io.Source;
@@ -66,7 +66,7 @@ public final class SesameUtils {
 	}
 
 	public static RepositoryConnection getConnection(Repository repository) throws SesameRepositoryFailure {
-		Assertions.notNull(repository, "repository");
+		Objects.requireNonNull(repository, "Repository cannot be null");
 		if(!repository.isInitialized()) {
 			throw new IllegalStateException("Template support has been disposed");
 		}
@@ -78,7 +78,7 @@ public final class SesameUtils {
 	}
 
 	private static Resource[] toArray(Collection<? extends Resource> ctxs) {
-		Assertions.notNull(ctxs, "ctxs");
+		Objects.requireNonNull(ctxs, "Resources cannot be null");
 		return ctxs.toArray(new Resource[ctxs.size()]);
 	}
 
@@ -167,7 +167,7 @@ public final class SesameUtils {
 	}
 
 	public static <T> void load(RepositoryConnection connection, T content, URI ctx) throws SesameUtilsException {
-		Assertions.notNull(ctx, "ctx");
+		Objects.requireNonNull(ctx, "Context URI cannot be null");
 		loadSource(connection,ctx.toString(),SourceFactory.create(content,Metadata.DEFAULT),ctx);
 	}
 

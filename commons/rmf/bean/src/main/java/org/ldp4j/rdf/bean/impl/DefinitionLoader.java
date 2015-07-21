@@ -28,8 +28,8 @@ package org.ldp4j.rdf.bean.impl;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
-import org.ldp4j.commons.Assertions;
 import org.ldp4j.rdf.bean.Category;
 import org.ldp4j.rdf.bean.InvalidDefinitionException;
 import org.ldp4j.rdf.bean.Type;
@@ -40,13 +40,13 @@ import org.ldp4j.rdf.bean.spi.IVocabularyProvider;
 final class DefinitionLoader {
 
 	private static final class VocabularyLoader {
-		
+
 		private final TypeManager manager;
 
 		private VocabularyLoader(TypeManager manager) {
 			this.manager = manager;
 		}
-		
+
 		Vocabulary load(Package target) {
 			Vocabulary result = loadFromProvider(target);
 			if(result==null) {
@@ -95,7 +95,7 @@ final class DefinitionLoader {
 			return result;
 		}
 
-		private static String getVocabularyNamespace(Package vocabulary) {			
+		private static String getVocabularyNamespace(Package vocabulary) {
 			if(vocabulary==null) {
 				return null;
 			}
@@ -109,7 +109,7 @@ final class DefinitionLoader {
 			}
 			return result;
 		}
-	
+
 		private static String getPackageNamespace(Package pack) {
 			String[] segments=pack.getName().split("\\.");
 			StringBuilder authority=new StringBuilder();
@@ -125,15 +125,15 @@ final class DefinitionLoader {
 		}
 
 	}
-	
+
 	private static final class TypeLoader {
-		
+
 		private final TypeManager manager;
 
 		private TypeLoader(TypeManager manager) {
 			this.manager = manager;
 		}
-		
+
 		Type load(Class<?> clazz) {
 			Type result=manager.getRegistry().lookup(clazz);
 			if(result==null) {
@@ -170,33 +170,33 @@ final class DefinitionLoader {
 				PropertyScanner scanner=new PropertyScanner(clazz, namespace);
 				TypeDefinition.
 					initiliazeProperties(
-						definition, 
+						definition,
 						scanner.getProperties(manager)
 					);
 				if(Category.ENUMERATION.equals(category)) {
 					TypeDefinition.
 						setHelper(
-							definition, 
+							definition,
 							EnumerationHelper.newInstance(clazz)
 						);
 				}
 			}
 		}
 	}
-	
+
 	private DefinitionLoader(){
 	}
-	
+
 	static Vocabulary loadVocabulary(Package target, TypeManager manager) {
-		Assertions.notNull(target,"target");
-		Assertions.notNull(manager,"manager");
+		Objects.requireNonNull(target,"Target package cannot be null");
+		Objects.requireNonNull(manager,"Type manager cannot be null");
 		return new VocabularyLoader(manager).load(target);
 	}
 
 	static Type loadType(Class<?> clazz, TypeManager manager) {
-		Assertions.notNull(clazz,"clazz");
-		Assertions.notNull(manager,"manager");
+		Objects.requireNonNull(clazz,"Class cannot be null");
+		Objects.requireNonNull(manager,"Type manager cannot be null");
 		return new TypeLoader(manager).load(clazz);
 	}
-	
+
 }

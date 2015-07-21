@@ -27,16 +27,14 @@
 package org.ldp4j.rdf;
 
 import java.util.Locale;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
-
-import org.ldp4j.commons.Assertions;
-import org.ldp4j.commons.ObjectUtils;
 
 /**
  * The set of possible syntaxes in which the content of a <b>Linked Data Platform
  * Resource</b> can be formatted.
- * 
+ *
  * @author Miguel Esteban Gutiérrez
  * @since 1.0-S2
  * @version 1.0
@@ -45,10 +43,11 @@ import org.ldp4j.commons.ObjectUtils;
  */
 public final class Format implements Comparable<Format> {
 
-	private static final String NAME_PARAM = "name";
-	private static final String SUBTYPE_PARAM = "subtype";
-	private static final String TYPE_PARAM = "type";
-	private static final String WILDCARD = "*";
+	private static final String NAME_PARAM    = "Name cannot be null";
+	private static final String TYPE_PARAM    = "Type cannot be null";
+	private static final String SUBTYPE_PARAM = "Subtype cannot be null";
+	private static final String WILDCARD      = "*";
+
 	public static final Format TURTLE;
 	public static final Format RDF_XML;
 	public static final Format JSON_LD;
@@ -56,27 +55,27 @@ public final class Format implements Comparable<Format> {
 	private static final Format[] EMPTY_FORMAT_ARRAY = new Format[]{};
 
 	private static final ConcurrentMap<String,Format> FORMATS=new ConcurrentHashMap<String, Format>();
-			
+
 	static {
 		TURTLE=registerFormat("text","turtle","Turtle");
 		RDF_XML=registerFormat("application","rdf+xml","RDF/XML");
 		JSON_LD=registerFormat("application","ld+json","JSON-LD");
 	}
-	
+
 	private final String subtype;
 	private final String type;
 	private final String name;
 
 	private Format(String type, String subtype, String name) {
-		Assertions.notNull(type, TYPE_PARAM);
-		Assertions.notNull(subtype, SUBTYPE_PARAM);
-		Assertions.notNull(name, NAME_PARAM);
+		Objects.requireNonNull(type, TYPE_PARAM);
+		Objects.requireNonNull(subtype, SUBTYPE_PARAM);
+		Objects.requireNonNull(name, NAME_PARAM);
 		this.type = type.toLowerCase(Locale.ENGLISH).trim();
 		this.subtype = subtype.toLowerCase(Locale.ENGLISH).trim();
 		this.name = name.toLowerCase(Locale.ENGLISH).trim();
-		Assertions.notNull(this.type, TYPE_PARAM);
-		Assertions.notNull(this.subtype, SUBTYPE_PARAM);
-		Assertions.notNull(this.name, NAME_PARAM);
+		Objects.requireNonNull(this.type, TYPE_PARAM);
+		Objects.requireNonNull(this.subtype, SUBTYPE_PARAM);
+		Objects.requireNonNull(this.name, NAME_PARAM);
 		if(this.type.equals(WILDCARD)) {
 			throw new IllegalArgumentException("Object 'type' cannot be '*'");
 		}
@@ -109,7 +108,7 @@ public final class Format implements Comparable<Format> {
 	public String getName() {
 		return name;
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 17;
@@ -127,11 +126,11 @@ public final class Format implements Comparable<Format> {
 		}
 		boolean result=false;
 		if(obj instanceof Format) {
-			Format other = (Format) obj;
+			Format that=(Format)obj;
 			result=
-				ObjectUtils.areEqualObjects(name, other.name) &&
-				ObjectUtils.areEqualObjects(subtype, other.subtype) && 
-				ObjectUtils.areEqualObjects(type, other.type);
+				Objects.equals(this.name, that.name) &&
+				Objects.equals(this.subtype, that.subtype) &&
+				Objects.equals(this.type, that.type);
 		}
 		return result;
 	}

@@ -26,10 +26,10 @@
  */
 package org.ldp4j.rdf;
 
-import org.ldp4j.commons.ObjectUtils;
+import java.util.Objects;
 
 public abstract class Resource<T> extends Node {
-	
+
 	private final T identity;
 
 	Resource(T identity) {
@@ -38,7 +38,7 @@ public abstract class Resource<T> extends Node {
 		}
 		this.identity=identity;
 	}
-	
+
 	public T getIdentity() {
 		return identity;
 	}
@@ -58,8 +58,8 @@ public abstract class Resource<T> extends Node {
 		}
 		boolean result=false;
 		if(obj instanceof Resource<?>) {
-			Resource<?> other = (Resource<?>) obj;
-			result=ObjectUtils.areEqualObjects(identity, other.identity);
+			Resource<?> that=(Resource<?>) obj;
+			result=Objects.equals(this.identity, that.identity);
 		}
 		return result;
 	}

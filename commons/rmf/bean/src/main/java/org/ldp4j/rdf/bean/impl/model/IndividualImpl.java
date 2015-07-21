@@ -33,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -46,18 +47,16 @@ import org.slf4j.LoggerFactory;
 
 final class IndividualImpl implements Individual, Iterable<URIRef> {
 
-	private static final String INDIVIDUAL_PARAM = "individual";
-
-	private static final String OBJECT_PARAM = "object";
-
-	private static final String PREDICATE_PARAM = "predicate";
+	private static final String INDIVIDUAL_PARAM = "Individual cannot be null";
+	private static final String PREDICATE_PARAM  = "Predicate cannot be null";
+	private static final String OBJECT_PARAM     = "Object cannot be null";
 
 	private static final class PredicateComparator implements Comparator<URIRef>, Serializable {
-	
+
 		private static final long serialVersionUID = 2092671073721681488L;
-	
+
 		private static final String RDF_TYPE = "http://www.w3.org/1999/02/22-rdf-syntax-ns#type";
-	
+
 		public int compare(URIRef o1, URIRef o2) {
 			if(o1.toString().equals(RDF_TYPE)) {
 				return -1;
@@ -67,7 +66,7 @@ final class IndividualImpl implements Individual, Iterable<URIRef> {
 				return ModelUtils.compare(o1,o2);
 			}
 		}
-	
+
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(IndividualImpl.class);
@@ -122,18 +121,18 @@ final class IndividualImpl implements Individual, Iterable<URIRef> {
 	}
 
 	void addAssertion(URIRef predicate, Literal<?> object) {
-		org.ldp4j.commons.Assertions.notNull(predicate,PREDICATE_PARAM);
-		org.ldp4j.commons.Assertions.notNull(object,OBJECT_PARAM);
+		Objects.requireNonNull(predicate,PREDICATE_PARAM);
+		Objects.requireNonNull(object,OBJECT_PARAM);
 		findAssertions(predicate).add(object);
 	}
 
 	void addLink(URIRef predicate, IndividualImpl individual) {
-		org.ldp4j.commons.Assertions.notNull(predicate,PREDICATE_PARAM);
-		org.ldp4j.commons.Assertions.notNull(individual,INDIVIDUAL_PARAM);
+		Objects.requireNonNull(predicate,PREDICATE_PARAM);
+		Objects.requireNonNull(individual,INDIVIDUAL_PARAM);
 		findAssertions(predicate).add(individual);
 		individual.addReferrer(subject);
 	}
-	
+
 	@Override
 	public Resource<?> getIdentity() {
 		return subject;
@@ -168,15 +167,15 @@ final class IndividualImpl implements Individual, Iterable<URIRef> {
 	}
 
 	boolean isFoldable() {
-		return 
+		return
 			!isReference() &&
-			anonymous && 
-			referrers.size()==1 && 
+			anonymous &&
+			referrers.size()==1 &&
 			references==1;
 	}
 
 	boolean canBeFoldedBy(Resource<?> subject) {
-		return 
+		return
 			isFoldable() &&
 			referrers.contains(subject);
 	}
@@ -192,11 +191,11 @@ final class IndividualImpl implements Individual, Iterable<URIRef> {
 	long getReferences() {
 		return references;
 	}
-	
+
 	Set<Resource<?>> getReferrers() {
 		return Collections.unmodifiableSet(referrers);
 	}
-	
+
 	@Override
 	public String toString(){
 		String nl = System.getProperty("line.separator");

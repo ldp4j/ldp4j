@@ -32,14 +32,13 @@ import java.net.URL;
 import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Deque;
 import java.util.StringTokenizer;
 
-import org.ldp4j.commons.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -54,7 +53,7 @@ public final class URIUtils {
 	}
 
 	public static URL toURL(URI uri) throws MalformedURLException {
-		Assertions.notNull(uri, "uri");
+		Objects.requireNonNull(uri, "Uri cannot be null");
 		try {
 			return uri.toURL();
 		} catch(MalformedURLException e) {

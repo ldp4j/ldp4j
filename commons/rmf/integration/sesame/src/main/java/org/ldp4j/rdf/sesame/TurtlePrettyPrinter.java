@@ -32,6 +32,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.openrdf.model.Resource;
@@ -75,7 +76,7 @@ public final class TurtlePrettyPrinter implements RDFWriter {
 	}
 
 	public TurtlePrettyPrinter(URI base, Writer writer) {
-		org.ldp4j.commons.Assertions.notNull(writer, "writer");
+		Objects.requireNonNull(writer, "Writer cannot be null");
 		this.base = base;
 		this.out = new PrintWriter(writer);
 		this.logPrefix = String.format("[%d] ",id);

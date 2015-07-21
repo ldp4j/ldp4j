@@ -29,8 +29,8 @@ package org.ldp4j.rdf.util;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.util.Objects;
 
-import org.ldp4j.commons.Assertions;
 import org.ldp4j.rdf.BlankNode;
 import org.ldp4j.rdf.Datatype;
 import org.ldp4j.rdf.Literal;
@@ -46,10 +46,10 @@ import javax.xml.namespace.QName;
 
 public final class RDFModelDSL {
 
-	private static final String IDENTITY_PARAM = "identity";
-	private static final String TYPE_PARAM = "type";
-	private static final String LANGUAGE_PARAM = "language";
-	private static final String VALUE_PARAM = "value";
+	private static final String IDENTITY_PARAM = "Identity cannot be null";
+	private static final String TYPE_PARAM     = "Type cannot be null";
+	private static final String LANGUAGE_PARAM = "Language cannot be null";
+	private static final String VALUE_PARAM    = "Value cannot be null";
 
 	private static final RDFFactory FACTORY = new RDFFactory();
 
@@ -278,7 +278,7 @@ public final class RDFModelDSL {
 		} else if(object instanceof URL) {
 			result=uriRef((URL)object);
 		} else if(object instanceof String) {
-			Assertions.notNull(object, IDENTITY_PARAM);
+			Objects.requireNonNull(object, IDENTITY_PARAM);
 			try {
 				result=uriRef(new URI((String)object));
 			} catch (URISyntaxException e) {
@@ -327,9 +327,9 @@ public final class RDFModelDSL {
 	}
 
 	public static Triple triple(Object subject, Object predicate, Object object) {
-		Assertions.notNull(subject, "subject");
-		Assertions.notNull(predicate, "predicate");
-		Assertions.notNull(object, "object");
+		Objects.requireNonNull(subject, "Subject cannot be null");
+		Objects.requireNonNull(predicate, "Predicate cannot be null");
+		Objects.requireNonNull(object, "Object cannot be null");
 		return
 			FACTORY.
 				newTriple(
@@ -343,7 +343,7 @@ public final class RDFModelDSL {
 	}
 
 	public static BlankNode blankNode(String identity) {
-		Assertions.notNull(identity, IDENTITY_PARAM);
+		Objects.requireNonNull(identity, IDENTITY_PARAM);
 		return FACTORY.newBlankNode(identity);
 	}
 
@@ -352,7 +352,7 @@ public final class RDFModelDSL {
 	 * throw an exception
 	 */
 	public static URIRef uriRef(String identity) {
-		Assertions.notNull(identity, IDENTITY_PARAM);
+		Objects.requireNonNull(identity, IDENTITY_PARAM);
 		try {
 			return uriRef(new URI(identity));
 		} catch (URISyntaxException e) { // NOSONAR
@@ -361,52 +361,52 @@ public final class RDFModelDSL {
 	}
 
 	public static URIRef uriRef(URI identity) {
-		Assertions.notNull(identity, IDENTITY_PARAM);
+		Objects.requireNonNull(identity, IDENTITY_PARAM);
 		return FACTORY.newURIRef(identity);
 	}
 
 	public static URIRef uriRef(URL identity) {
-		Assertions.notNull(identity, IDENTITY_PARAM);
+		Objects.requireNonNull(identity, IDENTITY_PARAM);
 		return uriRef(identity.toString());
 	}
 
 	public static URIRef uriRef(QName identity) {
-		Assertions.notNull(identity, IDENTITY_PARAM);
+		Objects.requireNonNull(identity, IDENTITY_PARAM);
 		return uriRef(identity.getNamespaceURI() + identity.getLocalPart());
 	}
 
 	public static <T> Literal<T> literal(T value) {
-		Assertions.notNull(value, VALUE_PARAM);
+		Objects.requireNonNull(value, VALUE_PARAM);
 		return FACTORY.newLiteral(value);
 	}
 
 	public static Literal<String> literal(String value, String language) {
-		Assertions.notNull(value, VALUE_PARAM);
-		Assertions.notNull(language, LANGUAGE_PARAM);
+		Objects.requireNonNull(value, VALUE_PARAM);
+		Objects.requireNonNull(language, LANGUAGE_PARAM);
 		return FACTORY.newLiteral(value,language);
 	}
 
 	public static <T> Literal<T> typedLiteral(T value,String type) {
-		Assertions.notNull(value, VALUE_PARAM);
-		Assertions.notNull(type, TYPE_PARAM);
+		Objects.requireNonNull(value, VALUE_PARAM);
+		Objects.requireNonNull(type, TYPE_PARAM);
 		return typedLiteral(value,URI.create(type));
 	}
 
 	public static <T> Literal<T> typedLiteral(T value,URI type) {
-		Assertions.notNull(value, VALUE_PARAM);
-		Assertions.notNull(type, TYPE_PARAM);
+		Objects.requireNonNull(value, VALUE_PARAM);
+		Objects.requireNonNull(type, TYPE_PARAM);
 		return FACTORY.newLiteral(value, Datatype.fromURI(type));
 	}
 
 	public static <T> Literal<T> typedLiteral(T value, URL type) {
-		Assertions.notNull(value, VALUE_PARAM);
-		Assertions.notNull(type, TYPE_PARAM);
+		Objects.requireNonNull(value, VALUE_PARAM);
+		Objects.requireNonNull(type, TYPE_PARAM);
 		return typedLiteral(value,type.toString());
 	}
 
 	public static <T> Literal<T> typedLiteral(T value, QName type) {
-		Assertions.notNull(value, VALUE_PARAM);
-		Assertions.notNull(type, TYPE_PARAM);
+		Objects.requireNonNull(value, VALUE_PARAM);
+		Objects.requireNonNull(type, TYPE_PARAM);
 		return typedLiteral(value,type.getNamespaceURI() + type.getLocalPart());
 	}
 

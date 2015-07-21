@@ -27,8 +27,8 @@
 package org.ldp4j.rdf.util;
 
 import java.util.Iterator;
+import java.util.Objects;
 
-import org.ldp4j.commons.Assertions;
 import org.ldp4j.rdf.Node;
 import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.Triple;
@@ -36,8 +36,9 @@ import org.ldp4j.rdf.URIRef;
 
 
 public final class InmutableTripleSet implements ITripleSet {
-	
-	private static final String TRIPLES_PARAM = "triples";
+
+	private static final String TRIPLES_PARAM = "Triples cannot be null";
+
 	private final TripleSet triples;
 
 	public InmutableTripleSet(Triple...triples) {
@@ -108,21 +109,21 @@ public final class InmutableTripleSet implements ITripleSet {
 	}
 
 	public InmutableTripleSet add(Resource<?> subject, URIRef predicate, Node object) {
-		Assertions.notNull(subject, "subject");
-		Assertions.notNull(predicate, "predicate");
-		Assertions.notNull(object, "object");
+		Objects.requireNonNull(subject,"Subject cannot be null");
+		Objects.requireNonNull(predicate, "Predicate cannot be null");
+		Objects.requireNonNull(object, "Object cannot be null");
 		return add(RDFModelDSL.triple(subject,predicate,object));
 	}
 
 	public InmutableTripleSet remove(Triple... triples) {
-		Assertions.notNull(triples, TRIPLES_PARAM);
+		Objects.requireNonNull(triples, TRIPLES_PARAM);
 		TripleSet result = RDFOperations.toTripleSet(this.triples);
 		result.remove(triples);
 		return new InmutableTripleSet(result);
 	}
 
 	public <T extends Iterable<Triple>> InmutableTripleSet remove(T triples) {
-		Assertions.notNull(triples, TRIPLES_PARAM);
+		Objects.requireNonNull(triples, TRIPLES_PARAM);
 		TripleSet result = RDFOperations.toTripleSet(this.triples);
 		result.remove(triples);
 		return new InmutableTripleSet(result);
@@ -133,7 +134,7 @@ public final class InmutableTripleSet implements ITripleSet {
 	}
 
 	public InmutableTripleSet remove(ITripleMatcher tripleMatcher) {
-		Assertions.notNull(tripleMatcher, "tripleMatcher");
+		Objects.requireNonNull(tripleMatcher, "Triple matcher cannot be null");
 		TripleSet result=new TripleSet();
 		for(Triple t:triples) {
 			if(!tripleMatcher.accept(t)) {

@@ -28,10 +28,10 @@ package org.ldp4j.rdf.bean.impl;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
-import org.ldp4j.commons.Assertions;
 import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.bean.JARBContext;
 import org.ldp4j.rdf.bean.NamingPolicy;
@@ -40,20 +40,20 @@ import org.ldp4j.rdf.util.TripleSet;
 final class JARBContextImpl extends JARBContext {
 
 	private interface Memoizer {
-		
+
 		void memoize(Map<Object, Resource<?>> newDeployments);
 
 		<T> Resource<?> getMemoizedIdentity(T object);
-		
+
 	}
-	
+
 	private static class MemoizedDeployments {
-	
+
 		private final Map<Object,Resource<?>> deployments;
 		private final NamingPolicy policy;
 		private final JARBContextImpl.Memoizer memoizer;
 		private final ReadWriteLock lock=new ReentrantReadWriteLock();
-		
+
 		private MemoizedDeployments(NamingPolicy policy) {
 			this.policy = policy;
 			this.deployments=new HashMap<Object,Resource<?>>();
@@ -67,18 +67,18 @@ final class JARBContextImpl extends JARBContext {
 						lock.writeLock().unlock();
 					}
 				}
-				
+
 				@Override
 				public <T> Resource<?> getMemoizedIdentity(T object) {
 					return getIdentity(object);
 				}
 			};
 		}
-		
+
 		private JARBContextImpl.TemporalDeploymentPolicy newTemporalDeploymentPolicy() {
 			return new TemporalDeploymentPolicy(memoizer,policy);
 		}
-		
+
 		private <T> Resource<?> getIdentity(T object) {
 			lock.readLock().lock();
 			try {
@@ -87,21 +87,21 @@ final class JARBContextImpl extends JARBContext {
 				lock.readLock().unlock();
 			}
 		}
-	
+
 	}
 
 	private static class TemporalDeploymentPolicy implements NamingPolicy {
-	
+
 		private final Map<Object,Resource<?>> newDeployments;
 		private final JARBContextImpl.Memoizer memoizer;
 		private final NamingPolicy policy;
-		
+
 		private TemporalDeploymentPolicy(JARBContextImpl.Memoizer memoizer, NamingPolicy policy) {
 			this.memoizer = memoizer;
 			this.policy = policy;
 			newDeployments=new HashMap<Object,Resource<?>>();
 		}
-	
+
 		@Override
 		public <T> Resource<?> createIdentity(T object) {
 			Resource<?> identity=memoizer.getMemoizedIdentity(object);
@@ -111,7 +111,7 @@ final class JARBContextImpl extends JARBContext {
 			}
 			return identity;
 		}
-		
+
 		private void makePermanent() {
 			memoizer.memoize(newDeployments);
 		}
@@ -130,7 +130,7 @@ final class JARBContextImpl extends JARBContext {
 		public <T> T resolveEnumerated(Resource<?> identity, Class<? extends T> clazz) {
 			throw new UnsupportedOperationException("Method not implemented yet");
 		}
-		
+
 	}
 
 	private final JARBContextImpl.MemoizedDeployments deployments;
@@ -140,7 +140,7 @@ final class JARBContextImpl extends JARBContext {
 		this.deployments = new MemoizedDeployments(policy);
 		this.registry=new TransactionalTypeRegistry();
 	}
-	
+
 	private <T> TypeProcessor<T> getTypeProcessor(Class<? extends T> clazz) {
 		return new TypeProcessorImpl<T>(clazz,registry);
 	}
@@ -149,22 +149,22 @@ final class JARBContextImpl extends JARBContext {
 	public <T> Resource<?> getIdentity(T object) {
 		return deployments.getIdentity(object);
 	}
-	
+
 	@Override
 	public <T> TripleSet deflate(T object) {
-		Assertions.notNull(object, "object");
+		Objects.requireNonNull(object, "Object cannot be null");
 		JARBContextImpl.TemporalDeploymentPolicy temporalPolicy = deployments.newTemporalDeploymentPolicy();
 		TripleSet result = getTypeProcessor(object.getClass()).deflate(object,temporalPolicy);
 		temporalPolicy.makePermanent();
 		return result;
 	}
-	
+
 	@Override
 	public <T> T inflate(Resource<?> identity, TripleSet triples, Class<? extends T> clazz) {
-		Assertions.notNull(identity, "identity");
-		Assertions.notNull(triples, "triples");
-		Assertions.notNull(clazz, "clazz");
+		Objects.requireNonNull(identity, "Identity cannot be null");
+		Objects.requireNonNull(triples, "Triples cannot be null");
+		Objects.requireNonNull(clazz, "Class cannot be null");
 		return getTypeProcessor(clazz).inflate(identity,triples);
 	}
-	
+
 }

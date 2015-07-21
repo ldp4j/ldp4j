@@ -26,7 +26,7 @@
  */
 package org.ldp4j.rdf;
 
-import org.ldp4j.commons.ObjectUtils;
+import java.util.Objects;
 
 public final class Triple implements Comparable<Triple> {
 
@@ -69,11 +69,11 @@ public final class Triple implements Comparable<Triple> {
 		}
 		boolean result=false;
 		if(obj instanceof Triple) {
-			Triple other = (Triple) obj;
+			Triple that=(Triple)obj;
 			result=
-				ObjectUtils.areEqualObjects(subject, other.subject) &&
-				ObjectUtils.areEqualObjects(predicate, other.predicate) && 
-				ObjectUtils.areEqualObjects(object, other.predicate);
+				Objects.equals(this.subject, that.subject) &&
+				Objects.equals(this.predicate, that.predicate) &&
+				Objects.equals(this.object, that.predicate);
 		}
 		return result;
 	}
@@ -92,7 +92,7 @@ public final class Triple implements Comparable<Triple> {
 		if(result!=0) {
 			return result;
 		}
-		
+
 		result=getPredicate().compareTo(o.getPredicate());
 		if(result!=0) {
 			return result;
@@ -110,5 +110,5 @@ public final class Triple implements Comparable<Triple> {
 		builder.append(" .");
 		return builder.toString();
 	}
-	
+
 }

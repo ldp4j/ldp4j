@@ -31,10 +31,10 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.WeakHashMap;
 
-import org.ldp4j.commons.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +49,7 @@ public final class ProtocolHandlerConfigurator {
 
 	}
 
-	private static final String SCHEME_PARAM = "scheme";
+	private static final String SCHEME_PARAM = "Scheme cannot be null";
 
 	private static final String CHECKING_SUPPORT_FOR_CUSTOM_PROTOCOL = "Checking support for custom '%s' protocol...";
 
@@ -114,7 +114,7 @@ public final class ProtocolHandlerConfigurator {
 	}
 
 	public static boolean isSupported(String scheme) {
-		Assertions.notNull(scheme, SCHEME_PARAM);
+		Objects.requireNonNull(scheme, SCHEME_PARAM);
 		debug(CHECKING_SUPPORT_FOR_CUSTOM_PROTOCOL, scheme);
 		boolean result=Loader.SINGLETON.getHandler(scheme,false)!=null;
 		debug("Protocol '%s' is %s.",scheme,result?"supported":"not supported");
@@ -122,12 +122,12 @@ public final class ProtocolHandlerConfigurator {
 	}
 
 	public static URLStreamHandler getHandler(String scheme) {
-		Assertions.notNull(scheme, SCHEME_PARAM);
+		Objects.requireNonNull(scheme, SCHEME_PARAM);
 		return Loader.SINGLETON.getHandler(scheme,true);
 	}
 
 	public static <T extends URLStreamHandler> boolean addProvider(Class<T> handlerClass) {
-		Assertions.notNull(handlerClass,"handlerClass");
+		Objects.requireNonNull(handlerClass,"Handler class cannot be null");
 		if(!"Handler".equals(handlerClass.getSimpleName())) { // NOSONAR
 			throw new IllegalArgumentException("Handler class '"+handlerClass.getCanonicalName()+"' is not a valid URLStreamHandler class: name does meet specification");
 		}
