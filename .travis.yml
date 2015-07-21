@@ -1,8 +1,8 @@
 sudo: false
 cache:
   directories:
-  - $HOME/.m2/repository
-  - $HOME/.sonar
+  - "$HOME/.m2/repository"
+  - "$HOME/.sonar"
 language: java
 jdk:
 - oraclejdk7
@@ -19,7 +19,7 @@ before_install:
   -out local.pubring.gpg -d
 - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
 install:
-- /bin/true
+- "/bin/true"
 script:
 - if [ ${TRAVIS_BRANCH} == 'master' ] && [ ${TRAVIS_PULL_REQUEST} = 'false' ];
   then mvn clean deploy -B -Dcodebase.directory=`pwd` -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;
@@ -32,12 +32,12 @@ script:
 - mv $HOME/.m2/repository/org/ldp4j /tmp/cache-trick/
 env:
   global:
-  - secure: huXk6otUYsg6kfy+pLJDQSGJLThOuoh6cfmu0USsf2Hc4xlSa7tXYroagO+GL43EkmtpziMf8S7bnaQNPvuj2pA/4ZFAgks6o8GMrvefR6ssWyDKtFdP3k/0d/gvYPj0+CnNELXq1+govjjwWlqy0c57HszgvrbI+4ZcExyW6vY=
-  - secure: jkRsbfTTfgV/HhyCN0GNJF9Y80jmAg8W3sHZkPA/8Kb1p0B9Q4KGDEhtfE5mUZ0dhgT2IYdzmhC2MwxTEx76WjJmRNQX6XXnInQvuZaR2uD7RGIVbDUdcnw4XV4wF6BLg5fb5TBNCXTfdv3GVmK5rBQ+YlBYtK2fW2O3RRXiH+k=
-  - secure: VlrAHctmLKu62J5RMQwExWgfeEYXy9uOh4u2ySYlYDorc/ORkTaH+RBxl0yJAMj0kP3dNRjWRDw+Mco/m0MT/7FMjO7KWWwYR7RqjDEmcKvPCFPhBDNEsPgHNT52NwtaJ6nP977U4MDJc3dt6RJMBU1RR6AtfqSSLg3+EmP16vI=
-  - secure: U3PyECq3RbzVwD59UqvGvyqUUI1uYySoIQu19PR+Ar9WxH5cp0Gtp+M2L9a4f4eQDtX1ol1CtQWNPBAklUuN4O9MH9SOm7sDMitbeYeau2UNP8xZ+PjqJgPAV0AaZCNHpALXaGIQn1teQJgFx+Ixxgou/hd1DqumHYxZCj14GIU=
-  - secure: GFTwJLQUy5LcXerh6o9MVaiNwx9m4RdacI9o9gvq/9uLdz4cdgtdbVIujLkap12w0WUO5rR31MNIkXBvQHC6VFN1AWd24scenYy1Zm4+tyHshdF9fXOhNCR6jDCCKrLvIl2Gt+VnY/WPvdWJHiJJTyMbkB3qq2qxKu3SgElIa5M=
-  - secure: kB1xDD0uoAzk/PZxaePaj/Mf6GtcJEJ4W31XlAp/kud1WLAjRplqCBK4yM9VjwUHilAa4wVqfybL1fbR+5/qHUmkuQ9EZWEBAm0ZBoZDNX8R+RD3oM0NKSFcNTU4B07/4N/TxRWl2bXfnM1AbLw4btrfIb/zEOev3Xdcbg49Tlo=
-  - secure: JnK1Qi2Qcu94yOVZFh5K6IyAsq/VC8YIwmNxRof26ui/8UgebUBscZXkU8C/erMi7g2sYzUQHUuK9dECDY5X937HQkl1K8ggiQoCbeiAZ7Yapt1AZwwXYE6Usbu9Ive+R2yFlvi49CfT45YUbd/XtwCxaB7Ds+zkXjyEeLN0VcQ=
-  - secure: KUKGMjLeUZlxrJa/eaKri43/jt8riwcdNqBfMlBa2smDpP8cBb7w8ScCJjhJvT3cYE12XXLWWD3iCr9gntxFTTyQzZ8FfeGMJEYoCxfYUnFnP6Hp7w9sKBtJ62jClqQKVnlXKAip0oFV0kocVOf5rVQPMEH38nIITObla3lN2WM=
-  - secure: U9jMDdTYjwmHG8f4q/VLYojfpGfVSvKBl5yPmungpyBzC5zYoZmpd9sBADv81QpwydYXyY99ZY4NImqqBX9lfvfHGOUVFly3JI5QXri/vN66o5LF8OVp3C86lFy+kJ82uUSjqED8crOWpzFepI5jCF17aMSCAyru/nha2ediq48=
+  - secure: AAVZNDVtE0dgPK7qZacSe6CUP0rGQG1SWQEzo8e0BH3WhJGFhM4vNQTR6N6KzjgUHmstfEM7nOdIcTSpHd+RFCKhDbZYl7iN1ZYUG/sn9KGbjyDWkC3EAddP4LZ9yDqQ1iYg5tQh59XC/Dne/peXOJRAf+RocjuhvGXsC3rT0/c=
+  - secure: e/sKP9FhN2qVMWmME2BF1XubJxJ7gT+gQq7/LlihSGCrRHurnwPKf3rGDZqjx4Y9mjKsB6N/a7t7m4cGsoW8/p8OMgFLZw96b2E9GkNvbUs4m7SsUBk5KaNVapNc+TtDsM+0Dn34Nq/hlo+rDvgVPGSM7uxe1eGixlDkbbrrmKQ=
+  - secure: JSJjWCP9wpjULEIg4dLSilok1n89aJaMIKun3dXr/qlAtdW9n+/TmoOnXzBYWS4tJ4qP5bKaXcwxCPz9Cl4xmZmLzjVEgHM8KXOEqySCNFsz0zIktmQ8bTbcDS+QVM6iWzGV3tvj6GV5PAuh8KuAY2Tr8Ibis2nGBcWl3DZLFvA=
+  - secure: c1uoP8L8mbF+LpYHmWlu35VRIRu85iTct36g1CDG/t/ydZsRFWtsYvjOuRvjOshTpYu+pz4Cw40RZCMrW+N1UvnMZGyGH89SKeI3dheSWe5yLVGghTCZ/ukjNEQgp91qrHgDZ0q901vOAceOAMxSi2avek4I1RV8OV+ii4NUPsc=
+  - secure: Bi7yi88eEbNRVExQmt8dkgN0Vrc1QCI9Mwh0O3+Y0XQ2Fn6+i6ck4Ec19Yn/UzRhsyZrK8zS6q12TKxjcsIdIRwwx9U9QobifWosU+J0ZaAjYfWfvXOHsESYEp10PXwKNs9mLlZlq4T1hq9YDkabKSUw9xroUM4JwLjABkelJ0I=
+  - secure: dXCSXC93q0C2sVzIXFT3NyJuDeIW7HWTYk1YdOeu/E8wDj8iP6vuU+tFgbQx5iop+wnLo6OGU1ZxQ4M1tUmJKXeSG4+5zrBnhOvG8nT6CFYBUeqfWn7B8U4VEJ8j384ipCN76c3nMas7OPeEPOCiOBJdA5T0T1TGHNpcjGcgzkU=
+  - secure: b/uwCctNVibGpYG7bsrWuq6kGJMXP8MXknRiE7q070XDnkcvlaqTnQOetoyaVfAUl/ApDLaaEm2m0OEx0sDRzGAmNBl9R/bYO/aJ6+9wulKOLsQ17KYOmbRT/+4Css5OMN0I8IuaaUOdPuGgf+Hf6gvnCqJwv5VXI5zmsIYnzxI=
+  - secure: EB3zC7/o6uvZOh/lyg6xqvpYNpBBMYv8mt/4AdsCx/M6WpjtXhLSMzbazkTgF0CIPcedFg1ERoMaZOtTBe7QlVXzu8HSU2g1lx3ibzMMecKrttO2/wnK/n7QsuvkcxzYkJy9tygawl1Gh8/3RXleQrO1CgTYXfL32mqCbDDRBfk=
+  - secure: dE+6U8VeZuB8NLQCjcG3xrc/KDUwZA9Br9UHbJ/ishMut0BlylnXf3CzW7AOHsHRAf5n7nsc+pI+qNA0dP/CUBniWMJVxu88l6CAgGlZ2XfBb2HCXhtsV72SjVatYC4D6l8LbzYWQG3PCUA1GHmT1r3KHSi+Il2Avz34i3rzxgM=
