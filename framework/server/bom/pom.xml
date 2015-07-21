@@ -57,22 +57,11 @@
 
 	<dependencyManagement>
 		<dependencies>
-			<dependency>
+			<!-- dependency>
 				<groupId>org.ldp4j.framework</groupId>
 				<artifactId>ldp4j-server-api</artifactId>
 				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.ldp4j.framework</groupId>
-				<artifactId>ldp4j-server-impl</artifactId>
-				<version>${project.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.ldp4j.framework</groupId>
-				<artifactId>ldp4j-server-impl</artifactId>
-				<version>${project.version}</version>
-				<type>test-jar</type>
-			</dependency>
+			</dependency -->
 			<dependency>
 				<groupId>org.ldp4j.framework</groupId>
 				<artifactId>ldp4j-server-core</artifactId>

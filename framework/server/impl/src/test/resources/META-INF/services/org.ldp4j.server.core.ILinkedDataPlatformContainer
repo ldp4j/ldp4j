@@ -1,3 +1,0 @@
-org.ldp4j.server.testing.stubs.WorkingContainer # A working container
-org.ldp4j.server.testing.stubs.FailingContainer # A failing container
-org.ldp4j.server.testing.stubs.DeletableContainer # A deletable container

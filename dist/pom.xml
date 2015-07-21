@@ -61,21 +61,14 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.ldp4j.framework</groupId>
-				<artifactId>ldp4j-server-bom</artifactId>
+				<artifactId>ldp4j-application-bom</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
 			</dependency>
 			<dependency>
 				<groupId>org.ldp4j.framework</groupId>
-				<artifactId>ldp4j-client-bom</artifactId>
-				<version>${project.version}</version>
-				<type>pom</type>
-				<scope>import</scope>
-			</dependency>
-			<dependency>
-				<groupId>org.ldp4j.commons</groupId>
-				<artifactId>ldp4j-commons</artifactId>
+				<artifactId>ldp4j-server-bom</artifactId>
 				<version>${project.version}</version>
 				<type>pom</type>
 				<scope>import</scope>
@@ -86,23 +79,43 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-server-api</artifactId>
+			<artifactId>ldp4j-application-api</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-server-impl</artifactId>
+			<artifactId>ldp4j-application-data</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-client-api</artifactId>
+			<artifactId>ldp4j-application-util</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-client-impl</artifactId>
+			<artifactId>ldp4j-application-engine-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>org.ldp4j.commons</groupId>
-			<artifactId>ldp4j-commons-cbd</artifactId>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-engine-sdk</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-kernel-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-kernel-core</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-kernel-mem</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-kernel-jpa</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-server-core</artifactId>
 		</dependency>
 	</dependencies>
 
@@ -182,7 +195,7 @@
 						<configuration>
 							<licensesOutputDirectory>${basedir}${file.separator}target${file.separator}licenses</licensesOutputDirectory>
 							<licensesConfigFile>${basedir}${file.separator}target${file.separator}licenses.xml</licensesConfigFile>
-							<useMissingFile></useMissingFile>
+							<verbose>true</verbose>
 						</configuration>
 					</execution>
 					<execution>
@@ -202,6 +215,7 @@
 							<useMissingFile>true</useMissingFile>
 							<missingFile>${basedir}${file.separator}src${file.separator}main${file.separator}licenses${file.separator}third-party.properties</missingFile>
 							<fileTemplate>${project.build.outputDirectory}${file.separator}third-party.ftl</fileTemplate>
+							<verbose>true</verbose>
 						</configuration>
 					</execution>
 				</executions>
@@ -232,23 +246,19 @@
 							<includeTransitiveDependencySources>true</includeTransitiveDependencySources>
 							<includeDependencySources>true</includeDependencySources>
 							<dependencySourceIncludes>
-								<dependencySourceInclude>org.ldp4j.framework:ldp4j-client-api</dependencySourceInclude>
-								<dependencySourceInclude>org.ldp4j.framework:ldp4j-server-api</dependencySourceInclude>
+								<dependencySourceInclude>org.ldp4j.framework:ldp4j-application-api</dependencySourceInclude>
+								<dependencySourceInclude>org.ldp4j.framework:ldp4j-application-data</dependencySourceInclude>
+								<dependencySourceInclude>org.ldp4j.framework:ldp4j-application-util</dependencySourceInclude>
 							</dependencySourceIncludes>
-							<excludePackageNames>org.ldp4j.client.impl</excludePackageNames>
 							<groups>
 								<group>
-									<title>LDP4j Server API</title>
-									<packages>org.ldp4j.server*</packages>
-								</group>
-								<group>
-									<title>LDP4j Client API</title>
-									<packages>org.ldp4j.client*</packages>
+									<title>LDP4j Application API</title>
+									<packages>org.ldp4j.application*</packages>
 								</group>
 							</groups>
 							<show>protected</show>
 							<quiet>true</quiet>
-							<windowtitle>LDP4j ${project.version} Distribution Public API</windowtitle>
+							<windowtitle>LDP4j ${project.version} Distribution Public Application API</windowtitle>
 						</configuration>
 					</execution>
 				</executions>

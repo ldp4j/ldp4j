@@ -85,10 +85,21 @@
 			<includes>
 				<include>*.jar</include>
 			</includes>
-			<!-- Remove shaded binaries -->
+			<!-- Remove distribution binaries binaries -->
 			<excludes>
 				<exclude>ldp4j-*.jar</exclude>
+				<exclude>rmf-*.jar</exclude>
+				<exclude>integration-sesame-*.jar</exclude>
 			</excludes>
+			<directory>target/libs</directory>
+		</fileSet>
+		<fileSet>
+			<outputDirectory>bin</outputDirectory>
+			<includes>
+				<include>ldp4j-commons*.jar</include>
+				<include>rmf-*.jar</include>
+				<include>integration-sesame-*.jar</include>
+			</includes>
 			<directory>target/libs</directory>
 		</fileSet>
 	</fileSets>
@@ -96,14 +107,10 @@
 		<dependencySet>
 			<outputDirectory>bin</outputDirectory>
 			<includes>
-				<include>${project.groupId}.commons:ldp4j-commons-cbd:jar</include>
-				<include>${project.groupId}.framework:ldp4j-server-api:jar</include>
-				<include>${project.groupId}.framework:ldp4j-server-impl:jar</include>
-				<include>${project.groupId}.framework:ldp4j-client-api:jar</include>
-				<include>${project.groupId}.framework:ldp4j-client-impl:jar</include>
+				<include>${project.groupId}.framework:*:jar</include>
 			</includes>
 			<useTransitiveDependencies>false</useTransitiveDependencies>
 		</dependencySet>
 	</dependencySets>
-	
+
 </assembly>

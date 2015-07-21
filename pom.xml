@@ -80,9 +80,6 @@
 		<jacoco.it.file>jacoco-it.exec</jacoco.it.file>
 
 		<sonar.language>java</sonar.language>
-<!--
-		<sonar.dynamicAnalysis>reuseReports</sonar.dynamicAnalysis>
- -->
 		<sonar.junit.reportsPath>${project.build.directory}${file.separator}surefire-reports</sonar.junit.reportsPath>
 		<sonar.java.coveragePlugin>jacoco</sonar.java.coveragePlugin>
 		<sonar.jacoco.reportPath>${coverage.reports.dir}${file.separator}${jacoco.ut.file}</sonar.jacoco.reportPath>
