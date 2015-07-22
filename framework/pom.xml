@@ -63,6 +63,7 @@
 		<module>application</module>
 		<module>server</module>
 		<!-- module>client</module -->
+		<module>conformance</module>
 	</modules>
 
 </project>

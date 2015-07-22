@@ -1,0 +1,243 @@
+<?xml version="1.0"?>
+<!--
+
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      This file is part of the LDP4j Project:
+        http://www.ldp4j.org/
+
+      Center for Open Middleware
+        http://www.centeropenmiddleware.com/
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Copyright (C) 2014 Center for Open Middleware.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Licensed under the Apache License, Version 2.0 (the "License");
+      you may not use this file except in compliance with the License.
+      You may obtain a copy of the License at
+
+                http://www.apache.org/licenses/LICENSE-2.0
+
+      Unless required by applicable law or agreed to in writing, software
+      distributed under the License is distributed on an "AS IS" BASIS,
+      WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+      See the License for the specific language governing permissions and
+      limitations under the License.
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+      Artifact    : org.ldp4j.framework:ldp4j-conformance-validation:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-conformance-validation-1.0.0-SNAPSHOT.jar
+    #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
+
+-->
+<project
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"
+	xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+	<modelVersion>4.0.0</modelVersion>
+
+	<!-- =================================================================== -->
+	<!--   MODULE COORDINATES                                                -->
+	<!-- =================================================================== -->
+
+	<parent>
+		<groupId>org.ldp4j.framework</groupId>
+		<artifactId>ldp4j-conformance</artifactId>
+		<version>1.0.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>ldp4j-conformance-validation</artifactId>
+
+	<!-- =================================================================== -->
+	<!--   MODULE INFORMATION                                                -->
+	<!-- =================================================================== -->
+
+	<name>LDP4j :: Framework :: Conformance :: Validation</name>
+	<description>Validation of the conformance of LDP4j w.r.t the LDP specification</description>
+
+	<!-- =================================================================== -->
+	<!--   BUILD SETTINGS                                                    -->
+	<!-- =================================================================== -->
+
+	<properties>
+		<tomcat.major.version>7</tomcat.major.version>
+		<tomcat.version>${tomcat.major.version}.0.20</tomcat.version>
+		<test.manager.username>manager-username</test.manager.username>
+		<test.manager.password>manager-password</test.manager.password>
+		<test.catalina.home>${project.build.directory}/cargo/installs/apache-tomcat-${tomcat.version}/apache-tomcat-${tomcat.version}</test.catalina.home>
+		<test.catalina.base>${project.build.directory}/cargo/configurations/tomcat${tomcat.major.version}x</test.catalina.base>
+	</properties>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.w3</groupId>
+			<artifactId>ldp-testsuite</artifactId>
+			<version>0.2.0-SNAPSHOT</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.apache.geronimo.specs</groupId>
+			<artifactId>geronimo-servlet_3.0_spec</artifactId>
+			<version>1.0</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-integration</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.jboss.shrinkwrap.resolver</groupId>
+			<artifactId>shrinkwrap-resolver-depchain</artifactId>
+			<version>2.2.0-beta-2</version>
+			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.shrinkwrap.descriptors</groupId>
+			<artifactId>shrinkwrap-descriptors-depchain</artifactId>
+			<version>2.0.0-alpha-7</version>
+			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.shrinkwrap</groupId>
+			<artifactId>shrinkwrap-depchain-java7</artifactId>
+			<version>1.2.2</version>
+			<type>pom</type>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.arquillian.junit</groupId>
+			<artifactId>arquillian-junit-container</artifactId>
+			<version>1.1.8.Final</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.jboss.arquillian.container</groupId>
+			<artifactId>arquillian-tomcat-managed-7</artifactId>
+			<version>1.0.0.CR7</version>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<repositories>
+		<repository>
+			<id>sonatype-oss-public-snapshots</id>
+			<url>https://oss.sonatype.org/content/groups/public/</url>
+			<snapshots><enabled>true</enabled></snapshots>
+			<releases><enabled>false</enabled></releases>
+		</repository>
+	</repositories>
+
+	<build>
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.codehaus.cargo</groupId>
+					<artifactId>cargo-maven2-plugin</artifactId>
+					<version>1.4.15</version>
+					<executions>
+						<execution>
+							<id>install-container</id>
+							<phase>pre-integration-test</phase>
+							<goals>
+								<goal>configure</goal>
+							</goals>
+							<configuration>
+								<configuration>
+									<properties>
+										<cargo.servlet.port>${test.http.port}</cargo.servlet.port>
+										<cargo.tomcat.ajp.port>${test.ajp.port}</cargo.tomcat.ajp.port>
+										<cargo.rmi.port>${test.rmi.port}</cargo.rmi.port>
+									</properties>
+									<configfiles>
+										<configfile>
+											<file>${project.build.testOutputDirectory}/tomcat-users.xml</file>
+											<toDir>conf</toDir>
+										</configfile>
+									</configfiles>
+								</configuration>
+							</configuration>
+						</execution>
+					</executions>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+		<plugins>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>reserve-tomcat-port</id>
+						<phase>validate</phase>
+						<goals>
+							<goal>reserve-network-port</goal>
+						</goals>
+						<configuration>
+							<portNames>
+								<portName>test.http.port</portName>
+								<portName>test.ajp.port</portName>
+								<portName>test.rmi.port</portName>
+								<portName>test.jmx.port</portName>
+							</portNames>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skipTests>true</skipTests>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-failsafe-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>integration-test-execution</id>
+						<configuration>
+							<!-- argLine>${jacoco.agent.ut.arg}</argLine -->
+							<systemPropertyVariables>
+								<maven.repo.local>${settings.localRepository}</maven.repo.local>
+							</systemPropertyVariables>
+						</configuration>
+					</execution>
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.apache.maven.surefire</groupId>
+						<artifactId>surefire-junit47</artifactId>
+						<version>${maven.surefire.plugin.version}</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.cargo</groupId>
+				<artifactId>cargo-maven2-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>install-container</id>
+						<configuration>
+							<container>
+								<containerId>tomcat${tomcat.major.version}x</containerId>
+								<zipUrlInstaller>
+									<url>http://archive.apache.org/dist/tomcat/tomcat-${tomcat.major.version}/v${tomcat.version}/bin/apache-tomcat-${tomcat.version}.zip</url>
+								</zipUrlInstaller>
+							</container>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
