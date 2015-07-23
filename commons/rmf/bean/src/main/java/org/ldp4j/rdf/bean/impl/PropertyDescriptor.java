@@ -36,9 +36,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 abstract class PropertyDescriptor {
-	
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(PropertyDescriptor.class);
-	
+
 	private static final class MethodPropertyDescriptor extends PropertyDescriptor {
 
 		private static final class MethodPropertyEditor implements PropertyEditor {
@@ -76,14 +76,14 @@ abstract class PropertyDescriptor {
 					throw new IllegalStateException(e);
 				}
 			}
-			
+
 			@Override
 			public String toString() {
 				return "Methods {getter="+getter+", setter="+setter+"}";
 			}
 
 		}
-		
+
 		private final Method getter;
 		private Method setter;
 		private boolean tried;
@@ -92,7 +92,7 @@ abstract class PropertyDescriptor {
 			super(PropertyDescriptorUtils.getName(getter),getter.getReturnType(),getter.getGenericReturnType());
 			this.getter=getter;
 		}
-		
+
 		@Override
 		PropertyEditor getPropertyEditor() {
 			return new MethodPropertyEditor(getReadMethod(), getWriteMethod());
@@ -120,7 +120,7 @@ abstract class PropertyDescriptor {
 				throw new IllegalStateException(e);
 			} catch (NoSuchMethodException e) {
 				if(LOGGER.isTraceEnabled()) {
-					LOGGER.trace("No setter for property '"+getName()+"' was found ("+e.getMessage()+")");
+					LOGGER.trace("No setter for property '"+getName()+"' was found ("+e.getMessage()+")",e);
 				}
 				return null;
 			}
@@ -138,7 +138,7 @@ abstract class PropertyDescriptor {
 			return new String(chars);
 		}
 	}
-	
+
 	private static final class FieldPropertyDescriptor extends PropertyDescriptor {
 
 		private static final class FieldPropertyEditor implements PropertyEditor {
@@ -174,30 +174,30 @@ abstract class PropertyDescriptor {
 				return "Field {"+field+"}";
 			}
 		}
-		
+
 		private final Field field;
 
 		private FieldPropertyDescriptor(Field field) {
 			super(field.getName(),field.getType(),field.getGenericType());
 			this.field = field;
 		}
-		
+
 		@Override
 		PropertyEditor getPropertyEditor() {
 			return new FieldPropertyEditor(field);
 		}
-		
+
 	}
 	private final String name;
 	private final Class<?> propertyType;
 	private final Type genericPropertyType;
-	
+
 	PropertyDescriptor(String name, Class<?> propertyType, Type genericPropertyType) {
 		this.name=name;
 		this.propertyType = propertyType;
 		this.genericPropertyType = genericPropertyType;
 	}
-	
+
 	String getName() {
 		return name;
 	}
@@ -209,7 +209,7 @@ abstract class PropertyDescriptor {
 	Type getGenericPropertyType() {
 		return genericPropertyType;
 	}
-	
+
 	abstract PropertyEditor getPropertyEditor();
 
 	static MethodPropertyDescriptor newDescriptor(Method method) {
@@ -224,14 +224,14 @@ abstract class PropertyDescriptor {
 		assert descriptor instanceof MethodPropertyDescriptor;
 		return ((MethodPropertyDescriptor)descriptor).getWriteMethod();
 	}
-	
+
 }
 
 final class PropertyDescriptorUtils {
-	
+
 	private PropertyDescriptorUtils() {
 	}
-	
+
 	static String getName(Method method) {
 		String name=method.getName();
 		if(name.startsWith("get")) {
@@ -256,5 +256,5 @@ final class PropertyDescriptorUtils {
 		chars[0]=Character.toLowerCase(chars[0]);
 		return new String(chars);
 	}
-	
+
 }

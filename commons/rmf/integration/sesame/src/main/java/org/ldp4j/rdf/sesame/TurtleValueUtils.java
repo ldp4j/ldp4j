@@ -113,7 +113,6 @@ final class TurtleValueUtils {
 		} else {
 			// Namespace is not mapped to a prefix; write the resolved URI
 			result=String.format("<%s>",TurtleUtil.encodeURIString(resolve(uri).toString()));
-//			result=String.format("<%s>",TurtleUtil.encodeURIString(uri.toString()));
 		}
 		return result;
 	}
@@ -175,8 +174,8 @@ final class TurtleValueUtils {
 
 	static boolean canOmmitDatatype(URI datatype) {
 		return
-			datatype.getLocalName().equals("string") &&
-			datatype.getNamespace().equals("http://www.w3.org/2001/XMLSchema#");
+			"string".equals(datatype.getLocalName()) &&
+			"http://www.w3.org/2001/XMLSchema#".equals(datatype.getNamespace());
 	}
 
 	private boolean isMultiLineString(String label) {

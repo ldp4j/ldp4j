@@ -62,6 +62,10 @@ import org.slf4j.LoggerFactory;
 @WebListener
 public final class BootstrapContextListener implements ServletContextListener {
 
+	private static final String SUB_SUB_VALUE_PREFIX = "\t\t\t\t* ";
+	private static final String SUB_VALUE_PREFIX = "\t\t\t- ";
+	private static final String VALUE_SEPARATOR = ": ";
+	private static final String VALUE_PREFIX    = "\t\t+ ";
 	private static final String SERVER_SHUTDOWN_LOGGING       = "org.ldp4j.server.bootstrap.logging.shutdown";
 	private static final String SERVER_UPDATE_LOGGING         = "org.ldp4j.server.bootstrap.logging.update";
 	private static final String SERVER_INITIALIZATION_LOGGING = "org.ldp4j.server.bootstrap.logging.initialization";
@@ -112,7 +116,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 		if(efectiveSessionTrackingModes!=null && !efectiveSessionTrackingModes.isEmpty()) {
 			StringBuilder builder=new StringBuilder();
 			for(SessionTrackingMode trackingMode:efectiveSessionTrackingModes) {
-				builder.append(NEW_LINE).append("\t\t+ ").append(trackingMode);
+				builder.append(NEW_LINE).append(VALUE_PREFIX).append(trackingMode);
 			}
 			addMessage(messages,"Efective session tracking modes",builder.toString());
 		}
@@ -126,7 +130,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 					continue;
 				}
 				Object value = context.getAttribute(name);
-				builder.append(NEW_LINE).append("\t\t+ ").append(name).append(": ").append(value.toString()).append(" (").append(value.getClass().getCanonicalName()).append(")");
+				builder.append(NEW_LINE).append(VALUE_PREFIX).append(name).append(VALUE_SEPARATOR).append(value.toString()).append(" (").append(value.getClass().getCanonicalName()).append(")");
 			}
 			addMessage(messages,"Attributes",builder.toString());
 		}
@@ -137,7 +141,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 			while(initParameterNames.hasMoreElements()) {
 				String name = initParameterNames.nextElement();
 				String value = context.getInitParameter(name);
-				builder.append(NEW_LINE).append("\t\t+ ").append(name).append(": ").append(value);
+				builder.append(NEW_LINE).append(VALUE_PREFIX).append(name).append(VALUE_SEPARATOR).append(value);
 			}
 			addMessage(messages,"Init parameters",builder.toString());
 		}
@@ -145,11 +149,11 @@ public final class BootstrapContextListener implements ServletContextListener {
 		SessionCookieConfig sessionCookieConfig = context.getSessionCookieConfig();
 		if(sessionCookieConfig!=null) {
 			StringBuilder builder=new StringBuilder();
-			builder.append(NEW_LINE).append("\t\t+ ").append("Name").append(": ").append(sessionCookieConfig.getName());
-			builder.append(NEW_LINE).append("\t\t+ ").append("Comment").append(": ").append(sessionCookieConfig.getComment());
-			builder.append(NEW_LINE).append("\t\t+ ").append("Domain").append(": ").append(sessionCookieConfig.getDomain());
-			builder.append(NEW_LINE).append("\t\t+ ").append("Path").append(": ").append(sessionCookieConfig.getPath());
-			builder.append(NEW_LINE).append("\t\t+ ").append("Max age").append(": ").append(sessionCookieConfig.getMaxAge());
+			builder.append(NEW_LINE).append(VALUE_PREFIX).append("Name").append(VALUE_SEPARATOR).append(sessionCookieConfig.getName());
+			builder.append(NEW_LINE).append(VALUE_PREFIX).append("Comment").append(VALUE_SEPARATOR).append(sessionCookieConfig.getComment());
+			builder.append(NEW_LINE).append(VALUE_PREFIX).append("Domain").append(VALUE_SEPARATOR).append(sessionCookieConfig.getDomain());
+			builder.append(NEW_LINE).append(VALUE_PREFIX).append("Path").append(VALUE_SEPARATOR).append(sessionCookieConfig.getPath());
+			builder.append(NEW_LINE).append(VALUE_PREFIX).append("Max age").append(VALUE_SEPARATOR).append(sessionCookieConfig.getMaxAge());
 			addMessage(messages,"Session cookie config",builder.toString());
 		}
 
@@ -158,25 +162,25 @@ public final class BootstrapContextListener implements ServletContextListener {
 			StringBuilder builder=new StringBuilder();
 			for(Entry<String, ? extends ServletRegistration> entry:servletRegistrations.entrySet()) {
 				ServletRegistration registration = entry.getValue();
-				builder.append(NEW_LINE).append("\t\t+ ").append(entry.getKey()).append(": ");
-				builder.append(NEW_LINE).append("\t\t\t- ").append("Name.......: ").append(registration.getName());
-				builder.append(NEW_LINE).append("\t\t\t- ").append("Class name.: ").append(registration.getClassName());
+				builder.append(NEW_LINE).append(VALUE_PREFIX).append(entry.getKey()).append(VALUE_SEPARATOR);
+				builder.append(NEW_LINE).append(SUB_VALUE_PREFIX).append("Name.......: ").append(registration.getName());
+				builder.append(NEW_LINE).append(SUB_VALUE_PREFIX).append("Class name.: ").append(registration.getClassName());
 				String runAsRole = registration.getRunAsRole();
 				if(runAsRole!=null && !runAsRole.trim().isEmpty()) {
-					builder.append(NEW_LINE).append("\t\t\t- ").append("Run as role: ").append(runAsRole.trim());
+					builder.append(NEW_LINE).append(SUB_VALUE_PREFIX).append("Run as role: ").append(runAsRole.trim());
 				}
 				Map<String, String> initParameters = registration.getInitParameters();
 				if(initParameters!=null && !initParameters.isEmpty()) {
-					builder.append(NEW_LINE).append("\t\t\t- ").append("Init parameters:");
+					builder.append(NEW_LINE).append(SUB_VALUE_PREFIX).append("Init parameters:");
 					for(Entry<String, String> ipEntry:initParameters.entrySet()) {
-						builder.append(NEW_LINE).append("\t\t\t\t* ").append(ipEntry.getKey()).append(": ").append(ipEntry.getValue());
+						builder.append(NEW_LINE).append(SUB_SUB_VALUE_PREFIX).append(ipEntry.getKey()).append(VALUE_SEPARATOR).append(ipEntry.getValue());
 					}
 				}
 				Collection<String> mappings = registration.getMappings();
 				if(mappings!=null && !mappings.isEmpty()) {
-					builder.append(NEW_LINE).append("\t\t\t- ").append("Mappings:");
+					builder.append(NEW_LINE).append(SUB_VALUE_PREFIX).append("Mappings:");
 					for(String mapping:mappings) {
-						builder.append(NEW_LINE).append("\t\t\t\t* ").append(mapping);
+						builder.append(NEW_LINE).append(SUB_SUB_VALUE_PREFIX).append(mapping);
 					}
 				}
 			}
@@ -185,7 +189,7 @@ public final class BootstrapContextListener implements ServletContextListener {
 		StringBuilder builder=new StringBuilder();
 		builder.append(event).append(":");
 		for(Entry<String, Object> entry:messages.entrySet()) {
-			builder.append(NEW_LINE).append("\t- ").append(entry.getKey()).append(": ").append(entry.getValue());
+			builder.append(NEW_LINE).append("\t- ").append(entry.getKey()).append(VALUE_SEPARATOR).append(entry.getValue());
 		}
 
 		return builder.toString();

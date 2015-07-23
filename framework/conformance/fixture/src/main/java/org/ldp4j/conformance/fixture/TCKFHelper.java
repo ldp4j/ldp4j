@@ -58,22 +58,21 @@ import com.google.common.collect.ImmutableMap;
 
 final class TCKFHelper {
 
+	private static final Map<String,AtomicLong> COUNTERS=
+	ImmutableMap.
+		<String,AtomicLong>builder().
+			put(TCKFResourceHandler.ID,new AtomicLong()).
+			put(TCKFBasicContainerHandler.ID,new AtomicLong()).
+			put(TCKFDirectContainerHandler.ID,new AtomicLong()).
+			put(TCKFIndirectContainerHandler.ID,new AtomicLong()).
+			build();
 	static final URI READ_ONLY_PROPERTY = URI.create("http://www.example.org/vocab#creationDate");
 	static final URI UNKNOWN_PROPERTY = URI.create("http://example.com/ns#comment");
 
-	private static Logger LOGGER=LoggerFactory.getLogger(TCKFHelper.class);
+	private static final Logger LOGGER=LoggerFactory.getLogger(TCKFHelper.class);
 
 	private TCKFHelper() {
 	}
-
-	private static final Map<String,AtomicLong> COUNTERS=
-		ImmutableMap.
-			<String,AtomicLong>builder().
-				put(TCKFResourceHandler.ID,new AtomicLong()).
-				put(TCKFBasicContainerHandler.ID,new AtomicLong()).
-				put(TCKFDirectContainerHandler.ID,new AtomicLong()).
-				put(TCKFIndirectContainerHandler.ID,new AtomicLong()).
-				build();
 
 	static Name<?> nextName(String templateId) {
 		return NamingScheme.getDefault().name(templateId, Long.toHexString(COUNTERS.get(templateId).getAndIncrement()).toUpperCase(Locale.ENGLISH));

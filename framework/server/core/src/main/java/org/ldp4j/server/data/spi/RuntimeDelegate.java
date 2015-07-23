@@ -52,17 +52,17 @@ public abstract class RuntimeDelegate {
 
 	/**
 	 * Name of the configuration file where the
-	 * {@link RuntimeDelegate#LDP4j_SERVER_DATA_SPI_PROPERTY} property that
+	 * {@link RuntimeDelegate#LDP4J_SERVER_DATA_SPI_PROPERTY} property that
 	 * identifies the {@link RuntimeDelegate} implementation to be returned from
 	 * {@link RuntimeDelegate#getInstance()} can be defined.
 	 */
-	public static final String LDP4j_SERVER_DATA_SPI_CFG = "ldp4j-server-data.properties";
+	public static final String LDP4J_SERVER_DATA_SPI_CFG = "ldp4j-server-data.properties";
 
 	/**
 	 * Name of the property identifying the {@link RuntimeDelegate} implementation
 	 * to be returned from {@link RuntimeDelegate#getInstance()}.
 	 */
-	public static final String LDP4j_SERVER_DATA_SPI_PROPERTY = "org.ldp4j.server.data.spi.RuntimeDelegate";
+	public static final String LDP4J_SERVER_DATA_SPI_PROPERTY = "org.ldp4j.server.data.spi.RuntimeDelegate";
 
 	private static final AtomicReference<RuntimeDelegate> CACHED_DELEGATE=new AtomicReference<RuntimeDelegate>();
 
@@ -88,7 +88,7 @@ public abstract class RuntimeDelegate {
 			}
 
 			if(result==null) {
-				String delegateClassName = System.getProperty(LDP4j_SERVER_DATA_SPI_PROPERTY);
+				String delegateClassName = System.getProperty(LDP4J_SERVER_DATA_SPI_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createRuntimeDelegateForClassName(delegateClassName);
 				}
@@ -113,7 +113,7 @@ public abstract class RuntimeDelegate {
 				is=new FileInputStream(configFile);
 				Properties configProperties=new Properties();
 				configProperties.load(is);
-				String delegateClassName=configProperties.getProperty(LDP4j_SERVER_DATA_SPI_PROPERTY);
+				String delegateClassName=configProperties.getProperty(LDP4J_SERVER_DATA_SPI_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createRuntimeDelegateForClassName(delegateClassName);
 				}
@@ -137,13 +137,13 @@ public abstract class RuntimeDelegate {
 
 	/**
 	 * Get the configuration file for the Runtime Instance: a file named
-	 * {@value #LDP4j_SERVER_DATA_SPI_CFG} in the <code>lib</code> directory of
+	 * {@value #LDP4J_SERVER_DATA_SPI_CFG} in the <code>lib</code> directory of
 	 * current JAVA_HOME.
 	 *
 	 * @return The configuration file for the runtime instance.
 	 */
 	private static File getConfigurationFile() {
-		return new File(new File(System.getProperty("java.home")),"lib"+File.separator+LDP4j_SERVER_DATA_SPI_CFG);
+		return new File(new File(System.getProperty("java.home")),"lib"+File.separator+LDP4J_SERVER_DATA_SPI_CFG);
 	}
 
 	/**

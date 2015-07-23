@@ -99,13 +99,13 @@ final class ContentPreferencesUtils {
 	private static void validatePrefix(String value, String prefix) {
 		String[] items = prefix.split("=");
 		if(items.length!=2) {
-			throw new IllegalArgumentException("Could not parse preferences ("+value+"): could not find return representation");
+			throw new IllegalArgumentException(String.format("Could not parse preferences (%s): could not find return representation",value));
 		}
 		if(!"return".equals(items[0].trim())) {
-			throw new IllegalArgumentException("Could not parse preferences ("+value+"): unexpected token '"+items[0].trim()+"'");
+			throw new IllegalArgumentException(String.format("Could not parse preferences (%s): unexpected token '%s'",value,items[0].trim()));
 		}
 		if(!"representation".equals(items[1].trim())) {
-			throw new IllegalArgumentException("Could not parse preferences ("+value+"): unexpected return type '"+items[1].trim()+"'");
+			throw new IllegalArgumentException(String.format("Could not parse preferences (%s): unexpected return type '%s'",value,items[1].trim()));
 		}
 	}
 

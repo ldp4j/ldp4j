@@ -56,12 +56,12 @@ public final class RDFOperations {
 
 		@Override
 		public final Triple transform(Triple t) {
-			Triple triple = new Triple(
-				update(t.getSubject(),Resource.class),
-				update(t.getPredicate(),URIRef.class),
-				update(t.getObject(),Node.class)
-			);
-			return triple;
+			return
+				new Triple(
+					update(t.getSubject(),Resource.class),
+					update(t.getPredicate(),URIRef.class),
+					update(t.getObject(),Node.class)
+				);
 		}
 
 		protected abstract <T extends Node> T update(T original, Class<T> clazz);

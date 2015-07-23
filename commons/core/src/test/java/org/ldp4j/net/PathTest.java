@@ -27,38 +27,30 @@
 package org.ldp4j.net;
 
 
-final class URIRef {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
 
-	String scheme;
-	Authority authority;
-	Path path;
-	String query;
-	String fragment;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-	private URIRef(String scheme, Authority authority, Path path, String query, String fragment) {
-		this.scheme = scheme;
-		this.authority = authority;
-		this.path = path;
-		this.query = query;
-		this.fragment = fragment;
-	}
 
-	URI toURI() {
-		return
-			URI.create("/").
-				withScheme(this.scheme).
-				withAuthority(this.authority).
-				withPath(this.path).
-				withQuery(this.query).
-				withFragment(this.fragment);
-	}
+// TODO: Add normalization tests
+// TODO: Add getter tests
+// TODO: Add builder tests
+public class PathTest {
 
-	static URIRef create(URI ref) {
-		return new URIRef(ref.getScheme(),ref.getAuthority(),ref.getPath(),ref.getQuery(),ref.getFragment());
-	}
+	private static final Logger LOGGER=LoggerFactory.getLogger(PathTest.class);
 
-	static URIRef empty() {
-		return new URIRef(null,null,Path.create(""),null,null);
+	@Test
+	public void testPathNormalize() {
+		for(String scenario:Examples.Custom.paths()) {
+			Path path=Path.create(scenario);
+			assertThat(path,notNullValue());
+			Path normalize = path.normalize();
+			assertThat(normalize,notNullValue());
+			LOGGER.debug("<{}>.normalize() = <{}>",path,normalize);
+		}
 	}
 
 }

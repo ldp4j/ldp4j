@@ -42,11 +42,24 @@ import org.ldp4j.rdf.bean.Constraints;
 public @interface CardinalityConstraint {
 	Class<?>[] appliesTo() default {Object.class};
 	Class<? extends CardinalityAdapter<?>> adaptedBy();
-	
+
 	public interface CardinalityAdapter<A extends Annotation> {
-		
-		Cardinality fromConstraint(A annotation, Constraints.ConstraintDefinitionContext<?> context) throws Constraints.ConstraintViolationException;
-		
+
+		/**
+		 * Create a Cardinality from a CardinalityAnnotation found in a given
+		 * context
+		 *
+		 * @param annotation
+		 *            the annotation itself
+		 * @param context
+		 *            the context in which the constraint is defined
+		 * @return the cardinality that matches the specification defined in the
+		 *         annotation
+		 * @throws Constraints.ConstraintViolationException
+		 *             if the cardinality is not properly defined
+		 */
+		Cardinality fromConstraint(A annotation, Constraints.ConstraintDefinitionContext<?> context);
+
 	}
-	
+
 }

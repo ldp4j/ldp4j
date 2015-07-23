@@ -37,9 +37,15 @@ import java.util.List;
 import java.util.Set;
 
 import org.ldp4j.rdf.bean.InvalidDefinitionException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 final class EnumerationHelper<S> {
-	
+
+	private static final String NAMES_METHOD_VIOLATION = "Public static method names() should return Set<String>, not ";
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(EnumerationHelper.class);
+
 	private final Class<? extends S> clazz;
 	private final Set<String> names;
 	private final Method name;
@@ -61,7 +67,7 @@ final class EnumerationHelper<S> {
 		}
 		return Collections.unmodifiableSet(tmp);
 	}
-	
+
 	Class<? extends S> getEnumeratedClass() {
 		return clazz;
 	}
@@ -92,7 +98,7 @@ final class EnumerationHelper<S> {
 			throw new IllegalStateException(e);
 		}
 	}
-	
+
 	boolean isEnumeration(Class<?> clazz) {
 		List<String> violations=new ArrayList<String>();
 		getNames(clazz,violations);
@@ -100,7 +106,7 @@ final class EnumerationHelper<S> {
 		getFromURIMethod(clazz,violations);
 		return violations.isEmpty();
 	}
-	
+
 	static <S> EnumerationHelper<S> newInstance(Class<? extends S> clazz) {
 		List<String> violations=new ArrayList<String>();
 		Set<String> names = getNames(clazz,violations);
@@ -123,15 +129,15 @@ final class EnumerationHelper<S> {
 			} else {
 				Type returnType = method.getGenericReturnType();
 				if(!(returnType instanceof ParameterizedType)) {
-					violations.add("Public static method names() should return Set<String>, not "+returnType);
+					violations.add(NAMES_METHOD_VIOLATION+returnType);
 				} else {
 					ParameterizedType pt=(ParameterizedType)returnType;
 					if(!Set.class.isAssignableFrom((Class<?>)pt.getRawType())) {
-						violations.add("Public static method names() should return Set<String>, not "+returnType);
+						violations.add(NAMES_METHOD_VIOLATION+returnType);
 					} else {
 						Type type = pt.getActualTypeArguments()[0];
 						if(type != String.class) {
-							violations.add("Public static method names() should return Set<String>, not "+returnType);
+							violations.add(NAMES_METHOD_VIOLATION+returnType);
 						} else {
 							result=Collections.unmodifiableSet(new HashSet<String>((Set<String>)method.invoke(null)));
 						}
@@ -140,6 +146,7 @@ final class EnumerationHelper<S> {
 			}
 		} catch (NoSuchMethodException e) {
 			violations.add("Method public static Set<String> names() is not defined");
+			LOGGER.trace("Method public Set<String> names() is not defined for class {}",clazz.getName(),e);
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
@@ -161,6 +168,7 @@ final class EnumerationHelper<S> {
 			return method;
 		} catch (NoSuchMethodException e) {
 			violations.add("Method public String name() is not defined");
+			LOGGER.trace("Method public String name() is not defined for class {}",clazz.getName(),e);
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}
@@ -177,10 +185,11 @@ final class EnumerationHelper<S> {
 			}
 			Class<?> returnType = method.getReturnType();
 			if(returnType != clazz) {
-				violations.add("Public static method valueOf(String) should return "+clazz.getCanonicalName()+", not "+returnType);
+				violations.add("Public static method valueOf(String) should return "+clazz.getName()+", not "+returnType);
 			}
 		} catch (NoSuchMethodException e) {
 			violations.add("Method public static "+clazz.getCanonicalName()+" valueOf(String) is not defined");
+			LOGGER.trace("Method public static {} valueOf(String) is not defined for class {}",clazz.getName(),clazz.getName(),e);
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}

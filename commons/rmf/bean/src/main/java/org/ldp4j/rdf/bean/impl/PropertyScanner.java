@@ -47,23 +47,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class PropertyScanner {
-	
+
 	private class Scanner {
 
 		private List<Property> definitions=new ArrayList<Property>();
 		private Map<String,String> violations=new HashMap<String,String>();
 		private final PropertyFactory factory;
-	
+
 		private Scanner(TypeManager typeManager) {
 			factory = new PropertyFactory(defaultNamespace,typeManager);
 		}
-		
+
 		boolean isValid() {
 			scanMethods();
 			scanFields();
 			return violations.isEmpty();
 		}
-	
+
 		private void scanMethods() {
 			LOGGER.trace("- Class: "+clazz.getCanonicalName());
 			for(Method method:clazz.getMethods()) {
@@ -100,7 +100,7 @@ final class PropertyScanner {
 			}
 			violations.put(member.getName(),e.getMessage());
 		}
-	
+
 		private void scanFields() {
 			for(Field field:clazz.getDeclaredFields()) {
 				makeAccessible(field);
@@ -121,6 +121,7 @@ final class PropertyScanner {
 		private void makeAccessible(final Field field) {
 			AccessController.doPrivileged(
 				new PrivilegedAction<Void>() {
+					@Override
 					public Void run() {
 						try {
 							field.setAccessible(true);
@@ -132,11 +133,11 @@ final class PropertyScanner {
 				}
 			);
 		}
-	
+
 		public List<Property> getDefinitions() {
 			return definitions;
 		}
-	
+
 		public String getReport() {
 			StringWriter result = new StringWriter();
 			PrintWriter out=new PrintWriter(result);
@@ -149,7 +150,7 @@ final class PropertyScanner {
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(PropertyScanner.class);
-	
+
 	private final Class<?> clazz;
 	private final String defaultNamespace;
 

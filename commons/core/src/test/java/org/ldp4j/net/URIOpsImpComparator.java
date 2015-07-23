@@ -30,13 +30,14 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.junit.Ignore;
-import org.junit.Test;
 import org.ldp4j.commons.net.URIUtils;
-import org.ldp4j.net.URI.Path;
 import org.ldp4j.util.ListBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public final class URIOpsImpComparator {
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(URIOpsImpComparator.class);
 
 	public abstract static class RoundtripResolutionTester<T> {
 
@@ -51,7 +52,9 @@ public final class URIOpsImpComparator {
 				this.description = description;
 			}
 		}
+
 		private Map<String,String> failures=new LinkedHashMap<String,String>();
+
 		private int passes=0;
 		private int total=0;
 		private int errors=0;
@@ -92,14 +95,14 @@ public final class URIOpsImpComparator {
 		}
 
 		public void showStatistics() {
-			System.out.printf("%s Tests:%n",getClass().getSimpleName());
-			System.out.printf(" - Total: %d%n",total);
-			System.out.printf("   + OK...: %d (%.3f%%) %n",passes,percent(passes,total));
+			LOGGER.info("{} Tests:",getClass().getSimpleName());
+			LOGGER.info(" - Total: {}",total);
+			LOGGER.info(String.format("   + OK...: %d (%.3f%%)",passes,percent(passes,total)));
 			int invalidErrors = failures.size()-errors;
 			if(!failures.isEmpty()) {
-				System.out.printf("   + ERROR: %d (%.3f%%) %n",failures.size(),percent(failures.size(),total));
-				System.out.printf("     * INVALID: %d (%.3f%%) [%.3f%%] %n",invalidErrors,percent(invalidErrors,failures.size()),percent(invalidErrors,total));
-				System.out.printf("     * FAILURE: %d (%.3f%%) [%.3f%%] %n",errors,percent(errors,failures.size()),percent(errors,total));
+				LOGGER.info(String.format("   + ERROR: %d (%.3f%%)",failures.size(),percent(failures.size(),total)));
+				LOGGER.info(String.format("     * INVALID: %d (%.3f%%) [%.3f%%]",invalidErrors,percent(invalidErrors,failures.size()),percent(invalidErrors,total)));
+				LOGGER.info(String.format("     * FAILURE: %d (%.3f%%) [%.3f%%]",errors,percent(errors,failures.size()),percent(errors,total)));
 			}
 		}
 
@@ -112,25 +115,26 @@ public final class URIOpsImpComparator {
 
 		@SafeVarargs
 		private final void showFail(T base, T target, RuntimeException e, Stage stage, T... prev) {
+			String message="";
 			switch(stage) {
 			case RELATIVIZATION:
-				System.out.printf("[%s] <%s> : <%s> --[REL]--> ERROR",getClass().getSimpleName(),base,target);
+				message=String.format("[%s] <%s> : <%s> --[REL]--> ERROR",getClass().getSimpleName(),base,target);
 				break;
 			case RESOLUTION:
-				System.out.printf("[%s] <%s> : <%s> --[REL]--> <%s> --[RES] --> ERROR",getClass().getSimpleName(),base,target,prev[0]);
+				message=String.format("[%s] <%s> : <%s> --[REL]--> <%s> --[RES] --> ERROR",getClass().getSimpleName(),base,target,prev[0]);
 				break;
 			case PRE_VERIFICATION:
-				System.out.printf("[%s] <%s> : <%s> --[REL]--> <%s> --[RES] --> <%s> ?? ERROR",getClass().getSimpleName(),base,target,prev[0],prev[1]);
+				message=String.format("[%s] <%s> : <%s> --[REL]--> <%s> --[RES] --> <%s> ?? ERROR",getClass().getSimpleName(),base,target,prev[0],prev[1]);
 				break;
 			default:
 				break;
 			}
-			System.out.printf(" (%s)%n",e.getMessage());
+			LOGGER.trace(message+" ({})",e.getMessage());
 		}
 
 		@SafeVarargs
 		private final void showTest(T base, T target, T... parts) {
-			System.out.printf("[%s] <%s> : <%s> --[REL]--> <%s> --[RES]--> %s != %s%n",getClass().getSimpleName(),base,target,parts[0],parts[1],parts[2]);
+			LOGGER.debug(String.format("[%s] <%s> : <%s> --[REL]--> <%s> --[RES]--> %s != %s",getClass().getSimpleName(),base,target,parts[0],parts[1],parts[2]));
 		}
 
 		private void passTest() {
@@ -275,6 +279,8 @@ public final class URIOpsImpComparator {
 					add("../d/").
 					add("/../f").
 					add("/../d/").
+					add("/").
+					add("").
 					build();
 		crossTest(pathScenarios);
 	}
@@ -296,50 +302,6 @@ public final class URIOpsImpComparator {
 		uTester.showStatistics();
 		pTester.showStatistics();
 		cTester.showStatistics();
-	}
-
-	@Ignore
-	@Test
-	public void simpleRoundtripTest() {
-		CustomTester cTester=new CustomTester();
-		cTester.roundtrip("/a/b/c/d/f", "/a/b/c/d/.");
-		cTester.showStatistics();
-	}
-
-	@Ignore
-	@Test
-	public void simpleResolutionTest() {
-		String rawBase = "/b/c/d;p?q";
-		String rawTarget = "/g";
-		System.out.printf("\"%s\".resolve(\"%s\")=\"%s\"",rawBase,rawTarget,URI.create(rawBase).resolve(URI.create(rawTarget)));
-	}
-
-	@Ignore
-	@Test
-	public void simpleRelativizationTest() {
-		String rawBase = "/b/c/d;p?q";
-		String rawTarget = "/g";
-		System.out.printf("\"%s\".relativize(\"%s\")=\"%s\"",rawBase,rawTarget,URI.create(rawBase).relativize(URI.create(rawTarget)));
-	}
-
-	@Ignore
-	@Test
-	public void simpleNormalizationTest() {
-		String rawBase = "/./b/c/d/.././../../a";
-		System.out.printf("\"%s\".normalize()=\"%s\"",rawBase,URI.create(rawBase).normalize());
-	}
-
-	@SuppressWarnings("unused")
-	private static String decorate(String rawUri, boolean withQuery, boolean withFragment) {
-		StringBuilder builder=new StringBuilder();
-		builder.append(rawUri);
-		if(withQuery) {
-			builder.append("?query=value");
-		}
-		if(withFragment) {
-			builder.append("#fragment");
-		}
-		return builder.toString();
 	}
 
 }

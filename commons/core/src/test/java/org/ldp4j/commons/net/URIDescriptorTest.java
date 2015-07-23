@@ -26,14 +26,19 @@
  */
 package org.ldp4j.commons.net;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
+
 import java.net.URI;
 
 import org.junit.Test;
-
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class URIDescriptorTest {
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(URIDescriptorTest.class);
 
 	private static final String QUERY = "param=value";
 	private static final String AUTHORITY = "http://www.example.org";
@@ -179,7 +184,7 @@ public class URIDescriptorTest {
 
 	private void verifyCase(URI target, String dir, String file, String query, String fragment) {
 		URIDescriptor descriptor = URIDescriptor.create(target);
-		System.out.println(descriptor);
+		LOGGER.debug("Descriptor for {} [dir={}, file={}, query={}, fragment={}]\n{}",target,dir,file,query,fragment,descriptor);
 		assertThat("No descriptor created",descriptor,notNullValue());
 		assertThat("Invalid uri",descriptor.getUri(),equalTo(target));
 		assertThat("Invalid directory",descriptor.getDir(),equalTo(dir));

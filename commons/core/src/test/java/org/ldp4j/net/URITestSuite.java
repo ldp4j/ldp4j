@@ -26,39 +26,15 @@
  */
 package org.ldp4j.net;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
-final class URIRef {
-
-	String scheme;
-	Authority authority;
-	Path path;
-	String query;
-	String fragment;
-
-	private URIRef(String scheme, Authority authority, Path path, String query, String fragment) {
-		this.scheme = scheme;
-		this.authority = authority;
-		this.path = path;
-		this.query = query;
-		this.fragment = fragment;
-	}
-
-	URI toURI() {
-		return
-			URI.create("/").
-				withScheme(this.scheme).
-				withAuthority(this.authority).
-				withPath(this.path).
-				withQuery(this.query).
-				withFragment(this.fragment);
-	}
-
-	static URIRef create(URI ref) {
-		return new URIRef(ref.getScheme(),ref.getAuthority(),ref.getPath(),ref.getQuery(),ref.getFragment());
-	}
-
-	static URIRef empty() {
-		return new URIRef(null,null,Path.create(""),null,null);
-	}
-
+@RunWith(Suite.class)
+@SuiteClasses({
+	URITest.class,
+	URIRelativizationTest.class,
+	URIResolutionTest.class
+})
+public class URITestSuite {
 }
