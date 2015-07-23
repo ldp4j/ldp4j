@@ -26,27 +26,25 @@
  */
 package org.ldp4j.rdf;
 
-
-
 public abstract class NodeVisitor<T> {
 
-	public T visitLanguageLiteral(LanguageLiteral node, T defaultResult) {
+	public T visitLanguageLiteral(LanguageLiteral node, T defaultResult) { // NOSONAR
 		return defaultResult;
 	}
 
-	public T visitTypedLiteral(TypedLiteral<?> node, T defaultResult) {
+	public T visitTypedLiteral(TypedLiteral<?> node, T defaultResult) { // NOSONAR
 		return defaultResult;
 	}
 
-	public T visitURIRef(URIRef node, T defaultResult) {
+	public T visitURIRef(URIRef node, T defaultResult) { // NOSONAR
 		return defaultResult;
 	}
 
-	public T visitLiteral(Literal<?> node, T defaultResult) {
+	public T visitLiteral(Literal<?> node, T defaultResult) { // NOSONAR
 		return defaultResult;
 	}
 
-	public T visitBlankNode(BlankNode node, T defaultResult) {
+	public T visitBlankNode(BlankNode node, T defaultResult) { // NOSONAR
 		return defaultResult;
 	}
 

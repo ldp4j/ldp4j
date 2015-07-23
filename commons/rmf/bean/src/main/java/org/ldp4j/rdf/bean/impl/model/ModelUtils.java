@@ -33,10 +33,7 @@ import org.ldp4j.rdf.URIRef;
 
 final class ModelUtils {
 
-	private ModelUtils() {
-	}
-	
-	static enum Namespace {
+	enum Namespace {
 		RDF("http://www.w3.org/1999/02/22-rdf-syntax-ns#",1),
 		RDFS("http://www.w3.org/2000/01/rdf-schema#",2),
 		OWL("http://www.w3.org/2002/07/owl#",3),
@@ -45,12 +42,12 @@ final class ModelUtils {
 		;
 		private final String id;
 		private final int priority;
-	
+
 		Namespace(String id, int priority) {
 			this.id = id;
 			this.priority = priority;
 		}
-	
+
 		static Namespace fromURI(URIRef uri) {
 			for(Namespace namespace:values()) {
 				if(uri.getIdentity().toString().startsWith(namespace.getId())) {
@@ -59,15 +56,29 @@ final class ModelUtils {
 			}
 			return UNKNOWN;
 		}
-	
+
 		int compare(Namespace n) {
 			return priority-n.priority;
 		}
-	
+
 		String getId() {
 			return id;
 		}
-	
+
+	}
+
+	private ModelUtils() {
+	}
+
+	private static boolean isValidNamespace(String namespace) {
+		return namespace.indexOf('#') == -1 && namespace.indexOf('/') == -1;
+	}
+
+	private static boolean isValidLocalName(String localName) {
+		return
+			localName.indexOf(':') == -1 &&
+			localName.indexOf('#') == -1 &&
+			localName.indexOf('/') == -1;
 	}
 
 	static int compare(URIRef u1, URIRef u2) {
@@ -91,7 +102,7 @@ final class ModelUtils {
 	 * URI contains at least one ':' character to separate the scheme from the
 	 * rest of the URI. If this fails anyway, the method will throw an
 	 * {@link IllegalArgumentException}.
-	 * 
+	 *
 	 * @param uri
 	 *        A URI string.
 	 * @return The index of the first local name character in the URI string.
@@ -125,7 +136,7 @@ final class ModelUtils {
 	 * Checks whether the URI consisting of the specified namespace and local
 	 * name has been split correctly according to the URI splitting rules
 	 * specified in {@link URI}.
-	 * 
+	 *
 	 * @param namespace
 	 *        The URI's namespace, must not be <tt>null</tt>.
 	 * @param localName
@@ -151,19 +162,14 @@ final class ModelUtils {
 			return namespace.lastIndexOf('#', nsLength - 2) == -1;
 		} else if (lastNsChar == '/') {
 			// correct split if local name has no '/' and URI contains no '#'
-			return 
-				localName.indexOf('/') == -1 && 
-				localName.indexOf('#') == -1 && 
+			return
+				localName.indexOf('/') == -1 &&
+				localName.indexOf('#') == -1 &&
 				namespace.indexOf('#') == -1;
 		} else if (lastNsChar == ':') {
 			// correct split if local name has no ':' and URI contains no '#' or
 			// '/'
-			return 
-				localName.indexOf(':') == -1 && 
-				localName.indexOf('#') == -1 && 
-				localName.indexOf('/') == -1 && 
-				namespace.indexOf('#') == -1 && 
-				namespace.indexOf('/') == -1;
+			return isValidLocalName(localName) && isValidNamespace(namespace);
 		}
 
 		return false;
@@ -180,9 +186,9 @@ final class ModelUtils {
 		int localNameIdx = getLocalNameIndex(uriString);
 		return uriString.substring(localNameIdx);
 	}
-	
+
 	static String getIdentity(Resource<?> subject) {
 		return subject.getIdentity().toString();
 	}
-	
+
 }

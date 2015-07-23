@@ -37,7 +37,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 
 import javax.xml.namespace.QName;
 
@@ -68,6 +67,63 @@ import org.ldp4j.rdf.URIRef;
 import org.ldp4j.rdf.util.TripleSet;
 
 final class TripleSetBuilder {
+
+
+	/**
+	 * TODO: Verify that the translation of managed individuals with indirect id
+	 * works as mandated by the specification
+	 */
+	private final class IndividualTranslator implements IndividualVisitor {
+
+		private Resource<?> resource;
+
+		Resource<?> getResource() {
+			return this.resource;
+		}
+
+		private URIRef resolveManagedIndividualId(ManagedIndividualId target) {
+			ManagedIndividualId id=target;
+			URI indirectId=id.indirectId();
+			if(indirectId!=null) {
+				id=ManagedIndividualId.createId(id.name(),id.managerId());
+			}
+			URI path=resourceResolver.resolveResource(id);
+			if(path==null) {
+				throw new IllegalStateException("Could not resolve individual '"+id+"'");
+			} else if(indirectId!=null) {
+				path=path.resolve(indirectId);
+			}
+			return uriRef(base.resolve(path));
+		}
+
+		@Override
+		public void visitManagedIndividual(ManagedIndividual individual) {
+			ManagedIndividualId id = individual.id();
+			resource=resolveManagedIndividualId(id);
+		}
+
+		@Override
+		public void visitRelativeIndividual(RelativeIndividual individual) {
+			RelativeIndividualId id = individual.id();
+			ManagedIndividualId mid = ManagedIndividualId.createId(id.path(), id.parentId());
+			resource=resolveManagedIndividualId(mid);
+		}
+
+		@Override
+		public void visitLocalIndividual(LocalIndividual individual) {
+			resource=toSessionResource(individual.name());
+		}
+
+		@Override
+		public void visitExternalIndividual(ExternalIndividual individual) {
+			resource=uriRef(individual.id());
+		}
+
+		@Override
+		public void visitNewIndividual(NewIndividual individual) {
+			// Nothing to do
+		}
+	}
 
 	private interface NameMapper<T extends Resource<?>> {
 
@@ -205,54 +261,10 @@ final class TripleSetBuilder {
 		this.timeUtils=TimeUtils.newInstance();
 	}
 
-	/**
-	 * TODO: Verify that the translation of managed individuals with indirect id
-	 * works as mandated by the specification
-	 */
 	private Resource<?> toResource(Individual<?,?> individual) {
-		final AtomicReference<Resource<?>> result=new AtomicReference<Resource<?>>();
-		individual.accept(
-			new IndividualVisitor() {
-				private URIRef resolveManagedIndividualId(ManagedIndividualId target) {
-					ManagedIndividualId id=target;
-					URI indirectId=id.indirectId();
-					if(indirectId!=null) {
-						id=ManagedIndividualId.createId(id.name(),id.managerId());
-					}
-					URI path=resourceResolver.resolveResource(id);
-					if(path==null) {
-						throw new IllegalStateException("Could not resolve individual '"+id+"'");
-					} else if(indirectId!=null) {
-						path=path.resolve(indirectId);
-					}
-					return uriRef(base.resolve(path));
-				}
-				@Override
-				public void visitManagedIndividual(ManagedIndividual individual) {
-					ManagedIndividualId id = individual.id();
-					result.set(resolveManagedIndividualId(id));
-				}
-				@Override
-				public void visitRelativeIndividual(RelativeIndividual individual) {
-					RelativeIndividualId id = individual.id();
-					ManagedIndividualId mid = ManagedIndividualId.createId(id.path(), id.parentId());
-					result.set(resolveManagedIndividualId(mid));
-				}
-				@Override
-				public void visitLocalIndividual(LocalIndividual individual) {
-					result.set(toSessionResource(individual.name()));
-				}
-				@Override
-				public void visitExternalIndividual(ExternalIndividual individual) {
-					result.set(uriRef(individual.id()));
-				}
-				@Override
-				public void visitNewIndividual(NewIndividual individual) {
-					// Nothing to do
-				}
-			}
-		);
-		return result.get();
+		IndividualTranslator translator = new IndividualTranslator();
+		individual.accept(translator);
+		return translator.getResource();
 	}
 
 	private Resource<?> toSessionResource(Name<?> id) {

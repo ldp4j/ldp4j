@@ -31,7 +31,6 @@ import java.io.StringWriter;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.AnnotatedElement;
 import java.lang.reflect.Member;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -40,10 +39,10 @@ import java.util.Set;
 import org.ldp4j.rdf.bean.annotations.AtLeast;
 import org.ldp4j.rdf.bean.annotations.AtMost;
 import org.ldp4j.rdf.bean.annotations.CardinalityConstraint;
+import org.ldp4j.rdf.bean.annotations.CardinalityConstraint.CardinalityAdapter;
 import org.ldp4j.rdf.bean.annotations.Optional;
 import org.ldp4j.rdf.bean.annotations.Range;
 import org.ldp4j.rdf.bean.annotations.Unbound;
-import org.ldp4j.rdf.bean.annotations.CardinalityConstraint.CardinalityAdapter;
 
 public final class Constraints {
 
@@ -62,16 +61,11 @@ public final class Constraints {
 		 */
 		private static final long serialVersionUID = -8229664315206414875L;
 
-		private final Annotation constraint;
+		private final String constraint;
+		private final String member;
+
 		private final ArrayList<String> violations;
 
-		private final Class<?> memberDeclaringClass;
-
-		private final Class<? extends Member> memberType;
-
-		private final String memberName;
-
-		private final String memberModifiers;
 
 		public ConstraintViolationException(Annotation constraint, Member member, List<String> violations) {
 			this(message(constraint,member,violations),constraint,member,violations);
@@ -79,12 +73,9 @@ public final class Constraints {
 
 		public ConstraintViolationException(String message, Annotation constraint, Member member, List<String> violations) {
 			super(message);
-			this.constraint = constraint;
-			this.memberDeclaringClass=member.getDeclaringClass();
-			this.memberName=member.getName();
-			this.memberType=member.getClass();
-			this.memberModifiers=Modifier.toString(member.getModifiers());
-			this.violations = new ArrayList<String>(violations);
+			this.constraint = constraint.toString();
+			this.member=member.toString();
+			this.violations=new ArrayList<String>(violations);
 		}
 
 		private static String message(Annotation constraint, Member member, List<String> violations) {
@@ -97,28 +88,16 @@ public final class Constraints {
 			return result.toString();
 		}
 
-		public String getMemberName() {
-			return this.memberName;
+		public String getConstraint() {
+			return this.constraint;
 		}
 
-		public String getMemberModifiers() {
-			return this.memberModifiers;
-		}
-
-		public Class<?> getMemberDeclaringClass() {
-			return this.memberDeclaringClass;
-		}
-
-		public Class<?> getMemberType() {
-			return this.memberType;
+		public String getMember() {
+			return this.member;
 		}
 
 		public List<String> getViolations() {
 			return Collections.unmodifiableList(violations);
-		}
-
-		public Annotation getConstraint() {
-			return constraint;
 		}
 
 	}

@@ -39,19 +39,21 @@ import org.openrdf.model.URI;
 import org.openrdf.repository.Repository;
 import org.openrdf.repository.RepositoryConnection;
 import org.openrdf.repository.RepositoryException;
-import org.openrdf.rio.RDFFormat;
 import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.Rio;
 import org.openrdf.rio.UnsupportedRDFormatException;
 
 public final class SesameUtils {
 
-	private static final String COULD_NOT_REMOVE_CONTEXTS = "Could not remove contexts";
 	private static final String TURTLE_FORMAT_SHOULD_BE_SUPPORTED = "Turtle format should be supported";
 	private static final String COULD_NOT_SERIALIZE_CONTENTS = "Could not serialize contents";
 	private static final String COULD_NOT_CONNECT_TO_THE_REPOSITORY = "Could not connect to the repository";
 
 	private SesameUtils() {
+	}
+
+	private static Resource[] toArray(Collection<? extends Resource> ctxs) {
+		Objects.requireNonNull(ctxs, "Resources cannot be null");
+		return ctxs.toArray(new Resource[ctxs.size()]);
 	}
 
 	public static void close(RepositoryConnection connection) throws SesameRepositoryFailure {
@@ -77,51 +79,6 @@ public final class SesameUtils {
 		}
 	}
 
-	private static Resource[] toArray(Collection<? extends Resource> ctxs) {
-		Objects.requireNonNull(ctxs, "Resources cannot be null");
-		return ctxs.toArray(new Resource[ctxs.size()]);
-	}
-
-	public static String serialize(Repository repository, Resource target, Resource... contexts) throws SesameUtilsException {
-		RepositoryConnection connection=getConnection(repository);
-		try {
-			return serialize(connection,contexts);
-		} finally {
-			close(connection);
-		}
-	}
-
-	public static String serialize(Repository repository, Resource... contexts) throws SesameUtilsException {
-		RepositoryConnection connection=getConnection(repository);
-		try {
-			return serialize(connection,contexts);
-		} finally {
-			close(connection);
-		}
-	}
-
-	public static String serialize(Repository repository, Collection<? extends Resource> ctxs) throws SesameUtilsException {
-		return serialize(repository, toArray(ctxs));
-	}
-
-	public static <T> void load(Repository repository, T content, URI ctx) throws SesameUtilsException {
-		RepositoryConnection connection=getConnection(repository);
-		try {
-			load(connection, content, ctx);
-		} finally {
-			close(connection);
-		}
-	}
-
-	public static void remove(Repository repository, Resource... contexts) throws SesameRepositoryFailure {
-		RepositoryConnection connection=getConnection(repository);
-		try {
-			remove(connection, contexts);
-		} finally {
-			close(connection);
-		}
-	}
-
 	public static String prettyPrint(RepositoryConnection connection, Collection<? extends Resource> ctxs) throws SesameUtilsException {
 		return prettyPrint(connection,toArray(ctxs));
 	}
@@ -140,24 +97,6 @@ public final class SesameUtils {
 		}
 	}
 
-	public static String serialize(RepositoryConnection connection, Collection<? extends Resource> ctxs) throws SesameUtilsException {
-		return serialize(connection,toArray(ctxs));
-	}
-
-	public static String serialize(RepositoryConnection connection, Resource... contexts) throws SesameUtilsException {
-		try {
-			StringWriter writer = new StringWriter();
-			connection.export(Rio.createWriter(RDFFormat.TURTLE, writer), contexts);
-			return writer.toString();
-		} catch (RepositoryException e) {
-			throw new SesameRepositoryFailure(COULD_NOT_SERIALIZE_CONTENTS, e);
-		} catch (RDFHandlerException e) {
-			throw new SesameUtilsAssertionError(COULD_NOT_SERIALIZE_CONTENTS,e);
-		} catch (UnsupportedRDFormatException e) {
-			throw new SesameUtilsAssertionError(TURTLE_FORMAT_SHOULD_BE_SUPPORTED,e);
-		}
-	}
-
 	public static <T> void loadSource(RepositoryConnection connection, String base, Source<T> content, URI ctx) throws SesameUtilsException {
 		new ContentLoader(connection, base, ctx).process(content);
 	}
@@ -169,14 +108,6 @@ public final class SesameUtils {
 	public static <T> void load(RepositoryConnection connection, T content, URI ctx) throws SesameUtilsException {
 		Objects.requireNonNull(ctx, "Context URI cannot be null");
 		loadSource(connection,ctx.toString(),SourceFactory.create(content,Metadata.DEFAULT),ctx);
-	}
-
-	public static void remove(RepositoryConnection connection, Resource... contexts) throws SesameRepositoryFailure {
-		try {
-			connection.clear(contexts);
-		} catch (RepositoryException e) {
-			throw new SesameRepositoryFailure(COULD_NOT_REMOVE_CONTEXTS,e);
-		}
 	}
 
 }

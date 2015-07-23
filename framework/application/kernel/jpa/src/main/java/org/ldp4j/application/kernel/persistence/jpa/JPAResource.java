@@ -104,7 +104,7 @@ class JPAResource extends AbstractJPAResource implements Resource {
 	@Override
 	protected void init() {
 		ResourceTemplate template = super.getTemplate(this.id);
-		Set<? extends AttachedTemplate> attachedTemplates = template.attachedTemplates();
+		Set<AttachedTemplate> attachedTemplates = template.attachedTemplates();
 		if(!attachedTemplates.isEmpty() && this.attachments.isEmpty()) {
 			for(AttachedTemplate attachedTemplate:attachedTemplates) {
 				JPAAttachment newAttachment = new JPAAttachment(attachedTemplate.id());

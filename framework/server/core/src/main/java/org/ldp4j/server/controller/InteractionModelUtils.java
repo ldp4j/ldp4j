@@ -52,18 +52,22 @@ final class InteractionModelUtils {
 		try {
 			Link link = Link.valueOf(strLink);
 			if(link.getRel().equals(INTERACTION_MODEL_LINK_REL)) {
-				URI uri = link.getUri();
-				for(InteractionModel interactionModel:InteractionModel.values()) {
-					if(uri.equals(interactionModel.asURI())) {
-						result=interactionModel;
-						break;
-					}
-				}
+				result=toInteractionModel(link.getUri());
 			}
 		} catch (IllegalArgumentException e) {
 			LOGGER.trace("Could not parse link '"+strLink+"'",e);
 		}
 		return result;
+	}
+
+	private static InteractionModel toInteractionModel(URI uri) {
+		for(InteractionModel interactionModel:InteractionModel.values()) {
+			if(uri.equals(interactionModel.asURI())) {
+				return interactionModel;
+			}
+		}
+		LOGGER.warn("Did not understand interaction model '{}'",uri);
+		return null;
 	}
 
 }

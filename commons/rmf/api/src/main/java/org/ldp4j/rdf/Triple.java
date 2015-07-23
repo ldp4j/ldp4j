@@ -54,21 +54,13 @@ public final class Triple implements Comparable<Triple> {
 
 	@Override
 	public final int hashCode() {
-		final int prime = 31;
-		int result = 19;
-		result = prime * result + subject.hashCode();
-		result = prime * result + predicate.hashCode();
-		result = prime * result + object.hashCode();
-		return result;
+		return Objects.hash(this.subject,this.predicate,this.object);
 	}
 
 	@Override
 	public final boolean equals(Object obj) {
-		if(this==obj) {
-			return true;
-		}
-		boolean result=false;
-		if(obj instanceof Triple) {
+		boolean result=this==obj;
+		if(!result && obj instanceof Triple) {
 			Triple that=(Triple)obj;
 			result=
 				Objects.equals(this.subject, that.subject) &&

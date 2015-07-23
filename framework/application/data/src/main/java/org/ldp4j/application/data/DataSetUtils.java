@@ -26,18 +26,10 @@
  */
 package org.ldp4j.application.data;
 
-import java.io.Serializable;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.atomic.AtomicBoolean;
-
-import com.google.common.base.Preconditions;
 
 public final class DataSetUtils {
-
-	private static final String LITERAL_DATATYPE_CANNOT_BE_NULL = "Literal datatype cannot be null";
-	private static final String LITERAL_VALUE_CANNOT_BE_NULL = "Literal value cannot be null";
 
 	private DataSetUtils() {
 	}
@@ -51,124 +43,12 @@ public final class DataSetUtils {
 		return false;
 	}
 
-	/**
-	 * Merge the individuals of the source dataset in the target dataset
-	 *
-	 * @deprecated
-	 * @param source
-	 *            The dataset which defines the individuals to be merged
-	 * @param target
-	 *            The dataset in which the individuals will be merged
-	 */
-	@Deprecated
-	public static void merge(DataSet source, DataSet target) {
-		DataSets.merge(source, target);
-
-	}
-
-	/**
-	 * Merge the properties of the source individual in the target individual
-	 *
-	 * @deprecated
-	 * @param source
-	 *            The individual which defines the properties to be merged
-	 * @param target
-	 *            The individual in which the properties will be merged
-	 */
-	@Deprecated
-	public static void merge(Individual<?,?> source, Individual<?,?> target) {
-		Individuals.merge(source, target);
-	}
-
-	/**
-	 * Remove the individuals of the source dataset from a target dataset
-	 *
-	 * @deprecated
-	 * @param source
-	 *            The dataset which defines the individuals to be removed
-	 * @param target
-	 *            The dataset whose individuals will be removed
-	 */
-	@Deprecated
-	public static void remove(DataSet source, DataSet target) {
-		DataSets.remove(source, target);
-	}
-
-	/**
-	 * Remove the content properties of the source individual from a target
-	 * individual
-	 *
-	 * @deprecated
-	 * @param source
-	 *            The individual which defines the properties to be removed
-	 * @param target
-	 *            The individual whose properties will be removed
-	 */
-	@Deprecated
-	public static void remove(Individual<?,?> source, final Individual<?,?> target) {
-		Individuals.remove(source, target);
-	}
-
-	/**
-	 * Create a new literal
-	 * @deprecated
-	 * @param value The value for the literal
-	 * @return A literal wrapping the specified value
-	 */
-	@Deprecated
-	public static <T extends Serializable> Literal<T> newLiteral(T value) {
-		Preconditions.checkNotNull(value,LITERAL_VALUE_CANNOT_BE_NULL);
-		return new ImmutableLiteral<T>(value);
-	}
-
-	/**
-	 * Create a new typed literal
-	 * @deprecated
-	 * @param value The value for the literal
-	 * @param datatype The datatype of the literal
-	 * @return A typed literal wrapping the specified value
-	 */
-	@Deprecated
-	public static <T extends Serializable> TypedLiteral<T> newTypedLiteral(T value, URI datatype) {
-		Preconditions.checkNotNull(value,LITERAL_VALUE_CANNOT_BE_NULL);
-		Preconditions.checkNotNull(datatype,LITERAL_DATATYPE_CANNOT_BE_NULL);
-		return new ImmutableTypedLiteral<T>(value,datatype);
-	}
-
-	/**
-	 * Create a new language literal
-	 * @deprecated
-	 * @param value The value for the literal
-	 * @param language The language in which the value is defined
-	 * @return A language literal wrapping the specified value
-	 */
-	@Deprecated
-	public static LanguageLiteral newLanguageLiteral(String value, String language) {
-		return Literals.newLanguageLiteral(value, language);
-	}
-
-	/**
-	 * @deprecated
-	 */
-	@Deprecated
-	public static boolean hasLiteral(Literal<?> literal, Property property) {
-		return property.hasLiteralValue(literal);
-	}
-
 	public static boolean hasLiteral(Literal<?> literal, Value... values) {
 		return hasLiteral(literal,Arrays.asList(values));
 	}
 
 	public static boolean hasLiteral(Literal<?> literal, Collection<? extends Value> values) {
 		return hasValue(new LiteralMatcher(literal),values);
-	}
-
-	/**
-	 * @deprecated
-	 */
-	@Deprecated
-	public static boolean hasIdentifiedIndividual(Object id, Property property) {
-		return property.hasIdentifiedIndividual(id);
 	}
 
 	public static boolean hasIdentifiedIndividual(Object id, Value... values) {
@@ -188,18 +68,23 @@ public final class DataSetUtils {
 	}
 
 	public static boolean hasValue(Value value, final Collection<? extends Value> values) {
-		final AtomicBoolean found=new AtomicBoolean(false);
-		value.accept(new ValueVisitor() {
+		final class ValueFinder implements ValueVisitor {
+
+			private boolean found=false;
+
 			@Override
 			public void visitLiteral(Literal<?> value) {
-				found.set(hasLiteral(value, values));
+				this.found=hasLiteral(value, values);
 			}
+
 			@Override
 			public void visitIndividual(Individual<?, ?> value) {
-				found.set(hasIdentifiedIndividual(value.id(), values));
+				this.found=hasIdentifiedIndividual(value.id(), values);
 			}
-		});
-		return found.get();
+		}
+		ValueFinder finder=new ValueFinder();
+		value.accept(finder);
+		return finder.found;
 	}
 
 	public static DataSetHelper newHelper(DataSet dataSet) {

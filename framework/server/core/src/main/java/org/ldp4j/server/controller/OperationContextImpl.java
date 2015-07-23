@@ -259,7 +259,7 @@ final class OperationContextImpl implements OperationContext {
 		Date lastModified=this.resource.lastModified();
 		if(HttpMethod.PUT.equals(this.method)) {
 			List<String> requestHeader = this.headers.getRequestHeader(HttpHeaders.IF_MATCH);
-			if((requestHeader==null || requestHeader.isEmpty())) {
+			if(requestHeader==null || requestHeader.isEmpty()) {
 				throw new PreconditionRequiredException(this.resource);
 			}
 		}

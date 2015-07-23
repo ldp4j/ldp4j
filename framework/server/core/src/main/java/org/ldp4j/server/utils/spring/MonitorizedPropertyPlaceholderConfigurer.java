@@ -56,12 +56,13 @@ public class MonitorizedPropertyPlaceholderConfigurer extends PropertyPlaceholde
 		return moduleName;
 	}
 
+	// TODO: Enable selecting where the configuration should be logged to: System.out or a Logger
 	@Override
 	protected Properties mergeProperties() throws IOException {
 		Properties result = super.mergeProperties();
 		if(canShowConfiguration(getModuleName())) {
 			table.setProperties(result);
-			table.dump(System.out);
+			table.dump(System.out); // NOSONAR
 		}
 		return result;
 	}

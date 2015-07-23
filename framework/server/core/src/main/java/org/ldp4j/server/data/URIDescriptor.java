@@ -26,6 +26,8 @@
  */
 package org.ldp4j.server.data;
 
+import java.util.Objects;
+
 import com.google.common.base.MoreObjects;
 
 final class URIDescriptor {
@@ -89,32 +91,19 @@ final class URIDescriptor {
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + scope.hashCode();
-		result = prime * result + type.hashCode();
-		return result;
+		return Objects.hash(this.scope,this.type);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
+		boolean result=this==obj;
+		if(!result && obj instanceof URIDescriptor) {
+			URIDescriptor that=(URIDescriptor)obj;
+			result=
+				Objects.equals(this.scope,that.scope) &&
+				Objects.equals(this.type,that.type);
 		}
-		if (obj == null) {
-			return false;
-		}
-		if (!(obj instanceof URIDescriptor)) {
-			return false;
-		}
-		URIDescriptor other = (URIDescriptor) obj;
-		if (scope != other.scope) {
-			return false;
-		}
-		if (type != other.type) {
-			return false;
-		}
-		return true;
+		return result;
 	}
 
 	@Override

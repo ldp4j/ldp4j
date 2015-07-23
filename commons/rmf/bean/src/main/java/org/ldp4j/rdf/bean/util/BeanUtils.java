@@ -40,14 +40,26 @@ public final class BeanUtils {
 	}
 
 	public static boolean isGetter(Method method) {
-		String name = method.getName();
 		return
-			(Modifier.isPublic(method.getModifiers())) &&
-			(method.getParameterTypes().length==0) &&
-			(
-				(name.startsWith("get") && name.length()>3) ||
-				(name.startsWith("is") && name.length()>2 && method.getReturnType()==Boolean.TYPE)
-			);
+			Modifier.isPublic(method.getModifiers()) &&
+			method.getParameterTypes().length==0 &&
+			isProperlyDefined(method);
+	}
+
+	private static boolean isProperlyDefined(Method method) {
+		return
+			isNonBooleanGetter(method) ||
+			isBooleanGetter(method);
+	}
+
+	private static boolean isBooleanGetter(Method method) {
+		String name = method.getName();
+		return name.startsWith("is") && name.length()>2 && method.getReturnType()==Boolean.TYPE;
+	}
+
+	private static boolean isNonBooleanGetter(Method method) {
+		String name = method.getName();
+		return name.startsWith("get") && name.length()>3 && method.getReturnType()!=Void.TYPE;
 	}
 
 	public static Method getSetter(Method getter) {

@@ -62,8 +62,8 @@ final class EnumerationHelper<S> {
 
 	private Set<S> getValues(Set<String> names) {
 		Set<S> tmp=new HashSet<S>();
-		for(String name:names) {
-			tmp.add(valueOf(name));
+		for(String aName:names) {
+			tmp.add(valueOf(aName));
 		}
 		return Collections.unmodifiableSet(tmp);
 	}
@@ -118,7 +118,6 @@ final class EnumerationHelper<S> {
 		return new EnumerationHelper<S>(names, clazz,toName,fromName);
 	}
 
-	@SuppressWarnings("unchecked")
 	private static Set<String> getNames(Class<?> clazz, List<String> violations) {
 		Set<String> result = Collections.emptySet();
 		try {
@@ -131,24 +130,36 @@ final class EnumerationHelper<S> {
 				if(!(returnType instanceof ParameterizedType)) {
 					violations.add(NAMES_METHOD_VIOLATION+returnType);
 				} else {
-					ParameterizedType pt=(ParameterizedType)returnType;
-					if(!Set.class.isAssignableFrom((Class<?>)pt.getRawType())) {
-						violations.add(NAMES_METHOD_VIOLATION+returnType);
-					} else {
-						Type type = pt.getActualTypeArguments()[0];
-						if(type != String.class) {
-							violations.add(NAMES_METHOD_VIOLATION+returnType);
-						} else {
-							result=Collections.unmodifiableSet(new HashSet<String>((Set<String>)method.invoke(null)));
-						}
-					}
+					Set<String> tmp=getNames(violations, method, (ParameterizedType)returnType);
+					result=
+						Collections.
+							unmodifiableSet(
+								new HashSet<String>(tmp));
 				}
 			}
 		} catch (NoSuchMethodException e) {
 			violations.add("Method public static Set<String> names() is not defined");
 			LOGGER.trace("Method public Set<String> names() is not defined for class {}",clazz.getName(),e);
+		}
+		return result;
+	}
+
+	private static Set<String> getNames(List<String> violations, Method method, ParameterizedType returnType) {
+		if(!Set.class.isAssignableFrom((Class<?>)returnType.getRawType()) || returnType.getActualTypeArguments()[0]!=String.class) {
+			violations.add(NAMES_METHOD_VIOLATION+returnType);
+			return Collections.<String>emptySet();
+		}
+		return invokeMethod(violations, method);
+	}
+
+	@SuppressWarnings("unchecked")
+	private static Set<String> invokeMethod(List<String> violations, Method method) {
+		Set<String> result=Collections.<String>emptySet();
+		try {
+			result=(Set<String>)method.invoke(null);
 		} catch (Exception e) {
-			throw new IllegalStateException(e);
+			violations.add("Invocation of method public static Set<String> names() failed ("+e.getMessage()+")");
+			LOGGER.trace("Invocation of method public Set<String> names() of class {} failed. Full stacktrace follows",method.getDeclaringClass().getName(),e);
 		}
 		return result;
 	}

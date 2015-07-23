@@ -28,6 +28,7 @@ package org.ldp4j.net;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -100,22 +101,12 @@ public final class Path {
 	}
 
 	private String normalizePath(String[] segments, String file) {
-		LinkedList<String> buffer=new LinkedList<String>();
+		Deque<String> buffer=new LinkedList<String>();
 		for(String segment:segments) {
 			if(segment.equals(CURRENT)) {
 				// do nothing
 			} else if(segment.equals(PARENT)) {
-				if(!buffer.isEmpty()) {
-					if(buffer.peekLast().equals(segment)) {
-						buffer.addLast(segment);
-					} else if(buffer.peekLast().isEmpty()){
-						buffer.addLast(segment);
-					} else {
-						buffer.removeLast();
-					}
-				} else {
-					buffer.addLast(segment);
-				}
+				processParentSegment(buffer);
 			} else {
 				buffer.addLast(segment);
 			}
@@ -123,7 +114,21 @@ public final class Path {
 		return assemblePath(buffer, file);
 	}
 
-	private String assemblePath(List<String> segments, String file) {
+	private void processParentSegment(Deque<String> buffer) {
+		if(!buffer.isEmpty()) {
+			if(buffer.peekLast().equals(PARENT)) {
+				buffer.addLast(PARENT);
+			} else if(buffer.peekLast().isEmpty()){
+				buffer.addLast(PARENT);
+			} else {
+				buffer.removeLast();
+			}
+		} else {
+			buffer.addLast(PARENT);
+		}
+	}
+
+	private String assemblePath(Deque<String> segments, String file) {
 		StringBuilder builder=new StringBuilder();
 		for(Iterator<String> it=segments.iterator();it.hasNext();) {
 			String segment=it.next();
@@ -302,7 +307,7 @@ public final class Path {
 
 		// For each different segment of the base path, add '..' to the
 		// segments of the relative path
-		LinkedList<String> buffer=new LinkedList<String>();
+		Deque<String> buffer=new LinkedList<String>();
 		for(int i=commonSegments;i<nBaseSegments.length;i++) {
 			buffer.add(PARENT);
 		}

@@ -65,28 +65,32 @@ final class PropertyScanner {
 		}
 
 		private void scanMethods() {
-			LOGGER.trace("- Class: "+clazz.getCanonicalName());
-			for(Method method:clazz.getMethods()) {
-				Class<?> declaringClass = method.getDeclaringClass();
-				if(declaringClass!=Object.class) {
-					LOGGER.trace("\t+ Method: "+method.getName());
-					LOGGER.trace("\t\t- Declaring class: "+declaringClass.getCanonicalName());
-					LOGGER.trace("\t\t- Local: "+(clazz==declaringClass));
-					LOGGER.trace("\t\t- Return: "+method.getReturnType().getCanonicalName()+" ("+TypeUtils.toString(method.getGenericReturnType())+")");
-				}
-			}
+			LOGGER.trace("- Class: {}",clazz.getCanonicalName());
 			for(Method method:clazz.getDeclaredMethods()) {
-				if(factory.isAnnotated(method)) {
-					try {
-						Property property = factory.createDefinition(method);
-						if(LOGGER.isTraceEnabled()) {
-							LOGGER.trace("Created property: "+property);
-						}
-						definitions.add(property);
-					} catch(InvalidDefinitionException e) {
-						addViolation(method, e);
+				if(LOGGER.isTraceEnabled()) {
+					Class<?> declaringClass = method.getDeclaringClass();
+					if(declaringClass!=Object.class) {
+						LOGGER.trace("\t+ Method: {}",method.getName());
+						LOGGER.trace("\t\t- Declaring class: {}",declaringClass.getCanonicalName());
+						LOGGER.trace("\t\t- Local: {}",clazz==declaringClass);
+						LOGGER.trace("\t\t- Return: {} ({})",method.getReturnType().getCanonicalName(),TypeUtils.toString(method.getGenericReturnType()));
 					}
 				}
+				if(factory.isAnnotated(method)) {
+					scanMethod(method);
+				}
+			}
+		}
+
+		private void scanMethod(Method method) {
+			try {
+				Property property = factory.createDefinition(method);
+				if(LOGGER.isTraceEnabled()) {
+					LOGGER.trace("Created property: "+property);
+				}
+				definitions.add(property);
+			} catch(InvalidDefinitionException e) {
+				addViolation(method, e);
 			}
 		}
 
@@ -105,16 +109,20 @@ final class PropertyScanner {
 			for(Field field:clazz.getDeclaredFields()) {
 				makeAccessible(field);
 				if(factory.isAnnotated(field)) {
-					try {
-						Property property = factory.createDefinition(field);
-						if(LOGGER.isTraceEnabled()) {
-							LOGGER.trace("Created property: "+property);
-						}
-						definitions.add(property);
-					} catch(InvalidDefinitionException e) {
-						addViolation(field, e);
-					}
+					scanField(field);
 				}
+			}
+		}
+
+		private void scanField(Field field) {
+			try {
+				Property property = factory.createDefinition(field);
+				if(LOGGER.isTraceEnabled()) {
+					LOGGER.trace("Created property: "+property);
+				}
+				definitions.add(property);
+			} catch(InvalidDefinitionException e) {
+				addViolation(field, e);
 			}
 		}
 

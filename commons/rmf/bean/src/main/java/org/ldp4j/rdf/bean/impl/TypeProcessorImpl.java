@@ -53,14 +53,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class TypeProcessorImpl<T> implements TypeProcessor<T> {
-	
+
 	private static final class UnmarshallingSession {
 
 		private final Map<Integer,Object> r2o=new HashMap<Integer, Object>();
 		private final TripleSet triples;
 		private final TypeManager manager;
 		private final Graph graph;
-		
+
 		private UnmarshallingSession(TypeManager manager, TripleSet triples) {
 			this.manager = manager;
 			this.triples = triples;
@@ -69,12 +69,12 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 				LOGGER.trace("Created unmarshalling session for: \n"+graph);
 			}
 		}
-		
+
 		private <T> Unmarshaller<T> newUnmarshaller(Class<? extends T> clazz) {
 			List<Type> types = manager.getTypes(clazz);
 			return new Unmarshaller<T>(clazz,types,this);
 		}
-		
+
 		private TripleSet getTriples() {
 			return triples;
 		}
@@ -100,25 +100,25 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 		}
 
 	}
-	
+
 	private static class Unmarshaller<T> {
-	
+
 		private interface ValueProcessor<T> {
-			
+
 			List<T> getValues(Property property);
-			
+
 			<S> S processValue(T value, Class<? extends S> clazz);
-			
+
 		}
 
 		private class ObjectProcessor implements ValueProcessor<Individual> {
-		
+
 			private final Individual individual;
-		
+
 			private ObjectProcessor(Individual individual) {
 				this.individual = individual;
 			}
-		
+
 			@Override
 			public List<Individual> getValues(Property property) {
 				List<Individual> links=new ArrayList<Individual>();
@@ -127,12 +127,12 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 				}
 				return links;
 			}
-			
+
 			@Override
 			public <S> S processValue(Individual value, Class<? extends S> clazz) {
 				return resolve(value,clazz,this.individual.getIdentity());
 			}
-		
+
 			private <S> S resolve(Individual individual, Class<? extends S> type, Resource<?> source) {
 				S bean = session.resolve(type, individual.getIdentity());
 				if(bean==null) {
@@ -143,17 +143,17 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 				}
 				return bean;
 			}
-		
+
 		}
 
 		private static class LiteralProcessor implements ValueProcessor<Object> {
-		
+
 			private final Individual individual;
-		
+
 			private LiteralProcessor(Individual individual) {
 				this.individual = individual;
 			}
-		
+
 			@Override
 			public List<Object> getValues(Property property) {
 				List<Object> links=new ArrayList<Object>();
@@ -162,7 +162,7 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 				}
 				return links;
 			}
-			
+
 			@Override
 			public <S> S processValue(Object value, Class<? extends S> clazz) {
 				if(!clazz.isAssignableFrom(value.getClass())) {
@@ -170,19 +170,19 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 				}
 				return clazz.cast(value);
 			}
-		
+
 		}
 
 		private final Class<? extends T> clazz;
 		private final UnmarshallingSession session;
 		private List<Type> types;
-	
+
 		Unmarshaller(Class<? extends T> clazz, List<Type> types, UnmarshallingSession session) {
 			this.clazz=clazz;
 			this.types=types;
 			this.session = session;
 		}
-	
+
 		T unmarshall(Resource<?> identity) {
 			T result=session.resolve(clazz, identity);
 			if(result!=null) {
@@ -192,7 +192,7 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 			if(individual==null) {
 				return result;
 			}
-	
+
 			try {
 				log("Started unmarshalling of resource '%s' with %s...",identity,types);
 				// TODO: Need to see what to do with enumerations...
@@ -201,13 +201,7 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 				log("Registered object '%s' for resource '%s'",result,identity);
 				for(Type type:types) {
 					for(Property property:type.getProperties()) {
-						ValueProcessor<?> processor=null;
-						if(property.getRange().isLiteral()) {
-							processor=new LiteralProcessor(individual);
-						} else {
-							processor=new ObjectProcessor(individual);
-						}
-						populateProperty(property,processor,result);
+						populateProperty(property,createProcessor(individual, property),result);
 					}
 				}
 				log("Completed unmarshalling of resource '%s'.",identity);
@@ -218,15 +212,31 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 				throw new IllegalStateException(e);
 			}
 		}
-	
-		<S> Set<S> newSet(Class<? extends S> type) {
+
+		private ValueProcessor<?> createProcessor(Individual individual, Property property) {
+			ValueProcessor<?> processor=null;
+			if(property.getRange().isLiteral()) {
+				processor=new LiteralProcessor(individual);
+			} else {
+				processor=new ObjectProcessor(individual);
+			}
+			return processor;
+		}
+
+		/**
+		 * Just for type safety
+		 */
+		private <S> Set<S> newSet(Class<? extends S> type) { // NOSONAR
 			return new HashSet<S>();
 		}
-	
-		<S> List<S> newList(Class<? extends S> type) {
+
+		/**
+		 * Just for type safety
+		 */
+		private <S> List<S> newList(Class<? extends S> type) { // NOSONAR
 			return new ArrayList<S>();
 		}
-		
+
 		private <S> void populateProperty(Property property, ValueProcessor<S> handler, T target) {
 			List<S> values=handler.getValues(property);
 			int max=enforceCardinalityRestrictions(property,values);
@@ -250,7 +260,7 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 			}
 		}
 
-		
+
 		private static URIRef predicate(Property property) {
 			return RDFModelDSL.uriRef(property.getNamespace()+property.getName());
 		}
@@ -275,7 +285,7 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 		private final Map<Integer,Resource<?>> o2r=new HashMap<Integer, Resource<?>>();
 		private final TripleSet triples;
 		private final TypeManager manager;
-		
+
 		private MarshallingSession(NamingPolicy policy, TypeManager manager) {
 			this.policy=policy;
 			this.manager=manager;
@@ -304,25 +314,25 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 		private void addTriple(Resource<?> subject, URIRef predicate, Node object) {
 			triples.add(subject, predicate, object);
 		}
-		
+
 		private TripleSet getTriples() {
 			return triples;
 		}
-		
-	}	
-	
+
+	}
+
 	private static class Marshaller<T> {
-		
-		private static enum PropertyType {
+
+		private enum PropertyType {
 			LITERAL("datatype"),
 			OBJECT("object"),
 			;
 			private final String description;
-		
+
 			PropertyType(String description) {
 				this.description = description;
 			}
-		
+
 			@Override
 			public String toString() {
 				return description;
@@ -344,7 +354,7 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 		private void logTriple(Object subject, Object predicate, Object object) {
 			log("-> Triple {%08X, %s, %s}",System.identityHashCode(subject),predicate,object);
 		}
-		
+
 		private Collection<?> getValues(Property property) {
 			Object value = property.getValue(source);
 			Collection<?> values=null;
@@ -386,7 +396,7 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 			}
 			return identity;
 		}
-		
+
 		void marshall() {
 			Resource<?> subject=session.lookup(source);
 			if(subject!=null) {
@@ -435,13 +445,13 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 		this.clazz = clazz;
 		this.registry = registry;
 	}
-	
+
 	private static void log(String format, Object... args) {
 		if(LOGGER.isDebugEnabled()) {
 			LOGGER.debug(String.format(format,args));
 		}
 	}
-	
+
 	@Override
 	public TripleSet deflate(T o, NamingPolicy policy) {
 		TransactionalTypeRegistry savepoint=registry.setSavepoint();
@@ -457,7 +467,7 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 			throw e;
 		}
 	}
-	
+
 	@Override
 	public T inflate(Resource<?> identity, TripleSet triples) {
 		TransactionalTypeRegistry savepoint=registry.setSavepoint();
@@ -472,5 +482,5 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 			throw e;
 		}
 	}
-	
+
 }

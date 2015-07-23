@@ -148,6 +148,12 @@ final class ExistingEndpointController implements EndpointController {
 			return response;
 		}
 
+		return handleRetrieval(context, includeEntity, variant);
+
+	}
+
+
+	private Response handleRetrieval(OperationContext context, boolean includeEntity, Variant variant) {
 		try {
 			PublicResource resource=context.resource();
 			ContentPreferences preferences=
@@ -187,7 +193,6 @@ final class ExistingEndpointController implements EndpointController {
 		} catch (ApplicationContextException e) {
 			return processRuntimeException(context, e);
 		}
-
 	}
 
 	private String serialize(OperationContext context, Variant variant, DataSet entity, Namespaces namespaces) {
@@ -198,22 +203,11 @@ final class ExistingEndpointController implements EndpointController {
 		if(!context.isQuery()) {
 			return null;
 		}
+		Response response=null;
 		List<String> allParameters = context.getQueryParameters();
 		if(allParameters.contains(CONSTRAINT_QUERY_PARAMETER)) {
 			if(allParameters.size()==1) {
-				List<String> constraintIds=context.getQueryParameterValues(CONSTRAINT_QUERY_PARAMETER);
-				if(constraintIds.size()==1) {
-					return processConstraintReportRetrieval(context,includeEntity,variant,constraintIds.get(0));
-				} else {
-					ResponseBuilder builder=
-						Response.
-							status(Status.BAD_REQUEST).
-							type(MediaType.TEXT_PLAIN).
-							language(Locale.ENGLISH).
-							entity("Only one constraint identifier allowed");
-					addRequiredHeaders(context, builder);
-					return builder.build();
-				}
+				response=processConstraintReportRetrieval(context,includeEntity,variant);
 			} else {
 				ResponseBuilder builder=
 						Response.
@@ -222,13 +216,36 @@ final class ExistingEndpointController implements EndpointController {
 							language(Locale.ENGLISH).
 							entity("Mixed queries not allowed");
 				addRequiredHeaders(context, builder);
-				return builder.build();
+				response=builder.build();
 			}
 		} else {
-			return processQuery(context,includeEntity,variant);
+			response=processQuery(context,includeEntity,variant);
 		}
+		return response;
 	}
 
+
+	private Response processConstraintReportRetrieval(OperationContext context, boolean includeEntity, Variant variant) {
+		List<String> constraintIds=context.getQueryParameterValues(CONSTRAINT_QUERY_PARAMETER);
+		Response response=null;
+		if(constraintIds.size()==1) {
+			response=processConstraintReportRetrieval(context,includeEntity,variant,constraintIds.get(0));
+		} else {
+			ResponseBuilder builder=
+				Response.
+					status(Status.BAD_REQUEST).
+					type(MediaType.TEXT_PLAIN).
+					language(Locale.ENGLISH).
+					entity("Only one constraint identifier allowed");
+			addRequiredHeaders(context, builder);
+			response=builder.build();
+		}
+		return response;
+	}
+
+	/**
+	 * TODO: Decouple processing whenever the support for queries is available
+	 */
 	private Response processQuery(OperationContext context, boolean includeEntity, Variant variant) {
 		if(LOGGER.isDebugEnabled()) {
 			LOGGER.debug("Executing query: ");
@@ -236,46 +253,7 @@ final class ExistingEndpointController implements EndpointController {
 				LOGGER.debug("  - {} : {}",parameter,context.getQueryParameterValues(parameter));
 			}
 		}
-		try {
-			PublicResource resource=context.resource();
-			ContentPreferences preferences=
-					context.contentPreferences();
-			boolean hasPreferences=preferences!=null;
-			if(!hasPreferences) {
-				preferences=ContentPreferences.defaultPreferences();
-			}
-			if(LOGGER.isDebugEnabled()) {
-				if(hasPreferences) {
-					LOGGER.debug("Using preferences: {}",preferences);
-				} else {
-					LOGGER.debug("No preferences specified");
-				}
-			}
-			// TODO: Update with actual query functionality when available
-			DataSet entity=resource.entity(preferences);
-
-			LOGGER.trace("Data set to serialize: \n {}",entity);
-
-			String body=serialize(context, variant, entity, NamespacesHelper.resourceNamespaces(context.applicationNamespaces()));
-
-			ResponseBuilder builder=Response.serverError();
-			builder.variant(variant);
-			if(hasPreferences) {
-				builder.header(ContentPreferencesUtils.PREFERENCE_APPLIED_HEADER,ContentPreferencesUtils.asPreferenceAppliedHeader(preferences));
-			}
-			addOptionsMandatoryHeaders(context, builder);
-			builder.
-				status(Status.OK.getStatusCode()).
-				header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
-			if(includeEntity) {
-				builder.entity(body);
-			}
-			return builder.build();
-		} catch (ApplicationExecutionException e) {
-			return processExecutionException(context, e);
-		} catch (ApplicationContextException e) {
-			return processRuntimeException(context, e);
-		}
+		return handleRetrieval(context, includeEntity, variant);
 	}
 
 	private Response processConstraintReportRetrieval(OperationContext context, boolean includeEntity, Variant variant, String constraintReportId) {

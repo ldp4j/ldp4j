@@ -119,7 +119,7 @@ public abstract class AbstractMutableTemplate<T extends ResourceHandler> impleme
 	 * {@inheritDoc}
 	 */
 	@Override
-	public Set<? extends AttachedTemplate> attachedTemplates() {
+	public Set<AttachedTemplate> attachedTemplates() {
 		return Collections.unmodifiableSet(new LinkedHashSet<AttachedTemplate>(attachments.values()));
 	}
 

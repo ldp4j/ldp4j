@@ -94,7 +94,7 @@ final class ImmutableTemplateFactory {
 		}
 
 		@Override
-		public Set<? extends AttachedTemplate> attachedTemplates() {
+		public Set<AttachedTemplate> attachedTemplates() {
 			return this.template.attachedTemplates();
 		}
 

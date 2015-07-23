@@ -200,6 +200,51 @@ final class RDFModelParser {
 	}
 
 	private static final class ParserBasedTripleProducer implements TripleProducer {
+
+		private static final class Collector implements RDFHandler {
+
+			private final List<Statement> statements;
+			private final Namespaces namespaces;
+
+			private Collector() {
+				this.namespaces = new Namespaces();
+				this.statements=new ArrayList<Statement>();
+			}
+
+			@Override
+			public void startRDF() throws RDFHandlerException {
+				// Nothing to do
+			}
+
+			@Override
+			public void endRDF() throws RDFHandlerException {
+				// Nothing to do
+			}
+
+			@Override
+			public void handleNamespace(String prefix, String uri) throws RDFHandlerException {
+				this.getNamespaces().addPrefix(prefix,uri);
+			}
+
+			@Override
+			public void handleStatement(Statement st) throws RDFHandlerException {
+				this.getStatements().add(st);
+			}
+
+			@Override
+			public void handleComment(String comment) throws RDFHandlerException {
+				// Nothing to do
+			}
+
+			Namespaces getNamespaces() {
+				return this.namespaces;
+			}
+
+			List<Statement> getStatements() {
+				return this.statements;
+			}
+		}
+
 		private final String content;
 		private final RDFFormat format;
 		private final String base;
@@ -213,37 +258,12 @@ final class RDFModelParser {
 		@Override
 		public void injectTriples(TripleSink sink) throws IOException {
 			try {
-				final Namespaces namespaces = new Namespaces();
-				final List<Statement> statements=new ArrayList<Statement>();
-				RDFParser parser =
-					Rio.createParser(this.format);
-						parser.setRDFHandler(
-							new RDFHandler() {
-								@Override
-								public void startRDF() throws RDFHandlerException {
-									// Nothing to do
-								}
-								@Override
-								public void endRDF() throws RDFHandlerException {
-									// Nothing to do
-								}
-								@Override
-								public void handleNamespace(String prefix, String uri) throws RDFHandlerException {
-									namespaces.addPrefix(prefix,uri);
-								}
-								@Override
-								public void handleStatement(Statement st) throws RDFHandlerException {
-									statements.add(st);
-								}
-								@Override
-								public void handleComment(String comment) throws RDFHandlerException {
-									// Nothing to do
-								}
-							}
-						);
+				Collector collector = new Collector();
+				RDFParser parser =Rio.createParser(this.format);
+				parser.setRDFHandler(collector);
 				parser.parse(new StringReader(this.content), this.base);
-				SesameModelParser tripleParser=new SesameModelParser(namespaces);
-				for(Statement st:statements) {
+				SesameModelParser tripleParser=new SesameModelParser(collector.getNamespaces());
+				for(Statement st:collector.getStatements()) {
 					sink.addTriple(tripleParser.parseStatement(st));
 				}
 			} catch (OpenRDFException e) {

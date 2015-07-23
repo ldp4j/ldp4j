@@ -35,11 +35,11 @@ import com.google.common.base.Optional;
 public interface ResourceTemplate extends Iterable<AttachedTemplate> {
 
 	String id();
-	
+
 	Class<? extends ResourceHandler> handlerClass();
-	
+
 	Optional<String> name();
-	
+
 	Optional<String> description();
 
 	void accept(TemplateVisitor visitor);
@@ -47,7 +47,7 @@ public interface ResourceTemplate extends Iterable<AttachedTemplate> {
 	Set<String> attachmentIds();
 
 	AttachedTemplate attachedTemplate(String attachmentId);
-	
-	Set<? extends AttachedTemplate> attachedTemplates();
+
+	Set<AttachedTemplate> attachedTemplates();
 
 }
