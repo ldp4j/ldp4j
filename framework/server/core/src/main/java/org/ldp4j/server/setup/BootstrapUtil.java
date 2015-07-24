@@ -46,6 +46,9 @@ final class BootstrapUtil {
 	private static final String VALUE_SEPARATOR = ": ";
 	private static final String VALUE_PREFIX    = "\t\t+ ";
 
+	private BootstrapUtil() {
+	}
+
 	static String dumpContext(String event, ServletContext context) {
 		Map<String,Object> messages=new TreeMap<String,Object>();
 		addMetadataMessages(context, messages);

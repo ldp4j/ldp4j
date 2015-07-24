@@ -299,31 +299,35 @@ public final class URI {
 				ref.path=relative.getPath().normalize();
 				ref.query=relative.getQuery();
 			} else {
-				if(relative.getPath().isEmpty()) {
-					ref.path=base.getPath().normalize();
-					if(URI.defined(relative.getQuery())) {
-						ref.query=relative.getQuery();
-					} else {
-						ref.query=base.getQuery();
-					}
-				} else {
-					if(relative.getPath().isRoot()) {
-						ref.path=relative.getPath().normalize();
-					} else {
-						Path pBase=base.getPath();
-						if(pBase.isEmpty()) {
-							pBase=Path.create("/");
-						}
-						ref.path=pBase.resolve(relative.getPath());
-					}
-					ref.query=relative.getQuery();
-				}
-				ref.authority=base.getAuthority();
+				resolvePathOnlyTarget(base, relative, ref);
 			}
 			ref.scheme=base.getScheme();
 		}
 		ref.fragment=relative.getFragment();
 		return ref.toURI();
+	}
+
+	private static void resolvePathOnlyTarget(URI base, URI relative, URIRef ref) {
+		if(relative.getPath().isEmpty()) {
+			ref.path=base.getPath().normalize();
+			if(URI.defined(relative.getQuery())) {
+				ref.query=relative.getQuery();
+			} else {
+				ref.query=base.getQuery();
+			}
+		} else {
+			if(relative.getPath().isRoot()) {
+				ref.path=relative.getPath().normalize();
+			} else {
+				Path pBase=base.getPath();
+				if(pBase.isEmpty()) {
+					pBase=Path.create("/");
+				}
+				ref.path=pBase.resolve(relative.getPath());
+			}
+			ref.query=relative.getQuery();
+		}
+		ref.authority=base.getAuthority();
 	}
 
 	private static String prettyPrint(URI uri) {

@@ -93,25 +93,29 @@ final class CardinalityDefinition implements Cardinality {
 		CardinalityConstraintValidator(List<Annotation> constraints) {
 			this.constraints = constraints;
 			for(Annotation genericConstraint:constraints) {
-				if(genericConstraint instanceof AtLeast) {
-					validateAtLeast((AtLeast)genericConstraint);
-				} else if(genericConstraint instanceof AtMost) {
-					validateAtMost((AtMost)genericConstraint);
-				} else if(genericConstraint instanceof Range) {
-					validatRange((Range)genericConstraint);
-				} else if(genericConstraint instanceof Optional) {
-					this.optional=true;
-				} else if(genericConstraint instanceof Unbound) {
-					this.unbound=true;
-				} else {
-					addViolation("assertion","Unsupported cardinality constraint '"+genericConstraint.getClass().getCanonicalName()+"'");
-				}
+				validateGenericConstraint(genericConstraint);
 			}
 			if(isUnbound() && hasMax() ) {
 				addViolation("Cannot have max cardinality if unbound");
 			}
 			if(isOptional() && hasMin() ) {
 				addViolation("Cannot have min cardinality if optional");
+			}
+		}
+
+		private void validateGenericConstraint(Annotation genericConstraint) {
+			if(genericConstraint instanceof AtLeast) {
+				validateAtLeast((AtLeast)genericConstraint);
+			} else if(genericConstraint instanceof AtMost) {
+				validateAtMost((AtMost)genericConstraint);
+			} else if(genericConstraint instanceof Range) {
+				validatRange((Range)genericConstraint);
+			} else if(genericConstraint instanceof Optional) {
+				this.optional=true;
+			} else if(genericConstraint instanceof Unbound) {
+				this.unbound=true;
+			} else {
+				addViolation("assertion","Unsupported cardinality constraint '"+genericConstraint.getClass().getCanonicalName()+"'");
 			}
 		}
 

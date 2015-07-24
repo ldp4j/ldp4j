@@ -268,6 +268,17 @@ public final class RDFModelDSL {
 	}
 
 	private static URIRef asURIRef(Object object, boolean nullable) {
+		if(!nullable) {
+			Objects.requireNonNull(object, IDENTITY_PARAM);
+		}
+		URIRef result=coherceURIRef(object, nullable);
+		if(result==null && !nullable) {
+			throw new IllegalArgumentException("Cannot crete URIRef from source object of type '"+ object.getClass().getName() + "'");
+		}
+		return result;
+	}
+
+	private static URIRef coherceURIRef(Object object, boolean nullable) {
 		URIRef result=null;
 		if(object instanceof URIRef) {
 			result=(URIRef)object;
@@ -278,21 +289,21 @@ public final class RDFModelDSL {
 		} else if(object instanceof URL) {
 			result=uriRef((URL)object);
 		} else if(object instanceof String) {
-			Objects.requireNonNull(object, IDENTITY_PARAM);
-			try {
-				result=uriRef(new URI((String)object));
-			} catch (URISyntaxException e) {
-				if(!nullable) {
-					throw new IllegalArgumentException("Invalid URI",e);
-				}
-			}
-		}
-		if(result==null && !nullable) {
-			throw new IllegalArgumentException(
-					"Cannot crete URIRef from source object of type '"
-							+ object.getClass().getName() + "'");
+			result=coherceStringURIRef(nullable, (String)object);
 		}
 		return result;
+	}
+
+	private static URIRef coherceStringURIRef(boolean nullable, String str) {
+		URIRef tmp=null;
+		try {
+			tmp=uriRef(new URI(str));
+		} catch (URISyntaxException e) {
+			if(!nullable) {
+				throw new IllegalArgumentException("Cannot crete URIRef from string '"+str+"': invalid URI",e);
+			}
+		}
+		return tmp;
 	}
 
 	private static URIRef asURIRef(Object object) {

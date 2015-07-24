@@ -56,16 +56,12 @@ public final class Constraints {
 
 	public static class ConstraintViolationException extends InvalidDefinitionException {
 
-		/**
-		 *
-		 */
 		private static final long serialVersionUID = -8229664315206414875L;
 
 		private final String constraint;
 		private final String member;
 
-		private final ArrayList<String> violations;
-
+		private final List<String> violations; // NOSONAR
 
 		public ConstraintViolationException(Annotation constraint, Member member, List<String> violations) {
 			this(message(constraint,member,violations),constraint,member,violations);

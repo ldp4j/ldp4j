@@ -228,28 +228,32 @@ public final class URIUtils {
 				T.path      = removeDotSegments(R.path);
 				T.query     = R.query;
 			} else {
-				if(R.path.isEmpty()) {
-					T.path=Base.path;
-					if(defined(R.query)) {
-						T.query=R.query;
-					} else {
-						T.query=Base.query;
-					}
-				} else {
-					if(R.path.startsWith(SLASH)) {
-						T.path=removeDotSegments(R.path);
-					} else {
-						T.path=merge(Base.path,R.path,defined(Base.authority));
-						T.path=removeDotSegments(T.path);
-					}
-					T.query=R.query;
-				}
-				T.authority = Base.authority;
+				resolvePathOnlyTarget(Base, R, T);
 			}
 			T.scheme = Base.scheme;
 		}
 		T.fragment = R.fragment;
 		return T;
+	}
+
+	private static void resolvePathOnlyTarget(URIRef Base, URIRef R, URIRef T) {
+		if(R.path.isEmpty()) {
+			T.path=Base.path;
+			if(defined(R.query)) {
+				T.query=R.query;
+			} else {
+				T.query=Base.query;
+			}
+		} else {
+			if(R.path.startsWith(SLASH)) {
+				T.path=removeDotSegments(R.path);
+			} else {
+				T.path=merge(Base.path,R.path,defined(Base.authority));
+				T.path=removeDotSegments(T.path);
+			}
+			T.query=R.query;
+		}
+		T.authority = Base.authority;
 	}
 
 	/**

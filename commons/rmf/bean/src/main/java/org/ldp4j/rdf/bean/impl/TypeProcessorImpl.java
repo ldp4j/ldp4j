@@ -186,26 +186,28 @@ final class TypeProcessorImpl<T> implements TypeProcessor<T> {
 		T unmarshall(Resource<?> identity) {
 			T result=session.resolve(clazz, identity);
 			if(result!=null) {
-				return result;
+				Individual individual=session.getIndividual(identity);
+				if(individual!=null) {
+					result=createBean(identity, individual);
+				}
 			}
-			Individual individual=session.getIndividual(identity);
-			if(individual==null) {
-				return result;
-			}
+			return result;
+		}
 
+		private T createBean(Resource<?> identity, Individual individual) {
 			try {
 				log("Started unmarshalling of resource '%s' with %s...",identity,types);
 				// TODO: Need to see what to do with enumerations...
-				result = clazz.newInstance();
-				session.register(result, identity);
-				log("Registered object '%s' for resource '%s'",result,identity);
+				T bean=clazz.newInstance();
+				session.register(bean,identity);
+				log("Registered object '%s' for resource '%s'",bean,identity);
 				for(Type type:types) {
 					for(Property property:type.getProperties()) {
-						populateProperty(property,createProcessor(individual, property),result);
+						populateProperty(property,createProcessor(individual, property),bean);
 					}
 				}
 				log("Completed unmarshalling of resource '%s'.",identity);
-				return result;
+				return bean;
 			} catch (InstantiationException e) {
 				throw new IllegalStateException(e);
 			} catch (IllegalAccessException e) {

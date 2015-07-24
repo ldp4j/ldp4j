@@ -74,6 +74,8 @@ final class Key implements Serializable {
 				createId(
 					Key.fromBase64(this.nameValue),
 					this.templateId);
+		// Self healing...
+		this.nameType=nameTypeOf(this.cachedId.name());
 	}
 
 	synchronized ResourceId resourceId() {
@@ -146,9 +148,13 @@ final class Key implements Serializable {
 			return null;
 		}
 		Name<?> name = id.name();
-		String nameType=name.id().getClass().getCanonicalName();
+		String nameType=nameTypeOf(name);
 		String nameValue=Key.toBase64(name);
 		return new Key(id,id.templateId(),nameType,nameValue);
+	}
+
+	private static String nameTypeOf(Name<?> name) {
+		return name.id().getClass().getCanonicalName();
 	}
 
 	static String toBase64(Name<?> name) {

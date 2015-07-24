@@ -277,14 +277,17 @@ final class OperationContextImpl implements OperationContext {
 
 	@Override
 	public OperationContext checkOperationSupport() {
-		boolean allowed=false;
-		switch(method) {
+		if(!isMethodAllowed()) {
+			throw new MethodNotAllowedException(this,this.resource,this.method);
+		}
+		return this;
+	}
+
+	private boolean isMethodAllowed() {
+		boolean allowed;
+		switch(this.method) {
 			case GET:
-				allowed=true;
-				break;
 			case HEAD:
-				allowed=true;
-				break;
 			case OPTIONS:
 				allowed=true;
 				break;
@@ -301,12 +304,9 @@ final class OperationContextImpl implements OperationContext {
 				allowed=resource().capabilities().isModifiable();
 				break;
 			default:
-				throw new MethodNotAllowedException(this,this.resource,this.method);
+				allowed=false;
 		}
-		if(!allowed) {
-			throw new MethodNotAllowedException(this,this.resource,this.method);
-		}
-		return this;
+		return allowed;
 	}
 
 	@Override
