@@ -147,6 +147,9 @@ final class EnvironmentImpl implements Environment {
 		this.candidates.add(rootResource);
 	}
 
+	/**
+	 * TODO: Check that root resources are published in different "branches"
+	 */
 	void configureRootResources() throws ApplicationConfigurationException {
 		validateRootResources();
 		final Date creationDate = new Date();

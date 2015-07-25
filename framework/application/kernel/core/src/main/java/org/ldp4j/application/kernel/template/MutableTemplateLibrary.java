@@ -111,7 +111,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 					throw new InvalidAttachmentDefinitionException(
 									template.id(),
 									attachment.id(),
-									String.format("Attachment predicate value '%s' of attached template '%' is not valid",predicate,attachedTemplate.id()),
+									String.format("Attachment predicate value '%s' of attached template '%s' is not valid",predicate,attachedTemplate.id()),
 									e);
 				}
 			}

@@ -152,12 +152,10 @@ final class ExistingEndpointController implements EndpointController {
 
 	}
 
-
 	private Response handleRetrieval(OperationContext context, boolean includeEntity, Variant variant) {
 		try {
 			PublicResource resource=context.resource();
-			ContentPreferences preferences=
-					context.contentPreferences();
+			ContentPreferences preferences=context.contentPreferences();
 			boolean hasPreferences=preferences!=null;
 			if(!hasPreferences) {
 				preferences=ContentPreferences.defaultPreferences();
@@ -173,26 +171,39 @@ final class ExistingEndpointController implements EndpointController {
 
 			LOGGER.trace("Data set to serialize: \n {}",entity);
 
-			String body=serialize(context, variant, entity, NamespacesHelper.resourceNamespaces(context.applicationNamespaces()));
+			String body=
+				serialize(
+					context,
+					variant,
+					entity,
+					NamespacesHelper.
+						resourceNamespaces(context.applicationNamespaces()));
 
-			ResponseBuilder builder=Response.serverError();
-			builder.variant(variant);
-			if(hasPreferences) {
-				builder.header(ContentPreferencesUtils.PREFERENCE_APPLIED_HEADER,ContentPreferencesUtils.asPreferenceAppliedHeader(preferences));
-			}
-			addOptionsMandatoryHeaders(context, builder);
-			builder.
-				status(Status.OK.getStatusCode()).
-				header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
-			if(includeEntity) {
-				builder.entity(body);
-			}
-			return builder.build();
+			return createReatrievalResponse(context,variant,hasPreferences,preferences, includeEntity, body);
 		} catch (ApplicationExecutionException e) {
 			return processExecutionException(context, e);
 		} catch (ApplicationContextException e) {
 			return processRuntimeException(context, e);
 		}
+	}
+
+
+	private Response createReatrievalResponse(OperationContext context,
+			Variant variant, boolean hasPreferences,
+			ContentPreferences preferences, boolean includeEntity, String entity) {
+		ResponseBuilder builder=Response.serverError();
+		builder.variant(variant);
+		if(hasPreferences) {
+			builder.header(ContentPreferencesUtils.PREFERENCE_APPLIED_HEADER,ContentPreferencesUtils.asPreferenceAppliedHeader(preferences));
+		}
+		addOptionsMandatoryHeaders(context, builder);
+		builder.
+			status(Status.OK.getStatusCode()).
+			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, entity.length());
+		if(includeEntity) {
+			builder.entity(entity);
+		}
+		return builder.build();
 	}
 
 	private String serialize(OperationContext context, Variant variant, DataSet entity, Namespaces namespaces) {
