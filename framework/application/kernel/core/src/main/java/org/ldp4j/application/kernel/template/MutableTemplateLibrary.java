@@ -46,9 +46,6 @@ import org.ldp4j.application.ext.annotations.DirectContainer;
 import org.ldp4j.application.ext.annotations.IndirectContainer;
 import org.ldp4j.application.ext.annotations.MembershipRelation;
 import org.ldp4j.application.ext.annotations.Resource;
-import org.ldp4j.application.kernel.template.ResourceTemplate;
-import org.ldp4j.application.kernel.template.TemplateLibrary;
-import org.ldp4j.application.kernel.template.TemplateVisitor;
 
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableSet;
@@ -77,17 +74,13 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 		}
 
 
-		public M preProcess(Annotation annotation, Class<? extends R> handler) {
-			if(!annotationClass.isInstance(annotation)) {
-				throw new IllegalArgumentException("Invalid annotation");
-			}
+		M preProcess(Annotation annotation, Class<? extends R> handler) {
+			checkArgument(annotationClass.isInstance(annotation),"Invalid annotation");
 			return doProcess(annotationClass.cast(annotation),handler);
 		}
 
-		public void postProcess(Annotation annotation, M template, TemplateResolver resolver) {
-			if(!annotationClass.isInstance(annotation)) {
-				throw new IllegalArgumentException("Invalid annotation");
-			}
+		void postProcess(Annotation annotation, M template, TemplateResolver resolver) {
+			checkArgument(annotationClass.isInstance(annotation),"Invalid annotation");
 			doPostprocess(annotationClass.cast(annotation),template,resolver);
 		}
 
@@ -109,14 +102,17 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 			}
 		}
 
-		private void updateAttachmentPredicate(M template,
-				Attachment attachment, MutableAttachedTemplate attachedTemplate) {
+		private void updateAttachmentPredicate(M template, Attachment attachment, MutableAttachedTemplate attachedTemplate) {
 			String predicate = attachment.predicate();
 			if(predicate!=null && predicate.length()>0) {
 				try {
-					attachedTemplate.setPredicate(new URI(predicate));
-				} catch (URISyntaxException e) {
-					throw new InvalidAttachmentDefinitionException(template.id(),attachment.id(),String.format("Predicate value '%s' is not valid",predicate),e);
+					attachedTemplate.setPredicate(createOptionalURI(template.id(),predicate,"The attachment predicate"));
+				} catch (TemplateCreationException e) {
+					throw new InvalidAttachmentDefinitionException(
+									template.id(),
+									attachment.id(),
+									String.format("Attachment predicate value '%s' of attached template '%' is not valid",predicate,attachedTemplate.id()),
+									e);
 				}
 			}
 		}
@@ -130,11 +126,39 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 		protected abstract Attachment[] attachments(A annotation);
 
 		protected final String nullable(String value) {
-			String result=value;
-			if(result!=null && result.length()==0) {
+			String result=value.trim();
+			if(result.isEmpty()) {
 				result=null;
 			}
 			return result;
+		}
+
+		protected final URI createMandatoryURI(String id, String predicate, String uriType) {
+			if(predicate.isEmpty()) {
+				throw new TemplateCreationException(id,uriType+" cannot be empty");
+			}
+			return createOptionalURI(id, predicate, uriType);
+		}
+
+		private URI createOptionalURI(String id, String predicate, String uriType) {
+			try {
+				URI uri = new URI(predicate);
+				if(uri.normalize().equals(URI.create(""))) {
+					throw new TemplateCreationException(id,uriType+" cannot be the null URI");
+				} else if(uri.isOpaque()) {
+					/**
+					 * TODO: Allow using opaque URIs whenever the RDF handling
+					 * backend supports it (for the time being we are using
+					 * Sesame and it requires using HTTP URIs)
+					 */
+					throw new TemplateCreationException(id,uriType+" cannot be a opaque URI ("+predicate+")");
+				} else if(!uri.isAbsolute()) {
+					throw new TemplateCreationException(id,uriType+" cannot be a hierarchical relative URI ("+predicate+")");
+				}
+				return uri;
+			} catch (URISyntaxException e) {
+				throw new TemplateCreationException(id,String.format(uriType+" value '%s' is not valid",predicate),e);
+			}
 		}
 
 	}
@@ -179,12 +203,12 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 		protected T doProcess(A annotation, Class<? extends ContainerHandler> handler) {
 			T template = super.doProcess(annotation, handler);
 			template.setMembershipRelation(membershipRelation(annotation));
-			try {
-				template.setMembershipPredicate(new URI(membershipPredicate(annotation)));
-			} catch (URISyntaxException e) {
-				throw new TemplateCreationException(template.id(),String.format("Membership predicate value '%s' is not valid",membershipPredicate(annotation)),e);
-			}
+			template.setMembershipPredicate(membershipPredicate(annotation, template));
 			return template;
+		}
+
+		private URI membershipPredicate(A annotation, T template) {
+			return createMandatoryURI(template.id(), membershipPredicate(annotation).trim(), "The membership predicate");
 		}
 
 		protected abstract String membershipPredicate(A annotation);
@@ -315,15 +339,9 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 
 		@Override
 		protected MutableIndirectContainerTemplate createTemplate(IndirectContainer annotation, Class<? extends ContainerHandler> handler) {
-			try {
-				URI insertedContentRelation = new URI(annotation.insertedContentRelation());
-				if(insertedContentRelation.normalize().equals(URI.create(""))) {
-					throw new TemplateCreationException(annotation.id(),"The inserted content relation cannot be the null URI");
-				}
-				return new MutableIndirectContainerTemplate(annotation.id(), handler,insertedContentRelation);
-			} catch (URISyntaxException e) {
-				throw new TemplateCreationException(annotation.id(),String.format("Inserted content relation value '%s' is not valid",annotation.insertedContentRelation()),e);
-			}
+			String rawInsertedContentRelation = annotation.insertedContentRelation().trim();
+			URI insertedContentRelation=createMandatoryURI(annotation.id(), rawInsertedContentRelation, "The inserted content relation");
+			return new MutableIndirectContainerTemplate(annotation.id(),handler,insertedContentRelation);
 		}
 
 		@Override
@@ -362,20 +380,21 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 		}
 	}
 
-	// TODO: Change to a regular class to prevent serialization warnings
-	private enum SupportedAnnotations {
-		RESOURCE(Resource.class,new ResourceProcessor()),
-		BASIC_CONTAINER(BasicContainer.class,new BasicContainerProcessor()),
-		DIRECT_CONTAINER(DirectContainer.class,new DirectContainerProcessor()),
-		INDIRECT_CONTAINER(IndirectContainer.class,new IndirectContainerProcessor())
-		;
+	private static final class SupportedAnnotation {
+
+		private static final SupportedAnnotation RESOURCE=new SupportedAnnotation(Resource.class,new ResourceProcessor(),false);
+		private static final SupportedAnnotation BASIC_CONTAINER=new SupportedAnnotation(BasicContainer.class,new BasicContainerProcessor(),true);
+		private static final SupportedAnnotation DIRECT_CONTAINER=new SupportedAnnotation(DirectContainer.class,new DirectContainerProcessor(),true);
+		private static final SupportedAnnotation INDIRECT_CONTAINER=new SupportedAnnotation(IndirectContainer.class,new IndirectContainerProcessor(),true);
 
 		private final Class<? extends Annotation> annotationClass;
-		private final Processor<?,ResourceHandler,AbstractMutableTemplate<?>> processor; // NOSONAR
+		private final Processor<?,ResourceHandler,AbstractMutableTemplate<?>> processor;
+		private final boolean container;
 
 		@SuppressWarnings("unchecked")
-		private <A extends Annotation, R extends ResourceHandler, M extends AbstractMutableTemplate<?>> SupportedAnnotations(Class<? extends A> annotationClass, Processor<A,R,M> processor) {
+		private <A extends Annotation, R extends ResourceHandler, M extends AbstractMutableTemplate<?>> SupportedAnnotation(Class<? extends A> annotationClass, Processor<A,R,M> processor, boolean container) {
 			this.annotationClass = annotationClass;
+			this.container = container;
 			this.processor = (Processor<?, ResourceHandler, AbstractMutableTemplate<?>>) processor;
 		}
 
@@ -386,8 +405,21 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 			return template;
 		}
 
-		static SupportedAnnotations fromAnnotation(Annotation annotation) {
-			for(SupportedAnnotations candidate:values()) {
+		boolean isContainer() {
+			return this.container;
+		}
+
+		static SupportedAnnotation[] values() {
+			return new SupportedAnnotation[]{
+				SupportedAnnotation.RESOURCE,
+				SupportedAnnotation.BASIC_CONTAINER,
+				SupportedAnnotation.DIRECT_CONTAINER,
+				SupportedAnnotation.INDIRECT_CONTAINER
+			};
+		}
+
+		static SupportedAnnotation fromAnnotation(Annotation annotation) {
+			for(SupportedAnnotation candidate:values()) {
 				if(candidate.supports(annotation)) {
 					return candidate;
 				}
@@ -399,10 +431,10 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 			return this.annotationClass.isInstance(annotation);
 		}
 
-		static String toString(Collection<? extends SupportedAnnotations> values) {
+		static String toString(Collection<? extends SupportedAnnotation> values) {
 			StringBuilder builder=new StringBuilder();
-			for(Iterator<? extends SupportedAnnotations> it=values.iterator();it.hasNext();) {
-				SupportedAnnotations candidate = it.next();
+			for(Iterator<? extends SupportedAnnotation> it=values.iterator();it.hasNext();) {
+				SupportedAnnotation candidate = it.next();
 				builder.append(candidate.annotationName());
 				if(it.hasNext()) {
 					builder.append(", ");
@@ -415,7 +447,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 			return annotationClass.getCanonicalName();
 		}
 
-		static String toString(SupportedAnnotations[] values) {
+		static String toString(SupportedAnnotation... values) {
 			return toString(Arrays.asList(values));
 		}
 
@@ -454,7 +486,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 				throw new TemplateCreationException(template.id(), String.format("Cannot register two templates with the same handler (new: %s, registered: %s)",template,previousTemplate));
 			}
 			previousTemplate=this.templatesById.get(template.id());
-			if(this.templatesById.containsKey(template.id()) ) {
+			if(previousTemplate!=null) {
 				throw new TemplateCreationException(template.id(), String.format("Cannot register two templates with the same identifier (new: %s, registered: %s)",template,previousTemplate));
 			}
 			this.templatesByHandler.put(HandlerId.createId(handlerClass), template);
@@ -493,19 +525,21 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 	}
 
 	private ResourceTemplate createTemplate(Class<? extends ResourceHandler> targetClass, final TemplateLoaderContext ctx) {
-		Map<SupportedAnnotations,Annotation> annotations=new LinkedHashMap<SupportedAnnotations,Annotation>();
-		SupportedAnnotations found=null;
+		Map<SupportedAnnotation,Annotation> annotations=new LinkedHashMap<SupportedAnnotation,Annotation>();
+		SupportedAnnotation found=null;
 		for(Annotation annotation:targetClass.getDeclaredAnnotations()) {
-			SupportedAnnotations type=SupportedAnnotations.fromAnnotation(annotation);
+			SupportedAnnotation type=SupportedAnnotation.fromAnnotation(annotation);
 			if(type!=null) {
 				found=type;
 				annotations.put(type, annotation);
 			}
 		}
 		if(annotations.size()==0) {
-			throw new IllegalArgumentException(String.format("Class '%s' has not any of the required annotations (%s)",targetClass.getCanonicalName(),SupportedAnnotations.toString(SupportedAnnotations.values())));
+			throw new IllegalArgumentException(String.format("Class '%s' has not any of the required annotations (%s)",targetClass.getCanonicalName(),SupportedAnnotation.toString(SupportedAnnotation.values())));
 		} else if(annotations.size()>1) {
-			throw new IllegalArgumentException(String.format("Class '%s' is annotated with more than of the supported annotations (%s)",targetClass.getCanonicalName(),SupportedAnnotations.toString(annotations.keySet())));
+			throw new IllegalArgumentException(String.format("Class '%s' is annotated with more than of the supported annotations (%s)",targetClass.getCanonicalName(),SupportedAnnotation.toString(annotations.keySet())));
+		} else if(found.isContainer() && !ContainerHandler.class.isAssignableFrom(targetClass)) {
+			throw new IllegalArgumentException(String.format("Not-container handler class '%s' is annotated as a container (%s)",targetClass.getCanonicalName(),SupportedAnnotation.toString(found)));
 		}
 		return found.toTemplate(annotations.get(found),targetClass,ctx,ctx);
 	}

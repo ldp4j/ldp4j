@@ -90,6 +90,11 @@ final class EnvironmentImpl implements Environment {
 			assertValidPath();
 		}
 
+		/**
+		 * TODO: What about URL encoding issues? Decide were do we take care of
+		 * this, as it also impacts the creation of new endpoints during the
+		 * normal operation of the LDP4j application
+		 */
 		private void assertValidPath() throws ApplicationConfigurationException {
 			if(this.path==null) {
 				throw new ApplicationConfigurationException("No path specified for resource '"+this.resourceName+"'");

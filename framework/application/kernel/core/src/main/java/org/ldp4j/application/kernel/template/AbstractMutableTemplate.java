@@ -55,7 +55,9 @@ public abstract class AbstractMutableTemplate<T extends ResourceHandler> impleme
 	private String description;
 
 	protected AbstractMutableTemplate(String id, Class<? extends T> handlerClass) {
-		this.id = id;
+		checkNotNull(id,"Template id cannot be null");
+		checkArgument(!id.trim().isEmpty(),"Template id cannot be empty");
+		this.id=id.trim();
 		this.handlerClass = handlerClass;
 	}
 
