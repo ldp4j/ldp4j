@@ -236,7 +236,7 @@ public final class URIUtils {
 		return T;
 	}
 
-	private static void resolvePathOnlyTarget(URIRef Base, URIRef R, URIRef T) {
+	private static void resolvePathOnlyTarget(URIRef Base, URIRef R, URIRef T) { // NOSONAR
 		if(R.path.isEmpty()) {
 			T.path=Base.path;
 			if(defined(R.query)) {

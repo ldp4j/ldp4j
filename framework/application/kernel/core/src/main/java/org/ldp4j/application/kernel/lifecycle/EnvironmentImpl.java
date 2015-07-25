@@ -94,7 +94,7 @@ final class EnvironmentImpl implements Environment {
 			if(this.path==null) {
 				throw new ApplicationConfigurationException("No path specified for resource '"+this.resourceName+"'");
 			}
-			if(!this.path.endsWith("/") || this.path.endsWith("//") || this.path.length()==1) {
+			if(this.path.startsWith("/") || !this.path.endsWith("/") || this.path.endsWith("//")) {
 				throw new ApplicationConfigurationException("Invalid path '"+this.path+"' specified for resource '"+this.resourceName+"': it must end with a single '/' and have at least one segment");
 			}
 		}
@@ -162,15 +162,15 @@ final class EnvironmentImpl implements Environment {
 			throw new ApplicationConfigurationException(String.format("Resource %s cannot be published at '%s' as that path is already in use by a resource %s",toString(resourceId),path,toString(prevEndpoint.resourceId())));
 		}
 
-		if(prevEndpoint==null && prevResource!=null) {
-			throw new ApplicationConfigurationException(String.format("Resource %s cannot be published at '%s' as it is already published at '%s'",toString(resourceId),path,this.endpointRepository.endpointOfResource(resourceId).path()));
-		}
-
-		if(prevResource==null && prevEndpoint==null) {
-			Resource resource=this.modelFactory.createResource(rootResource.template(),rootResource.name());
-			this.resourceRepository.add(resource);
-			Endpoint endpoint=this.modelFactory.createEndpoint(path,resource,creationDate,EntityTag.createStrong(path));
-			this.endpointRepository.add(endpoint);
+		if(prevEndpoint==null) {
+			if(prevResource!=null) {
+				throw new ApplicationConfigurationException(String.format("Resource %s cannot be published at '%s' as it is already published at '%s'",toString(resourceId),path,this.endpointRepository.endpointOfResource(resourceId).path()));
+			} else {
+				Resource resource=this.modelFactory.createResource(rootResource.template(),rootResource.name());
+				this.resourceRepository.add(resource);
+				Endpoint endpoint=this.modelFactory.createEndpoint(path,resource,creationDate,EntityTag.createStrong(path));
+				this.endpointRepository.add(endpoint);
+			}
 		}
 
 	}
