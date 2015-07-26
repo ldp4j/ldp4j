@@ -79,7 +79,7 @@ public interface HttpRequest extends Serializable {
 
 	String host();
 
-	ProtocolVersion version();
+	ProtocolVersion protocolVersion();
 
 	List<Header> headers();
 

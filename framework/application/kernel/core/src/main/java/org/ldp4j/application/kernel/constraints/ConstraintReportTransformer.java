@@ -28,6 +28,7 @@ package org.ldp4j.application.kernel.constraints;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Date;
 import java.util.Iterator;
@@ -121,13 +122,14 @@ public final class ConstraintReportTransformer {
 			individualCache.put(individual, externalIndividual(individual.id()));
 		}
 
-		Individual<?,?> translate(Individual<?,?> individual) {
+		@SuppressWarnings("unchecked")
+		<T extends Serializable, S extends Individual<T,S>> Individual<T,S> translate(Individual<T,S> individual) {
 			Individual<?, ?> aNodeInd = this.individualCache.get(individual);
 			if(aNodeInd==null) {
 				individual.accept(this);
 				aNodeInd=this.individualCache.get(individual);
 			}
-			return aNodeInd;
+			return (Individual<T,S>)aNodeInd;
 		}
 	}
 

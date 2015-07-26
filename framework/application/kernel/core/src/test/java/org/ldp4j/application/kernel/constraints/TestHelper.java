@@ -86,7 +86,7 @@ public final class TestHelper {
 					withMethod(HttpMethod.POST).
 					withHost("www.example.org").
 					withAbsolutePath("service/resource/").
-					withEntity("body").
+					withBody("body").
 					withHeader("accept","text/turtle").
 					withHeader("if-none-match",EntityTag.createWeak("asdjkkl").toString()).
 					build();

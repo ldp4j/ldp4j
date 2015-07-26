@@ -49,7 +49,7 @@ final class HttpRequestFactory {
 					withMethod(method).
 					withServerDate(new Date()).
 					withClientDate(headers.getDate()).
-					withEntity(entity).
+					withBody(entity).
 					withAbsolutePath(uriInfo.getAbsolutePath().getPath()).
 					withHost(uriInfo.getAbsolutePath().getAuthority());
 		createHeaders(builder,headers);

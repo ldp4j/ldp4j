@@ -67,7 +67,7 @@ public class TCKFContainerHandler extends InMemoryContainerHandler implements Mo
 
 	@Override
 	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) throws UnsupportedContentException {
-		Name<?> name = TCKFHelper.nextName(getHandlerName());
+		Name<String> name = TCKFHelper.nextName(getHandlerName());
 
 
 		LOGGER.trace("Creating member of container {} using: \n{}",getHandlerName(),representation);

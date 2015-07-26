@@ -27,6 +27,7 @@
 package org.ldp4j.application.sdk;
 
 import java.util.List;
+import java.util.Objects;
 
 import org.ldp4j.application.engine.context.HttpRequest.Header;
 
@@ -35,13 +36,10 @@ import com.google.common.collect.ImmutableList;
 
 final class ImmutableHeader implements Header {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 7192427783850618802L;
 
-	private final String rawValue;
 	private final String name;
+	private final String rawValue;
 	private final ImmutableList<Element> elements;
 
 	ImmutableHeader(String name, String rawValue, List<ImmutableElement> elements) {
@@ -72,6 +70,32 @@ final class ImmutableHeader implements Header {
 	@Override
 	public ImmutableList<Element> elements() {
 		return this.elements;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return
+			Objects.
+				hash(this.name,this.rawValue,this.elements);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result = false;
+		if(obj instanceof Header) {
+			Header that=(Header)obj;
+			result=
+				Objects.equals(this.name,that.name()) &&
+				Objects.equals(this.rawValue,that.rawValue()) &&
+				Objects.equals(this.elements,that.elements());
+		}
+		return result;
 	}
 
 	/**

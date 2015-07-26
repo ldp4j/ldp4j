@@ -76,7 +76,7 @@ final class TCKFHelper {
 	private TCKFHelper() {
 	}
 
-	static Name<?> nextName(String templateId) {
+	static Name<String> nextName(String templateId) {
 		return NamingScheme.getDefault().name(templateId, Long.toHexString(COUNTERS.get(templateId).getAndIncrement()).toUpperCase(Locale.ENGLISH));
 	}
 

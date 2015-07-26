@@ -26,76 +26,19 @@
  */
 package org.ldp4j.application.sdk;
 
-import java.util.Objects;
+import java.util.Date;
 
-import org.ldp4j.application.engine.context.HttpRequest.Header.Element.Parameter;
+final class DateUtil {
 
-import com.google.common.base.MoreObjects;
-
-final class ImmutableParameter implements Parameter {
-
-	private static final long serialVersionUID = -7511803578477277362L;
-
-	private final String name;
-	private final String value;
-
-	ImmutableParameter(String name, String value) {
-		this.name = name;
-		this.value = value;
+	private DateUtil() {
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String name() {
-		return this.name;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String value() {
-		return this.value;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int hashCode() {
-		return
-			Objects.
-				hash(this.name,this.value);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		boolean result = false;
-		if(obj instanceof Parameter) {
-			Parameter that=(Parameter)obj;
-			result=
-				Objects.equals(this.name,that.name()) &&
-				Objects.equals(this.value,that.value());
+	static Date copy(Date date) {
+		Date tmp=date;
+		if(tmp!=null) {
+			tmp=new Date(tmp.getTime());
 		}
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return
-			MoreObjects.
-				toStringHelper(getClass()).
-					add("name",this.name).
-					add("value",this.value).
-					toString();
+		return tmp;
 	}
 
 }
