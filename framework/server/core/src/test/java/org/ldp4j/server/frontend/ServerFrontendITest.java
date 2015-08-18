@@ -33,6 +33,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
+import javax.ws.rs.core.Link;
+
+import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpDelete;
@@ -57,7 +60,9 @@ import org.junit.Test;
 import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
+import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
 import org.ldp4j.commons.testing.categories.DEBUG;
+import org.ldp4j.commons.testing.categories.ExceptionPath;
 import org.ldp4j.commons.testing.categories.HappyPath;
 import org.ldp4j.commons.testing.categories.LDP;
 import org.ldp4j.commons.testing.categories.Setup;
@@ -228,7 +233,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		LDP.class,
 		HappyPath.class
 	})
@@ -308,6 +312,35 @@ public class ServerFrontendITest {
 		HELPER.httpRequest(HELPER.newRequest(path,HttpDelete.class));
 		HELPER.httpRequest(HELPER.newRequest(path,HttpGet.class));
 		HELPER.httpRequest(get);
+		LOGGER.info("Completed {}",testName.getMethodName());
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		LDP.class,
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testUnsupportedCreationPreferences(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+		HttpPost post = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH,HttpPost.class);
+		post.setEntity(
+			new StringEntity(
+				TEST_SUITE_BODY,
+				ContentType.create("text/turtle", "UTF-8"))
+		);
+		String interactionModel=
+			Link.
+				fromUri(InteractionModel.INDIRECT_CONTAINER.asURI()).
+				rel("type").
+				build().
+				toString();
+		post.setHeader("Link",interactionModel);
+		Metadata response = HELPER.httpRequest(post);
+		assertThat(response.status,equalTo(HttpStatus.SC_FORBIDDEN));
 		LOGGER.info("Completed {}",testName.getMethodName());
 	}
 

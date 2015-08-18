@@ -460,10 +460,10 @@ final class ExistingEndpointController implements EndpointController {
 					entity(location.toString());
 			addRequiredHeaders(context, builder);
 			return builder.build();
-		} catch (UnsupportedInteractionModelException e) {
-			return processUnsupportedInteractionModelException(context, e);
 		} catch (ApplicationExecutionException e) {
 			return processExecutionException(context, e);
+		} catch (UnsupportedInteractionModelException e) {
+			return processUnsupportedInteractionModelException(context, e);
 		} catch (ApplicationContextException e) {
 			return processRuntimeException(context, e);
 		}

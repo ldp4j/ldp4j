@@ -32,11 +32,8 @@ import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel
 
 import com.google.common.collect.ImmutableSet;
 
-public class UnsupportedInteractionModelException extends Exception {
+public class UnsupportedInteractionModelException extends ApplicationContextException {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -5693006810913606248L;
 
 	private final InteractionModel requiredInteractionModel;

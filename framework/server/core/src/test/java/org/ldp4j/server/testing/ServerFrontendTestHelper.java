@@ -120,6 +120,7 @@ public final class ServerFrontendTestHelper {
 		public String etag;
 		public String lastModified;
 		public String location;
+		public int status;
 
 	}
 
@@ -129,6 +130,7 @@ public final class ServerFrontendTestHelper {
 			public String handleResponse(final HttpResponse response) throws ClientProtocolException, IOException {
 				String responseBody = logResponse(response);
 				// TODO: Add validation mechanism here
+				metadata.status=response.getStatusLine().getStatusCode();
 				metadata.body=responseBody;
 				Header etagHeader = response.getFirstHeader(HttpHeaders.ETAG);
 				if(etagHeader!=null) {
