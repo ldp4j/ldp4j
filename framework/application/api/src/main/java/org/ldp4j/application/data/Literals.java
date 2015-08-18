@@ -34,6 +34,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.Locale;
+import java.util.Map.Entry;
 import java.util.TimeZone;
 import java.util.concurrent.TimeUnit;
 
@@ -41,13 +42,17 @@ import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+import org.joda.time.Period;
 import org.joda.time.chrono.ISOChronology;
+import org.joda.time.format.ISOPeriodFormat;
+
+import com.google.common.collect.ImmutableMap;
 
 public final class Literals {
 
-	public abstract static class AbstractDateTimeLiteralBuilder {
+	public abstract static class DateTimeLiteralBuilder {
 
-		private AbstractDateTimeLiteralBuilder() {
+		private DateTimeLiteralBuilder() {
 		}
 
 		public final DateTimeLiteral dateTime() {
@@ -86,11 +91,11 @@ public final class Literals {
 
 	}
 
-	public static final class DateTimeLiteralBuilder extends AbstractDateTimeLiteralBuilder {
+	public static final class DateTimeDateTimeLiteralBuilder extends DateTimeLiteralBuilder {
 
 		private final DateTime dateTime;
 
-		private DateTimeLiteralBuilder(DateTime dateTime) {
+		private DateTimeDateTimeLiteralBuilder(DateTime dateTime) {
 			super();
 			this.dateTime = dateTime;
 		}
@@ -102,7 +107,7 @@ public final class Literals {
 
 	}
 
-	public static final class XMLGregorianCalendarDateTimeLiteralBuilder extends AbstractDateTimeLiteralBuilder {
+	public static final class XMLGregorianCalendarDateTimeLiteralBuilder extends DateTimeLiteralBuilder {
 
 		private final XMLGregorianCalendar calendar;
 
@@ -136,6 +141,144 @@ public final class Literals {
 		}
 
 	}
+
+	private interface DateTimeLiteralBuilderFactory {
+
+		DateTimeLiteralBuilder createBuilder(Object value, URI datatype);
+
+	}
+
+	private interface DateTimeLiteralBuilderAdapter {
+
+		DateTimeLiteral adapt(DateTimeLiteralBuilder builder);
+
+	}
+
+	private static final ImmutableMap<Class<?>,DateTimeLiteralBuilderFactory> FACTORIES=
+		ImmutableMap.
+			<Class<?>,DateTimeLiteralBuilderFactory>builder().
+				put(
+					Date.class,
+					new DateTimeLiteralBuilderFactory() {
+						public DateTimeLiteralBuilder createBuilder(Object value, URI datatype) {
+							return of((Date)value);
+						}
+					}
+				).
+				put(
+					GregorianCalendar.class,
+					new DateTimeLiteralBuilderFactory() {
+						public DateTimeLiteralBuilder createBuilder(Object value, URI datatype) {
+							return of((GregorianCalendar)value);
+						}
+					}
+				).
+				put(
+					Calendar.class,
+					new DateTimeLiteralBuilderFactory() {
+						public DateTimeLiteralBuilder createBuilder(Object value, URI datatype) {
+							return of((Calendar)value);
+						}
+					}
+				).
+				put(
+					DateTime.class,
+					new DateTimeLiteralBuilderFactory() {
+						public DateTimeLiteralBuilder createBuilder(Object value, URI datatype) {
+							return of((DateTime)value);
+						}
+					}
+				).
+				put(
+					XMLGregorianCalendar.class,
+					new DateTimeLiteralBuilderFactory() {
+						public DateTimeLiteralBuilder createBuilder(Object value, URI datatype) {
+							return of((XMLGregorianCalendar)value);
+						}
+					}
+				).
+				put(
+					String.class,
+					new DateTimeLiteralBuilderFactory() {
+						public DateTimeLiteralBuilder createBuilder(Object value, URI datatype) {
+							try {
+								return of(new DateTime(value));
+							} catch (Exception e) {
+								throw new DatatypeCohercionException(value,datatype,e);
+							}
+						}
+					}
+				).
+				build();
+
+	private static final ImmutableMap<URI,DateTimeLiteralBuilderAdapter> ADAPTERS=
+		ImmutableMap.
+			<URI,DateTimeLiteralBuilderAdapter>builder().
+				put(
+					Datatypes.DATE_TIME,
+					new DateTimeLiteralBuilderAdapter() {
+						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
+							return builder.dateTime();
+						}
+					}
+				).
+				put(
+					Datatypes.DATE,
+					new DateTimeLiteralBuilderAdapter() {
+						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
+							return builder.date();
+						}
+					}
+				).
+				put(
+					Datatypes.TIME,
+					new DateTimeLiteralBuilderAdapter() {
+						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
+							return builder.time();
+						}
+					}
+				).
+				put(
+					Datatypes.GYEAR,
+					new DateTimeLiteralBuilderAdapter() {
+						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
+							return builder.year();
+						}
+					}
+				).
+				put(
+					Datatypes.GMONTH,
+					new DateTimeLiteralBuilderAdapter() {
+						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
+							return builder.month();
+						}
+					}
+				).
+				put(
+					Datatypes.GDAY,
+					new DateTimeLiteralBuilderAdapter() {
+						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
+							return builder.day();
+						}
+					}
+				).
+				put(
+					Datatypes.GYEARMONTH,
+					new DateTimeLiteralBuilderAdapter() {
+						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
+							return builder.yearAndMonth();
+						}
+					}
+				).
+				put(
+					Datatypes.GMONTHDAY,
+					new DateTimeLiteralBuilderAdapter() {
+						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
+							return builder.monthAndDay();
+						}
+					}
+				).
+				build();
 
 	private static final String DATATYPE_CANNOT_BE_NULL = "Datatype cannot be null";
 	private static final String LANGUAGE_CANNOT_BE_NULL = "Language cannot be null";
@@ -195,7 +338,12 @@ public final class Literals {
 		} else if(value instanceof javax.xml.datatype.Duration) {
 			duration=of((javax.xml.datatype.Duration)value);
 		} else if(value instanceof String) {
-			duration=of(new Duration(value));
+			try {
+				Period period = ISOPeriodFormat.standard().parsePeriod((String)value);
+				duration=of(period.toStandardDuration());
+			} catch (Exception e) {
+				throw new DatatypeCohercionException(value,Datatypes.DURATION,e);
+			}
 		} else {
 			throw new DatatypeCohercionException(value,Datatypes.DURATION);
 		}
@@ -215,45 +363,16 @@ public final class Literals {
 	}
 
 	private static DateTimeLiteral coherceVariableDateTime(Object value, URI datatype) {
-		if(Datatypes.DATE_TIME.equals(datatype)) {
-			return getBuilder(value,datatype).dateTime();
-		} else if(Datatypes.DATE.equals(datatype)) {
-			return getBuilder(value,datatype).date();
-		} else if(Datatypes.TIME.equals(datatype)) {
-			return getBuilder(value,datatype).time();
-		} else if(Datatypes.GYEAR.equals(datatype)) {
-			return getBuilder(value,datatype).year();
-		} else if(Datatypes.GMONTH.equals(datatype)) {
-			return getBuilder(value,datatype).month();
-		} else if(Datatypes.GDAY.equals(datatype)) {
-			return getBuilder(value,datatype).day();
-		} else if(Datatypes.GYEARMONTH.equals(datatype)) {
-			return getBuilder(value,datatype).yearAndMonth();
-		} else { // Must be Datatypes.GMONTHDAY
-			return getBuilder(value,datatype).monthAndDay();
-		}
+		return Literals.ADAPTERS.get(datatype).adapt(getBuilder(value,datatype));
 	}
 
-	private static AbstractDateTimeLiteralBuilder getBuilder(Object value, URI datatype) {
-		if(value instanceof Date) {
-			return of((Date)value);
-		} else if(value instanceof GregorianCalendar) {
-			return of((GregorianCalendar)value);
-		} else if(value instanceof Calendar) {
-			return of((Calendar)value);
-		} else if(value instanceof DateTime) {
-			return of((DateTime)value);
-		} else if(value instanceof XMLGregorianCalendar) {
-			return of((XMLGregorianCalendar)value);
-		} else if(value instanceof String) {
-			try {
-				return of(new DateTime(value));
-			} catch (Exception e) {
-				throw new DatatypeCohercionException(value,datatype,e);
+	private static DateTimeLiteralBuilder getBuilder(Object value, URI datatype) {
+		for(Entry<Class<?>,DateTimeLiteralBuilderFactory> entry:Literals.FACTORIES.entrySet()) {
+			if(entry.getKey().isInstance(value)) {
+				return entry.getValue().createBuilder(value, datatype);
 			}
-		} else {
-			throw new DatatypeCohercionException(value,datatype);
 		}
+		throw new DatatypeCohercionException(value,datatype);
 	}
 
 	public static Literal<String> of(String value) {
@@ -263,7 +382,8 @@ public final class Literals {
 
 	public static DurationLiteral of(javax.xml.datatype.Duration duration) {
 		checkNotNull(duration,DURATION_CANNOT_BE_NULL);
-		return new ImmutableDurationLiteral(new Duration(duration.toString()),Datatypes.DURATION);
+		Period period = ISOPeriodFormat.standard().parsePeriod(duration.toString());
+		return new ImmutableDurationLiteral(period.toStandardDuration(),Datatypes.DURATION);
 	}
 
 	public static DurationLiteral of(Duration duration) {
@@ -271,9 +391,9 @@ public final class Literals {
 		return new ImmutableDurationLiteral(duration,Datatypes.DURATION);
 	}
 
-	public static DateTimeLiteralBuilder of(Date date) {
+	public static DateTimeDateTimeLiteralBuilder of(Date date) {
 		checkNotNull(date,DATE_CANNOT_BE_NULL);
-		return new DateTimeLiteralBuilder(new DateTime(date));
+		return new DateTimeDateTimeLiteralBuilder(new DateTime(date));
 	}
 
 	public static DateTimeLiteral of(java.sql.Date date) {
@@ -286,14 +406,14 @@ public final class Literals {
 		return new ImmutableDateTimeLiteral(new DateTime(time.getTime()), Datatypes.TIME);
 	}
 
-	public static DateTimeLiteralBuilder of(Calendar calendar) {
+	public static DateTimeDateTimeLiteralBuilder of(Calendar calendar) {
 		checkNotNull(calendar,CALENDAR_CANNOT_BE_NULL);
-		return new DateTimeLiteralBuilder(normalizeChronology(new DateTime(calendar)));
+		return new DateTimeDateTimeLiteralBuilder(normalizeChronology(new DateTime(calendar)));
 	}
 
-	public static DateTimeLiteralBuilder of(GregorianCalendar calendar) {
+	public static DateTimeDateTimeLiteralBuilder of(GregorianCalendar calendar) {
 		checkNotNull(calendar,CALENDAR_CANNOT_BE_NULL);
-		return new DateTimeLiteralBuilder(normalizeChronology(new DateTime(calendar)));
+		return new DateTimeDateTimeLiteralBuilder(normalizeChronology(new DateTime(calendar)));
 	}
 
 	public static XMLGregorianCalendarDateTimeLiteralBuilder of(XMLGregorianCalendar calendar) {
@@ -301,9 +421,9 @@ public final class Literals {
 		return new XMLGregorianCalendarDateTimeLiteralBuilder(calendar);
 	}
 
-	public static DateTimeLiteralBuilder of(DateTime dateTime) {
+	public static DateTimeDateTimeLiteralBuilder of(DateTime dateTime) {
 		checkNotNull(dateTime,DATE_TIME_CANNOT_BE_NULL);
-		return new DateTimeLiteralBuilder(dateTime);
+		return new DateTimeDateTimeLiteralBuilder(dateTime);
 	}
 
 	public static DurationLiteral duration(long time, TimeUnit unit) {
