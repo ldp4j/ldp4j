@@ -88,12 +88,11 @@ public final class URI {
 		return this.delegate.getSchemeSpecificPart();
 	}
 
-	// TODO: Analyze if it is worth caching this object
 	public Authority getAuthority() {
 		return Authority.create(this.delegate);
 	}
 
-	// TODO: Analyze if it is worth caching this object
+	// TODO: Analyze if it is worth caching the path
 	public Path getPath() {
 		return Path.create(this.delegate);
 	}
@@ -133,42 +132,61 @@ public final class URI {
 	public URI resolve(URI target) {
 		Objects.requireNonNull(target,"Target URI cannot be null");
 		URI base=this;
-		if(base.isOpaque() || target.isOpaque()) {
+		if(areOpaque(base, target)) {
 			return target;
 		}
 		return relativeResolution(base,target);
 	}
 
-	public URI relativize(URI target) {
-		Objects.requireNonNull(target,"Target URI cannot be null");
-
+	public URI relativize(URI uri) {
+		Objects.requireNonNull(uri,"Target URI cannot be null");
 		URI base=this;
-		if(base.isOpaque() || target.isOpaque()) {
-			return target;
+		URI target=uri.normalize();
+		if(areRelativizable(base,target)) {
+			Path relativePath=
+				calculateRelativePath(
+					base.normalize().getPath(),
+					target.getPath());
+			if(relativePath!=null) {
+				target=
+					uri.
+						withAuthority(null).
+						withScheme(null).
+						withPath(relativePath);
+			}
 		}
+		return target;
+	}
 
-		if(!Objects.equals(base.getScheme(),target.getScheme()) ||
-			!Objects.equals(base.getAuthority(),target.getAuthority())) {
-			return target;
-		}
+	private boolean areRelativizable(URI base, URI target) {
+		return
+			!areOpaque(base, target) &&
+			haveSameScheme(base, target) &&
+			belongToSameAuthority(base, target);
+	}
 
-		Path basePath = base.normalize().getPath();
-		Path targetPath = target.normalize().getPath();
+	private boolean areOpaque(URI base, URI target) {
+		return base.isOpaque() || target.isOpaque();
+	}
+
+	private boolean belongToSameAuthority(URI base, URI target) {
+		return Objects.equals(base.getAuthority(),target.getAuthority());
+	}
+
+	private boolean haveSameScheme(URI base, URI target) {
+		return Objects.equals(base.getScheme(),target.getScheme());
+	}
+
+	private Path calculateRelativePath(Path basePath, Path targetPath) {
 		Path relativePath = basePath.relativize(targetPath);
-
 		if(relativePath.isEmpty() && !targetPath.isRoot()) {
 			if(basePath.isRoot()) {
-				return target.normalize();
+				relativePath=null;
 			} else if(basePath.isFile()) {
 				relativePath=Path.create(basePath.getFile());
 			}
 		}
-
-		return
-			target.
-				withAuthority(null).
-				withScheme(null).
-				withPath(relativePath);
+		return relativePath;
 	}
 
 	public URL toURL() throws MalformedURLException {
@@ -227,6 +245,7 @@ public final class URI {
 				)
 			);
 	}
+
 	public URI withQuery(String query) {
 		return
 			withSchemeSpecificPart(
@@ -249,7 +268,7 @@ public final class URI {
 	}
 
 	/**
-	 * TODO: Verify weird equals/hashCode behaviour (java.net.URI bug)
+	 * TODO: Verify weird equals/hashCode behavior (java.net.URI bug)
 	 */
 	@Override
 	public int hashCode() {
@@ -257,7 +276,7 @@ public final class URI {
 	}
 
 	/**
-	 * TODO: Verify weird equals/hashCode behaviour (java.net.URI bug)
+	 * TODO: Verify weird equals/hashCode behavior (java.net.URI bug)
 	 */
 	@Override
 	public boolean equals(Object obj) {
