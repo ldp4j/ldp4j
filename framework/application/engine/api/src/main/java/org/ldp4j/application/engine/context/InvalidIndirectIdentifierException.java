@@ -26,31 +26,21 @@
  */
 package org.ldp4j.application.engine.context;
 
-import java.util.Set;
+import java.net.URI;
 
-import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
+public class InvalidIndirectIdentifierException extends OperationPrecondititionException {
 
-import com.google.common.collect.ImmutableSet;
+	private static final long serialVersionUID = 8122662593292234308L;
 
-public class UnsupportedInteractionModelException extends OperationPrecondititionException {
+	private final URI insertedContentRelation;
 
-	private static final long serialVersionUID = -5693006810913606248L;
-
-	private final InteractionModel requiredInteractionModel;
-	private final Set<InteractionModel> supportedInteractionModels;
-
-	public UnsupportedInteractionModelException(InteractionModel requiredInteractionModel, Set<InteractionModel> supportedInteractionModels) {
-		super("Unsupported interaction model '"+requiredInteractionModel+"'. The resource only supports: "+supportedInteractionModels);
-		this.requiredInteractionModel = requiredInteractionModel;
-		this.supportedInteractionModels = ImmutableSet.copyOf(supportedInteractionModels);
+	public InvalidIndirectIdentifierException(URI insertedContentRelation, String message) {
+		super(String.format(message,insertedContentRelation));
+		this.insertedContentRelation = insertedContentRelation;
 	}
 
-	public InteractionModel getRequiredInteractionModel() {
-		return requiredInteractionModel;
-	}
-
-	public Set<InteractionModel> getSupportedInteractionModels() {
-		return supportedInteractionModels;
+	public URI getInsertedContentRelation() {
+		return insertedContentRelation;
 	}
 
 }

@@ -209,13 +209,12 @@ public final class EndpointManagementService implements Service {
 			} catch (EndpointNotFoundException e) {
 				throw new EndpointCreationException("Could not calculate path for resource '"+resource.id()+"'",e);
 			} catch (IllegalArgumentException e) {
-				LOGGER.debug("Could not create endpoint",e);
-				// TODO: Define a proper exception
+				LOGGER.debug("Could not create endpoint ({} --> {})",repetitions,candidatePath,e);
 				repetitions++;
 				candidatePath=null;
 			}
 		}
-		throw new EndpointCreationException("Could not create endpoint for resource '"+resource.id()+"'");
+		throw new EndpointCreationException("Could not create endpoint for resource '"+resource.id()+"' after "+MAX_ENDPOINT_CREATION_FAILURE+" tries");
 	}
 
 	public void registerEndpointLifecycleListener(EndpointLifecycleListener listener) {

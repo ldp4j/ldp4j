@@ -270,7 +270,11 @@ public final class DataDSL {
 	}
 
 	public static DataSetBuilder dataSet() {
-		return new DataSetBuilderImpl(new InMemStore());
+		return dataSet(null);
+	}
+
+	public static DataSetBuilder dataSet(Name<?> name) {
+		return new DataSetBuilderImpl(new InMemStore(name));
 	}
 
 }

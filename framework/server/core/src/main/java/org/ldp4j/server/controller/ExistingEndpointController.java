@@ -42,6 +42,8 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.engine.context.ApplicationContextException;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.ContentPreferences;
+import org.ldp4j.application.engine.context.InvalidIndirectIdentifierException;
+import org.ldp4j.application.engine.context.OperationPrecondititionException;
 import org.ldp4j.application.engine.context.PublicBasicContainer;
 import org.ldp4j.application.engine.context.PublicContainer;
 import org.ldp4j.application.engine.context.PublicDirectContainer;
@@ -328,7 +330,7 @@ final class ExistingEndpointController implements EndpointController {
 			InvalidContentException ice=(InvalidContentException)rootCause;
 			if(rootCause instanceof InconsistentContentException) {
 				statusCode=Status.CONFLICT.getStatusCode();
-				body="Specified values for application-managed properties are not consistent with the actual resource state "+rootCause.getMessage();
+				body="Specified values for application-managed properties are not consistent with the actual resource state: "+rootCause.getMessage();
 			} else if(rootCause instanceof UnsupportedContentException) {
 				statusCode=UNPROCESSABLE_ENTITY_STATUS_CODE;
 				body="Could not understand content: "+rootCause.getMessage();
@@ -362,6 +364,17 @@ final class ExistingEndpointController implements EndpointController {
 		ResponseBuilder builder=
 			Response.
 				status(Status.FORBIDDEN).
+				type(MediaType.TEXT_PLAIN).
+				language(Locale.ENGLISH).
+				entity(e.getMessage());
+		addRequiredHeaders(context, builder);
+		return builder.build();
+	}
+
+	private Response processInvalidIndirectIdentifierException(OperationContext context, InvalidIndirectIdentifierException e) {
+		ResponseBuilder builder=
+			Response.
+				status(UNPROCESSABLE_ENTITY_STATUS_CODE).
 				type(MediaType.TEXT_PLAIN).
 				language(Locale.ENGLISH).
 				entity(e.getMessage());
@@ -464,6 +477,10 @@ final class ExistingEndpointController implements EndpointController {
 			return processExecutionException(context, e);
 		} catch (UnsupportedInteractionModelException e) {
 			return processUnsupportedInteractionModelException(context, e);
+		} catch (InvalidIndirectIdentifierException e) {
+			return processInvalidIndirectIdentifierException(context, e);
+		} catch (OperationPrecondititionException e) {
+			return processRuntimeException(context, e);
 		} catch (ApplicationContextException e) {
 			return processRuntimeException(context, e);
 		}

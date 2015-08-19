@@ -39,6 +39,7 @@ import org.ldp4j.application.engine.context.ApplicationContextOperation;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.Capabilities;
 import org.ldp4j.application.engine.context.HttpRequest;
+import org.ldp4j.application.engine.context.InvalidIndirectIdentifierException;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.ext.Application;
@@ -304,6 +305,9 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			processConstraintValidationFailure(resource, e);
 			String errorMessage = applicationFailureMessage(RESOURCE_CREATION_FAILED,endpoint);
 			throw createException(errorMessage,e);
+		} catch (InvalidIndirectIdentifierException e) {
+			// Just rethrow
+			throw e;
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage(RESOURCE_CREATION_FAILED,endpoint);
 			throw createException(errorMessage,e);
