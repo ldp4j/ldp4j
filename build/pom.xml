@@ -85,39 +85,35 @@
 
 		<slf4j.version>1.7.12</slf4j.version>
 		<hamcrest.version>1.3</hamcrest.version>
-		<jmockit.version>1.17</jmockit.version>
+		<jmockit.version>1.19</jmockit.version>
 		<jacoco.version>0.7.4.201502262128</jacoco.version>
-		<mockito.version>1.9.5</mockito.version>
+		<mockito.version>1.10.19</mockito.version>
 		<junit.version>4.12</junit.version>
 		<guava.version>18.0</guava.version>
+		<joda.time.version>2.8.2</joda.time.version>
 		<javassist.version>3.15.0-GA</javassist.version>
-		<jaxb.api.version>2.1</jaxb.api.version>
-		<jaxb.impl.version>2.1.13</jaxb.impl.version>
-		<mysql.version>5.1.13</mysql.version> <!-- Check version -->
 		<commons.io.version>2.4</commons.io.version>
-		<commons.dbcp2.version>2.1</commons.dbcp2.version>
 		<commons.beanutils.version>1.9.2</commons.beanutils.version>
-		<commons.cli.version>1.3</commons.cli.version>
+		<commons.cli.version>1.3.1</commons.cli.version>
 		<commons.codec.version>1.10</commons.codec.version>
 		<commons.collections4.version>4.0</commons.collections4.version>
-		<commons.httpclient.version>3.1</commons.httpclient.version>
-		<commons.lang.version>3.4</commons.lang.version>
 		<commons.lang3.version>3.4</commons.lang3.version>
-		<httpclient.version>4.4.1</httpclient.version>
-		<hsqldb.version>2.3.2</hsqldb.version>
-		<jsr311.api.version>1.1.1</jsr311.api.version>
-		<jtidy.version>r938</jtidy.version>
+		<commons.dbcp2.version>2.1.1</commons.dbcp2.version>
 		<hibernate.version>4.3.8.Final</hibernate.version>
+		<mysql.version>5.1.13</mysql.version> <!-- Check version -->
+		<hsqldb.version>2.3.3</hsqldb.version>
 		<dbunit.version>2.5.1</dbunit.version>
-		<sesame.version>2.2.4</sesame.version>
-		<jena.version>2.13.0</jena.version>
+		<jaxb.api.version>2.1</jaxb.api.version>
+		<jaxb.impl.version>2.1.13</jaxb.impl.version>
 		<jaxb2-basics-runtime.version>0.6.3</jaxb2-basics-runtime.version>
-		<xalan.version>2.7.1</xalan.version>
-		<joda.time.version>2.8.1</joda.time.version>
+		<xalan.version>2.7.2</xalan.version>
+		<jtidy.version>r938</jtidy.version>
 		<spring.version>3.0.7.RELEASE</spring.version>
 		<spring.osgi.version>1.2.0</spring.osgi.version>
 		<org.osgi.core.version>1.0.0</org.osgi.core.version>
-		<cxf.version>2.7.16</cxf.version>
+		<httpclient.version>4.5</httpclient.version>
+		<jsr311.api.version>1.1.1</jsr311.api.version>
+		<cxf.version>2.7.17</cxf.version>
 
 		<sonar.java.plugin.version>2.4</sonar.java.plugin.version>
 
@@ -195,11 +191,6 @@
 				<groupId>javax.ws.rs</groupId>
 				<artifactId>jsr311-api</artifactId>
 				<version>${jsr311.api.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>commons-httpclient</groupId>
-				<artifactId>commons-httpclient</artifactId>
-				<version>${commons.httpclient.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>org.apache.httpcomponents</groupId>
@@ -280,7 +271,7 @@
 			<dependency>
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-lang3</artifactId>
-				<version>${commons.lang.version}</version>
+				<version>${commons.lang3.version}</version>
 			</dependency>
 			<dependency>
 				<groupId>commons-codec</groupId>
@@ -358,24 +349,6 @@
 				<groupId>org.apache.commons</groupId>
 				<artifactId>commons-dbcp2</artifactId>
 				<version>${commons.dbcp2.version}</version>
-			</dependency>
-
-			<!-- RDF support dependencies -->
-			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame</artifactId>
-				<version>${sesame.version}</version>
-			</dependency>
-
-			<dependency>
-				<groupId>org.apache.jena</groupId>
-				<artifactId>jena-core</artifactId>
-				<version>${jena.version}</version>
-			</dependency>
-			<dependency>
-				<groupId>org.apache.jena</groupId>
-				<artifactId>jena-arq</artifactId>
-				<version>${jena.version}</version>
 			</dependency>
 
 			<!-- Logging utilities -->
