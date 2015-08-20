@@ -111,7 +111,7 @@ public final class Path {
 				buffer.addLast(segment);
 			}
 		}
-		return assemblePath(buffer, file);
+		return assembleSegments(buffer, file);
 	}
 
 	private void processParentSegment(Deque<String> buffer) {
@@ -128,7 +128,7 @@ public final class Path {
 		}
 	}
 
-	private String assemblePath(Deque<String> segments, String file) {
+	private String assembleSegments(Deque<String> segments, String file) {
 		StringBuilder builder=new StringBuilder();
 		for(Iterator<String> it=segments.iterator();it.hasNext();) {
 			String segment=it.next();
@@ -244,8 +244,8 @@ public final class Path {
 	}
 
 	/**
-	 * Computes relative relative path to reference "target" from "base". Uses ".." if needed, in
-	 * contrast to {@link URI#relativize(URI)}.
+	 * Computes relative relative path to reference "target" from "base". Uses
+	 * ".." if needed, in contrast to {@link URI#relativize(URI)}.
 	 */
 	public Path relativize(Path path) {
 		Objects.requireNonNull("Path cannot be null");
@@ -290,41 +290,63 @@ public final class Path {
 			return EMPTY_PATH;
 		}
 
+		return
+			assembleRelativeSegments(
+				path,
+				base,
+				getRelativeSegments(
+					unBase.segments(),
+					unPath.segments()));
+	}
+
+	/**
+	 * If there are no segments in the resolved path, and we are trying to
+	 * resolve a directory coming from a path, we have to make explicit that we
+	 * want the directory
+	 */
+	private Path assembleRelativeSegments(Path path, Path base, Deque<String> segments) {
+		if(segments.isEmpty() && path.isDirectory() && base.isFile()) {
+			segments.add(CURRENT);
+		}
+
+		return Path.create(assembleSegments(segments,path.getFile()));
+	}
+
+	private Deque<String> getRelativeSegments(String[] baseSegments,String[] targetSegments) {
+		Deque<String> segments=new LinkedList<String>();
 		// Look for index of last common segment
-		String[] nBaseSegments=unBase.segments();
-		String[] nTargetSegments=unPath.segments();
-		int comparableSegments=
-			Math.min(
-				nBaseSegments.length,
-				nTargetSegments.length);
+		int commonSegments=countCommonSegments(baseSegments, targetSegments);
+		// For each different segment of the base path, add '..' to the
+		// segments of the relative path
+		addParentSegments(segments,baseSegments,commonSegments);
+		// Add each different segment of the input path to the segments of
+		// the relative path
+		addChildSegments(segments,targetSegments,commonSegments);
+		return segments;
+	}
+
+	private void addChildSegments(Deque<String> segments, String[] targetSegments, int commonSegments) {
+		for(int i=commonSegments;i<targetSegments.length;i++) {
+			segments.add(targetSegments[i]);
+		}
+	}
+
+	private void addParentSegments(Deque<String> segments, String[] baseSegments, int commonSegments) {
+		for(int i=commonSegments;i<baseSegments.length;i++) {
+			segments.add(PARENT);
+		}
+	}
+
+	private int countCommonSegments(String[] s1, String[] s2) {
+		int comparableSegments=Math.min(s1.length,s2.length);
 		int commonSegments=0;
 		for(int i=0;i<comparableSegments;i++) {
-			if(!nBaseSegments[i].equals(nTargetSegments[i])) {
+			if(!s1[i].equals(s2[i])) {
 				break;
 			}
 			commonSegments++;
 		}
-
-		// For each different segment of the base path, add '..' to the
-		// segments of the relative path
-		Deque<String> buffer=new LinkedList<String>();
-		for(int i=commonSegments;i<nBaseSegments.length;i++) {
-			buffer.add(PARENT);
-		}
-
-		// Add each different segment of the input path to the segments of
-		// the relative path
-		for(int i=commonSegments;i<nTargetSegments.length;i++) {
-			buffer.add(nTargetSegments[i]);
-		}
-
-		// If there are no segments in the resolved path, and we are trying
-		// to resolve a directory coming from a path, we have to make
-		// explicit that we want the directory
-		if(buffer.isEmpty() && path.isDirectory() && base.isFile()) {
-			buffer.add(CURRENT);
-		}
-		return Path.create(assemblePath(buffer,path.getFile()));
+		return commonSegments;
 	}
 
 	public Path resolve(Path path) {
