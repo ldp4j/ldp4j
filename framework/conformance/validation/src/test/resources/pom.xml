@@ -34,10 +34,10 @@
 
 	<groupId>org.smartdeveloperhub.harvesters.ci.frontend</groupId>
 	<artifactId>ci-frontend-mock</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>${project.version}</version>
 
 	<properties>
-		<ldp4j.version>1.0.0-SNAPSHOT</ldp4j.version>
+		<ldp4j.version>${project.version}</ldp4j.version>
 	</properties>
 
 	<dependencies>

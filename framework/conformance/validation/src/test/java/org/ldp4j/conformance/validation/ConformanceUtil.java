@@ -44,7 +44,7 @@ final class ConformanceUtil {
 			File[] files =
 				Maven.
 					configureResolver().
-						loadPomFromFile("src/test/resources/pom.xml").
+						loadPomFromFile("target/test-classes/pom.xml").
 						importCompileAndRuntimeDependencies().
 						resolve().
 						withTransitivity().

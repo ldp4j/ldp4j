@@ -122,6 +122,7 @@
 		<sonar.maven.plugin.version>2.5</sonar.maven.plugin.version>
 		<taglist.maven.plugin.version>2.4</taglist.maven.plugin.version>
 		<truezip.maven.plugin.version>1.2</truezip.maven.plugin.version>
+		<jgitflow.maven.plugin.version>1.0-m5.1</jgitflow.maven.plugin.version>
 	</properties>
 
 	<build>
@@ -151,6 +152,11 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<groupId>external.atlassian.jgitflow</groupId>
+				<artifactId>jgitflow-maven-plugin</artifactId>
+				<version>${jgitflow.maven.plugin.version}</version>
 			</plugin>
 		</plugins>
 		<pluginManagement>
@@ -297,6 +303,12 @@
 					<groupId>org.codehaus.mojo</groupId>
 					<artifactId>license-maven-plugin</artifactId>
 					<version>${codehaus.license.maven.plugin.version}</version>
+				</plugin>
+
+				<plugin>
+					<groupId>external.atlassian.jgitflow</groupId>
+					<artifactId>jgitflow-maven-plugin</artifactId>
+					<version>${jgitflow.maven.plugin.version}</version>
 				</plugin>
 
 				<!-- ===================== -->
