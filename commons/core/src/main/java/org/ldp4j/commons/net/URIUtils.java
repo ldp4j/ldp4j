@@ -69,33 +69,49 @@ public final class URIUtils {
 		Objects.requireNonNull(base,BASE_URI_CANNOT_BE_NULL);
 		Objects.requireNonNull(target,TARGET_URI_CANNOT_BE_NULL);
 
-		if(base.isOpaque() || target.isOpaque()) {
-			return target;
-		}
-		if(!Objects.equals(base.getScheme(),target.getScheme()) || !Objects.equals(base.getAuthority(),target.getAuthority())) {
-			return target;
-		}
-		URI nBase = base.normalize();
 		URI nTarget = target.normalize();
-		if(nBase.equals(nTarget)) {
-			return URI.create(EMPTY);
+		if(areRelativizable(base,target)) {
+			URI nBase=base.normalize();
+			if(nBase.equals(nTarget)) {
+				nTarget=URI.create(EMPTY);
+			} else {
+				URI walkthrough = absoluteRelativization(nBase,nTarget);
+				if(!(walkthrough.getPath().startsWith(PARENT) && nTarget.getPath().isEmpty())) {
+					nTarget=walkthrough;
+				}
+			}
 		}
-		URI walkthrough = absoluteRelativization(nBase,nTarget);
-		if(walkthrough.getPath().startsWith(PARENT) && nTarget.getPath().isEmpty()) {
-			return nTarget;
-		}
-		return walkthrough;
+		return nTarget;
 	}
 
 	public static URI resolve(URI base, URI target) {
 		Objects.requireNonNull(base,BASE_URI_CANNOT_BE_NULL);
 		Objects.requireNonNull(target,TARGET_URI_CANNOT_BE_NULL);
 
-		if(base.isOpaque() || target.isOpaque()) {
+		if(areOpaque(base, target)) {
 			return target;
 		}
 
 		return relativeResolution(target, base).toURI();
+	}
+
+	private static boolean areRelativizable(URI base, URI target) {
+		return
+			!areOpaque(base, target) &&
+			haveSameScheme(base, target) &&
+			haveSameAuthority(base, target);
+	}
+
+	private static boolean haveSameAuthority(URI base, URI target) {
+		return Objects.equals(base.getAuthority(),target.getAuthority());
+	}
+
+	private static boolean haveSameScheme(URI base, URI target) {
+		return Objects.equals(base.getScheme(),target.getScheme());
+	}
+
+	private static boolean areOpaque(URI base, URI target) {
+		return base.isOpaque() || target.isOpaque();
 	}
 
 	private static boolean defined(String value) {
@@ -331,9 +347,7 @@ public final class URIUtils {
 			String next=null;
 			if(input.startsWith("../")) {
 				next=input.substring(3);
-			} else if(input.startsWith("./")) {
-				next=input.substring(2);
-			} else if(input.startsWith("/./")) {
+			} else if(input.startsWith("./") || input.startsWith("/./")) {
 				next=input.substring(2);
 			} else if("/.".equals(input)) {
 				next=SLASH;
@@ -344,25 +358,28 @@ public final class URIUtils {
 			} else if(PARENT.equals(input) || ".".equals(input)) {
 				next=EMPTY;
 			} else {
-				int nextSlash=0;
-				if(input.startsWith(SLASH)) {
-					nextSlash=input.indexOf('/',1);
-				} else {
-					nextSlash=input.indexOf('/',0);
-				}
-				String nextSegment=null;
-				if(nextSlash<0) {
-					nextSegment=input;
-					next=EMPTY;
-				} else {
-					nextSegment=input.substring(0,nextSlash);
-					next=input.substring(nextSlash);
-				}
-				addSegment(outputBuffer, nextSegment);
+				next=discardSegment(outputBuffer, input);
 			}
 			input=next;
 		}
 		return assembleInOrder(outputBuffer);
+	}
+
+	private static String discardSegment(Deque<String> outputBuffer,String input) {
+		int nextSlash=0;
+		if(input.startsWith(SLASH)) {
+			nextSlash=input.indexOf('/',1);
+		} else {
+			nextSlash=input.indexOf('/',0);
+		}
+		String nextSegment=input;
+		String next=EMPTY;
+		if(nextSlash>=0) {
+			nextSegment=input.substring(0,nextSlash);
+			next=input.substring(nextSlash);
+		}
+		addSegment(outputBuffer, nextSegment);
+		return next;
 	}
 
 	private static String assembleInOrder(Deque<String> outputBuffer) {
