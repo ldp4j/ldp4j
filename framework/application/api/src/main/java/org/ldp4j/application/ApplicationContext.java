@@ -38,6 +38,11 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.*;
 
+
+/**
+ * A proxy class that acts as a facade for interacting with the Application
+ * Engine proactively.
+ */
 public final class ApplicationContext {
 
 	private static final class ApplicationEngineSingleton {
@@ -125,7 +130,7 @@ public final class ApplicationContext {
 		LOGGER.info("Initialized Application Context");
 	}
 
-	private ApplicationContextException failure(Throwable cause,String fmt, Object... args) {
+	private ApplicationContextException failure(Throwable cause, String fmt, Object... args) {
 		String message=String.format(fmt,args);
 
 		if(cause!=null) {
@@ -137,6 +142,15 @@ public final class ApplicationContext {
 		return new ApplicationContextException(message,cause);
 	}
 
+	/**
+	 * Create a {@code WriteSession}. Only one write session can be active per
+	 * thread. Sessions should not be shared among threads.
+	 *
+	 * @return the write session
+	 * @throws ApplicationContextException
+	 *             if no write session can be created for whichever reason,
+	 *             e.g., the Application Engine is off-line or is not available.
+	 */
 	public WriteSession createSession() throws ApplicationContextException {
 		if(this.session.get()!=null) {
 			throw failure(null,"Thread already has an active session");
@@ -151,6 +165,22 @@ public final class ApplicationContext {
 		}
 	}
 
+
+	/**
+	 * Dispose a {@code WriteSession}. Once the session has been disposed it
+	 * will not be active (usable) any longer.
+	 *
+	 * @param session
+	 *            the session to be disposed
+	 * @throws NullPointerException
+	 *             if the session is null.
+	 * @throws IllegalArgumentException
+	 *             if the session to be disposed was not created by the
+	 *             Application Context.
+	 * @throws ApplicationContextException
+	 *             if the session cannot be disposed, e.g., the session is not
+	 *             owned by the current thread.
+	 */
 	public void disposeSession(WriteSession session) throws ApplicationContextException {
 		checkNotNull(session,"Session cannot be null");
 		checkArgument(session instanceof SafeWriteSession,"Unknown session");
@@ -161,6 +191,12 @@ public final class ApplicationContext {
 		safeWriteSession.dispose();
 	}
 
+
+	/**
+	 * Get the Application context.
+	 *
+	 * @return the application context.
+	 */
 	public static ApplicationContext getInstance() {
 		return ApplicationEngineSingleton.SINGLETON;
 	}

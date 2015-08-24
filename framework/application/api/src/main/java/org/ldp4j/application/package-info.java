@@ -24,28 +24,8 @@
  *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
+/**
+ * Classes for interacting with the LDP4j Application Engine.
+ */
 package org.ldp4j.application;
 
-/**
- * Checked exception for the Application Context.
- *
- * This exception may be thrown by the Application Context to signal Application
- * Engine failures or significant precondition failures.
- */
-public class ApplicationContextException extends Exception {
-
-	private static final long serialVersionUID = 5632915619813563619L;
-
-	public ApplicationContextException(String message) {
-		super(message);
-	}
-
-	public ApplicationContextException(Throwable cause) {
-		super(cause);
-	}
-
-	public ApplicationContextException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
-}

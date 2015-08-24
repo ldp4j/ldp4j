@@ -70,4 +70,16 @@
 		</dependency>
 	</dependencies>
 
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<configuration>
+					<excludePackageNames>org.ldp4j.application.data.constraints:org.ldp4j.application.spi</excludePackageNames>
+				</configuration>
+			</plugin>
+		</plugins>
+	</build>
+
 </project>
