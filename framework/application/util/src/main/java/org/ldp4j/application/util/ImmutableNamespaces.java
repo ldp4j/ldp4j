@@ -37,6 +37,15 @@ import org.ldp4j.application.ext.Namespaces;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 
+
+/**
+ * An immutable {@code Namespaces} implementation. <br/>
+ *
+ * An instance of {@code ImmutableNamespaces} contains its own data and will never
+ * change. ImmutableNamespaces is convenient for public static final namespaces
+ * ("constant namespaces") and implements the copy-on-write pattern to easily
+ * make a "defensive copy" of a namespaces provided to your class by a caller.
+ */
 public final class ImmutableNamespaces implements Namespaces {
 
 	private static final String LINE_SEPARATOR = System.lineSeparator();
@@ -47,16 +56,38 @@ public final class ImmutableNamespaces implements Namespaces {
 		this.map=Maps.newHashMap(map);
 	}
 
+	/**
+	 * Create a new empty instance
+	 */
 	public ImmutableNamespaces() {
 		this(Maps.<String,String>newLinkedHashMap());
 	}
 
+	/**
+	 * Create a copy of the namespaces which includes a mapping between a given
+	 * prefix and namespace URI.
+	 *
+	 * @param prefix
+	 *            the prefix to be added
+	 * @param namespaceURI
+	 *            the namespace URI to be mapped to the prefix
+	 * @return a copy of the instance that includes the mapping between the
+	 *         specified namespace URI and prefix.
+	 */
 	public ImmutableNamespaces withPrefix(String prefix, String namespaceURI) {
 		ImmutableNamespaces result=new ImmutableNamespaces(this.map);
 		result.map.put(prefix, namespaceURI);
 		return result;
 	}
 
+	/**
+	 * Create a copy of the namespaces without the prefixes.
+	 *
+	 * @param prefixes
+	 *            the prefixes to be excluded from the copy
+	 * @return a copy of the instance that excludes the mappings for the
+	 *         specified prefixes.
+	 */
 	public ImmutableNamespaces withoutPrefix(String... prefixes) {
 		ImmutableNamespaces result=new ImmutableNamespaces(this.map);
 		for(String prefix:prefixes) {

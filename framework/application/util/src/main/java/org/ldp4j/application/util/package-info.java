@@ -20,54 +20,12 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:1.0.0-SNAPSHOT
- *   Bundle      : ldp4j-application-api-1.0.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-util:1.0.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-util-1.0.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.ext;
-
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
 /**
- * Provides a programmatic mechanism for an LDP4j application to specify the
- * configuration parameters for the <b>LDP4j Application Engine</b>. <br/>
- *
- * This class is meant to be extended (refined) to also include specific
- * configuration requirements of LDP4j applications.
+ * Common utilities for the development of LDP4j Applications.
  */
-public class Configuration {
+package org.ldp4j.application.util;
 
-	private static final class NullNamespaces implements Namespaces {
-		@Override
-		public List<String> getPrefixes(String namespaceURI) {
-			return Collections.emptyList();
-		}
-
-		@Override
-		public String getPrefix(String namespaceURI) {
-			return null;
-		}
-
-		@Override
-		public String getNamespaceURI(String prefix) {
-			return null;
-		}
-
-		@Override
-		public Set<String> getDeclaredPrefixes() {
-			return Collections.emptySet();
-		}
-	}
-
-	/**
-	 * Get the namespace declarations of the application.
-	 *
-	 * @return the namespaces of the application
-	 */
-	public Namespaces namespaces() {
-		return new NullNamespaces();
-	}
-
-}

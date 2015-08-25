@@ -29,14 +29,62 @@ package org.ldp4j.application.ext;
 import java.util.List;
 import java.util.Set;
 
+/**
+ * Interface for read only Namespace processing. <br/>
+ *
+ * A Namespace has the properties: <br/>
+ *
+ * <ul>
+ * <li><b>Namespace URI</b>: Namespace name expressed as a URI to which the
+ * prefix is bound.</li>
+ * <li><b>Prefix</b></li>
+ * </ul>
+ *
+ *<br/>
+ *
+ * Note that a Namespace URI can be bound to multiple prefixes. However a prefix
+ * can only be bound to a single Namespace URI.
+ */
 public interface Namespaces {
 
+	/**
+	 * Get the declared prefixes.
+	 *
+	 * @return the collection of defined prefixes.
+	 */
 	Set<String> getDeclaredPrefixes();
 
+	/**
+	 * Get Namespace URI bound to a prefix.
+	 *
+	 * @param prefix
+	 *            prefix to look up
+	 * @return Namespace URI bound to prefix
+	 * @throws NullPointerException
+	 *             when the prefix is {@code null}
+	 */
 	String getNamespaceURI(String prefix);
 
+	/**
+	 * Get prefix bound to Namespace URI.
+	 *
+	 * @param namespaceURI
+	 *            URI of the Namespace to look up
+	 * @return Prefix bound to the Namespace URI
+	 * @throws NullPointerException
+	 *             when the prefix is {@code null}
+	 */
 	String getPrefix(String namespaceURI);
 
+	/**
+	 * Get prefixes bound to Namespace URI.
+	 *
+	 * @param namespaceURI
+	 *            URI of the Namespace to look up
+	 * @return All the prefixes bound to the Namespace URI
+	 * @throws NullPointerException
+	 *             when the prefix is {@code null}
+	 */
 	List<String> getPrefixes(String namespaceURI);
 
 }

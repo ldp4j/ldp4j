@@ -256,7 +256,7 @@
 									<packages>org.ldp4j.application*</packages>
 								</group>
 							</groups>
-							<excludePackageNames>org.ldp4j.application.data.constraints:org.ldp4j.application.spi</excludePackageNames>
+							<excludePackageNames>org.ldp4j.application.data.spi:org.ldp4j.application.validation</excludePackageNames>
 							<show>protected</show>
 							<quiet>true</quiet>
 							<windowtitle>LDP4j ${project.version} Distribution Public Application API</windowtitle>
