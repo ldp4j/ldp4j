@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.equalTo;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.Date;
 
 import javax.ws.rs.core.Link;
 
@@ -44,6 +45,7 @@ import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpOptions;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
+import org.apache.http.client.utils.DateUtils;
 import org.apache.http.entity.ContentType;
 import org.apache.http.entity.StringEntity;
 import org.jboss.arquillian.container.test.api.Deployment;
@@ -317,7 +319,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		LDP.class,
 		ExceptionPath.class
 	})
@@ -344,4 +345,64 @@ public class ServerFrontendITest {
 		LOGGER.info("Completed {}",testName.getMethodName());
 	}
 
+	/**
+	 * Enforce http://tools.ietf.org/html/rfc7232#section-2.2:
+	 * if the clock in the request is ahead of the clock of the origin
+	 * server (e.g., I request from Spain the update of a resource held in USA)
+	 * the last-modified data should be changed to that of the request and not
+	 * a generated date from the origin server
+	 */
+	@Test
+	@Category({
+		DEBUG.class,
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testProperLastModified(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		long now = System.currentTimeMillis();
+		Date clientPostDate=new Date(now-24*60*60*1000);
+		Date clientPutDate=new Date(now+24*60*60*1000);
+
+		HttpPost post = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH,HttpPost.class);
+		post.setEntity(
+			new StringEntity(
+				TEST_SUITE_BODY,
+				ContentType.create("text/turtle", "UTF-8"))
+		);
+		post.setHeader("Date",DateUtils.formatDate(clientPostDate));
+
+		Metadata postResponse = HELPER.httpRequest(post);
+		assertThat(postResponse.status,equalTo(HttpStatus.SC_CREATED));
+
+		String path=HELPER.relativize(postResponse.location);
+		HttpGet get=HELPER.newRequest(path,HttpGet.class);
+
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(DateUtils.parseDate(getResponse.lastModified).after(clientPostDate),equalTo(true));
+
+		HttpPut put = HELPER.newRequest(path,HttpPut.class);
+		put.setEntity(
+			new StringEntity(
+				getResponse.body,
+				ContentType.create("text/turtle", "UTF-8"))
+		);
+		put.setHeader(HttpHeaders.IF_MATCH,getResponse.etag);
+		put.setHeader("Date",DateUtils.formatDate(clientPutDate));
+
+		Metadata putResponse=HELPER.httpRequest(put);
+		Date lastModified = DateUtils.parseDate(putResponse.lastModified);
+		assertThat(lastModified.getTime(),equalTo(trunk(clientPutDate.getTime())));
+
+		LOGGER.info("Completed {}",testName.getMethodName());
+	}
+
+	private long trunk(long time) {
+		long result = time/1000;
+		result*=1000;
+		return result;
+	}
 }

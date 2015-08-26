@@ -27,6 +27,7 @@
 package org.ldp4j.application.kernel.engine;
 
 import java.net.URI;
+import java.util.Date;
 import java.util.List;
 
 import org.ldp4j.application.data.DataSet;
@@ -176,21 +177,23 @@ final class DefaultApplicationContextHelper {
 		this.templateManagementService = templateManagementService;
 	}
 
-	WriteSessionConfiguration createConfiguration(Resource resource) {
+	WriteSessionConfiguration createConfiguration(Resource resource, Date lastModified) {
 		return
 			WriteSessionConfiguration.
 				builder().
 					withTarget(resource).
+					withLastModified(lastModified).
 					build();
 	}
 
-	WriteSessionConfiguration createConfiguration(Container container, DataSet dataSet, String desiredPath) throws FeatureException {
+	WriteSessionConfiguration createConfiguration(Container container, DataSet dataSet, String desiredPath, Date lastModified) throws FeatureException {
 		return
 			WriteSessionConfiguration.
 				builder().
 					withTarget(container).
 					withPath(desiredPath).
 					withIndirectId(getIndirectId(container, dataSet)).
+					withLastModified(lastModified).
 					build();
 	}
 

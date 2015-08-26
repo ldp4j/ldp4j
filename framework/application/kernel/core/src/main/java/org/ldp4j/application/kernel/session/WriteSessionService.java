@@ -72,11 +72,11 @@ public final class WriteSessionService implements Service {
 
 	private final class ResourceProcessor implements UnitOfWork.Visitor {
 
-		private final Date lastModified;
 		private final DelegatedWriteSession session;
+		private final Date lastModified;
 
-		private ResourceProcessor(Date lastModified, DelegatedWriteSession session) {
-			this.lastModified = lastModified;
+		private ResourceProcessor(DelegatedWriteSession session) {
+			this.lastModified = session.getLastModified();
 			this.session = session;
 		}
 
@@ -159,13 +159,13 @@ public final class WriteSessionService implements Service {
 
 	void commitSession(DelegatedWriteSession session) {
 		logLifecycleMessage("Commiting session...");
-		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date(),session));
+		UnitOfWork.getCurrent().accept(new ResourceProcessor(session));
 		this.transactionManager.currentTransaction().commit();
 	}
 
 	void rollbackSession(DelegatedWriteSession session) {
 		logLifecycleMessage("Rolling back session...");
-		UnitOfWork.getCurrent().accept(new ResourceProcessor(new Date(),session));
+		UnitOfWork.getCurrent().accept(new ResourceProcessor(session));
 		this.transactionManager.currentTransaction().rollback();
 	}
 

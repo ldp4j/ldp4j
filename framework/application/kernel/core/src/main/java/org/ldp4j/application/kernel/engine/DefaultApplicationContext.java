@@ -251,6 +251,22 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return result.getRequest();
 	}
 
+	/**
+	 * Enforce http://tools.ietf.org/html/rfc7232#section-2.2:
+	 * if the clock in the request is ahead of the clock of the origin
+	 * server (e.g., I request from Spain the update of a resource held in USA)
+	 * the last-modified data should be changed to that of the request and not
+	 * a generated date from the origin server
+	 */
+	private Date lastModified() {
+		Date clientDate = currentRequest().clientDate();
+		Date lastModified=new Date();
+		if(clientDate!=null && clientDate.after(lastModified)) {
+			lastModified=clientDate;
+		}
+		return lastModified;
+	}
+
 	private Resource loadResource(ResourceId resourceId) {
 		return this.resourceRepository.resourceById(resourceId,Resource.class);
 	}
@@ -267,7 +283,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			WriteSessionConfiguration config=
 				DefaultApplicationContextHelper.
 					create(this.engine().templateManagementService()).
-						createConfiguration(resource);
+						createConfiguration(resource,lastModified());
 			return this.engine().resourceControllerService().getResource(resource,config);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage(RESOURCE_RETRIEVAL_FAILED,endpoint);
@@ -299,7 +315,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			WriteSessionConfiguration config=
 				DefaultApplicationContextHelper.
 					create(this.engine().templateManagementService()).
-						createConfiguration(resource,dataSet,desiredPath);
+						createConfiguration(resource,dataSet,desiredPath,lastModified());
 			return this.engine().resourceControllerService().createResource(resource,dataSet,config);
 		} catch (FeatureExecutionException e) {
 			processConstraintValidationFailure(resource, e);
@@ -326,7 +342,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			WriteSessionConfiguration config=
 				DefaultApplicationContextHelper.
 					create(this.engine().templateManagementService()).
-						createConfiguration(resource);
+						createConfiguration(resource,lastModified());
 			this.engine().resourceControllerService().deleteResource(resource,config);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage(RESOURCE_DELETION_FAILED,endpoint);
@@ -346,7 +362,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			WriteSessionConfiguration config=
 				DefaultApplicationContextHelper.
 					create(this.engine().templateManagementService()).
-						createConfiguration(resource);
+						createConfiguration(resource,lastModified());
 			this.engine().resourceControllerService().updateResource(resource,dataSet,config);
 		} catch (FeatureExecutionException e) {
 			processConstraintValidationFailure(resource, e);

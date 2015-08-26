@@ -31,6 +31,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.net.URI;
+import java.util.Date;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -240,6 +241,10 @@ final class DelegatedWriteSession implements WriteSession {
 			}
 		}
 		return indirectId;
+	}
+
+	Date getLastModified() {
+		return this.configuration.getLastModified();
 	}
 
 	Status status() {
