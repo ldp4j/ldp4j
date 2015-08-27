@@ -217,6 +217,21 @@ public final class EndpointManagementService implements Service {
 		throw new EndpointCreationException("Could not create endpoint for resource '"+resource.id()+"' after "+MAX_ENDPOINT_CREATION_FAILURE+" tries");
 	}
 
+	/**
+	 * Enforce http://tools.ietf.org/html/rfc7232#section-2.2:
+	 * if the clock in the request is ahead of the clock of the origin
+	 * server (e.g., I request from Spain the update of a resource held in USA)
+	 * the last-modified data should be changed to that of the request and not
+	 * a generated date from the origin server
+	 */
+	private Date getModificationDate(Endpoint endpoint, Date modificationDate) {
+		Date result=endpoint.lastModified();
+		if(modificationDate.after(result)) {
+			result=modificationDate;
+		}
+		return result;
+	}
+
 	public void registerEndpointLifecycleListener(EndpointLifecycleListener listener) {
 		this.listenerManager.registerListener(listener);
 	}
@@ -256,7 +271,10 @@ public final class EndpointManagementService implements Service {
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resource.id());
 		}
-		endpoint.modify(entityTag, lastModified);
+		endpoint.
+			modify(
+				entityTag,
+				getModificationDate(endpoint,lastModified));
 		return endpoint;
 	}
 
@@ -266,7 +284,7 @@ public final class EndpointManagementService implements Service {
 		if(endpoint==null) {
 			throw new EndpointNotFoundException(resource.id());
 		}
-		endpoint.delete(deletionDate);
+		endpoint.delete(getModificationDate(endpoint,deletionDate));
 		this.listenerManager.notify(new EndpointDeletionNotification(endpoint));
 		return endpoint;
 	}
