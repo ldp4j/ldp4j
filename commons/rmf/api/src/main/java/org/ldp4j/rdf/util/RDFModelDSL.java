@@ -358,16 +358,12 @@ public final class RDFModelDSL {
 		return FACTORY.newBlankNode(identity);
 	}
 
-	/**
-	 * TODO: Check if this is an acceptable behaviour. Maybe it is better to
-	 * throw an exception
-	 */
 	public static URIRef uriRef(String identity) {
 		Objects.requireNonNull(identity, IDENTITY_PARAM);
 		try {
 			return uriRef(new URI(identity));
-		} catch (URISyntaxException e) { // NOSONAR
-			return null;
+		} catch (URISyntaxException e) {
+			throw new IllegalArgumentException("Cannot create URIRef from '"+identity+"'",e);
 		}
 	}
 
