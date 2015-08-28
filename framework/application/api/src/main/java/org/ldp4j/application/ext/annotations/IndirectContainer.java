@@ -34,17 +34,54 @@ import java.lang.annotation.Target;
 
 import org.ldp4j.application.ext.ResourceHandler;
 
+/**
+ * Used for defining templates for Indirect Container LDP Resources.
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface IndirectContainer {
+
+	/**
+	 * The identifier of the template. The identifier must be
+	 * application-unique.
+	 */
 	String id();
+
+	/** The human-based name of the template. */
 	String name() default "";
+
+	/** A description of the purpose of the template. */
 	String description() default "";
+
+	/** The attachments of the template. */
 	Attachment[] attachments() default {};
+
+	/**
+	 * The {@code ResourceHandler} class that will handle the member resources
+	 * of the container.
+	 */
 	Class<? extends ResourceHandler> memberHandler();
+
+	/** If defined, the path prefix to be used when publishing member resources. */
 	String memberPath() default "";
+
+	/**
+	 * The membership predicate to use for relating the member resources with
+	 * the container.
+	 */
 	String membershipPredicate() default "http://www.w3.org/ns/ldp#member";
+
+	/**
+	 * The membership relation to use for defining direction of the relationship
+	 * between the member resources with the container .
+	 */
 	MembershipRelation membershipRelation() default MembershipRelation.HAS_MEMBER;
+
+	/**
+	 * The predicate that should be used for specifying the indirect identifier
+	 * (URIRef) of a member of the container
+	 */
 	String insertedContentRelation() default "http://www.w3.org/ns/ldp#MemberSubject";
+
 }

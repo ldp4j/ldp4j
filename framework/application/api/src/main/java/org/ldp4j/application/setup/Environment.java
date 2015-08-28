@@ -29,10 +29,17 @@ package org.ldp4j.application.setup;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
 
+/**
+ * Utility interface for initializing the root resources of an LDP4j
+ * Application. Using this class the application will be able to define the
+ * resources that will be published by default using a predefined path, and
+ * which {@code ResourceHandler} will handle the requests sent to the specified
+ * endpoint.
+ */
 public interface Environment {
 
 	/**
-	 * Publish a resource managed by particular handler class at a given path.
+	 * Publish a resource managed by a particular handler class at a given path.
 	 *
 	 * @param resourceName
 	 *            The name of the resource that is to be published.

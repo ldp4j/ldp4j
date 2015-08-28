@@ -34,14 +34,36 @@ import java.lang.annotation.Target;
 
 import org.ldp4j.application.ext.ResourceHandler;
 
+/**
+ * Used for defining templates for Basic Container LDP Resources.
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface BasicContainer {
+
+	/**
+	 * The identifier of the template. The identifier must be
+	 * application-unique.
+	 */
 	String id();
+
+	/** The human-based name of the template. */
 	String name() default "";
+
+	/** A description of the purpose of the template. */
 	String description() default "";
+
+	/** The attachments of the template. */
 	Attachment[] attachments() default {};
+
+	/**
+	 * The {@code ResourceHandler} class that will handle the member resources
+	 * of the container.
+	 */
 	Class<? extends ResourceHandler> memberHandler();
+
+	/** If defined, the path prefix to be used when publishing member resources. */
 	String memberPath() default "";
+
 }

@@ -32,12 +32,27 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * Used for defining templates for RDF Source LDP resources.
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE})
 public @interface Resource {
+
+	/**
+	 * The identifier of the template. The identifier must be
+	 * application-unique.
+	 */
 	String id();
+
+	/** The human-based name of the template. */
 	String name() default "";
+
+	/** A description of the purpose of the template of the template. */
 	String description() default "";
+
+	/** The attachments of the template. */
 	Attachment[] attachments() default {};
+
 }
