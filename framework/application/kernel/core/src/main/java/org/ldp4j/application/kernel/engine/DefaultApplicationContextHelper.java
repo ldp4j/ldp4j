@@ -149,21 +149,22 @@ final class DefaultApplicationContextHelper {
 				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"No values defined for inserted content relation '%s' for the empty resource");
 			} else if(this.totalValues>1) {
 				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Multiple values defined for inserted content relation '%s' for the empty resource");
-			}
-
-			if(this.literalValues) {
+			} else if(this.literalValues) {
 				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (literal)");
+			} else if(this.strict) {
+				verifyExternalIndividualSpecified();
 			}
-			if(this.strict) {
-				if(this.managedIndividualIds) {
-					throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (managed individual identifier)");
-				} else if(this.localIndividualIds) {
-					throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (local individual identifier)");
-				} else if(this.newIndividualIds) {
-					throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (empty resource)");
-				} else if(this.relativeIndividualIds) {
-					throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (relative individual identifier)");
-				}
+		}
+
+		private void verifyExternalIndividualSpecified() {
+			if(this.managedIndividualIds) {
+				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (managed individual identifier)");
+			} else if(this.localIndividualIds) {
+				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (local individual identifier)");
+			} else if(this.newIndividualIds) {
+				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (empty resource)");
+			} else if(this.relativeIndividualIds) {
+				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (relative individual identifier)");
 			}
 		}
 

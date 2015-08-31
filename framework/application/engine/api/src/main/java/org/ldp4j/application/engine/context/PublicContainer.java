@@ -42,17 +42,15 @@ public interface PublicContainer extends PublicRDFSource {
 	 * @param preferences
 	 *            the preferences to use for creating the resource
 	 * @return the create public resource
-	 * @throws OperationPreconditionException
-	 *             if the data set and preferences do not match with the
-	 *             requirements of the application for the creation of the
-	 *             resource (i.e., invalid indirect id if required, unsupported
-	 *             interaction model)
 	 * @throws ApplicationExecutionException
 	 *             if the application fails to create the resource
+	 * @throws UnsupportedInteractionModelException
+	 *             if the preferred interaction model is not supported
+	 * @throws InvalidIndirectIdentifierException
+	 *             if not valid indirect identifier is specified when trying to
+	 *             create a member in an indirect container
 	 */
 	PublicResource createResource(DataSet dataSet, CreationPreferences preferences)
-			throws
-				ApplicationExecutionException,
-				OperationPrecondititionException;
+			throws 	ApplicationExecutionException;
 
 }

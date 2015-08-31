@@ -160,6 +160,7 @@ public final class Literals {
 				put(
 					Date.class,
 					new DateTimeLiteralBuilderFactory() {
+						@Override
 						public DateTimeLiteralBuilder createBuilder(Object value, URI datatype) {
 							return of((Date)value);
 						}
@@ -168,6 +169,7 @@ public final class Literals {
 				put(
 					GregorianCalendar.class,
 					new DateTimeLiteralBuilderFactory() {
+						@Override
 						public DateTimeLiteralBuilder createBuilder(Object value, URI datatype) {
 							return of((GregorianCalendar)value);
 						}
@@ -176,6 +178,7 @@ public final class Literals {
 				put(
 					Calendar.class,
 					new DateTimeLiteralBuilderFactory() {
+						@Override
 						public DateTimeLiteralBuilder createBuilder(Object value, URI datatype) {
 							return of((Calendar)value);
 						}
@@ -184,6 +187,7 @@ public final class Literals {
 				put(
 					DateTime.class,
 					new DateTimeLiteralBuilderFactory() {
+						@Override
 						public DateTimeLiteralBuilder createBuilder(Object value, URI datatype) {
 							return of((DateTime)value);
 						}
@@ -192,6 +196,7 @@ public final class Literals {
 				put(
 					XMLGregorianCalendar.class,
 					new DateTimeLiteralBuilderFactory() {
+						@Override
 						public DateTimeLiteralBuilder createBuilder(Object value, URI datatype) {
 							return of((XMLGregorianCalendar)value);
 						}
@@ -200,6 +205,7 @@ public final class Literals {
 				put(
 					String.class,
 					new DateTimeLiteralBuilderFactory() {
+						@Override
 						public DateTimeLiteralBuilder createBuilder(Object value, URI datatype) {
 							try {
 								return of(new DateTime(value));
@@ -217,6 +223,7 @@ public final class Literals {
 				put(
 					Datatypes.DATE_TIME,
 					new DateTimeLiteralBuilderAdapter() {
+						@Override
 						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
 							return builder.dateTime();
 						}
@@ -225,6 +232,7 @@ public final class Literals {
 				put(
 					Datatypes.DATE,
 					new DateTimeLiteralBuilderAdapter() {
+						@Override
 						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
 							return builder.date();
 						}
@@ -233,6 +241,7 @@ public final class Literals {
 				put(
 					Datatypes.TIME,
 					new DateTimeLiteralBuilderAdapter() {
+						@Override
 						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
 							return builder.time();
 						}
@@ -241,6 +250,7 @@ public final class Literals {
 				put(
 					Datatypes.GYEAR,
 					new DateTimeLiteralBuilderAdapter() {
+						@Override
 						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
 							return builder.year();
 						}
@@ -249,6 +259,7 @@ public final class Literals {
 				put(
 					Datatypes.GMONTH,
 					new DateTimeLiteralBuilderAdapter() {
+						@Override
 						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
 							return builder.month();
 						}
@@ -257,6 +268,7 @@ public final class Literals {
 				put(
 					Datatypes.GDAY,
 					new DateTimeLiteralBuilderAdapter() {
+						@Override
 						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
 							return builder.day();
 						}
@@ -265,6 +277,7 @@ public final class Literals {
 				put(
 					Datatypes.GYEARMONTH,
 					new DateTimeLiteralBuilderAdapter() {
+						@Override
 						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
 							return builder.yearAndMonth();
 						}
@@ -273,6 +286,7 @@ public final class Literals {
 				put(
 					Datatypes.GMONTHDAY,
 					new DateTimeLiteralBuilderAdapter() {
+						@Override
 						public DateTimeLiteral adapt(DateTimeLiteralBuilder builder) {
 							return builder.monthAndDay();
 						}

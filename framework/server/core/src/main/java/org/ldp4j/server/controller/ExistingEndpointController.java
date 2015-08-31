@@ -42,7 +42,6 @@ import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.engine.context.ApplicationContextException;
 import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.ContentPreferences;
-import org.ldp4j.application.engine.context.InvalidIndirectIdentifierException;
 import org.ldp4j.application.engine.context.OperationPrecondititionException;
 import org.ldp4j.application.engine.context.PublicBasicContainer;
 import org.ldp4j.application.engine.context.PublicContainer;
@@ -371,7 +370,7 @@ final class ExistingEndpointController implements EndpointController {
 		return builder.build();
 	}
 
-	private Response processInvalidIndirectIdentifierException(OperationContext context, InvalidIndirectIdentifierException e) {
+	private Response processOperationPreconditionException(OperationContext context, OperationPrecondititionException e) {
 		ResponseBuilder builder=
 			Response.
 				status(UNPROCESSABLE_ENTITY_STATUS_CODE).
@@ -477,10 +476,8 @@ final class ExistingEndpointController implements EndpointController {
 			return processExecutionException(context, e);
 		} catch (UnsupportedInteractionModelException e) {
 			return processUnsupportedInteractionModelException(context, e);
-		} catch (InvalidIndirectIdentifierException e) {
-			return processInvalidIndirectIdentifierException(context, e);
 		} catch (OperationPrecondititionException e) {
-			return processRuntimeException(context, e);
+			return processOperationPreconditionException(context,e);
 		} catch (ApplicationContextException e) {
 			return processRuntimeException(context, e);
 		}

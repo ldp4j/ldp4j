@@ -227,7 +227,7 @@ abstract class DefaultPublicContainer<T extends ContainerTemplate> extends Defau
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DefaultPublicResource createResource(DataSet dataSet, CreationPreferences preferences) throws ApplicationExecutionException, UnsupportedInteractionModelException {
+	public DefaultPublicResource createResource(DataSet dataSet, CreationPreferences preferences) throws ApplicationExecutionException {
 		verifyInteractionModel(preferences.getInteractionModel());
 		Resource resource=applicationContext().createResource(endpoint(),dataSet,preferences.getPath());
 		return createResource(resource.id());
