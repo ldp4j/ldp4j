@@ -34,14 +34,38 @@ import java.lang.annotation.Target;
 
 import org.ldp4j.application.ext.ResourceHandler;
 
+/**
+ * Used for defining LDP resources that are attached to other LDP resources.
+ */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.ANNOTATION_TYPE})
 public @interface Attachment {
+
+	/**
+	 * The identifier of the attachment. The identifier must be
+	 * template-unique.
+	 */
 	String id();
+
+	/** The human-based name of the attachment. */
 	String name() default "";
+
+	/** A description of the purpose of the attachment. */
 	String description() default "";
+
+	/** The relative path to be used when publishing the attached resource. */
 	String path();
+
+	/**
+	 * If defined, the predicate to be used for relating the attaching resource
+	 * to the attached resource
+	 */
 	String predicate() default "";
+
+	/**
+	 * The {@code ResourceHandler} class that will handle the attached resource.
+	 */
 	Class<? extends ResourceHandler> handler();
+
 }

@@ -35,6 +35,10 @@ import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.kernel.constraints.ConstraintReport;
 import org.ldp4j.application.kernel.constraints.ConstraintReportId;
 
+/**
+ * TODO: Update API to enable using Individual identifiers instead of plain
+ * URIs when dealing with indirect identifiers.
+ */
 public interface Resource {
 
 	ResourceId id();

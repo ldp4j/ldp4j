@@ -27,6 +27,7 @@
 package org.ldp4j.application.kernel.session;
 
 import java.net.URI;
+import java.util.Date;
 
 import org.ldp4j.application.kernel.resource.Resource;
 
@@ -37,8 +38,10 @@ public final class WriteSessionConfiguration {
 	private String path;
 	private URI indirectId;
 	private Resource target;
+	private Date lastModified;
 
 	private WriteSessionConfiguration() {
+		this.lastModified=new Date();
 	}
 
 	private void setPath(String path) {
@@ -47,6 +50,14 @@ public final class WriteSessionConfiguration {
 
 	private void setIndirectId(URI indirectId) {
 		this.indirectId = indirectId;
+	}
+
+	private void setTarget(Resource resource) {
+		this.target=resource;
+	}
+
+	private void setLastModified(Date lastModified) {
+		this.lastModified=lastModified;
 	}
 
 	public Resource getTarget() {
@@ -59,6 +70,10 @@ public final class WriteSessionConfiguration {
 
 	public URI getIndirectId() {
 		return this.indirectId;
+	}
+
+	public Date getLastModified() {
+		return this.lastModified;
 	}
 
 	@Override
@@ -100,14 +115,15 @@ public final class WriteSessionConfiguration {
 			return this;
 		}
 
+		public WriteSessionConfigurationBuilder withLastModified(Date lastModified) {
+			this.configuration.setLastModified(lastModified);
+			return this;
+		}
+
 		public WriteSessionConfiguration build() {
 			return this.configuration;
 		}
 
-	}
-
-	private void setTarget(Resource resource) {
-		this.target=resource;
 	}
 
 }

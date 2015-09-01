@@ -43,6 +43,8 @@ final class TypeDefinition implements Type {
 	private final Category category;
 	private final AtomicReference<List<Property>> properties;
 	
+	private EnumerationHelper<?> helper=null;
+
 	TypeDefinition(String name, String namespace, Category category, Class<?> target) {
 		this.name = name;
 		this.namespace=namespace;
@@ -91,11 +93,17 @@ final class TypeDefinition implements Type {
 		}
 	}
 
+	private EnumerationHelper<?> getHelper() {
+		return helper;
+	}
+
+	private void setHelper(EnumerationHelper<?> helper) {
+		this.helper = helper;
+	}
+
 	static void initiliazeProperties(TypeDefinition definition, List<Property> properties) {
 		definition.setProperties(properties);
 	}
-	
-	private EnumerationHelper<?> helper=null;
 	
 	static void setHelper(TypeDefinition definition, EnumerationHelper<?> helper) {
 		definition.setHelper(helper);
@@ -103,13 +111,5 @@ final class TypeDefinition implements Type {
 	
 	static EnumerationHelper<?> getHelper(TypeDefinition definition) {
 		return definition.getHelper();
-	}
-
-	private EnumerationHelper<?> getHelper() {
-		return helper;
-	}
-
-	private void setHelper(EnumerationHelper<?> helper) {
-		this.helper = helper;
 	}
 }

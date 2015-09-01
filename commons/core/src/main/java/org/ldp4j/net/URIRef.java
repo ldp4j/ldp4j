@@ -26,8 +26,6 @@
  */
 package org.ldp4j.net;
 
-import org.ldp4j.net.URI.Authority;
-import org.ldp4j.net.URI.Path;
 
 final class URIRef {
 
@@ -46,13 +44,13 @@ final class URIRef {
 	}
 
 	URI toURI() {
-		URI u1 = URI.create("/");
-		URI u2 = u1.withScheme(this.scheme);
-		URI u3 = u2.withAuthority(this.authority);
-		URI u4 = u3.withPath(this.path);
-		URI u5 = u4.withQuery(this.query);
-		URI u6 = u5.withFragment(this.fragment);
-		return u6;
+		return
+			URI.create("/").
+				withScheme(this.scheme).
+				withAuthority(this.authority).
+				withPath(this.path).
+				withQuery(this.query).
+				withFragment(this.fragment);
 	}
 
 	static URIRef create(URI ref) {

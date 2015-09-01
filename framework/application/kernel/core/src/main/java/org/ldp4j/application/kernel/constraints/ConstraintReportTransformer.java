@@ -28,6 +28,7 @@ package org.ldp4j.application.kernel.constraints;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.Serializable;
 import java.net.URI;
 import java.util.Date;
 import java.util.Iterator;
@@ -61,6 +62,7 @@ import org.ldp4j.application.data.constraints.Constraints.PropertyConstraint;
 import org.ldp4j.application.data.constraints.Constraints.Shape;
 import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.context.HttpRequest.Header;
+import org.ldp4j.application.engine.context.HttpRequest.ProtocolVersion;
 import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.vocabulary.RDF;
@@ -121,13 +123,14 @@ public final class ConstraintReportTransformer {
 			individualCache.put(individual, externalIndividual(individual.id()));
 		}
 
-		Individual<?,?> translate(Individual<?,?> individual) {
+		@SuppressWarnings("unchecked")
+		<T extends Serializable, S extends Individual<T,S>> Individual<T,S> translate(Individual<T,S> individual) {
 			Individual<?, ?> aNodeInd = this.individualCache.get(individual);
 			if(aNodeInd==null) {
 				individual.accept(this);
 				aNodeInd=this.individualCache.get(individual);
 			}
-			return aNodeInd;
+			return (Individual<T,S>)aNodeInd;
 		}
 	}
 
@@ -246,8 +249,11 @@ public final class ConstraintReportTransformer {
 		requestInd().addValue(httpTerm("methodName"),literal(request.method().toString()));
 		requestInd().addValue(httpTerm("mthd"),externalIndividual(methodsTerm(request.method().toString())));
 		requestInd().addValue(httpTerm("absolutePath"),literal(request.absolutePath()));
-		// TODO: Use the protocol version specified in the request
-		requestInd().addValue(httpTerm("httpVersion"),literal("1.1"));
+		String protocolVersion="1.1";
+		if(!ProtocolVersion.HTTP_1_1.equals(request.protocolVersion())) {
+			protocolVersion="1.0";
+		}
+		requestInd().addValue(httpTerm("httpVersion"),literal(protocolVersion));
 
 		Date clientDate = request.clientDate();
 		if(clientDate!=null) {

@@ -29,22 +29,39 @@ package org.ldp4j.rdf.bean.util;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public final class BeanUtils {
-	
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(BeanUtils.class);
+
 	private BeanUtils() {
 	}
-	
+
 	public static boolean isGetter(Method method) {
-		String name = method.getName();
-		return 
-			(Modifier.isPublic(method.getModifiers())) &&
-			(method.getParameterTypes().length==0) && 
-			(
-				(name.startsWith("get") && name.length()>3) || 
-				(name.startsWith("is") && name.length()>2 && method.getReturnType()==Boolean.TYPE)
-			);
+		return
+			Modifier.isPublic(method.getModifiers()) &&
+			method.getParameterTypes().length==0 &&
+			isProperlyDefined(method);
 	}
-	
+
+	private static boolean isProperlyDefined(Method method) {
+		return
+			isNonBooleanGetter(method) ||
+			isBooleanGetter(method);
+	}
+
+	private static boolean isBooleanGetter(Method method) {
+		String name = method.getName();
+		return name.startsWith("is") && name.length()>2 && method.getReturnType()==Boolean.TYPE;
+	}
+
+	private static boolean isNonBooleanGetter(Method method) {
+		String name = method.getName();
+		return name.startsWith("get") && name.length()>3 && method.getReturnType()!=Void.TYPE;
+	}
+
 	public static Method getSetter(Method getter) {
 		return getSetter(getter.getDeclaringClass(), getPropertyName(getter), getter.getReturnType());
 	}
@@ -73,6 +90,7 @@ public final class BeanUtils {
 		} catch (SecurityException e) {
 			throw new IllegalStateException(e);
 		} catch (NoSuchMethodException e) {
+			LOGGER.trace("Could not find setter method public void {}({}) in class {}",setterName,propertyType.getName(),clazz.getName(),e);
 			candidate=null;
 		}
 		return candidate;
@@ -102,7 +120,7 @@ public final class BeanUtils {
 		chars[0]=Character.toLowerCase(chars[0]);
 		return new String(chars);
 	}
-	
+
 	public static String capitalize(String name) {
 		if(name==null||name.length()==0) {
 			return name;

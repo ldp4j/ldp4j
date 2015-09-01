@@ -62,6 +62,8 @@ import com.google.common.collect.Iterables;
 // TODO: Add support for language
 public final class DataTransformator {
 
+	private static final String MEDIA_TYPE_CANNOT_BE_NULL = "Media type cannot be null";
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(DataTransformator.class);
 
 	private static final ResourceResolver DEFAULT_RESOLVER = new NullResourceResolver();
@@ -196,8 +198,18 @@ public final class DataTransformator {
 		return result;
 	}
 
-	public DataTransformator mediaType(MediaType mediaType) throws UnsupportedMediaTypeException {
-		checkNotNull(mediaType,"Media type cannot be null");
+	/**
+	 * Create transformator with the specified media type
+	 *
+	 * @param mediaType
+	 *            the new media type
+	 * @return a new transformator with the same configuration except for the
+	 *         media type, which is set to the specified one
+	 * @throws UnsupportedMediaTypeException
+	 *             if the media type is not valid
+	 */
+	public DataTransformator mediaType(MediaType mediaType) {
+		checkNotNull(mediaType,MEDIA_TYPE_CANNOT_BE_NULL);
 		DataTransformator result = new DataTransformator(this);
 		result.setMediaType(mediaType);
 		return result;
@@ -225,7 +237,7 @@ public final class DataTransformator {
 
 	public DataSet unmarshall(String entity) throws IOException {
 		checkNotNull(entity,"Entity cannot be null");
-		checkNotNull(mediaType,"Media type cannot be null");
+		checkNotNull(mediaType,MEDIA_TYPE_CANNOT_BE_NULL);
 		LOGGER.trace("Raw entity to unmarshall: \n{}",entity);
 		LOGGER.trace("Unmarshalling using base '{}'...",baseEndpoint());
 		try {
@@ -266,7 +278,7 @@ public final class DataTransformator {
 	}
 
 	public static boolean isSupported(MediaType mediaType) {
-		checkNotNull(mediaType,"Media type cannot be null");
+		checkNotNull(mediaType,MEDIA_TYPE_CANNOT_BE_NULL);
 		Set<MediaType> supportedMediaTypes = supportedMediaTypes();
 		checkState(supportedMediaTypes!=null,"Supported media types cannot be null");
 		boolean supported=false;

@@ -29,9 +29,6 @@ package org.ldp4j.application.engine.context;
 
 public class ApplicationContextException extends RuntimeException {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2573838113976434340L;
 
 	public ApplicationContextException(String message, Throwable t) {

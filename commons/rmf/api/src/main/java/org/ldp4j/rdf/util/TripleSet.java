@@ -30,11 +30,11 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 
-import org.ldp4j.commons.Assertions;
 import org.ldp4j.rdf.Node;
 import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.Triple;
@@ -42,7 +42,7 @@ import org.ldp4j.rdf.URIRef;
 
 public final class TripleSet implements ITripleSet {
 
-	private static final String TRIPLE_MATCHER_PARAM = "tripleMatcher";
+	private static final String TRIPLE_MATCHER_PARAM = "Triple matcher cannot be null";
 
 	private static final class ProtectedIterator implements Iterator<Triple> {
 
@@ -72,7 +72,7 @@ public final class TripleSet implements ITripleSet {
 	private static final Triple[] EMPTY_TRIPLE_ARRAY = new Triple[0];
 
 	private final SortedSet<Triple> triples=new TreeSet<Triple>();
-	
+
 	@Override
 	public TripleSet get(Resource<?> subject, URIRef predicate, Node object) {
 		return get(new TriplePatternMatcher(subject, predicate, object));
@@ -80,7 +80,7 @@ public final class TripleSet implements ITripleSet {
 
 	@Override
 	public TripleSet get(ITripleMatcher tripleMatcher) {
-		Assertions.notNull(tripleMatcher, TRIPLE_MATCHER_PARAM);
+		Objects.requireNonNull(tripleMatcher, TRIPLE_MATCHER_PARAM);
 		TripleSet result=new TripleSet();
 		for(Triple t:triples) {
 			if(tripleMatcher.accept(t)) {
@@ -96,7 +96,7 @@ public final class TripleSet implements ITripleSet {
 	}
 
 	@Override
-	public <T extends Iterable<Triple>> boolean containsAll(T triples) { 
+	public <T extends Iterable<Triple>> boolean containsAll(T triples) {
 		boolean contains=true;
 		for(Iterator<Triple> i=triples.iterator();i.hasNext() && contains;) {
 			contains=this.triples.contains(i.next());
@@ -144,9 +144,9 @@ public final class TripleSet implements ITripleSet {
 	}
 
 	public void add(Resource<?> subject, URIRef predicate, Node object) {
-		Assertions.notNull(subject, "subject");
-		Assertions.notNull(predicate, "predicate");
-		Assertions.notNull(object, "object");
+		Objects.requireNonNull(subject, "Subject cannot be null");
+		Objects.requireNonNull(predicate, "Predicate cannot be null");
+		Objects.requireNonNull(object, "Object cannot be null");
 		add(RDFModelDSL.triple(subject,predicate,object));
 	}
 
@@ -173,7 +173,7 @@ public final class TripleSet implements ITripleSet {
 	}
 
 	public void remove(ITripleMatcher tripleMatcher) {
-		Assertions.notNull(tripleMatcher, TRIPLE_MATCHER_PARAM);
+		Objects.requireNonNull(tripleMatcher, TRIPLE_MATCHER_PARAM);
 		Set<Triple> result=new HashSet<Triple>();
 		for(Triple t:triples) {
 			if(!tripleMatcher.accept(t)) {
@@ -182,7 +182,7 @@ public final class TripleSet implements ITripleSet {
 		}
 		triples.removeAll(result);
 	}
-	
+
 	public void clear() {
 		this.triples.clear();
 	}

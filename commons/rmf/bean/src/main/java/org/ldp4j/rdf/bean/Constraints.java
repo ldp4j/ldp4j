@@ -39,43 +39,41 @@ import java.util.Set;
 import org.ldp4j.rdf.bean.annotations.AtLeast;
 import org.ldp4j.rdf.bean.annotations.AtMost;
 import org.ldp4j.rdf.bean.annotations.CardinalityConstraint;
+import org.ldp4j.rdf.bean.annotations.CardinalityConstraint.CardinalityAdapter;
 import org.ldp4j.rdf.bean.annotations.Optional;
 import org.ldp4j.rdf.bean.annotations.Range;
 import org.ldp4j.rdf.bean.annotations.Unbound;
-import org.ldp4j.rdf.bean.annotations.CardinalityConstraint.CardinalityAdapter;
 
 public final class Constraints {
 
 	public interface ConstraintDefinitionContext<T extends Member & AnnotatedElement> {
-		
+
 		Class<?> getPropertyType();
-		
+
 		T getAnnotatedMember();
-		
+
 	}
 
 	public static class ConstraintViolationException extends InvalidDefinitionException {
-	
-		/**
-		 * 
-		 */
+
 		private static final long serialVersionUID = -8229664315206414875L;
-	
-		private final Annotation constraint;
-		private final Member member;
-		private final List<String> violations;
-	
+
+		private final String constraint;
+		private final String member;
+
+		private final List<String> violations; // NOSONAR
+
 		public ConstraintViolationException(Annotation constraint, Member member, List<String> violations) {
 			this(message(constraint,member,violations),constraint,member,violations);
 		}
-	
+
 		public ConstraintViolationException(String message, Annotation constraint, Member member, List<String> violations) {
 			super(message);
-			this.constraint = constraint;
-			this.member = member;
-			this.violations = Collections.unmodifiableList(new ArrayList<String>(violations));
+			this.constraint = constraint.toString();
+			this.member=member.toString();
+			this.violations=new ArrayList<String>(violations);
 		}
-	
+
 		private static String message(Annotation constraint, Member member, List<String> violations) {
 			StringWriter result = new StringWriter();
 			PrintWriter out=new PrintWriter(result);
@@ -85,19 +83,19 @@ public final class Constraints {
 			}
 			return result.toString();
 		}
-	
-		public Member getMember() {
-			return member;
+
+		public String getConstraint() {
+			return this.constraint;
 		}
-	
+
+		public String getMember() {
+			return this.member;
+		}
+
 		public List<String> getViolations() {
-			return violations;
+			return Collections.unmodifiableList(violations);
 		}
-	
-		public Annotation getConstraint() {
-			return constraint;
-		}
-	
+
 	}
 
 	private static class DefaultCardinality implements Cardinality {
@@ -109,7 +107,7 @@ public final class Constraints {
 			this.allowsRepetitions = List.class.isAssignableFrom(clazz);
 			this.simple=!(List.class.isAssignableFrom(clazz) || Set.class.isAssignableFrom(clazz));
 		}
-		
+
 		@Override
 		public int min() {
 			return 1;
@@ -134,12 +132,12 @@ public final class Constraints {
 		public final boolean allowsRepetitions() {
 			return !simple && allowsRepetitions;
 		}
-		
+
 		@Override
 		public String toString() {
 			return "Cardinality [repetitions=" + allowsRepetitions()+ ", min="+ min() + ", max=" + (isUnbounded()?"UNBOUND":Integer.toString(max())) + "]";
 		}
-		
+
 	}
 
 	public static final class UnboundCardinalityConstraintAdapter implements CardinalityAdapter<Unbound> {
@@ -182,7 +180,7 @@ public final class Constraints {
 				public int min() {
 					return 0;
 				}
-				
+
 				@Override
 				public int max() {
 					return constraint.max();
@@ -202,7 +200,7 @@ public final class Constraints {
 				public int min() {
 					return constraint.min();
 				}
-				
+
 				@Override
 				public int max() {
 					return -1;
@@ -221,7 +219,7 @@ public final class Constraints {
 				public int min() {
 					return constraint.min();
 				}
-				
+
 				@Override
 				public int max() {
 					return constraint.max();
@@ -229,7 +227,7 @@ public final class Constraints {
 			};
 		}
 	}
-	
+
 	static List<Cardinality> getCardinalityConstraints(ConstraintDefinitionContext<?> context) {
 		List<Cardinality> constraints=new ArrayList<Cardinality>();
 		for(Annotation annotation:context.getAnnotatedMember().getDeclaredAnnotations()) {
@@ -281,9 +279,9 @@ public final class Constraints {
 			throw new IllegalStateException(e);
 		}
 	}
-	
+
  	private static final class CardinalityConstraintValidator {
-		
+
 		private final ConstraintDefinitionContext<?> context;
 
 		private CardinalityConstraintValidator(ConstraintDefinitionContext<?> context) {
@@ -295,7 +293,7 @@ public final class Constraints {
 			if(meta==null) {
 				throw new IllegalStateException("Annotation '"+constraint.annotationType()+"' is not a cardinality constraint");
 			}
-			
+
 			List<String> violations=new ArrayList<String>();
 
 			verifyConstraintApplicability(context.getPropertyType(), meta.appliesTo(), violations);
@@ -347,21 +345,21 @@ public final class Constraints {
 				violations.add(String.format("Min cardinality cannot be lower than 1 (%s)",constraint.min()));
 			}
 		}
-		
+
 		private boolean isApplicableTo(Class<?> propertyType, Class<?>[] applicableTypes) {
 			boolean canBeApplied=false;
 			for(int i=0;i<applicableTypes.length && !canBeApplied;i++) {
 				canBeApplied=applicableTypes[i]==Object.class;
 				if(!canBeApplied) {
-					canBeApplied=applicableTypes[i].isAssignableFrom(propertyType); 
+					canBeApplied=applicableTypes[i].isAssignableFrom(propertyType);
 				}
 			}
 			return canBeApplied;
 		}
-		
+
 		static CardinalityConstraintValidator newInstance(ConstraintDefinitionContext<?> context) {
 			return new CardinalityConstraintValidator(context);
 		}
 	}
-	
+
 }

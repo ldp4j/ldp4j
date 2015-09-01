@@ -42,18 +42,18 @@ final class ImmutableHttpRequest implements HttpRequest {
 	private final ProtocolVersion protocolVersion;
 	private final String host;
 	private final String absolutePath;
-	private final String entity;
+	private final String body;
 	private final ImmutableList<Header> headers;
 	private final Date serverDate;
 	private final Date clientDate;
 
-	ImmutableHttpRequest(HttpMethod method, ProtocolVersion protocolVersion, String absolutePath, String host, List<ImmutableHeader> headers, String entity, Date serverDate, Date clientaDate) { // NOSONAR
+	ImmutableHttpRequest(HttpMethod method, ProtocolVersion protocolVersion, String absolutePath, String host, List<ImmutableHeader> headers, String body, Date serverDate, Date clientaDate) { // NOSONAR
 		this.protocolVersion = protocolVersion;
 		this.method=method;
 		this.absolutePath = absolutePath;
 		this.host = host;
 		this.headers = ImmutableList.<Header>copyOf(headers);
-		this.entity = entity;
+		this.body = body;
 		this.serverDate = serverDate;
 		this.clientDate = clientaDate;
 	}
@@ -86,7 +86,7 @@ final class ImmutableHttpRequest implements HttpRequest {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public ProtocolVersion version() {
+	public ProtocolVersion protocolVersion() {
 		return this.protocolVersion;
 	}
 
@@ -103,7 +103,7 @@ final class ImmutableHttpRequest implements HttpRequest {
 	 */
 	@Override
 	public String body() {
-		return this.entity;
+		return this.body;
 	}
 
 	/**
@@ -111,10 +111,7 @@ final class ImmutableHttpRequest implements HttpRequest {
 	 */
 	@Override
 	public Date serverDate() {
-		if(this.serverDate==null) {
-			return null;
-		}
-		return new Date(this.serverDate.getTime());
+		return DateUtil.copy(this.serverDate);
 	}
 
 	/**
@@ -122,10 +119,7 @@ final class ImmutableHttpRequest implements HttpRequest {
 	 */
 	@Override
 	public Date clientDate() {
-		if(this.clientDate==null) {
-			return null;
-		}
-		return new Date(this.clientDate.getTime());
+		return DateUtil.copy(this.clientDate);
 	}
 
 	/**
@@ -140,11 +134,11 @@ final class ImmutableHttpRequest implements HttpRequest {
 					add("method",this.method).
 					add("absolutePath",this.absolutePath).
 					add("host",this.host).
-					add("version",this.protocolVersion).
+					add("protocolVersion",this.protocolVersion).
 					add("serverDate",this.serverDate).
 					add("clientDate",this.clientDate).
 					add("headers",this.headers).
-					add("entity",this.entity).
+					add("body",this.body).
 					toString();
 	}
 

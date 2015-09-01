@@ -48,28 +48,28 @@ import org.slf4j.LoggerFactory;
 final class PropertyFactory {
 
 	private class PropertyDefinitionBuilder {
-		
+
 		private org.ldp4j.rdf.bean.annotations.Property property;
 		private String defaultName;
 		private Class<?> domain;
 		private Range range;
 		private Cardinality cardinality;
 		private List<Annotation> cardinalityConstraints;
-	
+
 		private PropertyDefinitionBuilder() {
 		}
-		
+
 		private Property assemble(PropertyEditor editor) {
 			String name=StringUtils.nonEmptyOrDefault(property.name(),defaultName);
 			String namespace=StringUtils.nonEmptyOrDefault(property.namespace(),defaultNamespace);
 			return new PropertyDefinition(name, namespace, domain, range, cardinality, editor);
 		}
-		
+
 		private PropertyDefinitionBuilder withDefaultName(String name) {
 			this.defaultName=name;
 			return this;
 		}
-		
+
 		private void dumpDescriptor(PropertyDescriptor descriptor) {
 			if(LOGGER.isTraceEnabled()){
 				LOGGER.trace(
@@ -105,15 +105,15 @@ final class PropertyFactory {
 			this.cardinality=CardinalityDefinition.fromConstraints(type,cardinalityConstraints);
 			return this;
 		}
-		
+
 		Property forDescriptor(PropertyDescriptor descriptor) {
 			dumpDescriptor(descriptor);
-			return 
+			return
 				withDefaultName(descriptor.getName()).
 				withRange(descriptor.getGenericPropertyType()).
 				assemble(descriptor.getPropertyEditor());
 		}
-		
+
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(PropertyScanner.class);
@@ -130,14 +130,14 @@ final class PropertyFactory {
 	boolean isAnnotated(AnnotatedElement element) {
 		return element.isAnnotationPresent(org.ldp4j.rdf.bean.annotations.Property.class);
 	}
-	
+
 	<T extends AnnotatedElement & Member> Property assemble(T member, PropertyDescriptor descriptor) {
-		return 
+		return
 			new PropertyDefinitionBuilder().
 				withAnnotatedMember(member).
 				forDescriptor(descriptor);
 	}
-	
+
 	Property createDefinition(Method getter) {
 		assert isAnnotated(getter) : "Method '"+getter+"' is not annotated with '"+Property.class+"'";
 		PropertyDescriptor descriptor=PropertyDescriptor.newDescriptor(getter);
@@ -153,68 +153,134 @@ final class PropertyFactory {
 		verifyPropertyWritability(field);
 		return assemble(field,descriptor);
 	}
-	
-	private void verifyGetterModifiers(Method getter) {
-		int modifiers = getter.getModifiers();
-		if(Modifier.isPrivate(modifiers)) {
-			throw new InvalidDefinitionException("Private methods cannot be annotated as '"+Property.class.getCanonicalName()+"'");
-		}
-		if(Modifier.isProtected(modifiers)) {
-			throw new InvalidDefinitionException("Protected methods cannot be annotated as '"+Property.class.getCanonicalName()+"'");
-		}
-		if(Modifier.isAbstract(modifiers)) {
-			throw new InvalidDefinitionException("Abstract methods cannot be annotated as '"+Property.class.getCanonicalName()+"'");
-		}
-		if(Modifier.isStatic(modifiers)) {
-			throw new InvalidDefinitionException("Static methods cannot be annotated as '"+Property.class.getCanonicalName()+"'");
-		}
-	}
-
-	private void verifyGetterCompliance(Method getter) {
-		String methodName = getter.getName();
-		if(!((methodName.startsWith("get") && methodName.length()>3) || !(methodName.startsWith("is") && methodName.length()>2 && getter.getReturnType() == Void.TYPE ))) {
-			throw new InvalidDefinitionException("Only methods following the getter naming convention can be annotated as '"+Property.class.getCanonicalName()+"': found '"+methodName+"'");
-		}
-		if(getter.getParameterTypes().length!=0) {
-			throw new InvalidDefinitionException("Only getter methods can be annotated as '"+Property.class.getCanonicalName()+"': method '"+methodName+"' has parameters");
-		}
-		Class<?> tmp = getter.getReturnType();
-		if(tmp.equals(Void.TYPE) || tmp.equals(Void.class)) {
-			throw new InvalidDefinitionException("Only getter methods can be annotated as '"+Property.class.getCanonicalName()+"': method '"+methodName+"' does return value");
-		}
-	}
-
-	private void verifyPropertyWritability(Method setter) {
-		if(setter==null) {
-			throw new InvalidDefinitionException("Property cannot be written");
-		}
-		int modifiers = setter.getModifiers();
-		if(Modifier.isPrivate(modifiers)) {
-			throw new InvalidDefinitionException("Setter method cannot be private");
-		}
-		if(Modifier.isProtected(modifiers)) {
-			throw new InvalidDefinitionException("Setter method cannot be protected");
-		}
-		if(Modifier.isAbstract(modifiers)) {
-			throw new InvalidDefinitionException("Setter method cannot be abstract");
-		}
-		if(Modifier.isStatic(modifiers)) {
-			throw new InvalidDefinitionException("Setter method cannot be static");
-		}
-	}
-
-	private void verifyPropertyWritability(Field field) {
-		int modifiers = field.getModifiers();
-		if(Modifier.isFinal(modifiers)) {
-			throw new InvalidDefinitionException("Final fields cannot be annotated as '"+Property.class.getCanonicalName()+"'");
-		}
-		if(Modifier.isStatic(modifiers)) {
-			throw new InvalidDefinitionException("Static fields cannot be annotated as '"+Property.class.getCanonicalName()+"'");
-		}
-	}
 
 	private Range getPropertyRange(Type type) {
 		return new RangeExtractor(typeManager).getRange(type);
+	}
+
+	private static void fail(String message, Object... args) {
+		throw new InvalidDefinitionException(String.format(message,args));
+	}
+
+	private static void verifyGetterModifiers(Method getter) {
+		int modifiers = getter.getModifiers();
+		assertGetterIsNotPrivate(modifiers);
+		assertGetterIsNotProtected(modifiers);
+		assertGetterIsNotAbstract(modifiers);
+		assertGetterIsNotStatic(modifiers);
+	}
+
+	private static void verifyGetterCompliance(Method getter) {
+		String methodName = getter.getName();
+		boolean booleanGetter = assertGetterNameIsValid(methodName);
+		assertGetterHasNoParameters(getter, methodName);
+		assertGetterHasProperReturnType(getter, methodName, booleanGetter);
+	}
+
+	private static void verifyPropertyWritability(Method setter) {
+		assertSetterExists(setter);
+		int modifiers = setter.getModifiers();
+		assertSetterIsNotPrivate(modifiers);
+		assertSetterIsNotProtected(modifiers);
+		assertSetterIsNotAbstract(modifiers);
+		assertSetterIsNotStatic(modifiers);
+	}
+
+	private static void verifyPropertyWritability(Field field) {
+		int modifiers = field.getModifiers();
+		if(Modifier.isFinal(modifiers)) {
+			fail("Final fields cannot be annotated as '%s'",Property.class.getName());
+		}
+		if(Modifier.isStatic(modifiers)) {
+			fail("Static fields cannot be annotated as '%s'",Property.class.getName());
+		}
+	}
+
+	private static void assertGetterIsNotStatic(int modifiers) {
+		if(Modifier.isStatic(modifiers)) {
+			fail("Static methods cannot be annotated as '%s'",Property.class.getName());
+		}
+	}
+
+	private static void assertGetterIsNotAbstract(int modifiers) {
+		if(Modifier.isAbstract(modifiers)) {
+			fail("Abstract methods cannot be annotated as '%s'",Property.class.getName());
+		}
+	}
+
+	private static void assertGetterIsNotProtected(int modifiers) {
+		if(Modifier.isProtected(modifiers)) {
+			fail("Protected methods cannot be annotated as '%s'",Property.class.getName());
+		}
+	}
+
+	private static void assertGetterIsNotPrivate(int modifiers) {
+		if(Modifier.isPrivate(modifiers)) {
+			fail("Private methods cannot be annotated as '%s'",Property.class.getName());
+		}
+	}
+
+	private static void assertGetterHasProperReturnType(Method getter, String methodName, boolean booleanGetter) {
+		Class<?> tmp = getter.getReturnType();
+		if(tmp.equals(Void.TYPE) || tmp.equals(Void.class)) {
+			fail("Only getter methods can be annotated as '%s': method '%s' does not return value",Property.class.getName(),methodName);
+		}
+
+		if(booleanGetter && !tmp.equals(Boolean.TYPE)) {
+			fail("Only getter methods can be annotated as '%s': method '%s' should return a boolean value",Property.class.getName(),methodName);
+		}
+	}
+
+	private static void assertGetterHasNoParameters(Method getter, String methodName) {
+		if(getter.getParameterTypes().length!=0) {
+			fail("Only getter methods can be annotated as '%s': method '%s' has parameters",Property.class.getName(),methodName);
+		}
+	}
+
+	private static boolean assertGetterNameIsValid(String methodName) {
+		boolean booleanGetter = isBooleanGetterName(methodName);
+		if(!booleanGetter && !isNonBooleanGetterName(methodName)) {
+			fail("Only methods following the getter naming convention can be annotated as '%s': found '%s'",Property.class.getName(),methodName);
+		}
+		return booleanGetter;
+	}
+
+	private static boolean isBooleanGetterName(String methodName) {
+		return methodName.startsWith("is") && methodName.length()>2 && Character.isUpperCase(methodName.charAt(2));
+	}
+
+	private static boolean isNonBooleanGetterName(String methodName) {
+		return methodName.startsWith("get") && methodName.length()>3 && Character.isUpperCase(methodName.charAt(3));
+	}
+
+	private static void assertSetterIsNotStatic(int modifiers) {
+		if(Modifier.isStatic(modifiers)) {
+			fail("Setter method cannot be static");
+		}
+	}
+
+	private static void assertSetterIsNotAbstract(int modifiers) {
+		if(Modifier.isAbstract(modifiers)) {
+			fail("Setter method cannot be abstract");
+		}
+	}
+
+	private static void assertSetterIsNotProtected(int modifiers) {
+		if(Modifier.isProtected(modifiers)) {
+			fail("Setter method cannot be protected");
+		}
+	}
+
+	private static void assertSetterIsNotPrivate(int modifiers) {
+		if(Modifier.isPrivate(modifiers)) {
+			fail("Setter method cannot be private");
+		}
+	}
+
+	private static void assertSetterExists(Method setter) {
+		if(setter==null) {
+			fail("Property cannot be written");
+		}
 	}
 
 }

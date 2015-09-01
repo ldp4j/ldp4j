@@ -48,13 +48,13 @@ import org.ldp4j.rdf.bean.annotations.Unbound;
 final class CardinalityDefinition implements Cardinality {
 
 	private static final class CardinalityConstraintValidator {
-		
+
 		private static final class Acumulator {
-			
+
 			private Integer value;
 			private boolean redefined;
 			private boolean overriden;
-			
+
 			public void setValue(int value) {
 				if(this.value==null) {
 					this.value=value;
@@ -65,22 +65,22 @@ final class CardinalityDefinition implements Cardinality {
 					}
 				}
 			}
-		
+
 			public int getValue() {
 				return value;
 			}
-			
+
 			public boolean isDefined() {
 				return !redefined && value!=null;
 			}
-		
+
 			@SuppressWarnings("unused")
 			public boolean isOverriden() {
 				return overriden;
 			}
-		
+
 		}
-	
+
 		private final Acumulator min=new Acumulator();
 		private final Acumulator max=new Acumulator();
 		private final Map<String,String> violations=new HashMap<String,String>();
@@ -89,23 +89,11 @@ final class CardinalityDefinition implements Cardinality {
 		private boolean unbound;
 		private boolean simple;
 		private boolean repetitions;
-		
+
 		CardinalityConstraintValidator(List<Annotation> constraints) {
 			this.constraints = constraints;
 			for(Annotation genericConstraint:constraints) {
-				if(genericConstraint instanceof AtLeast) {
-					validateAtLeast((AtLeast)genericConstraint);
-				} else if(genericConstraint instanceof AtMost) {
-					validateAtMost((AtMost)genericConstraint);
-				} else if(genericConstraint instanceof Range) {
-					validatRange((Range)genericConstraint);
-				} else if(genericConstraint instanceof Optional) {
-					this.optional=true;
-				} else if(genericConstraint instanceof Unbound) {
-					this.unbound=true;
-				} else {
-					addViolation("assertion","Unsupported cardinality constraint '"+genericConstraint.getClass().getCanonicalName()+"'");
-				}
+				validateGenericConstraint(genericConstraint);
 			}
 			if(isUnbound() && hasMax() ) {
 				addViolation("Cannot have max cardinality if unbound");
@@ -114,27 +102,43 @@ final class CardinalityDefinition implements Cardinality {
 				addViolation("Cannot have min cardinality if optional");
 			}
 		}
-		
+
+		private void validateGenericConstraint(Annotation genericConstraint) {
+			if(genericConstraint instanceof AtLeast) {
+				validateAtLeast((AtLeast)genericConstraint);
+			} else if(genericConstraint instanceof AtMost) {
+				validateAtMost((AtMost)genericConstraint);
+			} else if(genericConstraint instanceof Range) {
+				validatRange((Range)genericConstraint);
+			} else if(genericConstraint instanceof Optional) {
+				this.optional=true;
+			} else if(genericConstraint instanceof Unbound) {
+				this.unbound=true;
+			} else {
+				addViolation("assertion","Unsupported cardinality constraint '"+genericConstraint.getClass().getCanonicalName()+"'");
+			}
+		}
+
 		private void addViolation(String violation) {
 			addViolation("combination", violation);
 		}
-	
+
 		private void addViolation(String source, String violation) {
 			violations.put(source, violation);
 		}
-	
+
 		private void addViolation(Annotation source, String violation) {
 			addViolation(source.annotationType().getSimpleName(), violation);
 		}
-		
+
 		private void setMin(int min) {
 			this.min.setValue(min);
 		}
-		
+
 		private void setMax(int max) {
 			this.max.setValue(max);
 		}
-	
+
 		private void validatRange(Range constraint) {
 			if(constraint.min()<0) {
 				addViolation(constraint,"Min cardinality cannot be lower than 0");
@@ -148,49 +152,49 @@ final class CardinalityDefinition implements Cardinality {
 			setMin(constraint.min());
 			setMax(constraint.max());
 		}
-	
+
 		private void validateAtMost(AtMost constraint) {
 			if(constraint.max()<2) {
 				addViolation(constraint,"Max cardinality cannot be lower than 2");
 			}
 			setMin(constraint.max());
 		}
-	
+
 		private void validateAtLeast(AtLeast constraint) {
 			if(constraint.min()<1) {
 				addViolation(constraint,"Min cardinality cannot be lower than 1");
 			}
 			setMin(constraint.min());
 		}
-		
+
 		public boolean isOptional() {
 			return optional;
 		}
-		
+
 		public boolean isUnbound() {
 			return unbound;
 		}
-		
+
 		public boolean hasMin() {
 			return min.isDefined();
 		}
-		
+
 		public boolean hasMax() {
 			return max.isDefined();
 		}
-		
+
 		public int min() {
 			if(hasMin()) {
 				return min.getValue();
 			} else {
 				if(isOptional()) {
-					return 0; 
+					return 0;
 				} else {
 					return 1;
 				}
 			}
 		}
-		
+
 		public int max() {
 			if(hasMax()) {
 				return max.getValue();
@@ -202,7 +206,7 @@ final class CardinalityDefinition implements Cardinality {
 				}
 			}
 		}
-		
+
 		public boolean isValid(java.lang.reflect.Type type) {
 			boolean result = violations.isEmpty();
 			if(result) {
@@ -221,30 +225,35 @@ final class CardinalityDefinition implements Cardinality {
 					this.simple=!TypeSupport.isAggregation(clazz);
 					this.repetitions=this.simple?false:TypeSupport.isRepeatable(clazz);
 					for(Annotation constraint:constraints) {
-						CardinalityConstraint cc = constraint.annotationType().getAnnotation(CardinalityConstraint.class);
-						Class<?>[] appliesTo = cc.appliesTo();
-						boolean canBeApplied=false;
-						for(int i=0;i<appliesTo.length && !canBeApplied;i++) {
-							canBeApplied=appliesTo[i].isAssignableFrom(clazz); 
-						}
-						if(!canBeApplied) {
-							addViolation(constraint,"Constraint cannot be applied to type '"+type+"'");
-						}
+						CardinalityConstraint cc=
+							constraint.
+								annotationType().
+								getAnnotation(CardinalityConstraint.class);
+						verifyApplicability(type,clazz,constraint,cc.appliesTo());
 					}
 				}
 				result=violations.isEmpty();
 			}
 			return result;
 		}
-		
+
+		private void verifyApplicability(java.lang.reflect.Type type, Class<?> clazz, Annotation constraint, Class<?>[] appliesTo) {
+			for(int i=0;i<appliesTo.length;i++) {
+				if(!appliesTo[i].isAssignableFrom(clazz)) {
+					addViolation(constraint,"Constraint cannot be applied to type '"+type+"'");
+					break;
+				}
+			}
+		}
+
 		public boolean isSimple() {
 			return simple;
 		}
-		
+
 		public boolean isRepeteable() {
 			return repetitions;
 		}
-		
+
 		public String getReport() {
 			StringWriter result = new StringWriter();
 			PrintWriter out=new PrintWriter(result);
@@ -256,7 +265,7 @@ final class CardinalityDefinition implements Cardinality {
 		}
 	}
 
-	private final boolean repetitions;	
+	private final boolean repetitions;
 	private final int min;
 	private final int max;
 
@@ -270,22 +279,22 @@ final class CardinalityDefinition implements Cardinality {
 	public int min() {
 		return min;
 	}
-	
+
 	@Override
 	public int max() {
 		return max;
 	}
-	
+
 	@Override
 	public boolean isOptional() {
 		return min==0;
 	}
-	
+
 	@Override
 	public boolean isUnbounded() {
 		return max<0;
 	}
-	
+
 	@Override
 	public boolean allowsRepetitions() {
 		return repetitions;

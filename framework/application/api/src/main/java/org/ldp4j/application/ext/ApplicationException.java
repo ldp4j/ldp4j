@@ -28,9 +28,6 @@ package org.ldp4j.application.ext;
 
 public abstract class ApplicationException extends Exception {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = -3181626528397838636L;
 
 	public ApplicationException(String message, Throwable cause) {

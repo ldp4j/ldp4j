@@ -31,7 +31,7 @@ import java.util.Collection;
 public interface ValidationReport {
 
 	boolean isValid();
-	
-	Collection<? extends ValidationFailure> validationFailures();
-	
+
+	Collection<ValidationFailure> validationFailures();
+
 }

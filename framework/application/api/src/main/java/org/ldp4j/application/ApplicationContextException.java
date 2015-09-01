@@ -26,6 +26,12 @@
  */
 package org.ldp4j.application;
 
+/**
+ * Checked exception for the Application Context.
+ *
+ * This exception may be thrown by the Application Context to signal Application
+ * Engine failures or significant precondition failures.
+ */
 public class ApplicationContextException extends Exception {
 
 	private static final long serialVersionUID = 5632915619813563619L;

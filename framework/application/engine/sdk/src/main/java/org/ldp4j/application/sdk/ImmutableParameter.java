@@ -26,7 +26,11 @@
  */
 package org.ldp4j.application.sdk;
 
+import java.util.Objects;
+
 import org.ldp4j.application.engine.context.HttpRequest.Header.Element.Parameter;
+
+import com.google.common.base.MoreObjects;
 
 final class ImmutableParameter implements Parameter {
 
@@ -54,6 +58,44 @@ final class ImmutableParameter implements Parameter {
 	@Override
 	public String value() {
 		return this.value;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return
+			Objects.
+				hash(this.name,this.value);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result = false;
+		if(obj instanceof Parameter) {
+			Parameter that=(Parameter)obj;
+			result=
+				Objects.equals(this.name,that.name()) &&
+				Objects.equals(this.value,that.value());
+		}
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					add("name",this.name).
+					add("value",this.value).
+					toString();
 	}
 
 }

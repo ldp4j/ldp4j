@@ -45,6 +45,7 @@ final class HeaderHelper {
 				add("Via").
 				add("Warning").
 				build();
+
 	private static final ImmutableList<String> REQUEST_HEADERS=
 		ImmutableList.
 			<String>builder().
@@ -68,6 +69,7 @@ final class HeaderHelper {
 				add("TE").
 				add("User-Agent").
 				build();
+
 	private static final ImmutableList<String> ENTITY_HEADERS=
 		ImmutableList.
 			<String>builder().

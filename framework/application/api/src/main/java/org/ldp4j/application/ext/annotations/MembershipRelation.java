@@ -31,25 +31,36 @@ import java.net.URI;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.Term;
 
+/**
+ * Used for defining the membership relation used by direct and indirect
+ * container templates
+ */
 public enum MembershipRelation {
 
+	/**
+	 * Use the {@code http://www.w3.org/ns/ldp#hasMemberRelation} relation.
+	 */
 	HAS_MEMBER(LDP.HAS_MEMBER_RELATION),
+
+	/**
+	 * Use the {@code http://www.w3.org/ns/ldp#isMemberOfRelation} relation.
+	 */
 	IS_MEMBER_OF(LDP.IS_MEMBER_OF_RELATION),
 	;
-	
+
 	private final Term term;
 
 	private MembershipRelation(Term term) {
 		this.term = term;
-		
+
 	}
 
 	public Term term() {
 		return term;
 	}
-	
+
 	public URI toURI() {
 		return term.as(URI.class);
 	}
-	
+
 }

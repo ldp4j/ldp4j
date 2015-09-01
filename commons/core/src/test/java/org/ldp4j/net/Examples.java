@@ -244,7 +244,7 @@ public final class Examples {
 				MapBuilder.
 					<String,String>builder().
 						add("/./g"   ,  "http://a/g"      ).
-						add("/../g"  ,  "http://a/g"      ).
+						add("/../g"  ,  "http://a/../g"      ).
 						add("g."     ,  "http://a/b/c/g." ).
 						add(".g"     ,  "http://a/b/c/.g" ).
 						add("g.."    ,  "http://a/b/c/g..").
@@ -254,8 +254,8 @@ public final class Examples {
 			private static final Map<String,String> ABNORMAL_OUT_OF_SCOPE=
 				MapBuilder.
 					<String,String>builder().
-						add("../../../g"     ,  "http://a/g").
-						add("../../../../g"  ,  "http://a/g").
+						add("../../../g"     ,  "http://a/../g").
+						add("../../../../g"  ,  "http://a/../../g").
 						build();
 
 			private static final Map<String,String> ABNORMAL_UNNECESSARY_DOT_SEGMENTS =

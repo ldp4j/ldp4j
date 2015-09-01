@@ -50,7 +50,7 @@ import org.openrdf.model.Statement;
 import org.openrdf.model.Value;
 
 public final class SesameModelParser {
-	
+
 	private final class AutoBoxingDataTypeConsumer implements ValueSink {
 
 		private final AtomicReference<Object> autobox;
@@ -138,7 +138,7 @@ public final class SesameModelParser {
 		public void consumeQName(String prefix, String localPart) {
 			autobox.set(new QName(namespaces.getNamespaceURI(prefix),localPart,prefix));
 		}
-		
+
 		public Object getValue() {
 			return autobox.get();
 		}
@@ -220,12 +220,12 @@ public final class SesameModelParser {
 	}
 
 	public Triple parseStatement(Statement statement) {
-		Triple result = new Triple(
-			parseResource(statement.getSubject()),
-			parseURI(statement.getPredicate()),
-			parseValue(statement.getObject())
-		);
-		return result;
+		return
+			new Triple(
+				parseResource(statement.getSubject()),
+				parseURI(statement.getPredicate()),
+				parseValue(statement.getObject())
+			);
 	}
 
 }

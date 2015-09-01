@@ -47,7 +47,7 @@ public class URIDescriptorTest {
 
 	@Before
 	public void setUp() throws Exception {
-		candidateMap = ImmutableMap.
+		this.candidateMap = ImmutableMap.
 			<URIDescriptor,Boolean>builder().
 				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.SELF),true).
 				put(URIDescriptor.newDescriptor(Scope.RESOURCE,Type.CHILD),true).

@@ -29,6 +29,10 @@ package org.ldp4j.application.ext;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 
+/**
+ * Interface to be implemented by {@link ResourceHandler} implementations that
+ * also support resource deletion.
+ */
 public interface Deletable {
 
 	/**

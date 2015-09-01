@@ -69,43 +69,51 @@ final class ContentPreferencesUtils {
 			if(!matcher.matches()) {
 				throw new InvalidPreferenceHeaderException("Invalid preference refinement '"+refinement+"'");
 			}
-			String hint=matcher.group(1);
-			boolean include=true;
-			if("omit".equals(hint)) {
-				include=false;
-			} else if("include".equals(hint)) {
-				include=true;
+			boolean include = processHint(configured, matcher.group(1));
+			processPreferences(builder,include,matcher.group(2).split("\\s"));
+		}
+	}
+
+	private static void processPreferences(ContentPreferencesBuilder builder, boolean include, String[] rawPreferences) {
+		for(String rawPreference:rawPreferences) {
+			Preference preference = Preference.fromString(rawPreference.trim());
+			if(preference==null) {
+				throw new InvalidPreferenceHeaderException("Unknown preference '"+rawPreference+"'");
+			}
+			if(include) {
+				builder.withInclude(preference);
 			} else {
-				throw new InvalidPreferenceHeaderException("Invalid preference hint '"+hint+"'");
-			}
-			if(configured.contains(hint)) {
-				throw new InvalidPreferenceHeaderException("Hint '"+hint+"' has already been configured");
-			}
-			configured.add(hint);
-			for(String rawPreference:matcher.group(2).split("\\s")) {
-				Preference preference = Preference.fromString(rawPreference.trim());
-				if(preference==null) {
-					throw new InvalidPreferenceHeaderException("Unknown preference '"+rawPreference+"'");
-				}
-				if(include) {
-					builder.withInclude(preference);
-				} else {
-					builder.withOmit(preference);
-				}
+				builder.withOmit(preference);
 			}
 		}
+	}
+
+	private static boolean processHint(Set<String> configured, String hint) {
+		boolean include=true;
+		if("omit".equals(hint)) {
+			include=false;
+		} else if("include".equals(hint)) {
+			include=true;
+		} else {
+			throw new InvalidPreferenceHeaderException("Invalid preference hint '"+hint+"'");
+		}
+		if(configured.contains(hint)) {
+			throw new InvalidPreferenceHeaderException("Hint '"+hint+"' has already been configured");
+		}
+		configured.add(hint);
+		return include;
 	}
 
 	private static void validatePrefix(String value, String prefix) {
 		String[] items = prefix.split("=");
 		if(items.length!=2) {
-			throw new IllegalArgumentException("Could not parse preferences ("+value+"): could not find return representation");
+			throw new IllegalArgumentException(String.format("Could not parse preferences (%s): could not find return representation",value));
 		}
 		if(!"return".equals(items[0].trim())) {
-			throw new IllegalArgumentException("Could not parse preferences ("+value+"): unexpected token '"+items[0].trim()+"'");
+			throw new IllegalArgumentException(String.format("Could not parse preferences (%s): unexpected token '%s'",value,items[0].trim()));
 		}
 		if(!"representation".equals(items[1].trim())) {
-			throw new IllegalArgumentException("Could not parse preferences ("+value+"): unexpected return type '"+items[1].trim()+"'");
+			throw new IllegalArgumentException(String.format("Could not parse preferences (%s): unexpected return type '%s'",value,items[1].trim()));
 		}
 	}
 
@@ -145,7 +153,7 @@ final class ContentPreferencesUtils {
 	}
 
 	public static String asPreferenceAppliedHeader(ContentPreferences contentPreferences) {
-		checkNotNull("Content preferences cannot be null");
+		checkNotNull(contentPreferences,"Content preferences cannot be null");
 		StringBuilder header=new StringBuilder();
 		header.append("return=representation");
 		return header.toString();

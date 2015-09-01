@@ -29,7 +29,13 @@ package org.ldp4j.application.ext;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.data.DataSet;
 
-
+/**
+ * Interface to be implemented for handling RDF Source LDP resources. <br/>
+ * <br/>
+ *
+ * Handler implementations can be further extended by implementing the
+ * {@link Deletable} and/or {@link Modifiable} interfaces.
+ */
 public interface ResourceHandler {
 
 	/**

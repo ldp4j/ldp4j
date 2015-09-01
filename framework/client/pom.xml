@@ -21,8 +21,8 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-client:1.0.0-SNAPSHOT
-      Bundle      : ldp4j-client-1.0.0-SNAPSHOT.pom
+      Artifact    : org.ldp4j.framework:ldp4j-framework:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-framework-1.0.0-SNAPSHOT.pom
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
@@ -33,7 +33,7 @@
 	<!-- =================================================================== -->
 	<!--   MODULE COORDINATES                                                -->
 	<!-- =================================================================== -->
-	
+
 	<parent>
 		<groupId>org.ldp4j.framework</groupId>
 		<artifactId>ldp4j-framework</artifactId>
@@ -54,10 +54,9 @@
 	<modules>
 		<module>bom</module>
 		<module>api</module>
-		<module>impl</module>
 		<module>depchain</module>
 	</modules>
-	
+
 	<!-- =================================================================== -->
 	<!--   BUILD SETTINGS                                                    -->
 	<!-- =================================================================== -->
@@ -67,5 +66,5 @@
 			<!-- Bill-of-Materials -->
 		</dependencies>
 	</dependencyManagement>
-	
+
 </project>

@@ -28,7 +28,7 @@
 
 -->
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd"> 
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- =================================================================== -->
@@ -49,9 +49,9 @@
 	<!--   PROJECT INFORMATION                                                 -->
 	<!-- ===================================================================== -->
 
-	<name>LDP4j :: Commons :: RMF :: Public API</name>
+	<name>LDP4j :: Commons :: RMF :: API</name>
 
-	<description>The API and SPI of the RDF Manipulation Framework</description>
+	<description>The API of the RDF Manipulation Framework</description>
 
 	<!-- =================================================================== -->
 	<!--   BUILD SETTINGS                                                    -->
@@ -59,8 +59,9 @@
 
 	<dependencies>
 		<dependency>
-			<groupId>org.ldp4j.commons</groupId>
-			<artifactId>ldp4j-commons-core</artifactId>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+			<scope>provided</scope>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>

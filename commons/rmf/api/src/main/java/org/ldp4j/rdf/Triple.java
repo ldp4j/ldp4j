@@ -26,7 +26,7 @@
  */
 package org.ldp4j.rdf;
 
-import org.ldp4j.commons.ObjectUtils;
+import java.util.Objects;
 
 public final class Triple implements Comparable<Triple> {
 
@@ -54,26 +54,18 @@ public final class Triple implements Comparable<Triple> {
 
 	@Override
 	public final int hashCode() {
-		final int prime = 31;
-		int result = 19;
-		result = prime * result + subject.hashCode();
-		result = prime * result + predicate.hashCode();
-		result = prime * result + object.hashCode();
-		return result;
+		return Objects.hash(this.subject,this.predicate,this.object);
 	}
 
 	@Override
 	public final boolean equals(Object obj) {
-		if(this==obj) {
-			return true;
-		}
-		boolean result=false;
-		if(obj instanceof Triple) {
-			Triple other = (Triple) obj;
+		boolean result=this==obj;
+		if(!result && obj instanceof Triple) {
+			Triple that=(Triple)obj;
 			result=
-				ObjectUtils.areEqualObjects(subject, other.subject) &&
-				ObjectUtils.areEqualObjects(predicate, other.predicate) && 
-				ObjectUtils.areEqualObjects(object, other.predicate);
+				Objects.equals(this.subject, that.subject) &&
+				Objects.equals(this.predicate, that.predicate) &&
+				Objects.equals(this.object, that.predicate);
 		}
 		return result;
 	}
@@ -92,7 +84,7 @@ public final class Triple implements Comparable<Triple> {
 		if(result!=0) {
 			return result;
 		}
-		
+
 		result=getPredicate().compareTo(o.getPredicate());
 		if(result!=0) {
 			return result;
@@ -110,5 +102,5 @@ public final class Triple implements Comparable<Triple> {
 		builder.append(" .");
 		return builder.toString();
 	}
-	
+
 }

@@ -299,17 +299,6 @@ public abstract class ApplicationEngine {
 		}
 	}
 
-	/**
-	 * Get the last active loaded application context
-	 * @deprecated
-	 * @return The last active loaded application context
-	 */
-	@Deprecated
-	public final ApplicationContext currentContext() {
-		checkApplicationEngineActive();
-		return currentContext.get();
-	}
-
 	protected abstract ApplicationContextManager<? extends ApplicationContext> applicationContextManager();
 
 	protected void setUp() throws ApplicationEngineInitializationException {

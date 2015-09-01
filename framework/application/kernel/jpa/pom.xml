@@ -81,6 +81,12 @@
 		</dependency>
 
 		<dependency>
+			<groupId>org.jmockit</groupId>
+			<artifactId>jmockit</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-data</artifactId>
 			<scope>test</scope>

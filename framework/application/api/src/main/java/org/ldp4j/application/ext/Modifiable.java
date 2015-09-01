@@ -30,6 +30,10 @@ import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.data.DataSet;
 
+/**
+ * Interface to be implemented by {@link ResourceHandler} implementations that
+ * also support resource modification.
+ */
 public interface Modifiable {
 
 	/**

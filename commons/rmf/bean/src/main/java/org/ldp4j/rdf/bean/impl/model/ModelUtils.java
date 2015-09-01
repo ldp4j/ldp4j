@@ -33,10 +33,11 @@ import org.ldp4j.rdf.URIRef;
 
 final class ModelUtils {
 
-	private ModelUtils() {
-	}
-	
-	static enum Namespace {
+	private static final char COLON = ':';
+	private static final char SLASH = '/';
+	private static final char HASH = '#';
+
+	enum Namespace {
 		RDF("http://www.w3.org/1999/02/22-rdf-syntax-ns#",1),
 		RDFS("http://www.w3.org/2000/01/rdf-schema#",2),
 		OWL("http://www.w3.org/2002/07/owl#",3),
@@ -45,12 +46,12 @@ final class ModelUtils {
 		;
 		private final String id;
 		private final int priority;
-	
+
 		Namespace(String id, int priority) {
 			this.id = id;
 			this.priority = priority;
 		}
-	
+
 		static Namespace fromURI(URIRef uri) {
 			for(Namespace namespace:values()) {
 				if(uri.getIdentity().toString().startsWith(namespace.getId())) {
@@ -59,15 +60,68 @@ final class ModelUtils {
 			}
 			return UNKNOWN;
 		}
-	
+
 		int compare(Namespace n) {
 			return priority-n.priority;
 		}
-	
+
 		String getId() {
 			return id;
 		}
-	
+
+	}
+
+	private ModelUtils() {
+	}
+
+	/**
+	 * correct split if local name has no ':' and URI contains no '#' or '/'
+	 */
+	private static boolean isCorrectColonNamespaceURISplit(String namespace, String localName, char lastNsChar) {
+		return
+			lastNsChar == COLON &&
+			isValidColonLocalName(localName) &&
+			isValidColonNamespace(namespace);
+	}
+
+	/**
+	 * correct split if local name has no '/' and URI contains no '#'
+	 */
+	private static boolean isCorrectSlashNamespaceURISplit(String namespace, String localName, char lastNsChar) {
+		return
+			lastNsChar == SLASH &&
+			isValidSlashLocalName(localName) &&
+			isValidSlashNamespace(namespace);
+	}
+
+	/**
+	 *  correct split if namespace has no other '#'
+	 */
+	private static boolean isCorrectHashNamespaceURISplit(String namespace, int nsLength, char lastNsChar) {
+		return
+			lastNsChar == HASH &&
+			namespace.lastIndexOf(HASH, nsLength - 2) == -1;
+	}
+
+	private static boolean isValidSlashNamespace(String namespace) {
+		return namespace.indexOf(HASH) == -1;
+	}
+
+	private static boolean isValidSlashLocalName(String localName) {
+		return
+			localName.indexOf(SLASH) == -1 &&
+			localName.indexOf(HASH) == -1;
+	}
+
+	private static boolean isValidColonNamespace(String namespace) {
+		return namespace.indexOf(HASH) == -1 && namespace.indexOf(SLASH) == -1;
+	}
+
+	private static boolean isValidColonLocalName(String localName) {
+		return
+			localName.indexOf(COLON) == -1 &&
+			localName.indexOf(HASH) == -1 &&
+			localName.indexOf(SLASH) == -1;
 	}
 
 	static int compare(URIRef u1, URIRef u2) {
@@ -91,7 +145,7 @@ final class ModelUtils {
 	 * URI contains at least one ':' character to separate the scheme from the
 	 * rest of the URI. If this fails anyway, the method will throw an
 	 * {@link IllegalArgumentException}.
-	 * 
+	 *
 	 * @param uri
 	 *        A URI string.
 	 * @return The index of the first local name character in the URI string.
@@ -104,14 +158,14 @@ final class ModelUtils {
 	 *         ':' character to separate the scheme from the rest of the URI.
 	 */
 	static int getLocalNameIndex(String uri) {
-		int separatorIdx = uri.indexOf('#');
+		int separatorIdx = uri.indexOf(HASH);
 
 		if (separatorIdx < 0) {
-			separatorIdx = uri.lastIndexOf('/');
+			separatorIdx = uri.lastIndexOf(SLASH);
 		}
 
 		if (separatorIdx < 0) {
-			separatorIdx = uri.lastIndexOf(':');
+			separatorIdx = uri.lastIndexOf(COLON);
 		}
 
 		if (separatorIdx < 0) {
@@ -125,7 +179,7 @@ final class ModelUtils {
 	 * Checks whether the URI consisting of the specified namespace and local
 	 * name has been split correctly according to the URI splitting rules
 	 * specified in {@link URI}.
-	 * 
+	 *
 	 * @param namespace
 	 *        The URI's namespace, must not be <tt>null</tt>.
 	 * @param localName
@@ -139,34 +193,16 @@ final class ModelUtils {
 		assert namespace != null : "namespace must not be null";
 		assert localName != null : "localName must not be null";
 
-		if (namespace.length() == 0) {
-			return false;
-		}
-
+		boolean result=false;
 		int nsLength = namespace.length();
-		char lastNsChar = namespace.charAt(nsLength - 1);
-
-		if (lastNsChar == '#') {
-			// correct split if namespace has no other '#'
-			return namespace.lastIndexOf('#', nsLength - 2) == -1;
-		} else if (lastNsChar == '/') {
-			// correct split if local name has no '/' and URI contains no '#'
-			return 
-				localName.indexOf('/') == -1 && 
-				localName.indexOf('#') == -1 && 
-				namespace.indexOf('#') == -1;
-		} else if (lastNsChar == ':') {
-			// correct split if local name has no ':' and URI contains no '#' or
-			// '/'
-			return 
-				localName.indexOf(':') == -1 && 
-				localName.indexOf('#') == -1 && 
-				localName.indexOf('/') == -1 && 
-				namespace.indexOf('#') == -1 && 
-				namespace.indexOf('/') == -1;
+		if(nsLength>0) {
+			char lastNsChar=namespace.charAt(nsLength-1);
+			result=
+				isCorrectHashNamespaceURISplit(namespace, nsLength, lastNsChar) ||
+				isCorrectSlashNamespaceURISplit(namespace, localName, lastNsChar) ||
+				isCorrectColonNamespaceURISplit(namespace, localName, lastNsChar);
 		}
-
-		return false;
+		return result;
 	}
 
 	static String getNamespace(URIRef uri) {
@@ -180,9 +216,9 @@ final class ModelUtils {
 		int localNameIdx = getLocalNameIndex(uriString);
 		return uriString.substring(localNameIdx);
 	}
-	
+
 	static String getIdentity(Resource<?> subject) {
 		return subject.getIdentity().toString();
 	}
-	
+
 }

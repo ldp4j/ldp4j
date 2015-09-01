@@ -27,6 +27,7 @@
 package org.ldp4j.application.kernel.engine;
 
 import java.net.URI;
+import java.util.Date;
 import java.util.List;
 
 import org.ldp4j.application.data.DataSet;
@@ -41,15 +42,20 @@ import org.ldp4j.application.data.Property;
 import org.ldp4j.application.data.RelativeIndividual;
 import org.ldp4j.application.data.Value;
 import org.ldp4j.application.data.ValueVisitor;
+import org.ldp4j.application.engine.context.InvalidIndirectIdentifierException;
 import org.ldp4j.application.kernel.resource.Container;
 import org.ldp4j.application.kernel.resource.FeatureException;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.kernel.session.WriteSessionConfiguration;
 import org.ldp4j.application.kernel.template.TemplateIntrospector;
 import org.ldp4j.application.kernel.template.TemplateManagementService;
+import org.ldp4j.application.vocabulary.LDP;
 
 import com.google.common.collect.Lists;
 
+/**
+ * TODO: Make indirect identifier validation model externally configurable
+ */
 final class DefaultApplicationContextHelper {
 
 	private static final class IndirectIdCollector implements ValueVisitor {
@@ -64,12 +70,12 @@ final class DefaultApplicationContextHelper {
 
 			@Override
 			public void visitManagedIndividual(ManagedIndividual individual) {
-				// TODO: We should fail here
+				IndirectIdCollector.this.managedIndividualIds=true;
 			}
 
 			@Override
 			public void visitLocalIndividual(LocalIndividual individual) {
-				// TODO: We should fail here
+				IndirectIdCollector.this.localIndividualIds=true;
 			}
 
 			@Override
@@ -79,24 +85,48 @@ final class DefaultApplicationContextHelper {
 
 			@Override
 			public void visitRelativeIndividual(RelativeIndividual individual) {
-				// TODO: We should fail here
+				IndirectIdCollector.this.relativeIndividualIds=true;
 			}
 
 			@Override
-			public void visitNewIndividual( NewIndividual individual) {
-				// TODO: We should fail here
+			public void visitNewIndividual(NewIndividual individual) {
+				IndirectIdCollector.this.newIndividualIds=true;
 			}
+
 		}
 
+		private final boolean strict;
 		private final InnerVisitor innerVisitor;
+		private final URI insertedContentRelation;
 
-		private IndirectIdCollector() {
+		private boolean memberSubject=false;
+		private boolean literalValues=false;
+		private boolean managedIndividualIds=false;
+		private boolean newIndividualIds=false;
+		private boolean relativeIndividualIds=false;
+		private boolean localIndividualIds=false;
+		private int totalValues=0;
+
+		private IndirectIdCollector(boolean strict, URI insertedContentRelation, Property property) {
+			this.strict = strict;
+			this.insertedContentRelation = insertedContentRelation;
 			this.innerVisitor=new InnerVisitor();
+			this.memberSubject=LDP.MEMBER_SUBJECT.as(URI.class).equals(insertedContentRelation);
+			if(property==null) {
+				if(!this.memberSubject) {
+					throw new InvalidIndirectIdentifierException(insertedContentRelation,"Inserted content relation '%s' not defined for the empty resource");
+				}
+			} else {
+				for(Value v:property) {
+					this.totalValues++;
+					v.accept(this);
+				}
+			}
 		}
 
 		@Override
 		public void visitLiteral(Literal<?> value) {
-			// TODO: We should fail here
+			this.literalValues=true;
 		}
 
 		@Override
@@ -104,8 +134,38 @@ final class DefaultApplicationContextHelper {
 			value.accept(this.innerVisitor);
 		}
 
-		private List<URI> getCollectedIds() {
-			return this.innerVisitor.ids;
+		private URI getIndirectId() {
+			validate();
+			URI result=null;
+			List<URI> ids = this.innerVisitor.ids;
+			if(!ids.isEmpty()) {
+				result=ids.get(0);
+			}
+			return result;
+		}
+
+		private void validate() {
+			if(this.totalValues==0 && !this.memberSubject) {
+				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"No values defined for inserted content relation '%s' for the empty resource");
+			} else if(this.totalValues>1) {
+				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Multiple values defined for inserted content relation '%s' for the empty resource");
+			} else if(this.literalValues) {
+				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (literal)");
+			} else if(this.strict) {
+				verifyExternalIndividualSpecified();
+			}
+		}
+
+		private void verifyExternalIndividualSpecified() {
+			if(this.managedIndividualIds) {
+				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (managed individual identifier)");
+			} else if(this.localIndividualIds) {
+				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (local individual identifier)");
+			} else if(this.newIndividualIds) {
+				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (empty resource)");
+			} else if(this.relativeIndividualIds) {
+				throw new InvalidIndirectIdentifierException(this.insertedContentRelation,"Invalid value defined for inserted content relation '%s' for the empty resource (relative individual identifier)");
+			}
 		}
 
 	}
@@ -118,21 +178,23 @@ final class DefaultApplicationContextHelper {
 		this.templateManagementService = templateManagementService;
 	}
 
-	WriteSessionConfiguration createConfiguration(Resource resource) {
+	WriteSessionConfiguration createConfiguration(Resource resource, Date lastModified) {
 		return
 			WriteSessionConfiguration.
 				builder().
 					withTarget(resource).
+					withLastModified(lastModified).
 					build();
 	}
 
-	WriteSessionConfiguration createConfiguration(Container container, DataSet dataSet, String desiredPath) throws FeatureException {
+	WriteSessionConfiguration createConfiguration(Container container, DataSet dataSet, String desiredPath, Date lastModified) throws FeatureException {
 		return
 			WriteSessionConfiguration.
 				builder().
 					withTarget(container).
 					withPath(desiredPath).
 					withIndirectId(getIndirectId(container, dataSet)).
+					withLastModified(lastModified).
 					build();
 	}
 
@@ -145,31 +207,18 @@ final class DefaultApplicationContextHelper {
 		if(!introspector.isIndirectContainer()) {
 			return null;
 		}
-		Property property = getInsertedContentRelation(dataSet,introspector.getInsertedContentRelation());
-		if(property==null) {
-			// TODO: Check if this situation is a failure
-			return null;
-		}
-		final List<URI> indirectIdentities= findIndirectIds(property);
-		if(indirectIdentities.size()==1) {
-			return indirectIdentities.get(0);
-		}
-		// TODO: We should fail here, either because no valid identifiers were
-		// specified or because to many of them were specified
-		return null;
+		URI insertedContentRelation=introspector.getInsertedContentRelation();
+		IndirectIdCollector collector=
+			new IndirectIdCollector(
+				false,
+				insertedContentRelation,
+				getInsertedContentRelationProperty(dataSet,insertedContentRelation));
+		return collector.getIndirectId();
 	}
 
-	private Property getInsertedContentRelation(DataSet dataSet, URI insertedContentRelation) {
+	private Property getInsertedContentRelationProperty(DataSet dataSet, URI insertedContentRelation) {
 		NewIndividual individual = dataSet.individual(NEW_RESOURCE_SURROGATE_ID, NewIndividual.class);
 		return individual.property(insertedContentRelation);
-	}
-
-	private List<URI> findIndirectIds(Property property) {
-		IndirectIdCollector collector=new IndirectIdCollector();
-		for(Value v:property) {
-			v.accept(collector);
-		}
-		return collector.getCollectedIds();
 	}
 
 	static DefaultApplicationContextHelper create(TemplateManagementService templateManagementService) {

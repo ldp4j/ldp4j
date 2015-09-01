@@ -30,9 +30,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Collections;
-import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -45,6 +43,8 @@ import org.ldp4j.application.kernel.resource.ResourceVisitor;
 import org.ldp4j.application.session.ResourceSnapshot;
 
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 
 final class MemberCollection {
 
@@ -52,8 +52,8 @@ final class MemberCollection {
 	private final List<DelegatedResourceSnapshot> newMembers;
 
 	private MemberCollection() {
-		this.members=new LinkedHashMap<ResourceId, DelegatedResourceSnapshot>();
-		this.newMembers=new LinkedList<DelegatedResourceSnapshot>();
+		this.members=Maps.newLinkedHashMap();
+		this.newMembers=Lists.newLinkedList();
 	}
 
 	private void registerMember(DelegatedResourceSnapshot snapshot) {
@@ -66,7 +66,7 @@ final class MemberCollection {
 	}
 
 	boolean hasMember(ResourceSnapshot resource) {
-		return members.containsValue(resource);
+		return this.members.containsValue(resource);
 	}
 
 	void addMember(DelegatedResourceSnapshot snapshot) {
@@ -81,9 +81,9 @@ final class MemberCollection {
 		}
 		boolean result = this.members.containsValue(member);
 		if(result) {
+			ResourceId memberId=ResourceId.createId(member.name(),member.templateId());
+			this.members.remove(memberId);
 			this.newMembers.remove(member);
-			// TODO: Check that this works :-S
-			this.members.remove(member.name());
 		}
 		return result;
 	}

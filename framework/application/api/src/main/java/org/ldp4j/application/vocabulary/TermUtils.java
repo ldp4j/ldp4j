@@ -30,19 +30,19 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-public final class TermUtils {
-	
+final class TermUtils {
+
 	private static final class Context {
-		
+
 		private final StringBuilder builder=new StringBuilder();
 		private final List<Character> buffer=new ArrayList<Character>();
 		private int mark=0;
 		private int groups=0;
-		
+
 		public void push(char character) {
 			builder.append(Character.toUpperCase(character));
 		}
-	
+
 		public void startGroup(int position) {
 			mark=position;
 			groups++;
@@ -50,7 +50,7 @@ public final class TermUtils {
 		public void save(char character) {
 			buffer.add(character);
 		}
-	
+
 		public void pushGroup() {
 			if(buffer.isEmpty() || groups==0) {
 				return;
@@ -68,7 +68,7 @@ public final class TermUtils {
 			builder.append(buffer.get(size-1));
 			buffer.clear();
 		}
-		
+
 		public String complete() {
 			if(!buffer.isEmpty()) {
 				if(mark>0) {
@@ -84,7 +84,7 @@ public final class TermUtils {
 	}
 
 	private abstract static class State {
-		
+
 		public TermUtils.State accept(int position, char character, TermUtils.Context state) {
 			if(Character.isUpperCase(character)) {
 				return handleUpperCase(position,character,state);
@@ -94,15 +94,15 @@ public final class TermUtils {
 				return handleOther(position,character,state);
 			}
 		}
-	
+
 		protected TermUtils.State handleUpperCase(int position, char character, TermUtils.Context state) {
 			throw new UnsupportedOperationException("Upper case characters are not allowed at this time");
 		}
-	
+
 		protected TermUtils.State handleLowerCase(int position, char character, TermUtils.Context state) {
 			throw new UnsupportedOperationException("Lower case characters are not allowed at this time");
 		}
-	
+
 		protected TermUtils.State handleOther(int position, char character, TermUtils.Context state) {
 			throw new UnsupportedOperationException("Non letter characters are not allowed at this time");
 		}
@@ -121,7 +121,7 @@ public final class TermUtils {
 			return this;
 		}
 	}
-	
+
 	private static final class UpperCase extends TermUtils.State {
 		@Override
 		protected TermUtils.State handleUpperCase(int position, char character, TermUtils.Context state) {
@@ -138,8 +138,8 @@ public final class TermUtils {
 
 	private TermUtils() {
 	}
-	
-	public static String toTermName(String string) {
+
+	static String toTermName(String string) {
 		if(!isValidEntityName(string)) {
 			throw new IllegalArgumentException("Object '"+string+"' is not a valid entity name");
 		}
@@ -149,21 +149,21 @@ public final class TermUtils {
 			state=state.accept(i,string.charAt(i), context);
 		}
 		return context.complete();
-		
+
 	}
 
-	public static boolean isValidTermName(String string) {
+	static boolean isValidTermName(String string) {
 		if(string==null) {
 			return false;
 		}
 		return Pattern.matches("^\\p{javaUpperCase}[_\\p{javaUpperCase}]*$", string);
 	}
 
-	public static boolean isValidEntityName(String string) {
+	static boolean isValidEntityName(String string) {
 		if(string==null) {
 			return false;
 		}
 		return Pattern.matches("^[\\p{javaLowerCase}\\p{javaUpperCase}]+$", string);
 	}
-	
+
 }

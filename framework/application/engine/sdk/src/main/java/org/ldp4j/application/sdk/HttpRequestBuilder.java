@@ -44,21 +44,13 @@ public final class HttpRequestBuilder {
 	private HttpMethod method;
 	private String absolutePath;
 	private String host;
-	private String entity;
+	private String body;
 	private Date serverDate;
 	private Date clientDate;
 	private ProtocolVersion protocolVersion;
 
 	private HttpRequestBuilder() {
 		this.headers=Lists.newArrayList();
-	}
-
-	private Date copy(Date date) {
-		Date tmp=date;
-		if(tmp!=null) {
-			tmp=new Date(tmp.getTime());
-		}
-		return tmp;
 	}
 
 	public HttpRequestBuilder withMethod(HttpMethod method) {
@@ -81,27 +73,30 @@ public final class HttpRequestBuilder {
 		return this;
 	}
 
-	public HttpRequestBuilder withEntity(String entity) {
-		this.entity = entity;
+	public HttpRequestBuilder withBody(String entity) {
+		this.body = entity;
 		return this;
 	}
 
 	public HttpRequestBuilder withHeader(String name, String rawValue) {
-		this.headers.add(
+		ImmutableHeader header =
 			new ImmutableHeader(
 				checkNotNull(name,"Header name cannot be null"),
 				checkNotNull(rawValue,"Header raw value cannot be null"),
-				Lists.<ImmutableElement>newArrayList()));
+				Lists.<ImmutableElement>newArrayList());
+		if(!this.headers.contains(header)) {
+			this.headers.add(header);
+		}
 		return this;
 	}
 
 	public HttpRequestBuilder withServerDate(Date date) {
-		this.serverDate=copy(date);
+		this.serverDate=DateUtil.copy(date);
 		return this;
 	}
 
 	public HttpRequestBuilder withClientDate(Date date) {
-		this.clientDate=copy(date);
+		this.clientDate=DateUtil.copy(date);
 		return this;
 	}
 
@@ -113,7 +108,7 @@ public final class HttpRequestBuilder {
 				checkNotNull(this.absolutePath,"Absolute path cannot be null"),
 				checkNotNull(this.host,"Host cannot be null"),
 				this.headers,
-				this.entity,
+				this.body,
 				Optional.fromNullable(this.serverDate).or(new Date()),
 				this.clientDate);
 	}

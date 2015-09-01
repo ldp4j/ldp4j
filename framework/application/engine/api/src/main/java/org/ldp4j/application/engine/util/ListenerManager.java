@@ -28,6 +28,7 @@ package org.ldp4j.application.engine.util;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -86,17 +87,16 @@ public final class ListenerManager<T> {
 			this.lock.readLock().unlock();
 		}
 
-		// TODO: Check why this idiom is used... If we want to keep it we should
-		// also synchronize the additions
 		// TODO: What about using a thread pool to propagate the notifications?
 		// Maybe a configurable option
-		synchronized(this.listeners) {
-			for(T listener:currentListeners) {
-				try {
-					notification.propagate(listener);
-				} catch (Exception e) {
-					LOGGER.warn("Propagation failure",e);
-				}
+		for(T listener:currentListeners) {
+			try {
+				notification.propagate(listener);
+			} catch (Exception e) {
+				LOGGER.warn(
+					"Propagation failure {} ({})",
+					Integer.toHexString(listener.hashCode()).toUpperCase(Locale.ENGLISH),
+					listener.getClass().getName(),e);
 			}
 		}
 	}

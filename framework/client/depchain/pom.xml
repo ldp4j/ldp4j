@@ -21,8 +21,8 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-client-depchain:1.0.0-SNAPSHOT
-      Bundle      : ldp4j-client-depchain-1.0.0-SNAPSHOT.pom
+      Artifact    : org.ldp4j.framework:ldp4j-framework:1.0.0-SNAPSHOT
+      Bundle      : ldp4j-framework-1.0.0-SNAPSHOT.pom
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
@@ -71,11 +71,6 @@
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-client-api</artifactId>
 		</dependency>
-		<dependency>
-			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-client-impl</artifactId>
-			<scope>runtime</scope>
-		</dependency>
 	</dependencies>
-	
+
 </project>

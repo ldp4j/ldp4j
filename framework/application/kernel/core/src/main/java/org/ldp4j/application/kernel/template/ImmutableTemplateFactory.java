@@ -94,7 +94,7 @@ final class ImmutableTemplateFactory {
 		}
 
 		@Override
-		public Set<? extends AttachedTemplate> attachedTemplates() {
+		public Set<AttachedTemplate> attachedTemplates() {
 			return this.template.attachedTemplates();
 		}
 
@@ -243,6 +243,9 @@ final class ImmutableTemplateFactory {
 	}
 
 	static ResourceTemplate newImmutable(ResourceTemplate template) {
+		if(template==null) {
+			return null;
+		}
 		TemplateCreator creator = new TemplateCreator();
 		template.accept(creator);
 		return creator.getCreatedTemplate();

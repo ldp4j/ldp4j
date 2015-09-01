@@ -27,7 +27,8 @@
 package org.ldp4j.rdf.bean;
 
 
-import org.ldp4j.commons.Assertions;
+import java.util.Objects;
+
 import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.bean.spi.RuntimeInstance;
 import org.ldp4j.rdf.util.TripleSet;
@@ -35,7 +36,7 @@ import org.ldp4j.rdf.util.TripleSet;
 public abstract class JARBContext {
 
 	public static JARBContext newInstance(NamingPolicy policy) {
-		Assertions.notNull(policy, "policy");
+		Objects.requireNonNull(policy, "Naming policy cannot be null");
 		return RuntimeInstance.getInstance().newContext(policy);
 	}
 
@@ -44,5 +45,5 @@ public abstract class JARBContext {
 	public abstract <T> T inflate(Resource<?> identity, TripleSet triples, Class<? extends T> clazz);
 
 	public abstract <T> Resource<?> getIdentity(T object);
-	
+
 }

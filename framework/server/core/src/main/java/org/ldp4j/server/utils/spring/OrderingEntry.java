@@ -26,12 +26,12 @@
  */
 package org.ldp4j.server.utils.spring;
 
-class OrderingEntry implements Comparable<OrderingEntry> {
+import java.util.Objects;
 
-	private static final int HASHCODE_SEED = 17;
-	private static final int HASHCODE_PRIME = 31;
-	private String value;
-	private int position;
+final class OrderingEntry implements Comparable<OrderingEntry> {
+
+	private final String value;
+	private final int position;
 
 	public OrderingEntry(String value, int position) {
 		this.value = value;
@@ -65,37 +65,19 @@ class OrderingEntry implements Comparable<OrderingEntry> {
 	}
 	@Override
 	public int hashCode() {
-		int result = HASHCODE_SEED;
-		result = HASHCODE_PRIME * result + position;
-		result = HASHCODE_PRIME * result + ((value == null) ? 0 : value.hashCode());
-		return result;
+		return Objects.hash(this.position,this.value);
 	}
 
 	@Override
 	public boolean equals(Object obj) {
-		if (this == obj) {
-			return true;
+		boolean result=this==obj;
+		if(!result && obj instanceof OrderingEntry) {
+			OrderingEntry that=(OrderingEntry)obj;
+			result=
+				Objects.equals(this.position,that.position) &&
+				Objects.equals(this.value,that.value);
 		}
-		if (obj == null) {
-			return false;
-		}
-		if (getClass() != obj.getClass()) {
-			return false;
-		}
-		OrderingEntry other = (OrderingEntry) obj;
-		if (position != other.position) {
-			return false;
-		}
-		if (value == null) {
-			if (other.value != null) {
-				return false;
-			}
-		} else {
-			if (!value.equals(other.value)) {
-				return false;
-			}
-		}
-		return true;
+		return result;
 	}
 
 }

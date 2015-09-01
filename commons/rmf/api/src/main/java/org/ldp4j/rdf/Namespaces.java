@@ -75,7 +75,7 @@ public final class Namespaces {
 	public String getPrefix(String namespaceURI) {
 		for(Map.Entry<String, Object> entry:map.entrySet()) {
 			if(entry.getValue().toString().equals(namespaceURI)) {
-				return (String)entry.getKey();
+				return entry.getKey();
 			}
 		}
 		return null;

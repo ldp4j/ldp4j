@@ -37,9 +37,8 @@ final class InMemStore implements Store {
 
 	private final MutableDataSet dataSet;
 
-	InMemStore() {
-		// TODO: Think about who should be provisioning the name to the data set
-		this.dataSet=new MutableDataSet(null);
+	InMemStore(Name<?> name) {
+		this.dataSet=new MutableDataSet(name);
 	}
 
 	@Override

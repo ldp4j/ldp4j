@@ -157,7 +157,6 @@ public final class TemplateManagementService implements Service {
 		if(found==null) {
 			return null;
 		} else if(!templateClass.isInstance(found)) {
-			// TODO: Define a specialized runtime exception
 			throw new IllegalArgumentException("Cannot cast template '"+templateId+"' to '"+templateClass.getCanonicalName()+"' ("+found.getClass().getCanonicalName()+")");
 		}
 		return templateClass.cast(found);

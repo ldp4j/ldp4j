@@ -32,18 +32,21 @@ import java.net.URL;
 import java.net.URLStreamHandler;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Deque;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Objects;
-import java.util.Deque;
 import java.util.StringTokenizer;
 
-import org.ldp4j.commons.Assertions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class URIUtils {
+
+	private static final String TARGET_URI_CANNOT_BE_NULL = "Target URI cannot be null";
+
+	private static final String BASE_URI_CANNOT_BE_NULL = "Base URI cannot be null";
 
 	private static final String SLASH = "/";
 	private static final String PARENT = "..";
@@ -54,7 +57,7 @@ public final class URIUtils {
 	}
 
 	public static URL toURL(URI uri) throws MalformedURLException {
-		Assertions.notNull(uri, "uri");
+		Objects.requireNonNull(uri, "URI cannot be null");
 		try {
 			return uri.toURL();
 		} catch(MalformedURLException e) {
@@ -63,42 +66,52 @@ public final class URIUtils {
 	}
 
 	public static URI relativize(URI base, URI target) {
-		if(base==null) {
-			throw new NullPointerException("Base URI cannot be null");
-		}
-		if(target==null) {
-			throw new NullPointerException("Target URI cannot be null");
-		}
-		if(base.isOpaque() || target.isOpaque()) {
-			return target;
-		}
-		if(!Objects.equals(base.getScheme(),target.getScheme()) || !Objects.equals(base.getAuthority(),target.getAuthority())) {
-			return target;
-		}
-		URI nBase = base.normalize();
+		Objects.requireNonNull(base,BASE_URI_CANNOT_BE_NULL);
+		Objects.requireNonNull(target,TARGET_URI_CANNOT_BE_NULL);
+
 		URI nTarget = target.normalize();
-		if(nBase.equals(nTarget)) {
-			return URI.create(EMPTY);
+		if(areRelativizable(base,target)) {
+			URI nBase=base.normalize();
+			if(nBase.equals(nTarget)) {
+				nTarget=URI.create(EMPTY);
+			} else {
+				URI walkthrough = absoluteRelativization(nBase,nTarget);
+				if(!(walkthrough.getPath().startsWith(PARENT) && nTarget.getPath().isEmpty())) {
+					nTarget=walkthrough;
+				}
+			}
 		}
-		URI walkthrough = absoluteRelativization(nBase,nTarget);
-		if(walkthrough.getPath().startsWith(PARENT) && nTarget.getPath().isEmpty()) {
-			return nTarget;
-		}
-		return walkthrough;
+		return nTarget;
 	}
 
 	public static URI resolve(URI base, URI target) {
-		if(base==null) {
-			throw new NullPointerException("Base URI cannot be null");
-		}
-		if(target==null) {
-			throw new NullPointerException("Base URI cannot be null");
-		}
-		if(base.isOpaque() || target.isOpaque()) {
+		Objects.requireNonNull(base,BASE_URI_CANNOT_BE_NULL);
+		Objects.requireNonNull(target,TARGET_URI_CANNOT_BE_NULL);
+
+		if(areOpaque(base, target)) {
 			return target;
 		}
-		URIRef T = relativeResolution(target, base);
-		return T.toURI();
+
+		return relativeResolution(target, base).toURI();
+	}
+
+	private static boolean areRelativizable(URI base, URI target) {
+		return
+			!areOpaque(base, target) &&
+			haveSameScheme(base, target) &&
+			haveSameAuthority(base, target);
+	}
+
+	private static boolean haveSameAuthority(URI base, URI target) {
+		return Objects.equals(base.getAuthority(),target.getAuthority());
+	}
+
+	private static boolean haveSameScheme(URI base, URI target) {
+		return Objects.equals(base.getScheme(),target.getScheme());
+	}
+
+	private static boolean areOpaque(URI base, URI target) {
+		return base.isOpaque() || target.isOpaque();
 	}
 
 	private static boolean defined(String value) {
@@ -217,42 +230,46 @@ public final class URIUtils {
 	 *       T.fragment = R.fragment;
 	 */
 	private static URIRef relativeResolution(URI target, URI base) {
-		URIRef Base=URIRef.create(base);
-		URIRef R=URIRef.create(target);
-		URIRef T=URIRef.create();
+		URIRef Base=URIRef.create(base); // NOSONAR
+		URIRef R=URIRef.create(target); // NOSONAR
+		URIRef T=URIRef.create(); // NOSONAR
 		if(defined(R.scheme)) {
 			T.scheme    = R.scheme;
 			T.authority = R.authority;
-			T.path      = remove_dot_segments(R.path);
+			T.path      = removeDotSegments(R.path);
 			T.query     = R.query;
 		} else {
 			if(defined(R.authority)) {
 				T.authority = R.authority;
-				T.path      = remove_dot_segments(R.path);
+				T.path      = removeDotSegments(R.path);
 				T.query     = R.query;
 			} else {
-				if(R.path.isEmpty()) {
-					T.path=Base.path;
-					if(defined(R.query)) {
-						T.query=R.query;
-					} else {
-						T.query=Base.query;
-					}
-				} else {
-					if(R.path.startsWith(SLASH)) {
-						T.path=remove_dot_segments(R.path);
-					} else {
-						T.path=merge(Base.path,R.path,defined(Base.authority));
-						T.path=remove_dot_segments(T.path);
-					}
-					T.query=R.query;
-				}
-				T.authority = Base.authority;
+				resolvePathOnlyTarget(Base, R, T);
 			}
 			T.scheme = Base.scheme;
 		}
 		T.fragment = R.fragment;
 		return T;
+	}
+
+	private static void resolvePathOnlyTarget(URIRef Base, URIRef R, URIRef T) { // NOSONAR
+		if(R.path.isEmpty()) {
+			T.path=Base.path;
+			if(defined(R.query)) {
+				T.query=R.query;
+			} else {
+				T.query=Base.query;
+			}
+		} else {
+			if(R.path.startsWith(SLASH)) {
+				T.path=removeDotSegments(R.path);
+			} else {
+				T.path=merge(Base.path,R.path,defined(Base.authority));
+				T.path=removeDotSegments(T.path);
+			}
+			T.query=R.query;
+		}
+		T.authority = Base.authority;
 	}
 
 	/**
@@ -323,45 +340,50 @@ public final class URIUtils {
 	 *    3.  Finally, the output buffer is returned as the result of
 	 *        remove_dot_segments.
 	 */
-	private static String remove_dot_segments(String path) {
+	private static String removeDotSegments(String path) {
 		Deque<String> outputBuffer=new LinkedList<String>();
 		String input=path==null?EMPTY:path;
 		while(!input.isEmpty()) {
-			String next=null;
-			if(input.startsWith("../")) {
-				next=input.substring(3);
-			} else if(input.startsWith("./")) {
-				next=input.substring(2);
-			} else if(input.startsWith("/./")) {
-				next=input.substring(2);
-			} else if("/.".equals(input)) {
-				next=SLASH;
-			} else if(input.startsWith("/../")) {
-				next=discardSegment(outputBuffer, input, "/../");
-			} else if("/..".equals(input)) {
-				next=discardSegment(outputBuffer, input, "/..");
-			} else if(PARENT.equals(input) || ".".equals(input)) {
-				next=EMPTY;
-			} else {
-				int nextSlash=0;
-				if(input.startsWith(SLASH)) {
-					nextSlash=input.indexOf('/',1);
-				} else {
-					nextSlash=input.indexOf('/',0);
-				}
-				String nextSegment=null;
-				if(nextSlash<0) {
-					nextSegment=input;
-					next=EMPTY;
-				} else {
-					nextSegment=input.substring(0,nextSlash);
-					next=input.substring(nextSlash);
-				}
-				addSegment(outputBuffer, nextSegment);
-			}
-			input=next;
+			input=processInput(outputBuffer, input);
 		}
 		return assembleInOrder(outputBuffer);
+	}
+
+	private static String processInput(Deque<String> outputBuffer, String input) {
+		String next=null;
+		if(input.startsWith("../")) {
+			next=input.substring(3);
+		} else if(input.startsWith("./") || input.startsWith("/./")) {
+			next=input.substring(2);
+		} else if("/.".equals(input)) {
+			next=SLASH;
+		} else if(input.startsWith("/../")) {
+			next=discardSegment(outputBuffer, input, "/../");
+		} else if("/..".equals(input)) {
+			next=discardSegment(outputBuffer, input, "/..");
+		} else if(PARENT.equals(input) || ".".equals(input)) {
+			next=EMPTY;
+		} else {
+			next=discardSegment(outputBuffer, input);
+		}
+		return next;
+	}
+
+	private static String discardSegment(Deque<String> outputBuffer,String input) {
+		int nextSlash=0;
+		if(input.startsWith(SLASH)) {
+			nextSlash=input.indexOf('/',1);
+		} else {
+			nextSlash=input.indexOf('/',0);
+		}
+		String nextSegment=input;
+		String next=EMPTY;
+		if(nextSlash>=0) {
+			nextSegment=input.substring(0,nextSlash);
+			next=input.substring(nextSlash);
+		}
+		addSegment(outputBuffer, nextSegment);
+		return next;
 	}
 
 	private static String assembleInOrder(Deque<String> outputBuffer) {

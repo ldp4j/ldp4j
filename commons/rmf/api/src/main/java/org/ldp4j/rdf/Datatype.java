@@ -35,6 +35,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.PriorityQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -46,8 +47,6 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
-
-import org.ldp4j.commons.Assertions;
 
 /**
  * Remember that section 5.1 of the RDF Semantics recommendation identifies
@@ -253,7 +252,8 @@ public enum Datatype {
 	XML_LITERAL(Namespace.RDF,"XMLLiteral",null,ANY_TYPE,null, null),
 	;
 
-	private static final String CLAZZ_PARAM = "clazz";
+	private static final String CLAZZ_PARAM = "Class cannot be null";
+
 	private final Datatype parent;
 	private final Datatype.BuiltInType type;
 	private final Datatype.DerivationType derivation;
@@ -299,7 +299,7 @@ public enum Datatype {
 	}
 
 	boolean encodes(Class<?> clazz) {
-		Assertions.notNull(clazz, CLAZZ_PARAM);
+		Objects.requireNonNull(clazz, CLAZZ_PARAM);
 		if(this.clazz!=null) {
 			return this.clazz.isAssignableFrom(clazz);
 		} else if(parent!=null) {
@@ -310,7 +310,7 @@ public enum Datatype {
 	}
 
 	boolean decodes(Class<?> clazz) {
-		Assertions.notNull(clazz, CLAZZ_PARAM);
+		Objects.requireNonNull(clazz, CLAZZ_PARAM);
 		if(this.clazz!=null) {
 			return clazz.isAssignableFrom(this.clazz);
 		} else if(parent!=null) {

@@ -87,23 +87,33 @@ final class ImmutableTemplateLibrary implements TemplateLibrary {
 		return this.delegate;
 	}
 
-	// TODO: Returning a mutable version...
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ResourceTemplate findByHandler(Class<? extends ResourceHandler> handlerClass) {
-		return delegate().findByHandler(handlerClass);
+		return ImmutableTemplateFactory.newImmutable(delegate().findByHandler(handlerClass));
 	}
 
-	// TODO: Returning a mutable version...
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public ResourceTemplate findById(String templateId) {
-		return delegate().findById(templateId);
+		return ImmutableTemplateFactory.newImmutable(delegate().findById(templateId));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean contains(ResourceTemplate template) {
 		return delegate().contains(template);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void accept(final TemplateVisitor visitor) {
 		delegate().accept(new SafeTemplateVisitor(visitor));

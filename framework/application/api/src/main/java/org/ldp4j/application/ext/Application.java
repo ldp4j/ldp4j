@@ -30,6 +30,11 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.setup.Bootstrap;
 import org.ldp4j.application.setup.Environment;
 
+/**
+ * The entry point for an LDP4j Application. This class provides the means for
+ * controlling the life-cycle of the application: the bootstrapping of the
+ * application and the application termination.
+ */
 public abstract class Application<T extends Configuration> {
 
 	/**

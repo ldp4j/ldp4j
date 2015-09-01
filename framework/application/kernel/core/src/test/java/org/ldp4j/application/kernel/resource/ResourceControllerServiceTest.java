@@ -49,6 +49,7 @@ import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.kernel.endpoint.Endpoint;
+import org.ldp4j.application.kernel.endpoint.EndpointRepository;
 import org.ldp4j.application.kernel.impl.InMemoryRuntimeDelegate;
 import org.ldp4j.application.kernel.resource.Container;
 import org.ldp4j.application.kernel.resource.FeatureException;
@@ -131,6 +132,28 @@ public class ResourceControllerServiceTest {
 		return tms.getHandler(handlerClass);
 	}
 
+	private void updateLastModifiedDate(Resource resource, Date lastModifiedDate) {
+		Endpoint endpoint = endpoint(resource);
+		if(endpoint!=null) {
+			endpoint.modify(endpoint.entityTag(), lastModifiedDate);
+		}
+	}
+
+	private Endpoint endpoint(Resource resource) {
+		EndpointRepository er = RuntimeDelegate.getInstance().getEndpointRepository();
+		Endpoint endpoint = er.endpointOfResource(resource.id());
+		return endpoint;
+	}
+
+	private Date getLastModifiedDate(Resource resource) {
+		Endpoint endpoint = endpoint(resource);
+		Date result=null;
+		if(endpoint!=null) {
+			result=endpoint.lastModified();
+		}
+		return result;
+	}
+
 	@BeforeClass
 	public static void setUpBefore() throws Exception {
 		ServiceRegistry.setInstance(null);
@@ -164,7 +187,6 @@ public class ResourceControllerServiceTest {
 				getInstance().
 					getModelFactory();
 	}
-
 
 	public <T> T transactional(Callable<T> callable) throws Exception {
 		Transaction transaction = RuntimeDelegate.getInstance().getTransactionManager().currentTransaction();
@@ -203,6 +225,53 @@ public class ResourceControllerServiceTest {
 					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
 					assertThat(data,notNullValue());
 					assertThat(data,sameInstance(initial));
+					return null;
+				}
+			}
+		);
+	}
+
+	@Test
+	public void testCreateResource() throws Exception {
+		String resourcePath = "post";
+		final Name<?> resourceName = name(resourcePath);
+		final DataSet initialData = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
+
+		// BEGIN initialization
+		final Container resource = publishResource(Container.class,BookContainerHandler.ID,resourceName,resourcePath);
+
+		NameProvider nameProvider = NameProvider.create(resourceName);
+		final Name<String> id = NamingScheme.getDefault().name("book1");
+		nameProvider.addMemberName(id);
+
+		final BookHandler resourceHandler = getHandler(BookHandler.class);
+		BookContainerHandler containerHandler = getHandler(BookContainerHandler.class);
+		containerHandler.add(resourceName, null);
+		containerHandler.setBookHandler(resourceHandler);
+		containerHandler.addNameProvider(resourceName, nameProvider);
+		// END Initialization
+
+		final Resource newResource =
+			transactional(
+				new Callable<Resource>() {
+					@Override
+					public Resource call() throws Exception {
+						Resource result=sut.createResource(resource,initialData,getSessionConfiguration(resource));
+						assertThat(result,notNullValue());
+						assertThat((Object)result.id().name(),equalTo((Object)id));
+						assertThat(result.id().templateId(),equalTo(BookHandler.ID));
+						assertThat(resourceHandler.hasResource(resourceName),equalTo(false));
+						return result;
+					}
+				}
+			);
+
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					DataSet data = sut.getResource(newResource,getSessionConfiguration(newResource));
+					assertThat(data,sameInstance(initialData));
 					return null;
 				}
 			}
@@ -295,50 +364,105 @@ public class ResourceControllerServiceTest {
 	}
 
 	@Test
-	public void testCreateResource() throws Exception {
-		String resourcePath = "post";
-		final Name<?> resourceName = name(resourcePath);
-		final DataSet initialData = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
+	public void testUpdateResourceTimeOffset() throws Exception {
+		String resourcePath = "updateTimeOffset";
+		Name<?> resourceName = name(resourcePath);
+		Date date = new Date();
+		final DataSet initial = getInitialData(newReference().toManagedIndividual(PersonHandler.ID).named(resourcePath), date);
+		final DataSet updatedDate = getUpdatedData(newReference().toManagedIndividual(PersonHandler.ID).named(resourcePath), date);
+		System.out.println(initial);
 
 		// BEGIN initialization
-		final Container resource = publishResource(Container.class,BookContainerHandler.ID,resourceName,resourcePath);
-
-		NameProvider nameProvider = NameProvider.create(resourceName);
-		final Name<String> id = NamingScheme.getDefault().name("book1");
-		nameProvider.addMemberName(id);
-
-		final BookHandler resourceHandler = getHandler(BookHandler.class);
-		BookContainerHandler containerHandler = getHandler(BookContainerHandler.class);
-		containerHandler.add(resourceName, null);
-		containerHandler.setBookHandler(resourceHandler);
-		containerHandler.addNameProvider(resourceName, nameProvider);
+		final Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
+		PersonHandler handler = getHandler(PersonHandler.class);
+		handler.add(resourceName, initial);
 		// END Initialization
-
-		final Resource newResource =
-			transactional(
-				new Callable<Resource>() {
-					@Override
-					public Resource call() throws Exception {
-						Resource result=sut.createResource(resource,initialData,getSessionConfiguration(resource));
-						assertThat(result,notNullValue());
-						assertThat((Object)result.id().name(),equalTo((Object)id));
-						assertThat(result.id().templateId(),equalTo(BookHandler.ID));
-						assertThat(resourceHandler.hasResource(resourceName),equalTo(false));
-						return result;
-					}
-				}
-			);
 
 		transactional(
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(newResource,getSessionConfiguration(newResource));
-					assertThat(data,sameInstance(initialData));
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
+					assertThat(data,sameInstance(initial));
 					return null;
 				}
 			}
 		);
+
+		Date olmd = getLastModifiedDate(resource);
+		Date nlmd = new Date(olmd.getTime()+24*60*60*1000);
+		updateLastModifiedDate(resource, nlmd);
+
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					try {
+						sut.updateResource(resource,updatedDate,getSessionConfiguration(resource));
+					} catch (FeatureException e) {
+						e.printStackTrace();
+						fail("Should not fail update");
+					}
+					return null;
+				}
+			}
+		);
+
+		assertThat(getLastModifiedDate(resource),equalTo(nlmd));
+
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
+					assertThat(data,sameInstance(updatedDate));
+					return null;
+				}
+			}
+		);
+	}
+
+	@Test
+	public void testDeleteResourceTimeOffset() throws Exception {
+		String resourcePath = "deleteTimeOffset";
+		final Name<?> resourceName = name(resourcePath);
+		final DataSet initial = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
+
+		// BEGIN initialization
+		final Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
+		final PersonHandler handler = getHandler(PersonHandler.class);
+		handler.add(resourceName, initial);
+		// END Initialization
+
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
+					assertThat(data,sameInstance(initial));
+					return null;
+				}
+			}
+		);
+
+		Date olmd = getLastModifiedDate(resource);
+		Date nlmd = new Date(olmd.getTime()+24*60*60*1000);
+		updateLastModifiedDate(resource, nlmd);
+		Endpoint endpoint=endpoint(resource);
+
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					sut.deleteResource(resource,getSessionConfiguration(resource));
+					assertThat(handler.hasResource(resourceName),equalTo(false));
+					return null;
+				}
+			}
+		);
+
+		assertThat(endpoint.deleted(),equalTo(nlmd));
+
 	}
 
 	private WriteSessionConfiguration getSessionConfiguration(final Resource resource) {

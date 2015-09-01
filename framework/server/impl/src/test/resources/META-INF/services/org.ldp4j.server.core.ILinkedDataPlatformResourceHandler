@@ -1,2 +1,0 @@
-org.ldp4j.server.testing.stubs.WorkingResource # A working resource handler
-org.ldp4j.server.testing.stubs.DeletableResource # A deletable resource

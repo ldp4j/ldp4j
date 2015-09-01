@@ -37,11 +37,12 @@ final class ResourceComparator implements Comparator<Resource<?>>, Serializable 
 
 	private static final long serialVersionUID = 3688707084336037225L;
 
+	@Override
 	public int compare(Resource<?> o1, Resource<?> o2) {
 		int result=0;
 		if(o1 instanceof URIRef) {
 			result=compareURI(o2, (URIRef)o1);
-		} else { 
+		} else {
 			result=compareOther(o1, o2);
 		}
 		return result;

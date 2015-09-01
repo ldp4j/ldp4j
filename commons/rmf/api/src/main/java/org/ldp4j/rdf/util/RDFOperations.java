@@ -31,9 +31,9 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
-import org.ldp4j.commons.Assertions;
 import org.ldp4j.rdf.Node;
 import org.ldp4j.rdf.Resource;
 import org.ldp4j.rdf.Triple;
@@ -44,26 +44,24 @@ import org.slf4j.LoggerFactory;
 
 public final class RDFOperations {
 
-	private static final String TRIPLES_PARAM = "triples";
-
-	private static final String OLD_NODE_PARAM = "oldNode";
-
-	private static final String NEW_NODE_PARAM = "newNode";
-
 	private static final Logger LOGGER=LoggerFactory.getLogger(RDFOperations.class);
 
-	private static final String NEW_LINE = System.getProperty("line.separator");
+	private static final String TRIPLES_PARAM = "Triples cannot be null";
+	private static final String OLD_NODE_PARAM = "Old node cannot be null";
+	private static final String NEW_NODE_PARAM = "New node cannot be null";
+
+	private static final String NL = System.lineSeparator();
 
 	private abstract static class AbstractReplacer implements ITripleTransformation {
 
 		@Override
 		public final Triple transform(Triple t) {
-			Triple triple = new Triple(
-				update(t.getSubject(),Resource.class),
-				update(t.getPredicate(),URIRef.class),
-				update(t.getObject(),Node.class)
-			);
-			return triple;
+			return
+				new Triple(
+					update(t.getSubject(),Resource.class),
+					update(t.getPredicate(),URIRef.class),
+					update(t.getObject(),Node.class)
+				);
 		}
 
 		protected abstract <T extends Node> T update(T original, Class<T> clazz);
@@ -218,8 +216,8 @@ public final class RDFOperations {
 	}
 
 	public static <T extends Iterable<Triple>> InmutableTripleSet transform(T triples, ITripleTransformation tripleTransformation) {
-		Assertions.notNull(triples,TRIPLES_PARAM);
-		Assertions.notNull(tripleTransformation,"tripleTransformation");
+		Objects.requireNonNull(triples,TRIPLES_PARAM);
+		Objects.requireNonNull(tripleTransformation,"Triple transformation cannot be null");
 		TripleSet result=new TripleSet();
 		for(Triple t:triples) {
 			Triple newTriple = tripleTransformation.transform(t);
@@ -231,24 +229,24 @@ public final class RDFOperations {
 	}
 
 	public static <T extends Iterable<Triple>> InmutableTripleSet replace(T triples, Node oldNode, Node newNode) {
-		Assertions.notNull(oldNode,OLD_NODE_PARAM);
-		Assertions.notNull(newNode,NEW_NODE_PARAM);
+		Objects.requireNonNull(oldNode,OLD_NODE_PARAM);
+		Objects.requireNonNull(newNode,NEW_NODE_PARAM);
 		return transform(triples, newNodeReplacer(oldNode,newNode));
 	}
 
 	public static <T extends Iterable<Triple>> InmutableTripleSet replace(T triples, Map<Node,Node> replacements) {
-		Assertions.notNull(replacements,NEW_NODE_PARAM);
+		Objects.requireNonNull(replacements,NEW_NODE_PARAM);
 		return transform(triples, newNodeReplacer(replacements,true));
 	}
 
 	public static <T extends Iterable<Triple>> String toString(T triples) {
-		Assertions.notNull(triples,TRIPLES_PARAM);
+		Objects.requireNonNull(triples,TRIPLES_PARAM);
 		StringBuilder builder = new StringBuilder();
 		builder.append("Triples {");
 		for(Triple t:triples) {
-			builder.append(NEW_LINE).append("\t").append(t);
+			builder.append(NL).append("\t").append(t);
 		}
-		builder.append(NEW_LINE).append("}");
+		builder.append(NL).append("}");
 		return builder.toString();
 	}
 

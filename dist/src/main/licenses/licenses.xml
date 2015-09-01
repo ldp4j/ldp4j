@@ -31,6 +31,7 @@
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://mojo.codehaus.org/ licenses.xsd">
 	<dependencies>
+<!--
 		<dependency>
 			<groupId>org.openrdf.sesame</groupId>
 			<artifactId>sesame</artifactId>
@@ -116,6 +117,103 @@
 				<license>
 					<name>GPL2 w/ CPE</name>
 					<url>$PATH$src/main/licenses/local/CDDL 1.0+GPL2 with CPE.license.txt</url>
+					<distribution>repo</distribution>
+				</license>
+			</licenses>
+		</dependency>
+-->
+		<dependency>
+			<groupId>dom4j</groupId>
+			<artifactId>dom4j</artifactId>
+			<version>1.6.1</version>
+			<licenses>
+				<license>
+					<name>Apache License</name>
+					<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+					<distribution>repo</distribution>
+				</license>
+			</licenses>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-aop</artifactId>
+			<version>3.0.7.RELEASE</version>
+			<licenses>
+				<license>
+					<name>Apache License</name>
+					<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+					<distribution>repo</distribution>
+				</license>
+			</licenses>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-asm</artifactId>
+			<version>3.0.7.RELEASE</version>
+			<licenses>
+				<license>
+					<name>Apache License</name>
+					<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+					<distribution>repo</distribution>
+				</license>
+			</licenses>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-beans</artifactId>
+			<version>3.0.7.RELEASE</version>
+			<licenses>
+				<license>
+					<name>Apache License</name>
+					<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+					<distribution>repo</distribution>
+				</license>
+			</licenses>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-context</artifactId>
+			<version>3.0.7.RELEASE</version>
+			<licenses>
+				<license>
+					<name>Apache License</name>
+					<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+					<distribution>repo</distribution>
+				</license>
+			</licenses>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-core</artifactId>
+			<version>3.0.7.RELEASE</version>
+			<licenses>
+				<license>
+					<name>Apache License</name>
+					<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+					<distribution>repo</distribution>
+				</license>
+			</licenses>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-expression</artifactId>
+			<version>3.0.7.RELEASE</version>
+			<licenses>
+				<license>
+					<name>Apache License</name>
+					<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
+					<distribution>repo</distribution>
+				</license>
+			</licenses>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+			<version>3.0.7.RELEASE</version>
+			<licenses>
+				<license>
+					<name>Apache License</name>
+					<url>http://www.apache.org/licenses/LICENSE-2.0.txt</url>
 					<distribution>repo</distribution>
 				</license>
 			</licenses>

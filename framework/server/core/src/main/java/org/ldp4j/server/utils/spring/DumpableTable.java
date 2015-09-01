@@ -42,7 +42,7 @@ class DumpableTable {
 	private List<List<String>> rows;
 	private boolean sort=false;
 
-	public static enum Alignment {
+	public enum Alignment {
 		LEFT,
 		RIGHT,
 		CENTER

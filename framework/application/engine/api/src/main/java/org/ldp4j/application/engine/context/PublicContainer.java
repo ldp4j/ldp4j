@@ -34,6 +34,23 @@ public interface PublicContainer extends PublicRDFSource {
 
 	Collection<PublicResource> members();
 
-	PublicResource createResource(DataSet dataSet, CreationPreferences preferences) throws ApplicationExecutionException, UnsupportedInteractionModelException;
+	/**
+	 * Create a resource using the specified data set and preferences.
+	 *
+	 * @param dataSet
+	 *            the data for the new resource
+	 * @param preferences
+	 *            the preferences to use for creating the resource
+	 * @return the create public resource
+	 * @throws ApplicationExecutionException
+	 *             if the application fails to create the resource
+	 * @throws UnsupportedInteractionModelException
+	 *             if the preferred interaction model is not supported
+	 * @throws InvalidIndirectIdentifierException
+	 *             if not valid indirect identifier is specified when trying to
+	 *             create a member in an indirect container
+	 */
+	PublicResource createResource(DataSet dataSet, CreationPreferences preferences)
+			throws 	ApplicationExecutionException;
 
 }
