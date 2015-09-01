@@ -252,7 +252,7 @@ abstract class DefaultPublicContainer<T extends ContainerTemplate> extends Defau
 	 * Whenever we support downgrading containers to resources the visitor will
 	 * have to be updated to reflect that.
 	 */
-	private void verifyInteractionModel(InteractionModel interactionModel) throws UnsupportedInteractionModelException {
+	private void verifyInteractionModel(InteractionModel interactionModel) {
 		if(interactionModel==null) {
 			return;
 		}

@@ -344,25 +344,29 @@ public final class URIUtils {
 		Deque<String> outputBuffer=new LinkedList<String>();
 		String input=path==null?EMPTY:path;
 		while(!input.isEmpty()) {
-			String next=null;
-			if(input.startsWith("../")) {
-				next=input.substring(3);
-			} else if(input.startsWith("./") || input.startsWith("/./")) {
-				next=input.substring(2);
-			} else if("/.".equals(input)) {
-				next=SLASH;
-			} else if(input.startsWith("/../")) {
-				next=discardSegment(outputBuffer, input, "/../");
-			} else if("/..".equals(input)) {
-				next=discardSegment(outputBuffer, input, "/..");
-			} else if(PARENT.equals(input) || ".".equals(input)) {
-				next=EMPTY;
-			} else {
-				next=discardSegment(outputBuffer, input);
-			}
-			input=next;
+			input=processInput(outputBuffer, input);
 		}
 		return assembleInOrder(outputBuffer);
+	}
+
+	private static String processInput(Deque<String> outputBuffer, String input) {
+		String next=null;
+		if(input.startsWith("../")) {
+			next=input.substring(3);
+		} else if(input.startsWith("./") || input.startsWith("/./")) {
+			next=input.substring(2);
+		} else if("/.".equals(input)) {
+			next=SLASH;
+		} else if(input.startsWith("/../")) {
+			next=discardSegment(outputBuffer, input, "/../");
+		} else if("/..".equals(input)) {
+			next=discardSegment(outputBuffer, input, "/..");
+		} else if(PARENT.equals(input) || ".".equals(input)) {
+			next=EMPTY;
+		} else {
+			next=discardSegment(outputBuffer, input);
+		}
+		return next;
 	}
 
 	private static String discardSegment(Deque<String> outputBuffer,String input) {
