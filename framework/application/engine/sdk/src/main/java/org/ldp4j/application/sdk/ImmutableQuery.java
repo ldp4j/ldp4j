@@ -26,38 +26,45 @@
  */
 package org.ldp4j.application.sdk;
 
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
-import org.ldp4j.application.engine.context.HttpRequest.Header.Element;
+import org.ldp4j.application.ext.Parameter;
+import org.ldp4j.application.ext.Query;
 
-import com.google.common.collect.ImmutableList;
+import static com.google.common.base.Preconditions.*;
+import com.google.common.collect.ImmutableMap;
 
-final class ImmutableElement implements Element {
+final class ImmutableQuery implements Query {
 
-	private static final long serialVersionUID = -7353947392931727162L;
+	private final ImmutableMap<String, ImmutableQueryParameter> parameters;
 
-	private final String name;
-	private final ImmutableList<Parameter> parameters;
-
-	ImmutableElement(String name, List<ImmutableHeaderElementParameter> parameters) {
-		this.name=name;
-		this.parameters=ImmutableList.<Parameter>copyOf(parameters);
+	private ImmutableQuery(Map<String, ImmutableQueryParameter> params) {
+		this.parameters=ImmutableMap.copyOf(params);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public String name() {
-		return this.name;
+	public boolean hasParameter(String paramName) {
+		checkNotNull(paramName,"Parameter name cannot be null");
+		return this.parameters.containsKey(paramName);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public ImmutableList<Parameter> parameters() {
-		return this.parameters;
+	public Parameter getParameter(String paramName) {
+		checkNotNull(paramName,"Parameter name cannot be null");
+		Parameter p=this.parameters.get(paramName);
+		if(p==null) {
+			p=NullQueryParameter.create(paramName);
+		}
+		return p;
 	}
 
+	@Override
+	public Set<String> parameterNames() {
+		return this.parameters.keySet();
+	}
+
+	static ImmutableQuery create(Map<String,ImmutableQueryParameter> parameters) {
+		return new ImmutableQuery(parameters);
+	}
 }

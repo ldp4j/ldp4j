@@ -26,38 +26,55 @@
  */
 package org.ldp4j.application.sdk;
 
+import java.util.Collections;
 import java.util.List;
 
-import org.ldp4j.application.engine.context.HttpRequest.Header.Element;
+import org.ldp4j.application.ext.Parameter;
 
-import com.google.common.collect.ImmutableList;
-
-final class ImmutableElement implements Element {
-
-	private static final long serialVersionUID = -7353947392931727162L;
+final class NullQueryParameter implements Parameter {
 
 	private final String name;
-	private final ImmutableList<Parameter> parameters;
 
-	ImmutableElement(String name, List<ImmutableHeaderElementParameter> parameters) {
-		this.name=name;
-		this.parameters=ImmutableList.<Parameter>copyOf(parameters);
+	private NullQueryParameter(String name) {
+		this.name = name;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
 	public String name() {
 		return this.name;
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
 	@Override
-	public ImmutableList<Parameter> parameters() {
-		return this.parameters;
+	public boolean isMultivalued() {
+		return false;
 	}
 
+	@Override
+	public <T> List<T> rawValuesAs(Class<? extends T> clazz) {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public List<String> rawValues() {
+		return Collections.emptyList();
+	}
+
+	@Override
+	public <T> T rawValueAs(Class<? extends T> clazz) {
+		return null;
+	}
+
+	@Override
+	public String rawValue() {
+		return null;
+	}
+
+	@Override
+	public int cardinality() {
+		return 0;
+	}
+
+	static Parameter create(String name) {
+		return new NullQueryParameter(name);
+	}
 }
