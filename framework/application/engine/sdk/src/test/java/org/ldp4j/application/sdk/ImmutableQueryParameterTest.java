@@ -31,7 +31,9 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.fail;
 
+import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -42,10 +44,10 @@ import com.google.common.collect.ImmutableList;
 
 public class ImmutableQueryParameterTest {
 
+	private static final ImmutableList<String> SINGLE_VALUED_RAW_VALUES = ImmutableList.of("3.3");
+	private static final ImmutableList<String> MULTI_VALUED_RAW_VALUES = ImmutableList.of("1","2");
 
-
-	private static final ImmutableList<String> SINGLE_VALUED_RAW_VALUES = ImmutableList.of("value3");
-	private static final ImmutableList<String> MULTI_VALUED_RAW_VALUES = ImmutableList.of("value1","value2");
+	private static final ImmutableList<String> INVALID_MULTI_VALUED_RAW_VALUES = ImmutableList.of("1","http://www.ldp4j.org");
 
 	private static final String PARAMETER_NAME = "parameter name";
 
@@ -113,16 +115,58 @@ public class ImmutableQueryParameterTest {
 		assertThat(parameter.rawValues(),contains("value4","5"));
 	}
 
-	@Test(expected=UnsupportedOperationException.class)
-	public void failOnRawValueTransformation() {
+	@Test
+	public void transformFirstRawValue$singleValued() {
 		ImmutableQueryParameter parameter = singleValuedParameter();
-		parameter.rawValueAs(Integer.class);
+		Float value = parameter.rawValueAs(Float.class);
+		assertThat(value,equalTo(3.3f));
 	}
 
-	@Test(expected=UnsupportedOperationException.class)
-	public void failOnRawValuesTransformation() {
+	@Test
+	public void transformFirstRawValue$multiValued() {
+		ImmutableQueryParameter parameter = multiValuedParameter();
+		int value = parameter.rawValueAs(Integer.class);
+		assertThat(value,equalTo(1));
+	}
+
+	@Test
+	public void transformRawValues$singleValued() {
 		ImmutableQueryParameter parameter = singleValuedParameter();
-		parameter.rawValuesAs(Integer.class);
+		List<Float> value = parameter.rawValuesAs(Float.class);
+		assertThat(value,contains(3.3f));
+	}
+
+	@Test
+	public void transformRawValues$multiValued() {
+		ImmutableQueryParameter parameter = multiValuedParameter();
+		List<Integer> value = parameter.rawValuesAs(int.class);
+		assertThat(value,contains(1,2));
+	}
+
+	@Test
+	public void failOnMixedRawValuesTransformation() {
+		ImmutableQueryParameter parameter = mixedParameterValues();
+		try {
+			parameter.rawValuesAs(Integer.class);
+			fail("Should nor parse a URI as an integer");
+		} catch (Exception e) {
+
+		}
+	}
+
+	@Test
+	public void transformMixedRawValues() {
+		ImmutableQueryParameter parameter = mixedParameterValues();
+		try {
+			parameter.rawValuesAs(URI.class);
+		} catch (Exception e) {
+			fail("Should parse an integer as a URI");
+
+		}
+	}
+
+	private ImmutableQueryParameter mixedParameterValues() {
+		return ImmutableQueryParameter.create(PARAMETER_NAME, INVALID_MULTI_VALUED_RAW_VALUES);
 	}
 
 }
