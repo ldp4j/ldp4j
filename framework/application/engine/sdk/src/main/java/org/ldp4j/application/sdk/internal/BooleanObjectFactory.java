@@ -27,6 +27,7 @@
 package org.ldp4j.application.sdk.internal;
 
 import org.ldp4j.application.sdk.spi.ObjectFactory;
+import org.ldp4j.application.sdk.spi.ObjectParseException;
 
 
 public class BooleanObjectFactory implements ObjectFactory<Boolean> {
@@ -38,7 +39,11 @@ public class BooleanObjectFactory implements ObjectFactory<Boolean> {
 
 	@Override
 	public Boolean fromString(String rawValue) {
-		return Boolean.valueOf(rawValue);
+		try {
+			return PrimitiveObjectFactory.parseBoolean(rawValue);
+		} catch (IllegalArgumentException e) {
+			throw new ObjectParseException(e,Boolean.class, rawValue);
+		}
 	}
 
 	@Override

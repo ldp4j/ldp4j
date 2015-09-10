@@ -28,6 +28,7 @@ package org.ldp4j.application.sdk;
 
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Set;
@@ -141,6 +142,17 @@ final class ObjectUtil {
 					LOGGER.debug("No factory found for primitive value class '{}'",prettyPrint(valueClass));
 				}
 			} else {
+				for(Entry<Class<?>,ObjectFactory<?>> entry:FACTORY_CACHE.entrySet()) {
+					if(entry.getKey().isAssignableFrom(valueClass)) {
+						rawResult=entry.getValue();
+						if(LOGGER.isDebugEnabled()) {
+							LOGGER.debug("No factory found for value class '{}', using supertype object factory",prettyPrint(valueClass));
+						}
+						break;
+					}
+				}
+			}
+			if(rawResult==null) {
 				rawResult=new NullObjectFactory<T>(valueClass);
 				if(LOGGER.isWarnEnabled()) {
 					LOGGER.warn("No factory found for value class '{}'",prettyPrint(valueClass));

@@ -45,7 +45,7 @@ public class DateObjectFactory implements ObjectFactory<Date> {
 		try {
 			return ISODateTimeFormat.dateTimeParser().parseDateTime(rawValue).toDate();
 		} catch (Exception e) {
-			throw new ObjectParseException(e,DateTime.class,rawValue);
+			throw new ObjectParseException(e,Date.class,rawValue);
 		}
 	}
 

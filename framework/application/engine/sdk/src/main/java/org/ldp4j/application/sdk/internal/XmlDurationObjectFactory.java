@@ -30,6 +30,7 @@ import javax.xml.datatype.Duration;
 
 import org.joda.time.Period;
 import org.joda.time.format.ISOPeriodFormat;
+import org.ldp4j.application.data.Literals;
 import org.ldp4j.application.data.TimeUtils;
 import org.ldp4j.application.sdk.spi.ObjectFactory;
 import org.ldp4j.application.sdk.spi.ObjectParseException;
@@ -53,7 +54,7 @@ public class XmlDurationObjectFactory implements ObjectFactory<Duration> {
 
 	@Override
 	public String toString(javax.xml.datatype.Duration value) {
-		return value.toString();
+		return Literals.of(value).get().toString();
 	}
 
 }

@@ -33,6 +33,9 @@ import org.ldp4j.application.sdk.spi.ObjectParseException;
 
 public final class PrimitiveObjectFactory<T> implements ObjectFactory<T> {
 
+	private static final String FALSE = "false";
+	private static final String TRUE = "true";
+
 	private final Class<? extends T> valueClass;
 
 	private PrimitiveObjectFactory(Class<? extends T> valueClass) {
@@ -62,7 +65,7 @@ public final class PrimitiveObjectFactory<T> implements ObjectFactory<T> {
 			} else if (float.class.equals(valueClass)) {
 				result=Float.valueOf(rawValue);
 			} else if (boolean.class.equals(valueClass)) {
-				result=Boolean.valueOf(rawValue);
+				result=parseBoolean(rawValue);
 			} else { // Must be char
 				if(rawValue.length()!=1) {
 					throw new IllegalArgumentException("Raw value has more than one character");
@@ -73,6 +76,15 @@ public final class PrimitiveObjectFactory<T> implements ObjectFactory<T> {
 		} catch(Exception e) {
 			throw new ObjectParseException(e,valueClass,rawValue);
 		}
+	}
+
+	static final boolean parseBoolean(String rawValue) {
+		if(TRUE.equalsIgnoreCase(rawValue)) {
+			return true;
+		} else if(FALSE.equalsIgnoreCase(rawValue)) {
+			return false;
+		}
+		throw new IllegalArgumentException("Not a standard boolean representation");
 	}
 
 	@Override

@@ -26,7 +26,6 @@
  */
 package org.ldp4j.application.sdk.internal;
 
-import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.Period;
 import org.joda.time.format.ISOPeriodFormat;
@@ -52,7 +51,7 @@ public class JodaDurationObjectFactory implements ObjectFactory<Duration> {
 
 	@Override
 	public String toString(Duration value) {
-		return new DateTime(value).toString();
+		return value.toString();
 	}
 
 }

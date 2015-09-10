@@ -27,7 +27,9 @@
 package org.ldp4j.application.sdk;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.notNullValue;
 
 import org.junit.Test;
 import org.ldp4j.application.ext.Parameter;

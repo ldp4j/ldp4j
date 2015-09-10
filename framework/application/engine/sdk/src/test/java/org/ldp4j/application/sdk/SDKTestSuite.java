@@ -1,4 +1,3 @@
-package org.ldp4j.application.sdk;
 /**
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   This file is part of the LDP4j Project:
@@ -25,26 +24,17 @@ package org.ldp4j.application.sdk;
  *   Bundle      : ldp4j-application-engine-sdk-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
+package org.ldp4j.application.sdk;
 
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
-import org.ldp4j.application.sdk.spi.ObjectFactory;
-
-
-public class RepeatedObjectFactory implements ObjectFactory<CustomType> {
-
-	@Override
-	public Class<? extends CustomType> targetClass() {
-		return CustomType.class;
-	}
-
-	@Override
-	public CustomType fromString(String rawValue) {
-		return CustomType.valueOf(rawValue);
-	}
-
-	@Override
-	public String toString(CustomType value) {
-		return value.toString();
-	}
+@RunWith(Suite.class)
+@SuiteClasses({
+	HttpRequestBuilderTest.class,
+	QuerySupportTestSuite.class
+})
+public class SDKTestSuite {
 
 }

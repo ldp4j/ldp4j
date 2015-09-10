@@ -30,7 +30,7 @@ package org.ldp4j.application.sdk;
 import org.ldp4j.application.sdk.spi.ObjectFactory;
 
 
-public class RepeatedObjectFactory implements ObjectFactory<CustomType> {
+public class CustomTypeObjectFactory implements ObjectFactory<CustomType> {
 
 	@Override
 	public Class<? extends CustomType> targetClass() {

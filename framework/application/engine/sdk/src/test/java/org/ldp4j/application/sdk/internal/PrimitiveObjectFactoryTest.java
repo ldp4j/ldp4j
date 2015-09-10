@@ -1,4 +1,3 @@
-package org.ldp4j.application.sdk;
 /**
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   This file is part of the LDP4j Project:
@@ -25,26 +24,26 @@ package org.ldp4j.application.sdk;
  *   Bundle      : ldp4j-application-engine-sdk-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
+package org.ldp4j.application.sdk.internal;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
-import org.ldp4j.application.sdk.spi.ObjectFactory;
+import org.junit.Test;
 
+public class PrimitiveObjectFactoryTest {
 
-public class RepeatedObjectFactory implements ObjectFactory<CustomType> {
-
-	@Override
-	public Class<? extends CustomType> targetClass() {
-		return CustomType.class;
+	@Test
+	public void testTargetClass() throws Exception {
+		PrimitiveObjectFactory<Boolean> factory = PrimitiveObjectFactory.create(boolean.class);
+		assertThat((Object)factory.targetClass(),equalTo((Object)boolean.class));
 	}
 
-	@Override
-	public CustomType fromString(String rawValue) {
-		return CustomType.valueOf(rawValue);
-	}
-
-	@Override
-	public String toString(CustomType value) {
-		return value.toString();
+	@Test
+	public void testToString() throws Exception {
+		PrimitiveObjectFactory<Boolean> factory = PrimitiveObjectFactory.create(boolean.class);
+		assertThat(factory.toString(true),equalTo(Boolean.TRUE.toString()));
+		assertThat(factory.toString(false),equalTo(Boolean.FALSE.toString()));
 	}
 
 }

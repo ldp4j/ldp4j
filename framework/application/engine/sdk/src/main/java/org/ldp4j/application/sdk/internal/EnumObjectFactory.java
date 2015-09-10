@@ -27,6 +27,7 @@
 package org.ldp4j.application.sdk.internal;
 
 import org.ldp4j.application.sdk.spi.ObjectFactory;
+import org.ldp4j.application.sdk.spi.ObjectParseException;
 
 public final class EnumObjectFactory<E extends Enum<E>> implements ObjectFactory<E> {
 
@@ -43,7 +44,11 @@ public final class EnumObjectFactory<E extends Enum<E>> implements ObjectFactory
 
 	@Override
 	public E fromString(final String rawValue) {
-		return Enum.valueOf(targetClass, rawValue);
+		try {
+			return Enum.valueOf(targetClass, rawValue);
+		} catch (Exception e) {
+			throw new ObjectParseException(e,targetClass(),rawValue);
+		}
 	}
 
 	@Override

@@ -27,7 +27,10 @@
 package org.ldp4j.application.sdk;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
@@ -118,7 +121,7 @@ public class ObjectUtilTest {
 		return new Duration(1000);
 	}
 
-	private javax.xml.datatype.Duration jxmlDuration() throws DatatypeConfigurationException {
+	private javax.xml.datatype.Duration xmlDuration() throws DatatypeConfigurationException {
 		return DatatypeFactory.newInstance().newDuration(1000);
 	}
 
@@ -284,28 +287,6 @@ public class ObjectUtilTest {
 		verifyPrimitiveRoundtrip(char.class,'5');
 	}
 
-	@Test
-	public void testCharPrimitiveRoundtrip$not_a_char() throws Exception {
-		try {
-			ObjectUtil.fromString(char.class, "not char");
-			fail("Should not accept strings with more than one character");
-		} catch (ObjectParseException e) {
-			assertThat(e.getRawValue(),equalTo("not char"));
-			assertThat((Object)e.getValueClass(),equalTo((Object)char.class));
-		}
-	}
-
-	@Test
-	public void testCharactereRoundtrip$not_a_char() throws Exception {
-		try {
-			ObjectUtil.fromString(Character.class, "not char");
-			fail("Should not accept strings with more than one character");
-		} catch (ObjectParseException e) {
-			assertThat(e.getRawValue(),equalTo("not char"));
-			assertThat((Object)e.getValueClass(),equalTo((Object)Character.class));
-		}
-	}
-
 	@SuppressWarnings("unchecked")
 	private <T> void verifyPrimitiveRoundtrip(Class<T> type, T value) {
 		String rawValue=ObjectUtil.toString(value);
@@ -333,6 +314,7 @@ public class ObjectUtilTest {
 	public void testXMLGregorianCalendarRoundtrip() throws Exception {
 		XMLGregorianCalendar date = TimeUtils.newInstance().from(this.now).toXMLGregorianCalendar();
 		assertThat(ObjectUtil.fromString(XMLGregorianCalendar.class, dateTimeAsISOString()),equalTo(date));
+		assertThat(ObjectUtil.toString(date),equalTo(dateTimeAsISOString()));
 	}
 
 	@Test
@@ -344,6 +326,7 @@ public class ObjectUtilTest {
 	public void testUtilDateRoundtrip() throws Exception {
 		Date date = TimeUtils.newInstance().from(this.now).toDate();
 		assertThat(ObjectUtil.fromString(Date.class, dateTimeAsISOString()),equalTo(date));
+		assertThat(ObjectUtil.toString(date),equalTo(dateTimeAsISOString()));
 	}
 
 	@Test
@@ -355,6 +338,7 @@ public class ObjectUtilTest {
 	public void testSqlDateRoundtrip() throws Exception {
 		Date date = TimeUtils.newInstance().from(this.now).toSqlDate();
 		assertThat(ObjectUtil.fromString(java.sql.Date.class, dateTimeAsISOString()),equalTo(date));
+		assertThat(ObjectUtil.toString(date),equalTo(dateTimeAsISOString()));
 	}
 
 	@Test
@@ -365,6 +349,7 @@ public class ObjectUtilTest {
 	@Test
 	public void testJodaDurationRoundtrip() throws Exception {
 		assertThat(ObjectUtil.fromString(Duration.class, durationAsISOString()),equalTo(jodaDuration()));
+		assertThat(ObjectUtil.toString(jodaDuration()),equalTo(durationAsISOString()));
 	}
 
 	@Test
@@ -374,6 +359,118 @@ public class ObjectUtilTest {
 
 	@Test
 	public void testXmlDurationRoundtrip() throws Exception {
-		assertThat(ObjectUtil.fromString(javax.xml.datatype.Duration.class, durationAsISOString()),equalTo(jxmlDuration()));
+		assertThat(ObjectUtil.fromString(javax.xml.datatype.Duration.class, durationAsISOString()),equalTo(xmlDuration()));
+		assertThat(ObjectUtil.toString(xmlDuration()),equalTo(durationAsISOString()));
+	}
+
+	@Test
+	public void failOnInvalidBoolean() throws Exception {
+		verifyPrimitiveParsingFailure(Boolean.class, boolean.class);
+	}
+
+	@Test
+	public void failOnInvalidByte() throws Exception {
+		verifyPrimitiveParsingFailure(Byte.class, byte.class);
+	}
+
+	@Test
+	public void failOnInvalidShort() throws Exception {
+		verifyPrimitiveParsingFailure(Short.class, short.class);
+	}
+
+	@Test
+	public void failOnInvalidInt() throws Exception {
+		verifyPrimitiveParsingFailure(Integer.class, int.class);
+	}
+
+	@Test
+	public void failOnInvalidLong() throws Exception {
+		verifyPrimitiveParsingFailure(Long.class, long.class);
+	}
+
+	@Test
+	public void failOnInvalidFloat() throws Exception {
+		verifyPrimitiveParsingFailure(Float.class, float.class);
+	}
+
+	@Test
+	public void failOnInvalidDouble() throws Exception {
+		verifyPrimitiveParsingFailure(Double.class, double.class);
+	}
+
+	@Test
+	public void failOnInvalidChar() throws Exception {
+		verifyPrimitiveParsingFailure(Character.class, char.class);
+	}
+
+	@Test
+	public void failOnInvalidURI() throws Exception {
+		verifyRawValueNotParseableAs("Not a valid value", URI.class);
+	}
+
+	@Test
+	public void failOnInvalidURL() throws Exception {
+		verifyRawValueNotParseableAs("Not a valid value", URL.class);
+	}
+
+	@Test
+	public void failOnInvalidQName() throws Exception {
+		verifyRawValueNotParseableAs("{}Not a valid value", QName.class);
+		verifyRawValueNotParseableAs("{Not a valid value", QName.class);
+	}
+
+	@Test
+	public void failOnInvalidUUID() throws Exception {
+		verifyRawValueNotParseableAs("Not a valid value", UUID.class);
+	}
+
+	@Test
+	public void failOnInvalidEnum() throws Exception {
+		verifyRawValueNotParseableAs("Not a valid value", DefaultEnumType.class);
+	}
+
+	@Test
+	public void failOnInvalidDate() throws Exception {
+		verifyRawValueNotParseableAs("Not a valid value", Date.class);
+	}
+
+	@Test
+	public void failOnInvalidSqlDate() throws Exception {
+		verifyRawValueNotParseableAs("Not a valid value", java.sql.Date.class);
+	}
+
+	@Test
+	public void failOnInvalidDateTime() throws Exception {
+		verifyRawValueNotParseableAs("Not a valid value", DateTime.class);
+	}
+
+	@Test
+	public void failOnInvalidXMLGregorianCalendar() throws Exception {
+		verifyRawValueNotParseableAs("Not a valid value", javax.xml.datatype.XMLGregorianCalendar.class);
+	}
+
+	@Test
+	public void failOnInvalidJodaDuration() throws Exception {
+		verifyRawValueNotParseableAs("Not a valid value", org.joda.time.Duration.class);
+	}
+
+	@Test
+	public void failOnInvalidXmlDuration() throws Exception {
+		verifyRawValueNotParseableAs("Not a valid value", javax.xml.datatype.Duration.class);
+	}
+
+	private void verifyPrimitiveParsingFailure(Class<?> wrapperClass, Class<?> primitiveType) {
+		verifyRawValueNotParseableAs("Not a valid primitive value", wrapperClass);
+		verifyRawValueNotParseableAs("Not a valid primitive value", primitiveType);
+	}
+
+	private void verifyRawValueNotParseableAs(String rawValue, Class<?> clazz) {
+		try {
+			ObjectUtil.fromString(clazz,rawValue);
+			fail("Shoult not parse '"+rawValue+"' as "+clazz.getName());
+		} catch (ObjectParseException e) {
+			assertThat(e.getRawValue(),equalTo(rawValue));
+			assertThat((Object)e.getValueClass(),sameInstance((Object)clazz));
+		}
 	}
 }
