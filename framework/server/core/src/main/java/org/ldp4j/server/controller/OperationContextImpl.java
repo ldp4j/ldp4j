@@ -33,9 +33,11 @@ import java.net.URI;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -53,6 +55,8 @@ import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
 import org.ldp4j.application.engine.context.PublicContainer;
 import org.ldp4j.application.engine.context.PublicResource;
+import org.ldp4j.application.ext.Query;
+import org.ldp4j.application.sdk.QueryBuilder;
 import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.server.data.DataTransformator;
 import org.ldp4j.server.data.ResourceResolver;
@@ -186,6 +190,32 @@ final class OperationContextImpl implements OperationContext {
 		return tPath;
 	}
 
+	private boolean isMethodAllowed() {
+		boolean allowed;
+		switch(this.method) {
+			case GET:
+			case HEAD:
+			case OPTIONS:
+				allowed=true;
+				break;
+			case DELETE:
+				allowed=resource().capabilities().isDeletable();
+				break;
+			case PATCH:
+				allowed=resource().capabilities().isPatchable();
+				break;
+			case POST:
+				allowed=resource().capabilities().isFactory();
+				break;
+			case PUT:
+				allowed=resource().capabilities().isModifiable();
+				break;
+			default:
+				allowed=false;
+		}
+		return allowed;
+	}
+
 	UriInfo uriInfo() {
 		return this.uriInfo;
 	}
@@ -213,27 +243,21 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	@Override
-	public boolean isQuery() {
-		return !this.uriInfo.getQueryParameters().isEmpty();
-	}
-
-	@Override
-	public boolean hasQueryParameter(String parameter) {
-		return this.uriInfo.getQueryParameters().get(parameter)!=null;
-	}
-
-	@Override
-	public List<String> getQueryParameters() {
-		return ImmutableList.copyOf(this.uriInfo.getQueryParameters().keySet());
-	}
-
-	@Override
-	public List<String> getQueryParameterValues(String parameter) {
-		List<String> result = this.uriInfo.getQueryParameters().get(parameter);
-		if(result==null) {
-			result=Lists.newArrayList();
+	public Query getQuery() {
+		final MultivaluedMap<String,String> queryParameters = this.uriInfo.getQueryParameters();
+		final QueryBuilder builder = QueryBuilder.newInstance();
+		for(final Entry<String, List<String>> entry:queryParameters.entrySet()) {
+			final String parameterName = entry.getKey();
+			for(final String rawValue:entry.getValue()) {
+				builder.withParameter(parameterName, rawValue);
+			}
 		}
-		return ImmutableList.copyOf(result);
+		return builder.build();
+	}
+
+	@Override
+	public boolean isResourceQueryable() {
+		return resource().capabilities().isQueryable();
 	}
 
 	@Override
@@ -281,32 +305,6 @@ final class OperationContextImpl implements OperationContext {
 			throw new MethodNotAllowedException(this,this.resource,this.method);
 		}
 		return this;
-	}
-
-	private boolean isMethodAllowed() {
-		boolean allowed;
-		switch(this.method) {
-			case GET:
-			case HEAD:
-			case OPTIONS:
-				allowed=true;
-				break;
-			case DELETE:
-				allowed=resource().capabilities().isDeletable();
-				break;
-			case PATCH:
-				allowed=resource().capabilities().isPatchable();
-				break;
-			case POST:
-				allowed=resource().capabilities().isFactory();
-				break;
-			case PUT:
-				allowed=resource().capabilities().isModifiable();
-				break;
-			default:
-				allowed=false;
-		}
-		return allowed;
 	}
 
 	@Override

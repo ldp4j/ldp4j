@@ -37,6 +37,7 @@ import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.CreationPreferences;
 import org.ldp4j.application.engine.context.PublicContainer;
 import org.ldp4j.application.engine.context.PublicResource;
+import org.ldp4j.application.ext.Query;
 import org.ldp4j.rdf.Namespaces;
 
 public interface OperationContext {
@@ -67,17 +68,15 @@ public interface OperationContext {
 
 	String serialize(DataSet entity, Namespaces namespaces, MediaType mediaType);
 
-	boolean isQuery();
+	boolean isResourceQueryable();
 
-	boolean hasQueryParameter(String string);
-
-	List<String> getQueryParameters();
-
-	List<String> getQueryParameterValues(String parameter);
+	Query getQuery();
 
 	void startOperation();
 
 	void completeOperation();
 
 	Namespaces applicationNamespaces();
+
+
 }

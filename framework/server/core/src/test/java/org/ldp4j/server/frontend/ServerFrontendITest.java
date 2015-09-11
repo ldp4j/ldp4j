@@ -28,11 +28,13 @@ package org.ldp4j.server.frontend;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Date;
+import java.util.Locale;
 
 import javax.ws.rs.core.Link;
 
@@ -70,8 +72,8 @@ import org.ldp4j.commons.testing.categories.LDP;
 import org.ldp4j.commons.testing.categories.Setup;
 import org.ldp4j.example.MyApplication;
 import org.ldp4j.server.testing.ServerFrontendTestHelper;
-import org.ldp4j.server.testing.ServerFrontendWebAppBuilder;
 import org.ldp4j.server.testing.ServerFrontendTestHelper.Metadata;
+import org.ldp4j.server.testing.ServerFrontendWebAppBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -354,7 +356,6 @@ public class ServerFrontendITest {
 	 */
 	@Test
 	@Category({
-		DEBUG.class,
 		HappyPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
@@ -396,6 +397,51 @@ public class ServerFrontendITest {
 		Metadata putResponse=HELPER.httpRequest(put);
 		Date lastModified = DateUtils.parseDate(putResponse.lastModified);
 		assertThat(lastModified.getTime(),equalTo(trunk(clientPutDate.getTime())));
+
+		LOGGER.info("Completed {}",testName.getMethodName());
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testNoQuerySupport(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH+"?param1=value1&param2=value2",HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
+		assertThat(getResponse.body,notNullValue());
+		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testQuerySupport(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH,HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(HttpStatus.SC_OK));
+		assertThat(getResponse.body,notNullValue());
+		assertThat(getResponse.contentType,equalTo("text/turtle"));
+
+		HttpGet get2 = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?param1=value1&param2=value2",HttpGet.class);
+		Metadata getResponse2=HELPER.httpRequest(get2);
+		assertThat(getResponse2.status,equalTo(HttpStatus.SC_OK));
+		assertThat(getResponse2.body,notNullValue());
+		assertThat(getResponse2.contentType,equalTo("text/turtle"));
 
 		LOGGER.info("Completed {}",testName.getMethodName());
 	}

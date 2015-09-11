@@ -40,16 +40,23 @@ public class OperationContextException extends RuntimeException {
 
 		private static final long serialVersionUID = 3550471347041282150L;
 
+		private final boolean queryable;
 		private final boolean modifiable;
 		private final boolean deletable;
 		private final boolean patchable;
 		private final boolean factory;
 
 		SerializableCapabilities(Capabilities capabilities) {
+			this.queryable=capabilities.isQueryable();
 			this.modifiable=capabilities.isModifiable();
 			this.deletable=capabilities.isDeletable();
 			this.patchable=capabilities.isPatchable();
 			this.factory=capabilities.isFactory();
+		}
+
+		@Override
+		public boolean isQueryable() {
+			return this.queryable;
 		}
 
 		@Override
