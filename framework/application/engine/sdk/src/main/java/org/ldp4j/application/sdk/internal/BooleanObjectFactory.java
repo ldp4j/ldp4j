@@ -29,14 +29,38 @@ package org.ldp4j.application.sdk.internal;
 import org.ldp4j.application.sdk.spi.ObjectFactory;
 import org.ldp4j.application.sdk.spi.ObjectParseException;
 
-
+/**
+ * Object factory for parsing and formatting Boolean objects.
+ */
 public class BooleanObjectFactory implements ObjectFactory<Boolean> {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Class<? extends Boolean> targetClass() {
 		return Boolean.class;
 	}
 
+	/**
+	 * Returns a {@code Boolean} with a value represented by the specified
+	 * string. The {@code Boolean} returned represents:
+	 * <ol>
+	 * <li>
+	 * a {@code true} value if the string argument is not {@code null} and is equal,
+	 * ignoring case, to the string {@code "true"}.</li>
+	 * <li>
+	 * a {@code false} value if the string argument is not {@code null} and is equal,
+	 * ignoring case, to the string {@code "false"}.</li>
+	 * </ol>
+	 *
+	 * @param rawValue
+	 *            a string.
+	 * @return the {@code Boolean} value represented by the string.
+	 * @throws ObjectParseException
+	 *             iff the specified raw value cannot be converted to a
+	 *             {@code Boolean} object.
+	 */
 	@Override
 	public Boolean fromString(String rawValue) {
 		try {
@@ -46,6 +70,15 @@ public class BooleanObjectFactory implements ObjectFactory<Boolean> {
 		}
 	}
 
+    /**
+     * Returns a {@code String} object representing the specified
+     * boolean.  If the specified boolean is {@code true}, then
+     * the string {@code "true"} will be returned, otherwise the
+     * string {@code "false"} will be returned.
+     *
+     * @param b the boolean to be converted
+     * @return the string representation of the specified {@code boolean}
+     */
 	@Override
 	public String toString(Boolean value) {
 		return value.toString();

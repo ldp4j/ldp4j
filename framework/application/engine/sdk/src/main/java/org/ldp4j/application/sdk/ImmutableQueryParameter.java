@@ -26,6 +26,9 @@
  */
 package org.ldp4j.application.sdk;
 
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
 import java.util.List;
 
@@ -34,8 +37,6 @@ import org.ldp4j.application.ext.Parameter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
-
-import static com.google.common.base.Preconditions.*;
 
 final class ImmutableQueryParameter implements Parameter {
 

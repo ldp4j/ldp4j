@@ -42,43 +42,53 @@ public final class PrimitiveObjectFactory<T> implements ObjectFactory<T> {
 		this.valueClass = valueClass;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Class<? extends T> targetClass() {
 		return this.valueClass;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	@SuppressWarnings("unchecked")
 	public T fromString(String rawValue) {
 		try {
 			Object result=null;
-			if (byte.class.equals(valueClass)) {
+			if (byte.class.equals(this.valueClass)) {
 				result=Byte.decode(rawValue);
-			} else if(short.class.equals(valueClass)) {
+			} else if(short.class.equals(this.valueClass)) {
 				result=Short.decode(rawValue);
-			} else if(int.class.equals(valueClass)) {
+			} else if(int.class.equals(this.valueClass)) {
 				result=Integer.decode(rawValue);
-			} else if (long.class.equals(valueClass)) {
+			} else if (long.class.equals(this.valueClass)) {
 				result=Long.decode(rawValue);
-			} else if (double.class.equals(valueClass)) {
+			} else if (double.class.equals(this.valueClass)) {
 				result=Double.valueOf(rawValue);
-			} else if (float.class.equals(valueClass)) {
+			} else if (float.class.equals(this.valueClass)) {
 				result=Float.valueOf(rawValue);
-			} else if (boolean.class.equals(valueClass)) {
+			} else if (boolean.class.equals(this.valueClass)) {
 				result=parseBoolean(rawValue);
 			} else { // Must be char
-				if(rawValue.length()!=1) {
-					throw new IllegalArgumentException("Raw value has more than one character");
-				}
-				result=Character.valueOf(rawValue.charAt(0));
+				result=parseCharacter(rawValue);
 			}
 			return (T)result;
 		} catch(Exception e) {
-			throw new ObjectParseException(e,valueClass,rawValue);
+			throw new ObjectParseException(e,this.valueClass,rawValue);
 		}
 	}
 
-	static final boolean parseBoolean(String rawValue) {
+	static Character parseCharacter(String rawValue) {
+		if(rawValue.length()!=1) {
+			throw new IllegalArgumentException("Raw value has more than one character");
+		}
+		return Character.valueOf(rawValue.charAt(0));
+	}
+
+	static boolean parseBoolean(String rawValue) {
 		if(TRUE.equalsIgnoreCase(rawValue)) {
 			return true;
 		} else if(FALSE.equalsIgnoreCase(rawValue)) {
@@ -87,11 +97,20 @@ public final class PrimitiveObjectFactory<T> implements ObjectFactory<T> {
 		throw new IllegalArgumentException("Not a standard boolean representation");
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString(T value) {
 		return value.toString();
 	}
 
+	/**
+	 * Create a primitive object factory for the specified primitive class
+	 * @param valueClass the primitive class to use
+	 * @return an object factory
+	 * @throws IllegalArgumentException if the specified class is not a primitive class
+	 */
 	public static <T> PrimitiveObjectFactory<T> create(Class<? extends T> valueClass) {
 		checkArgument(valueClass.isPrimitive(),"Class '"+valueClass.getName()+"' is not primitive");
 		return new PrimitiveObjectFactory<T>(valueClass);

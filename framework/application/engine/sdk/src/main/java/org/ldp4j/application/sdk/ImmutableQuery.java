@@ -26,13 +26,14 @@
  */
 package org.ldp4j.application.sdk;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Map;
 import java.util.Set;
 
 import org.ldp4j.application.ext.Parameter;
 import org.ldp4j.application.ext.Query;
 
-import static com.google.common.base.Preconditions.*;
 import com.google.common.collect.ImmutableMap;
 
 final class ImmutableQuery implements Query {
@@ -52,11 +53,11 @@ final class ImmutableQuery implements Query {
 	@Override
 	public Parameter getParameter(String paramName) {
 		checkNotNull(paramName,"Parameter name cannot be null");
-		Parameter p=this.parameters.get(paramName);
-		if(p==null) {
-			p=NullQueryParameter.create(paramName);
+		Parameter parameter=this.parameters.get(paramName);
+		if(parameter==null) {
+			parameter=NullQueryParameter.create(paramName);
 		}
-		return p;
+		return parameter;
 	}
 
 	@Override

@@ -30,21 +30,34 @@ import org.ldp4j.application.sdk.spi.ObjectFactory;
 import org.ldp4j.application.sdk.spi.ObjectParseException;
 
 
+/**
+ * Object factory for parsing and formatting Character objects.
+ */
 public class CharacterObjectFactory implements ObjectFactory<Character> {
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Class<? extends Character> targetClass() {
 		return Character.class;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Character fromString(String rawValue) {
-		if(rawValue.length()!=1) {
-			throw new ObjectParseException(Character.class, rawValue);
+		try {
+			return PrimitiveObjectFactory.parseCharacter(rawValue);
+		} catch (IllegalArgumentException e) {
+			throw new ObjectParseException(e,targetClass(),rawValue);
 		}
-		return Character.valueOf(rawValue.charAt(0));
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString(Character value) {
 		return value.toString();

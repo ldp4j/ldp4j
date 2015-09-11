@@ -29,6 +29,10 @@ package org.ldp4j.application.sdk.internal;
 import org.ldp4j.application.sdk.spi.ObjectFactory;
 import org.ldp4j.application.sdk.spi.ObjectParseException;
 
+/**
+ * Object factory for parsing and formating enum types relying on the standard
+ * Enum class facilities for parsing and formatting
+ */
 public final class EnumObjectFactory<E extends Enum<E>> implements ObjectFactory<E> {
 
 	private final Class<E> targetClass;
@@ -37,26 +41,35 @@ public final class EnumObjectFactory<E extends Enum<E>> implements ObjectFactory
 		this.targetClass = targetClass;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Class<? extends E> targetClass() {
 		return this.targetClass;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public E fromString(final String rawValue) {
 		try {
-			return Enum.valueOf(targetClass, rawValue);
+			return Enum.valueOf(this.targetClass, rawValue);
 		} catch (Exception e) {
 			throw new ObjectParseException(e,targetClass(),rawValue);
 		}
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString(E value) {
 		return value.toString();
 	}
 
-	public static <S extends Enum<S>> ObjectFactory<?> create(Class<S> enumClass) {
+	public static <S extends Enum<S>> ObjectFactory<S> create(Class<S> enumClass) {
 		return new EnumObjectFactory<S>(enumClass);
 	}
 

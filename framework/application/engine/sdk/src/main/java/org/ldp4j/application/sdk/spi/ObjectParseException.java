@@ -42,7 +42,7 @@ public class ObjectParseException extends ObjectTransformationException {
 	}
 
 	public String getRawValue() {
-		return rawValue;
+		return this.rawValue;
 	}
 
 }

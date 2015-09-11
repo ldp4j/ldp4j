@@ -26,6 +26,8 @@
  */
 package org.ldp4j.application.sdk;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -33,20 +35,22 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Set;
 
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+
 import org.ldp4j.application.sdk.internal.EnumObjectFactory;
 import org.ldp4j.application.sdk.internal.PrimitiveObjectFactory;
 import org.ldp4j.application.sdk.spi.ObjectFactory;
 import org.ldp4j.application.sdk.spi.ObjectTransformationException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.google.common.base.Preconditions.*;
-
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
 final class ObjectUtil {
 
+	/**
+	 * An object factory which fails to parse/format values of a specific type.
+	 */
 	private static final class NullObjectFactory<T> implements ObjectFactory<T> {
 
 		private final Class<? extends T> targetClass;
@@ -59,16 +63,25 @@ final class ObjectUtil {
 			return new ObjectTransformationException("Unsupported value type '"+prettyPrint(targetClass())+"'",null,targetClass());
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public Class<? extends T> targetClass() {
 			return this.targetClass;
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public T fromString(String rawValue) {
 			throw failure();
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public String toString(T value) {
 			throw failure();
@@ -84,86 +97,118 @@ final class ObjectUtil {
 	private ObjectUtil() {
 	}
 
-	@SuppressWarnings({ "unchecked", "rawtypes" })
+	@SuppressWarnings("unchecked")
 	private static synchronized <T> ObjectFactory<T> findObjectFactory(final Class<? extends T> valueClass) {
 		ObjectFactory<?> rawResult=FACTORY_CACHE.get(valueClass);
 		if(rawResult==null) {
 			if(LOGGER.isDebugEnabled()) {
 				LOGGER.debug("No cached factory found for value class '{}'",prettyPrint(valueClass));
 			}
-			ServiceLoader<ObjectFactory> loader = ServiceLoader.load(ObjectFactory.class);
-			Iterator<ObjectFactory> it = loader.iterator();
-			do {
-				try {
-					ObjectFactory candidate=it.next();
-					Class<? extends ObjectFactory> candidateClass = candidate.getClass();
-					if(PRELOADED_FACTORIES.contains(candidateClass)) {
-						if(LOGGER.isTraceEnabled()) {
-							LOGGER.trace("Discarded cached factory '{}' for value class '{}'",prettyPrint(candidateClass),prettyPrint(valueClass));
-						}
-					} else {
-						Class<?> targetClass = candidate.targetClass();
-						if(FACTORY_CACHE.containsKey(targetClass)) {
-							if(LOGGER.isWarnEnabled()) {
-								LOGGER.warn("Discarded clashing factory '{}' for value class '{}'",prettyPrint(candidateClass),prettyPrint(valueClass));
-							}
-						} else {
-							FACTORY_CACHE.put(targetClass,candidate);
-							PRELOADED_FACTORIES.add(candidateClass);
-							if(LOGGER.isTraceEnabled()) {
-								LOGGER.trace("Cached factory '{}' for value class '{}'",prettyPrint(candidateClass),prettyPrint(targetClass));
-							}
-							if(targetClass==valueClass) {
-								rawResult=candidate;
-								if(LOGGER.isDebugEnabled()) {
-									LOGGER.debug("Found factory '{}' for value class '{}'",prettyPrint(candidateClass),prettyPrint(valueClass));
-								}
-							} else {
-								if(LOGGER.isTraceEnabled()) {
-									LOGGER.trace("Discarded factory '{}': target class '{}' does not match value class '{}'",prettyPrint(candidateClass),prettyPrint(targetClass),prettyPrint(valueClass));
-								}
-							}
-						}
-					}
-				} catch (ServiceConfigurationError e) {
-					LOGGER.error("ObjectFactory configuration failure. Full stacktrace follows",e);
+			rawResult=discoverObjectFactory(valueClass);
+			if(rawResult==null) {
+				if(LOGGER.isDebugEnabled()) {
+					LOGGER.debug("No factory discovered for value class '{}'",prettyPrint(valueClass));
 				}
-			} while(rawResult==null && it.hasNext());
+				rawResult=prepareDefaultObjectFactory(valueClass);
+			}
 		}
-		if(rawResult==null) {
-			if(valueClass.isEnum()) {
-				rawResult=EnumObjectFactory.create(valueClass.asSubclass(Enum.class));
-				if(LOGGER.isDebugEnabled()) {
-					LOGGER.debug("No factory found for enum value class '{}'",prettyPrint(valueClass));
-				}
-			} else if(valueClass.isPrimitive()) {
-				rawResult=PrimitiveObjectFactory.create(valueClass);
-				if(LOGGER.isDebugEnabled()) {
-					LOGGER.debug("No factory found for primitive value class '{}'",prettyPrint(valueClass));
+		return (ObjectFactory<T>)rawResult;
+	}
+
+	private static <T> ObjectFactory<?> discoverObjectFactory(final Class<? extends T> valueClass) {
+		ObjectFactory<?> result=null;
+		@SuppressWarnings("rawtypes")
+		ServiceLoader<ObjectFactory> loader=ServiceLoader.load(ObjectFactory.class);
+		@SuppressWarnings("rawtypes")
+		Iterator<ObjectFactory> it = loader.iterator();
+		do {
+			try {
+				result=processObjectFactory(valueClass,(ObjectFactory<?>)it.next());
+			} catch (ServiceConfigurationError e) {
+				LOGGER.error("ObjectFactory configuration failure. Full stacktrace follows",e);
+			}
+		} while(result==null && it.hasNext());
+		return result;
+	}
+
+	private static <T> ObjectFactory<?> processObjectFactory(final Class<? extends T> valueClass, ObjectFactory<?> candidate) {
+		ObjectFactory<?> result=null;
+		if(PRELOADED_FACTORIES.contains(candidate.getClass())) {
+			if(LOGGER.isTraceEnabled()) {
+				LOGGER.trace("Discarded cached factory '{}' for value class '{}'",prettyPrint(candidate.getClass()),prettyPrint(valueClass));
+			}
+		} else {
+			Class<?> targetClass = candidate.targetClass();
+			if(FACTORY_CACHE.containsKey(targetClass)) {
+				if(LOGGER.isWarnEnabled()) {
+					LOGGER.warn("Discarded clashing factory '{}' for value class '{}'",prettyPrint(candidate.getClass()),prettyPrint(valueClass));
 				}
 			} else {
-				for(Entry<Class<?>,ObjectFactory<?>> entry:FACTORY_CACHE.entrySet()) {
-					if(entry.getKey().isAssignableFrom(valueClass)) {
-						rawResult=entry.getValue();
-						if(LOGGER.isDebugEnabled()) {
-							LOGGER.debug("No factory found for value class '{}', using supertype object factory",prettyPrint(valueClass));
-						}
-						break;
+				cacheObjectFactory(candidate);
+				if(targetClass==valueClass) {
+					result=candidate;
+					if(LOGGER.isDebugEnabled()) {
+						LOGGER.debug("Found factory '{}' for value class '{}'",prettyPrint(candidate.getClass()),prettyPrint(valueClass));
+					}
+				} else {
+					if(LOGGER.isTraceEnabled()) {
+						LOGGER.trace("Discarded factory '{}': target class '{}' does not match value class '{}'",prettyPrint(candidate.getClass()),prettyPrint(targetClass),prettyPrint(valueClass));
 					}
 				}
 			}
-			if(rawResult==null) {
-				rawResult=new NullObjectFactory<T>(valueClass);
+		}
+		return result;
+	}
+
+	private static void cacheObjectFactory(final ObjectFactory<?> candidate) {
+		FACTORY_CACHE.put(candidate.targetClass(),candidate);
+		PRELOADED_FACTORIES.add(candidate.getClass());
+		if(LOGGER.isTraceEnabled()) {
+			LOGGER.trace("Cached factory '{}' for value class '{}'",prettyPrint(candidate.getClass()),prettyPrint(candidate.targetClass()));
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private static <T> ObjectFactory<?> prepareDefaultObjectFactory(final Class<? extends T> valueClass) {
+		ObjectFactory<?> result=null;
+		if(valueClass.isEnum()) {
+			result=EnumObjectFactory.create(valueClass.asSubclass(Enum.class));
+			if(LOGGER.isDebugEnabled()) {
+				LOGGER.debug("No factory found for enum value class '{}'",prettyPrint(valueClass));
+			}
+		} else if(valueClass.isPrimitive()) {
+			result=PrimitiveObjectFactory.create(valueClass);
+			if(LOGGER.isDebugEnabled()) {
+				LOGGER.debug("No factory found for primitive value class '{}'",prettyPrint(valueClass));
+			}
+		} else {
+			result=findCompatibleSupertypeObjectFactory(valueClass);
+			if(result==null) {
+				result=new NullObjectFactory<T>(valueClass);
 				if(LOGGER.isWarnEnabled()) {
 					LOGGER.warn("No factory found for value class '{}'",prettyPrint(valueClass));
 				}
 			}
-			FACTORY_CACHE.put(valueClass,rawResult);
-			if(LOGGER.isTraceEnabled()) {
-				LOGGER.trace("Cached default factory '{}' for value class '{}'",prettyPrint(rawResult.getClass()),prettyPrint(valueClass));
+		}
+		FACTORY_CACHE.put(valueClass,result);
+		if(LOGGER.isTraceEnabled()) {
+			LOGGER.trace("Cached default factory '{}' for value class '{}'",prettyPrint(result.getClass()),prettyPrint(valueClass));
+		}
+		return result;
+	}
+
+	private static <T> ObjectFactory<?> findCompatibleSupertypeObjectFactory(final Class<? extends T> valueClass) {
+		ObjectFactory<?> result=null;
+		for(Entry<Class<?>,ObjectFactory<?>> entry:FACTORY_CACHE.entrySet()) {
+			if(entry.getKey().isAssignableFrom(valueClass)) {
+				result=entry.getValue();
+				if(LOGGER.isDebugEnabled()) {
+					LOGGER.debug("No factory found for value class '{}', using supertype object factory",prettyPrint(valueClass));
+				}
+				break;
 			}
 		}
-		return (ObjectFactory<T>)rawResult;
+		return result;
 	}
 
 	private static String prettyPrint(Class<?> clazz) {
@@ -172,21 +217,18 @@ final class ObjectUtil {
 
 	static <T> boolean isSupported(Class<T> clazz) {
 		checkNotNull(clazz,"Class cannot be null");
-		ObjectFactory<T> valueFactory=ObjectUtil.findObjectFactory(clazz);
-		return !NullObjectFactory.class.isInstance(valueFactory);
+		return !NullObjectFactory.class.isInstance(ObjectUtil.findObjectFactory(clazz));
 	}
 
 	static <T> T fromString(Class<T> clazz, String str) {
 		checkNotNull(clazz,"Class cannot be null");
 		checkNotNull(str,"Raw value cannot be null");
-		ObjectFactory<T> valueFactory=ObjectUtil.findObjectFactory(clazz);
-		return valueFactory.fromString(str);
+		return ObjectUtil.findObjectFactory(clazz).fromString(str);
 	}
 
 	static String toString(Object value) {
 		checkNotNull(value,"Value cannot be null");
-		ObjectFactory<Object> valueFactory = ObjectUtil.findObjectFactory(value.getClass());
-		return valueFactory.toString(value);
+		return ObjectUtil.findObjectFactory(value.getClass()).toString(value);
 	}
 
 }

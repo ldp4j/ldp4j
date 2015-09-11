@@ -38,7 +38,7 @@ public class ObjectTransformationException extends RuntimeException {
 	}
 
 	public Class<?> getValueClass() {
-		return valueClass;
+		return this.valueClass;
 	}
 
 }
