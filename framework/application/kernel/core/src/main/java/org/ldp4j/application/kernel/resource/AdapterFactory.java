@@ -32,6 +32,8 @@ import org.ldp4j.application.ext.ApplicationUsageException;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.Modifiable;
+import org.ldp4j.application.ext.Query;
+import org.ldp4j.application.ext.Queryable;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.kernel.resource.Container;
 import org.ldp4j.application.kernel.resource.Resource;
@@ -97,6 +99,19 @@ final class AdapterFactory {
 				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
 			} catch (ApplicationRuntimeException e) {
 				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
+			} finally {
+				finalizeSession();
+			}
+		}
+
+		@Override
+		public final DataSet query(Query query) throws FeatureException {
+			try {
+				return as(Queryable.class).query(resource(), query, writeSession());
+			} catch (ApplicationUsageException e) {
+				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Queryable.class.getCanonicalName(),e);
+			} catch (ApplicationRuntimeException e) {
+				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Queryable.class.getCanonicalName(),e);
 			} finally {
 				finalizeSession();
 			}

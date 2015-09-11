@@ -52,6 +52,7 @@ import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.InvalidContentException;
+import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.resource.Attachment;
 import org.ldp4j.application.kernel.resource.Resource;
@@ -172,6 +173,22 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 	@Override
 	public final DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException {
 		DataSet dataSet=resourceData(contentPreferences);
+		DataSet representation = DataSets.createDataSet(id().name());
+		DataSets.
+			merge(
+				dataSet,
+				representation);
+		Context ctx = new Context(representation);
+		fillInMetadata(
+			contentPreferences,
+			ctx.newIndividual(individualId()),
+			ctx);
+		return representation;
+	}
+
+	@Override
+	public final DataSet query(Query query, ContentPreferences contentPreferences) throws ApplicationExecutionException {
+		DataSet dataSet=applicationContext().query(endpoint(),query);
 		DataSet representation = DataSets.createDataSet(id().name());
 		DataSets.
 			merge(

@@ -48,6 +48,8 @@ import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.Namespaces;
+import org.ldp4j.application.ext.Query;
+import org.ldp4j.application.ext.Queryable;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.kernel.constraints.ConstraintReport;
 import org.ldp4j.application.kernel.constraints.ConstraintReportId;
@@ -151,6 +153,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	private static final String COULD_NOT_FIND_CONTAINER_FOR_ENDPOINT         = "Could not find container for endpoint '%s'";
 	private static final String COULD_NOT_FIND_RESOURCE_FOR_ENDPOINT          = "Could not find resource for endpoint '%s'";
 	private static final String RESOURCE_RETRIEVAL_FAILED                     = "Resource '%s' retrieval failed ";
+	private static final String RESOURCE_QUERY_FAILED                         = "Resource '%s' query failed ";
 	private static final String RESOURCE_CREATION_FAILED                      = "Resource creation failed at '%s'";
 	private static final String RESOURCE_DELETION_FAILED                      = "Resource deletion failed at '%s'";
 	private static final String RESOURCE_MODIFICATION_FAILED                  = "Resource modification failed at '%s'";
@@ -291,6 +294,26 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 	}
 
+	DataSet query(Endpoint endpoint, Query query) throws ApplicationExecutionException {
+		ResourceId resourceId=endpoint.resourceId();
+		Resource resource = loadResource(resourceId);
+		if(resource==null) {
+			String errorMessage = applicationFailureMessage(COULD_NOT_FIND_RESOURCE_FOR_ENDPOINT,endpoint);
+			LOGGER.error(errorMessage);
+			throw new ApplicationExecutionException(errorMessage);
+		}
+		try {
+			WriteSessionConfiguration config=
+				DefaultApplicationContextHelper.
+					create(this.engine().templateManagementService()).
+						createConfiguration(resource,lastModified());
+			return this.engine().resourceControllerService().queryResource(resource,query,config);
+		} catch (Exception e) {
+			String errorMessage = applicationFailureMessage(RESOURCE_QUERY_FAILED,endpoint);
+			throw createException(errorMessage,e);
+		}
+	}
+
 	void registerContentFailure(Endpoint endpoint, InvalidContentException error) {
 		registerConstraintReport(loadResource(endpoint.resourceId()),error);
 	}
@@ -405,6 +428,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		Resource resource = resolveResource(endpoint);
 		ResourceTemplate template=resourceTemplate(resource);
 		Class<? extends ResourceHandler> handlerClass = template.handlerClass();
+		result.setQueryable(Queryable.class.isAssignableFrom(handlerClass));
 		result.setModifiable(Modifiable.class.isAssignableFrom(handlerClass));
 		result.setDeletable(Deletable.class.isAssignableFrom(handlerClass) && !resource.isRoot());
 		// TODO: Analyze how to provide patch support

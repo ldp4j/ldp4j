@@ -27,6 +27,7 @@
 package org.ldp4j.application.kernel.resource;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.kernel.resource.Container;
 import org.ldp4j.application.kernel.resource.Resource;
@@ -72,6 +73,10 @@ public class ResourceControllerService implements Service {
 
 	public DataSet getResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
 		return adapter(resource, configuration).get();
+	}
+
+	public DataSet queryResource(Resource resource, Query query, WriteSessionConfiguration configuration) throws FeatureException {
+		return adapter(resource, configuration).query(query);
 	}
 
 	public void updateResource(Resource resource, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {

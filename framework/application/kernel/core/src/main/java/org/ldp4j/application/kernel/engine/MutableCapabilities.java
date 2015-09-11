@@ -31,10 +31,16 @@ import org.ldp4j.application.engine.context.Capabilities;
 
 final class MutableCapabilities implements Capabilities {
 
+	private boolean queryable;
 	private boolean modifiable;
 	private boolean deletable;
 	private boolean patchable;
 	private boolean factory;
+
+	@Override
+	public boolean isQueryable() {
+		return this.queryable;
+	}
 
 	@Override
 	public boolean isModifiable() {
@@ -54,6 +60,10 @@ final class MutableCapabilities implements Capabilities {
 	@Override
 	public boolean isFactory() {
 		return factory;
+	}
+
+	void setQueryable(boolean queryable) {
+		this.queryable = queryable;
 	}
 
 	void setModifiable(boolean modifiable) {

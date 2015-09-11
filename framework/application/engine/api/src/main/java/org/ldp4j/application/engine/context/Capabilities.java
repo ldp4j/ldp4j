@@ -28,6 +28,8 @@ package org.ldp4j.application.engine.context;
 
 public interface Capabilities {
 
+	boolean isQueryable();
+
 	boolean isModifiable();
 
 	boolean isDeletable();
