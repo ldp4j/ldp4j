@@ -44,12 +44,34 @@ final class ImmutableQuery implements Query {
 		this.parameters=ImmutableMap.copyOf(params);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean isEmpty() {
+		return this.parameters.isEmpty();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int size() {
+		return this.parameters.size();
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean hasParameter(String paramName) {
 		checkNotNull(paramName,"Parameter name cannot be null");
 		return this.parameters.containsKey(paramName);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Parameter getParameter(String paramName) {
 		checkNotNull(paramName,"Parameter name cannot be null");
@@ -60,6 +82,9 @@ final class ImmutableQuery implements Query {
 		return parameter;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public Set<String> parameterNames() {
 		return this.parameters.keySet();

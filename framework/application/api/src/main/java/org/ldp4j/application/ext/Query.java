@@ -30,6 +30,10 @@ import java.util.Set;
 
 public interface Query {
 
+	boolean isEmpty();
+
+	int size();
+
 	boolean hasParameter(String paramName);
 
 	Parameter getParameter(String paramName);

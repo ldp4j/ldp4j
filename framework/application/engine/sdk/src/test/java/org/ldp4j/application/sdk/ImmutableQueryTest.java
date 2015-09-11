@@ -37,6 +37,7 @@ import org.ldp4j.application.ext.Parameter;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 
 public class ImmutableQueryTest {
 
@@ -64,7 +65,7 @@ public class ImmutableQueryTest {
 		return this.multiValuedParameter;
 	}
 
-	private ImmutableQuery sut() {
+	private ImmutableQuery queryWithParameters() {
 		ImmutableMap<String,ImmutableQueryParameter> parameterMap=
 			ImmutableMap.
 				<String,ImmutableQueryParameter>builder().
@@ -74,36 +75,60 @@ public class ImmutableQueryTest {
 		return ImmutableQuery.create(parameterMap);
 	}
 
+	private ImmutableQuery queryWithotParameters() {
+		return ImmutableQuery.create(Maps.<String,ImmutableQueryParameter>newLinkedHashMap());
+	}
+
 	@Test(expected=NullPointerException.class)
 	public void failOnCreationWithNullParameterMap() {
 		ImmutableQuery.create(null);
 	}
 
 	@Test
+	public void testHasCorrectSizeWhenParametersAreDefined() {
+		assertThat(queryWithParameters().size(),equalTo(2));
+	}
+
+	@Test
+	public void testQueryIsNotEmptyWhenParametersAreDefined() {
+		assertThat(queryWithParameters().isEmpty(),equalTo(false));
+	}
+
+	@Test
+	public void testHasCorrectSizeWhenNoParametersAreDefined() {
+		assertThat(queryWithotParameters().size(),equalTo(0));
+	}
+
+	@Test
+	public void testQueryIsEmptyWhenNoParametersAreDefined() {
+		assertThat(queryWithotParameters().isEmpty(),equalTo(true));
+	}
+
+	@Test
 	public void testGetAllParameterNames() {
-		assertThat(sut().parameterNames(),contains(PARAMETER_1,PARAMETER_2));
+		assertThat(queryWithParameters().parameterNames(),contains(PARAMETER_1,PARAMETER_2));
 	}
 
 	@Test
 	public void testHasAllParameterNames() {
-		assertThat(sut().hasParameter(PARAMETER_1),equalTo(true));
-		assertThat(sut().hasParameter(PARAMETER_2),equalTo(true));
+		assertThat(queryWithParameters().hasParameter(PARAMETER_1),equalTo(true));
+		assertThat(queryWithParameters().hasParameter(PARAMETER_2),equalTo(true));
 	}
 
 	@Test
 	public void testHasNoOtherParameterNames() {
-		assertThat(sut().hasParameter(UNEXISTING_PARAMETER),equalTo(false));
+		assertThat(queryWithParameters().hasParameter(UNEXISTING_PARAMETER),equalTo(false));
 	}
 
 	@Test
 	public void testKeepsAllParameters() {
-		assertThat(sut().getParameter(PARAMETER_1),sameInstance((Parameter)singleValuedParameter()));
-		assertThat(sut().getParameter(PARAMETER_2),sameInstance((Parameter)multiValuedParameter()));
+		assertThat(queryWithParameters().getParameter(PARAMETER_1),sameInstance((Parameter)singleValuedParameter()));
+		assertThat(queryWithParameters().getParameter(PARAMETER_2),sameInstance((Parameter)multiValuedParameter()));
 	}
 
 	@Test
 	public void testReturnsEmptyParametersForUnknownNames() {
-		assertThat(sut().getParameter(UNEXISTING_PARAMETER),instanceOf(NullQueryParameter.class));
+		assertThat(queryWithParameters().getParameter(UNEXISTING_PARAMETER),instanceOf(NullQueryParameter.class));
 	}
 
 }
