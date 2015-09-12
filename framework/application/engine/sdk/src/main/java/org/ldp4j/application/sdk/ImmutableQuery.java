@@ -34,6 +34,7 @@ import java.util.Set;
 import org.ldp4j.application.ext.Parameter;
 import org.ldp4j.application.ext.Query;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
 final class ImmutableQuery implements Query {
@@ -80,6 +81,18 @@ final class ImmutableQuery implements Query {
 			parameter=NullQueryParameter.create(paramName);
 		}
 		return parameter;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					add("parameters",this.parameters.values()).
+					toString();
 	}
 
 	/**

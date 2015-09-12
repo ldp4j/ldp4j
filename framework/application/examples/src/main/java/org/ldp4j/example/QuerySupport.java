@@ -40,10 +40,14 @@ import org.ldp4j.application.vocabulary.RDF;
 
 public final class QuerySupport {
 
-	public static final URI QUERY_TYPE = URI.create("http://www.ldp4j.org/examples#Query");
-	public static final URI PARAMETER_TYPE = URI.create("http://www.ldp4j.org/examples#Parameter");
-	public static final URI HAS_PARAMETER = URI.create("http://www.ldp4j.org/examples#hasParameter");
-	public static final URI HAS_VALUE = URI.create("http://www.ldp4j.org/examples#hasValue");
+	public static final String NAMESPACE = "http://www.ldp4j.org/examples#";
+
+	public static final URI QUERY_TYPE = URI.create(NAMESPACE+"Query");
+	public static final URI PARAMETER_TYPE = URI.create(NAMESPACE+"Parameter");
+	public static final URI HAS_PARAMETER = URI.create(NAMESPACE+"hasParameter");
+	public static final URI HAS_VALUE = URI.create(NAMESPACE+"hasValue");
+	public static final URI HAS_NAME = URI.create(NAMESPACE+"hasName");
+
 	private static final URI TYPE = RDF.TYPE.as(URI.class);
 
 	private QuerySupport() {
@@ -65,6 +69,7 @@ public final class QuerySupport {
 						LocalIndividual.class);
 			qIndividual.addValue(QuerySupport.HAS_PARAMETER, pIndividual);
 			pIndividual.addValue(QuerySupport.TYPE, ptIndividual);
+			pIndividual.addValue(QuerySupport.HAS_NAME, Literals.of(parameterName));
 			for(String rawValue:query.getParameter(parameterName).rawValues()) {
 				pIndividual.addValue(QuerySupport.HAS_VALUE, Literals.of(rawValue));
 			}

@@ -45,8 +45,35 @@ public class QueryUtilsTest {
 	@Test
 	public void testGetDescription() throws Exception {
 		Name<?> id = NamingScheme.getDefault().name("Test");
-		Query query = QueryBuilder.newInstance().withParameter("param1", "value1").build();
+		Query query =
+			QueryBuilder.
+				newInstance().
+					withParameter("param1", "value1").
+					withParameter("param1", "value2").
+					withParameter("param2", "value1").
+					build();
 		DataSet data=QuerySupport.getDescription(id, query);
+		System.out.println(data);
+		assertThat((Object)data.name(),sameInstance((Object)id));
+		DataSetHelper dHelper = DataSetUtils.newHelper(data);
+		IndividualHelper qInd = dHelper.localIndividual(QuerySupport.queryId());
+		assertThat(qInd.types(),contains(QuerySupport.QUERY_TYPE));
+		IndividualHelper pInd = dHelper.localIndividual(QuerySupport.parameterId("param1"));
+		assertThat(pInd.types(),contains(QuerySupport.PARAMETER_TYPE));
+	}
+
+	@Test
+	public void testGetValueLessParameterDescription() throws Exception {
+		Name<?> id = NamingScheme.getDefault().name("Test");
+		Query query =
+			QueryBuilder.
+				newInstance().
+					withParameter("param1", "").
+					withParameter("param1", "").
+					withParameter("param2", "value1").
+					build();
+		DataSet data=QuerySupport.getDescription(id, query);
+		System.out.println(data);
 		assertThat((Object)data.name(),sameInstance((Object)id));
 		DataSetHelper dHelper = DataSetUtils.newHelper(data);
 		IndividualHelper qInd = dHelper.localIndividual(QuerySupport.queryId());

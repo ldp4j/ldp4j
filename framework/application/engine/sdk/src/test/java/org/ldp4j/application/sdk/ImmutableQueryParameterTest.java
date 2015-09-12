@@ -30,7 +30,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
@@ -163,6 +165,11 @@ public class ImmutableQueryParameterTest {
 			fail("Should parse an integer as a URI");
 
 		}
+	}
+
+	@Test
+	public void testHasCustomStringRepresentation() {
+		assertThat(singleValuedParameter().toString(),not(startsWith(ImmutableQueryParameter.class.getName())));
 	}
 
 	private ImmutableQueryParameter mixedParameterValues() {

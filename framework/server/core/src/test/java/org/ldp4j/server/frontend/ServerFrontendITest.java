@@ -26,8 +26,10 @@
  */
 package org.ldp4j.server.frontend;
 
+import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
@@ -65,6 +67,7 @@ import org.junit.experimental.categories.Category;
 import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
+import org.ldp4j.application.ext.Query;
 import org.ldp4j.commons.testing.categories.DEBUG;
 import org.ldp4j.commons.testing.categories.ExceptionPath;
 import org.ldp4j.commons.testing.categories.HappyPath;
@@ -74,8 +77,11 @@ import org.ldp4j.example.MyApplication;
 import org.ldp4j.server.testing.ServerFrontendTestHelper;
 import org.ldp4j.server.testing.ServerFrontendTestHelper.Metadata;
 import org.ldp4j.server.testing.ServerFrontendWebAppBuilder;
+import org.ldp4j.server.testing.TestingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.jayway.restassured.response.Response;
 
 @RunWith(Arquillian.class)
 public class ServerFrontendITest {
@@ -403,7 +409,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		ExceptionPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
@@ -422,7 +427,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		HappyPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
@@ -444,6 +448,110 @@ public class ServerFrontendITest {
 		assertThat(getResponse2.contentType,equalTo("text/turtle"));
 
 		LOGGER.info("Completed {}",testName.getMethodName());
+	}
+
+	@Test
+	@Category({
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testSupportForQueriesWithValuedParameters(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		Query query=queryResource(url, "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?param1=value1&param2=value2");
+		assertThat(query.size(),equalTo(2));
+		assertThat(query.hasParameter("param1"),equalTo(true));
+		assertThat(query.hasParameter("param2"),equalTo(true));
+		LOGGER.info("Completed {}",testName.getMethodName());
+	}
+
+	@Test
+	@Category({
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testSupportForQueriesWithRepeatedValuedParameters(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		Query query=queryResource(url, "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?param1=value1&param2=value2&param2=value3");
+		assertThat(query.size(),equalTo(2));
+		assertThat(query.hasParameter("param1"),equalTo(true));
+		assertThat(query.hasParameter("param2"),equalTo(true));
+		assertThat(query.getParameter("param2").cardinality(),equalTo(2));
+		assertThat(query.getParameter("param2").rawValues(),hasItems("value2","value3"));
+		LOGGER.info("Completed {}",testName.getMethodName());
+	}
+
+	@Test
+	@Category({
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testSupportForQueriesWithoutValuedParameters(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		Query query=queryResource(url, "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?param1&param2");
+		assertThat(query.size(),equalTo(2));
+		assertThat(query.hasParameter("param1"),equalTo(true));
+		assertThat(query.getParameter("param1").cardinality(),equalTo(1));
+		assertThat(query.getParameter("param1").rawValues(),hasItems(""));
+		assertThat(query.hasParameter("param2"),equalTo(true));
+		assertThat(query.getParameter("param2").cardinality(),equalTo(1));
+		assertThat(query.getParameter("param2").rawValues(),hasItems(""));
+		LOGGER.info("Completed {}",testName.getMethodName());
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testSupportForQueriesWithRepeatedParametersWithoutValues(@ArquillianResource final URL url) throws Exception {
+		String pName = testName.getMethodName();
+		LOGGER.info("Started {}",pName);
+		String path = "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?param1&"+pName+"&"+pName;
+		String response = IOUtils.toString(new URL(TestingUtil.resolve(url, path)).openStream());
+		Query query=QueryDescriptionHelper.getQuery(url, path, response);
+		assertThat(query.size(),equalTo(2));
+		assertThat(query.hasParameter("param1"),equalTo(true));
+		assertThat(query.getParameter("param1").cardinality(),equalTo(1));
+		assertThat(query.getParameter("param1").rawValues(),hasItems(""));
+		assertThat(query.hasParameter(pName),equalTo(true));
+		assertThat(query.getParameter(pName).cardinality(),equalTo(1));
+		assertThat(query.getParameter(pName).rawValues(),hasItems(""));
+		LOGGER.info("Completed {}",pName);
+	}
+
+	@Test
+	@Category({
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testSupportForMixedParameterQueries(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		Query query=queryResource(url, "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?param1&param2=value2");
+		assertThat(query.size(),equalTo(2));
+		assertThat(query.hasParameter("param1"),equalTo(true));
+		assertThat(query.getParameter("param1").cardinality(),equalTo(1));
+		assertThat(query.getParameter("param1").rawValues(),hasItems(""));
+		assertThat(query.hasParameter("param2"),equalTo(true));
+		assertThat(query.getParameter("param2").cardinality(),equalTo(1));
+		assertThat(query.getParameter("param2").rawValues(),hasItems("value2"));
+		LOGGER.info("Completed {}",testName.getMethodName());
+	}
+
+	private static final String TEXT_TURTLE = "text/turtle";
+	private static final int    OK          = 200;
+
+	private final Query queryResource(URL contextURL, String path) throws IOException {
+		Response response=
+			given().
+				accept(TEXT_TURTLE).
+				baseUri(contextURL.toString()).
+			expect().
+				statusCode(OK).
+				contentType(TEXT_TURTLE).
+			when().
+				get(path);
+		return QueryDescriptionHelper.getQuery(contextURL, path, response.asString());
 	}
 
 	private long trunk(long time) {

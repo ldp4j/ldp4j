@@ -30,7 +30,9 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.hamcrest.Matchers.startsWith;
 
 import org.junit.Test;
 import org.ldp4j.application.ext.Parameter;
@@ -75,13 +77,18 @@ public class ImmutableQueryTest {
 		return ImmutableQuery.create(parameterMap);
 	}
 
-	private ImmutableQuery queryWithotParameters() {
+	private ImmutableQuery queryWithoutParameters() {
 		return ImmutableQuery.create(Maps.<String,ImmutableQueryParameter>newLinkedHashMap());
 	}
 
 	@Test(expected=NullPointerException.class)
 	public void failOnCreationWithNullParameterMap() {
 		ImmutableQuery.create(null);
+	}
+
+	@Test
+	public void testHasCustomStringRepresentation() {
+		assertThat(queryWithParameters().toString(),not(startsWith(ImmutableQuery.class.getName())));
 	}
 
 	@Test
@@ -96,12 +103,12 @@ public class ImmutableQueryTest {
 
 	@Test
 	public void testHasCorrectSizeWhenNoParametersAreDefined() {
-		assertThat(queryWithotParameters().size(),equalTo(0));
+		assertThat(queryWithoutParameters().size(),equalTo(0));
 	}
 
 	@Test
 	public void testQueryIsEmptyWhenNoParametersAreDefined() {
-		assertThat(queryWithotParameters().isEmpty(),equalTo(true));
+		assertThat(queryWithoutParameters().isEmpty(),equalTo(true));
 	}
 
 	@Test

@@ -34,6 +34,7 @@ import java.util.List;
 
 import org.ldp4j.application.ext.Parameter;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
@@ -85,6 +86,16 @@ final class ImmutableQueryParameter implements Parameter {
 			builder.add(ObjectUtil.fromString(clazz,rawValue));
 		}
 		return builder.build();
+	}
+
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					add("name",this.name).
+					add("rawValues",this.rawValues).
+					toString();
 	}
 
 	static ImmutableQueryParameter create(String name, Collection<?> rawValues) {

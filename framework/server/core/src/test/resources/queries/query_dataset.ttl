@@ -25,17 +25,22 @@
 # #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 #
 
-# Set root logger level to DEBUG and its only appender to A1.
-log4j.rootLogger=OFF
-log4j.logger.org.ldp4j=TRACE, file
-log4j.logger.org.apache.cxf.interceptor=INFO, console, file
+@prefix ldp: <http://www.w3.org/ns/ldp#> .
+@prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
 
-log4j.appender.console=org.apache.log4j.ConsoleAppender
-log4j.appender.console.layout=org.apache.log4j.PatternLayout
-log4j.appender.console.layout.ConversionPattern=[%d][%-5.5p ][%-25.25t][%-80.80c] %m%n
+@base <http://localhost:62631/ldp4j-server-core/ldp4j/api/rootQueryableResource/> .
 
-log4j.appender.file=org.apache.log4j.FileAppender
-log4j.appender.file.File=target/ldp4j-server-core.log
-log4j.appender.file.layout=org.apache.log4j.PatternLayout
-log4j.appender.file.layout=org.apache.log4j.PatternLayout
-log4j.appender.file.layout.ConversionPattern=[%d][%-5.5p ][%-25.25t][%-80.80c] %m%n
+<>
+	rdf:type ldp:RDFSource, ldp:Resource .
+
+_:query	# Not referenced
+	rdf:type <http://www.ldp4j.org/examples#Query> ;
+	<http://www.ldp4j.org/examples#hasParameter> [ # FOLDED: _:parameter.param1
+		rdf:type <http://www.ldp4j.org/examples#Parameter> ;
+		<http://www.ldp4j.org/examples#hasName> "param1" ;
+		<http://www.ldp4j.org/examples#hasValue> "value1"
+	] , [ # FOLDED: _:parameter.param2
+		rdf:type <http://www.ldp4j.org/examples#Parameter> ;
+		<http://www.ldp4j.org/examples#hasName> "param2" ;
+		<http://www.ldp4j.org/examples#hasValue> "value2"
+	] .
