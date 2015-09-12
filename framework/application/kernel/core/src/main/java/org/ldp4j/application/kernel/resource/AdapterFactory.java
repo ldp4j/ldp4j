@@ -27,17 +27,13 @@
 package org.ldp4j.application.kernel.resource;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.ext.ApplicationRuntimeException;
-import org.ldp4j.application.ext.ApplicationUsageException;
+import org.ldp4j.application.ext.ApplicationException;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.ext.Queryable;
 import org.ldp4j.application.ext.ResourceHandler;
-import org.ldp4j.application.kernel.resource.Container;
-import org.ldp4j.application.kernel.resource.Resource;
-import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.application.kernel.session.WriteSessionConfiguration;
 import org.ldp4j.application.kernel.session.WriteSessionService;
 import org.ldp4j.application.session.ContainerSnapshot;
@@ -63,7 +59,7 @@ final class AdapterFactory {
 			this.service = service;
 		}
 
-		protected WriteSession writeSession() {
+		protected final WriteSession writeSession() {
 			return this.session;
 		}
 
@@ -71,23 +67,27 @@ final class AdapterFactory {
 			if(clazz.isInstance(this.delegate)) {
 				return clazz.cast(this.delegate);
 			}
-			throw new UnsupportedFeatureException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),clazz.getCanonicalName());
+			throw new UnsupportedFeatureException(this.resourceId.templateId(),this.delegate.getClass().getCanonicalName(),clazz.getCanonicalName());
 		}
 
 		protected final T resource() {
 			return this.resource;
 		}
 
-		protected void finalizeSession() {
+		protected final FeatureException featureException(Throwable cause, Class<?> feature) {
+			return new FeatureExecutionException(this.resourceId.templateId(),this.delegate.getClass().getCanonicalName(),feature.getCanonicalName(),cause);
+		}
+
+		protected final void finalizeSession() {
 			this.service.terminateSession(this.session);
 		}
 
-		protected Resource detach(ResourceSnapshot snapshot) {
+		protected final Resource detach(ResourceSnapshot snapshot) {
 			return this.service.detach(this.session, snapshot);
 		}
 
 		@Override
-		public ResourceId resourceId() {
+		public final ResourceId resourceId() {
 			return this.resourceId;
 		}
 
@@ -95,10 +95,8 @@ final class AdapterFactory {
 		public final DataSet get() throws FeatureException {
 			try {
 				return this.delegate.get(resource());
-			} catch (ApplicationUsageException e) {
-				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
-			} catch (ApplicationRuntimeException e) {
-				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
+			} catch (ApplicationException e) {
+				throw featureException(e,ResourceHandler.class);
 			} finally {
 				finalizeSession();
 			}
@@ -108,10 +106,8 @@ final class AdapterFactory {
 		public final DataSet query(Query query) throws FeatureException {
 			try {
 				return as(Queryable.class).query(resource(), query, writeSession());
-			} catch (ApplicationUsageException e) {
-				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Queryable.class.getCanonicalName(),e);
-			} catch (ApplicationRuntimeException e) {
-				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Queryable.class.getCanonicalName(),e);
+			} catch (ApplicationException e) {
+				throw featureException(e,Queryable.class);
 			} finally {
 				finalizeSession();
 			}
@@ -121,10 +117,8 @@ final class AdapterFactory {
 		public final void update(DataSet content) throws FeatureException {
 			try {
 				as(Modifiable.class).update(resource(), content, writeSession());
-			} catch (ApplicationUsageException e) {
-				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
-			} catch (ApplicationRuntimeException e) {
-				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
+			} catch (ApplicationException e) {
+				throw featureException(e,Modifiable.class);
 			} finally {
 				finalizeSession();
 			}
@@ -134,10 +128,8 @@ final class AdapterFactory {
 		public final void delete() throws FeatureException {
 			try {
 				as(Deletable.class).delete(resource(),writeSession());
-			} catch (ApplicationUsageException e) {
-				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
-			} catch (ApplicationRuntimeException e) {
-				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
+			} catch (ApplicationException e) {
+				throw featureException(e,Deletable.class);
 			} finally {
 				finalizeSession();
 			}
@@ -150,20 +142,15 @@ final class AdapterFactory {
 				new UnsupportedFeatureException(
 					this.resourceId.templateId(),
 					this.delegate.getClass().getCanonicalName(),
-					Container.class.getCanonicalName());
+					ContainerHandler.class.getCanonicalName());
 		}
 
 	}
 
 	private static class ContainerAdapter extends ResourceAdapter<ContainerSnapshot> {
 
-		private final ResourceId resourceId;
-		private final ResourceHandler delegate;
-
 		private ContainerAdapter(ContainerSnapshot container, ResourceId resourceId, ResourceHandler delegate, WriteSession session, WriteSessionService service) {
 			super(container,resourceId,delegate,session,service);
-			this.resourceId = resourceId;
-			this.delegate = delegate;
 		}
 
 		@Override
@@ -171,10 +158,8 @@ final class AdapterFactory {
 			try {
 				ResourceSnapshot create = as(ContainerHandler.class).create(resource(),content,writeSession());
 				return detach(create);
-			} catch (ApplicationUsageException e) {
-				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),ContainerHandler.class.getCanonicalName(),e);
-			} catch (ApplicationRuntimeException e) {
-				throw new FeatureExecutionException(this.resourceId.templateId(),delegate.getClass().getCanonicalName(),Modifiable.class.getCanonicalName(),e);
+			} catch (ApplicationException e) {
+				throw featureException(e,ContainerHandler.class);
 			} finally {
 				finalizeSession();
 			}
@@ -203,12 +188,12 @@ final class AdapterFactory {
 
 		@Override
 		public void visitResourceSnapshot(ResourceSnapshot resource) {
-			this.adapter=new ResourceAdapter<ResourceSnapshot>(resource,resourceId,this.delegate,session,service);
+			this.adapter=new ResourceAdapter<ResourceSnapshot>(resource,this.resourceId,this.delegate,this.session,this.service);
 		}
 
 		@Override
 		public void visitContainerSnapshot(ContainerSnapshot resource) {
-			this.adapter=new ContainerAdapter(resource,resourceId,this.delegate,session,service);
+			this.adapter=new ContainerAdapter(resource,this.resourceId,this.delegate,this.session,this.service);
 		}
 
 	}

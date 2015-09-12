@@ -42,7 +42,6 @@ import org.ldp4j.application.sdk.internal.EnumObjectFactory;
 import org.ldp4j.application.sdk.internal.PrimitiveObjectFactory;
 import org.ldp4j.application.sdk.spi.ObjectFactory;
 import org.ldp4j.application.sdk.spi.ObjectTransformationException;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,18 +96,44 @@ final class ObjectUtil {
 	private ObjectUtil() {
 	}
 
+	private static String prettyPrint(Class<?> clazz) {
+		return clazz.getCanonicalName();
+	}
+
+	private static Object[] prettyPrint(Class<?>... classes) {
+		String[] result = new String[classes.length];
+		for(int i=0;i<classes.length;i++) {
+			result[i]=prettyPrint(classes[i]);
+		}
+		return result;
+	}
+
+	private static void debug(String message, Class<?>... classes) {
+		if(LOGGER.isDebugEnabled()) {
+			LOGGER.debug(message,prettyPrint(classes));
+		}
+	}
+
+	private static void warn(String message, Class<?>... classes) {
+		if(LOGGER.isWarnEnabled()) {
+			LOGGER.warn(message,prettyPrint(classes));
+		}
+	}
+
+	private static void trace(String message, Class<?>... classes) {
+		if(LOGGER.isTraceEnabled()) {
+			LOGGER.trace(message,prettyPrint(classes));
+		}
+	}
+
 	@SuppressWarnings("unchecked")
 	private static synchronized <T> ObjectFactory<T> findObjectFactory(final Class<? extends T> valueClass) {
 		ObjectFactory<?> rawResult=FACTORY_CACHE.get(valueClass);
 		if(rawResult==null) {
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug("No cached factory found for value class '{}'",prettyPrint(valueClass));
-			}
+			debug("No cached factory found for value class '{}'",valueClass);
 			rawResult=discoverObjectFactory(valueClass);
 			if(rawResult==null) {
-				if(LOGGER.isDebugEnabled()) {
-					LOGGER.debug("No factory discovered for value class '{}'",prettyPrint(valueClass));
-				}
+				debug("No factory discovered for value class '{}'",valueClass);
 				rawResult=prepareDefaultObjectFactory(valueClass);
 			}
 		}
@@ -134,26 +159,18 @@ final class ObjectUtil {
 	private static <T> ObjectFactory<?> processObjectFactory(final Class<? extends T> valueClass, ObjectFactory<?> candidate) {
 		ObjectFactory<?> result=null;
 		if(PRELOADED_FACTORIES.contains(candidate.getClass())) {
-			if(LOGGER.isTraceEnabled()) {
-				LOGGER.trace("Discarded cached factory '{}' for value class '{}'",prettyPrint(candidate.getClass()),prettyPrint(valueClass));
-			}
+			trace("Discarded cached factory '{}' for value class '{}'",candidate.getClass(),valueClass);
 		} else {
 			Class<?> targetClass = candidate.targetClass();
 			if(FACTORY_CACHE.containsKey(targetClass)) {
-				if(LOGGER.isWarnEnabled()) {
-					LOGGER.warn("Discarded clashing factory '{}' for value class '{}'",prettyPrint(candidate.getClass()),prettyPrint(valueClass));
-				}
+				warn("Discarded clashing factory '{}' for value class '{}'",candidate.getClass(),valueClass);
 			} else {
 				cacheObjectFactory(candidate);
 				if(targetClass==valueClass) {
 					result=candidate;
-					if(LOGGER.isDebugEnabled()) {
-						LOGGER.debug("Found factory '{}' for value class '{}'",prettyPrint(candidate.getClass()),prettyPrint(valueClass));
-					}
+					debug("Found factory '{}' for value class '{}'",candidate.getClass(),valueClass);
 				} else {
-					if(LOGGER.isTraceEnabled()) {
-						LOGGER.trace("Discarded factory '{}': target class '{}' does not match value class '{}'",prettyPrint(candidate.getClass()),prettyPrint(targetClass),prettyPrint(valueClass));
-					}
+					trace("Discarded factory '{}': target class '{}' does not match value class '{}'",candidate.getClass(),targetClass,valueClass);
 				}
 			}
 		}
@@ -163,9 +180,7 @@ final class ObjectUtil {
 	private static void cacheObjectFactory(final ObjectFactory<?> candidate) {
 		FACTORY_CACHE.put(candidate.targetClass(),candidate);
 		PRELOADED_FACTORIES.add(candidate.getClass());
-		if(LOGGER.isTraceEnabled()) {
-			LOGGER.trace("Cached factory '{}' for value class '{}'",prettyPrint(candidate.getClass()),prettyPrint(candidate.targetClass()));
-		}
+		trace("Cached factory '{}' for value class '{}'",candidate.getClass(),candidate.targetClass());
 	}
 
 	@SuppressWarnings("unchecked")
@@ -173,27 +188,19 @@ final class ObjectUtil {
 		ObjectFactory<?> result=null;
 		if(valueClass.isEnum()) {
 			result=EnumObjectFactory.create(valueClass.asSubclass(Enum.class));
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug("No factory found for enum value class '{}'",prettyPrint(valueClass));
-			}
+			debug("No factory found for enum value class '{}'",valueClass);
 		} else if(valueClass.isPrimitive()) {
 			result=PrimitiveObjectFactory.create(valueClass);
-			if(LOGGER.isDebugEnabled()) {
-				LOGGER.debug("No factory found for primitive value class '{}'",prettyPrint(valueClass));
-			}
+			debug("No factory found for primitive value class '{}'",valueClass);
 		} else {
 			result=findCompatibleSupertypeObjectFactory(valueClass);
 			if(result==null) {
 				result=new NullObjectFactory<T>(valueClass);
-				if(LOGGER.isWarnEnabled()) {
-					LOGGER.warn("No factory found for value class '{}'",prettyPrint(valueClass));
-				}
+				warn("No factory found for value class '{}'",valueClass);
 			}
 		}
 		FACTORY_CACHE.put(valueClass,result);
-		if(LOGGER.isTraceEnabled()) {
-			LOGGER.trace("Cached default factory '{}' for value class '{}'",prettyPrint(result.getClass()),prettyPrint(valueClass));
-		}
+		trace("Cached default factory '{}' for value class '{}'",result.getClass(),valueClass);
 		return result;
 	}
 
@@ -202,17 +209,11 @@ final class ObjectUtil {
 		for(Entry<Class<?>,ObjectFactory<?>> entry:FACTORY_CACHE.entrySet()) {
 			if(entry.getKey().isAssignableFrom(valueClass)) {
 				result=entry.getValue();
-				if(LOGGER.isDebugEnabled()) {
-					LOGGER.debug("No factory found for value class '{}', using supertype object factory",prettyPrint(valueClass));
-				}
+				debug("No factory found for value class '{}', using supertype object factory",valueClass);
 				break;
 			}
 		}
 		return result;
-	}
-
-	private static String prettyPrint(Class<?> clazz) {
-		return clazz.getCanonicalName();
 	}
 
 	static <T> boolean isSupported(Class<T> clazz) {

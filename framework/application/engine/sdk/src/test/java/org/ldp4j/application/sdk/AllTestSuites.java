@@ -20,41 +20,21 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0-SNAPSHOT
- *   Bundle      : ldp4j-application-kernel-core-0.2.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-sdk:0.2.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-engine-sdk-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.kernel.resource;
+package org.ldp4j.application.sdk;
 
-public class FeatureException extends Exception {
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
-	private static final long serialVersionUID = -3427958905010583776L;
-
-	private final String templateId;
-	private final String handlerClassName;
-	private final String featureClassName;
-
-	public FeatureException(String templateId, String handlerClassName, String featureClassName, String message, Throwable cause) {
-		super(message,cause);
-		this.templateId = templateId;
-		this.handlerClassName = handlerClassName;
-		this.featureClassName = featureClassName;
-	}
-
-	public FeatureException(String templateId, String handlerClassName, String featureClassName, String message) {
-		this(templateId, handlerClassName, featureClassName, message, null);
-	}
-
-	public final String getTemplateId() {
-		return this.templateId;
-	}
-
-	public final String getHandlerClassName() {
-		return this.handlerClassName;
-	}
-
-	public final String getFeatureClassName() {
-		return this.featureClassName;
-	}
+@RunWith(Suite.class)
+@SuiteClasses({
+	HttpRequestBuilderTest.class,
+	QuerySupportTestSuite.class
+})
+public class AllTestSuites {
 
 }

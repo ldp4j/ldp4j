@@ -27,6 +27,7 @@
 package org.ldp4j.application.sdk.internal;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.ldp4j.application.sdk.spi.ObjectFactory;
 import org.ldp4j.application.sdk.spi.ObjectParseException;
@@ -55,7 +56,7 @@ public final class PrimitiveObjectFactory<T> implements ObjectFactory<T> {
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public T fromString(String rawValue) {
+	public T fromString(String rawValue) { // NOSONAR
 		try {
 			Object result=null;
 			if (byte.class.equals(this.valueClass)) {
@@ -109,10 +110,12 @@ public final class PrimitiveObjectFactory<T> implements ObjectFactory<T> {
 	 * Create a primitive object factory for the specified primitive class
 	 * @param valueClass the primitive class to use
 	 * @return an object factory
+	 * @throws NullPointerException if the specified class is {@code null}
 	 * @throws IllegalArgumentException if the specified class is not a primitive class
 	 */
 	public static <T> PrimitiveObjectFactory<T> create(Class<? extends T> valueClass) {
-		checkArgument(valueClass.isPrimitive(),"Class '"+valueClass.getName()+"' is not primitive");
+		checkNotNull(valueClass,"Value class cannot be null");
+		checkArgument(valueClass.isPrimitive(),"Value class '"+valueClass.getName()+"' is not primitive");
 		return new PrimitiveObjectFactory<T>(valueClass);
 	}
 }

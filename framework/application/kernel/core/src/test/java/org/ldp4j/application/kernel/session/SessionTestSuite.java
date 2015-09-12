@@ -24,23 +24,14 @@
  *   Bundle      : ldp4j-application-kernel-core-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.kernel;
+package org.ldp4j.application.kernel.session;
 
-import java.net.URI;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
-import org.junit.Test;
-
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
-
-public class URLTest {
-
-	@Test
-	public void testEncoding() {
-		String query = "ldp:constrainedBy=123213123";
-		URI create=URI.create("http://www.host.org/api/res/0/?"+query);
-		assertThat(create.getQuery(),equalTo(query));
-		assertThat(create.getRawQuery(),equalTo(query));
-	}
+@RunWith(Suite.class)
+@SuiteClasses({ WriteSessionTest.class })
+public class SessionTestSuite {
 
 }

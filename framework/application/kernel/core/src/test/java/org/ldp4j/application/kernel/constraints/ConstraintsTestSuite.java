@@ -20,11 +20,11 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-sdk:0.2.0-SNAPSHOT
- *   Bundle      : ldp4j-application-engine-sdk-0.2.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.sdk;
+package org.ldp4j.application.kernel.constraints;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
@@ -32,9 +32,9 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-	HttpRequestBuilderTest.class,
-	QuerySupportTestSuite.class
+	ConstraintReportTransformerTest.class,
+	HeaderHelperTest.class
 })
-public class SDKTestSuite {
+public class ConstraintsTestSuite {
 
 }

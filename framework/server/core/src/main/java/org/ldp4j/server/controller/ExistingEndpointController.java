@@ -151,14 +151,14 @@ final class ExistingEndpointController implements EndpointController {
 		if(!query.isEmpty()) {
 			response=handleQuery(context,includeEntity,variant,query);
 		} else {
-			response=handleRetrieval(context, includeEntity, variant);
+			response=handleRetrieval(context,includeEntity,variant,query);
 		}
 
 		return response;
 
 	}
 
-	private Response handleRetrieval(OperationContext context, boolean includeEntity, Variant variant) {
+	private Response handleRetrieval(OperationContext context, boolean includeEntity, Variant variant, Query query) {
 		try {
 			PublicResource resource=context.resource();
 			ContentPreferences preferences=context.contentPreferences();
@@ -173,42 +173,10 @@ final class ExistingEndpointController implements EndpointController {
 					LOGGER.debug("No preferences specified");
 				}
 			}
-			DataSet entity=resource.entity(preferences);
-
-			LOGGER.trace("Data set to serialize: \n {}",entity);
-
-			String body=
-				serialize(
-					context,
-					variant,
-					entity,
-					NamespacesHelper.
-						resourceNamespaces(context.applicationNamespaces()));
-
-			return createReatrievalResponse(context,variant,hasPreferences,preferences, includeEntity, body);
-		} catch (ApplicationExecutionException e) {
-			return processExecutionException(context, e);
-		} catch (ApplicationContextException e) {
-			return processRuntimeException(context, e);
-		}
-	}
-
-	private Response handleQueryExecution(OperationContext context, boolean includeEntity, Variant variant, Query query) {
-		try {
-			PublicResource resource=context.resource();
-			ContentPreferences preferences=context.contentPreferences();
-			boolean hasPreferences=preferences!=null;
-			if(!hasPreferences) {
-				preferences=ContentPreferences.defaultPreferences();
-			}
-			if(LOGGER.isDebugEnabled()) {
-				if(hasPreferences) {
-					LOGGER.debug("Using preferences: {}",preferences);
-				} else {
-					LOGGER.debug("No preferences specified");
-				}
-			}
-			DataSet entity=resource.query(query, preferences);
+			DataSet entity=
+				query.isEmpty()?
+					resource.entity(preferences):
+					resource.query(query, preferences);
 
 			LOGGER.trace("Data set to serialize: \n {}",entity);
 
@@ -282,7 +250,7 @@ final class ExistingEndpointController implements EndpointController {
 					LOGGER.debug("  - {} : {}",parameter,query.getParameter(parameter).rawValues());
 				}
 			}
-			response=handleQueryExecution(context, includeEntity, variant, query);
+			response=handleRetrieval(context,includeEntity,variant,query);
 		}
 		return response;
 	}
