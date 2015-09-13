@@ -31,7 +31,12 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({ MutableTemplateLibraryTest.class })
+@SuiteClasses({
+	HandlerIdTest.class,
+	MutableTemplateLibraryTest.class,
+	ImmutableTemplateLibraryTest.class,
+	TemplateIntrospectorTest.class,
+})
 public class TemplateTestSuite {
 
 }

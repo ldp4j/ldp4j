@@ -46,18 +46,6 @@ final class HandlerId {
 		this.container = container;
 	}
 
-	public String className() {
-		return className;
-	}
-
-	public int systemHashCode() {
-		return systemHashCode;
-	}
-
-	public boolean isContainer() {
-		return container;
-	}
-
 	@Override
 	public int hashCode() {
 		return
@@ -90,7 +78,7 @@ final class HandlerId {
 					toString();
 	}
 
-	public static HandlerId createId(Class<? extends ResourceHandler> handlerClass) {
+	static HandlerId createId(Class<? extends ResourceHandler> handlerClass) {
 		checkNotNull(handlerClass,"Resource handler class cannot be null");
 		return
 			new HandlerId(

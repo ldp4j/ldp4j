@@ -36,15 +36,18 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 
 @IndirectContainer(
-	id = BookContainerHandler.ID, 
+	id = BookContainerHandler.ID,
 	memberHandler = BookHandler.class,
 	membershipRelation=MembershipRelation.HAS_MEMBER,
 	membershipPredicate="http://www.ldp4j.org/vocabularies/example#hasBook",
-	insertedContentRelation = "http://www.ldp4j.org/vocabularies/example#bookshelf"
+	insertedContentRelation = BookContainerHandler.INSERTED_CONTENT_RELATION
 )
 public class BookContainerHandler extends InMemoryContainerHandler {
-	
+
+	public static final String INSERTED_CONTENT_RELATION = "http://www.ldp4j.org/vocabularies/example#bookshelf";
+
 	public static final String ID="bookContainerTemplate";
+
 	private BookHandler handler;
 
 	public BookContainerHandler() {
@@ -54,14 +57,14 @@ public class BookContainerHandler extends InMemoryContainerHandler {
 	public void setBookHandler(BookHandler handler) {
 		this.handler = handler;
 	}
-	
+
 	public BookHandler bookHandler() {
 		if(this.handler==null) {
 			throw new IllegalStateException("Handler not initialized yet");
 		}
 		return this.handler;
 	}
-	
+
 	@Override
 	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
 		NameProvider nameProvider = nameProvider(container.name());
@@ -76,5 +79,5 @@ public class BookContainerHandler extends InMemoryContainerHandler {
 			throw new IllegalStateException("Could not create member",e);
 		}
 	}
-	
+
 }
