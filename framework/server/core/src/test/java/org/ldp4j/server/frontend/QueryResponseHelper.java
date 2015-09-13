@@ -28,6 +28,7 @@ package org.ldp4j.server.frontend;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.List;
 
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.sdk.QueryBuilder;
@@ -35,13 +36,16 @@ import org.ldp4j.server.testing.QueryHelper;
 import org.ldp4j.server.testing.QueryHelper.ResultProcessor;
 import org.ldp4j.server.testing.TestingUtil;
 
-final class QueryDescriptionHelper {
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
-	private QueryDescriptionHelper() {
+final class QueryResponseHelper {
+
+	private QueryResponseHelper() {
 	}
 
 	static Query getQuery(URL contextURL, String path, String data) throws IOException {
-		Query query=
+		return
 			QueryHelper.
 				newInstance().
 					withModel(
@@ -65,7 +69,30 @@ final class QueryDescriptionHelper {
 							}
 						}
 					);
-		return query;
+	}
+
+	static List<String> getResources(URL contextURL, String path, String data) throws IOException {
+		return
+			QueryHelper.
+				newInstance().
+					withModel(
+						TestingUtil.
+							asModel(data,contextURL,path)).
+					withQuery().
+						fromResource("queries/resources.sparql").
+					select(
+						new ResultProcessor<List<String>>() {
+							private Builder<String>  builder=ImmutableList.<String>builder();
+							@Override
+							protected void processSolution() {
+								this.builder.add(resource("resource").toString());
+							}
+							@Override
+							public List<String> getResult() {
+								return this.builder.build();
+							}
+						}
+					);
 	}
 
 }

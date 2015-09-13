@@ -188,18 +188,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 
 	@Override
 	public final DataSet query(Query query, ContentPreferences contentPreferences) throws ApplicationExecutionException {
-		DataSet dataSet=applicationContext().query(endpoint(),query);
-		DataSet representation = DataSets.createDataSet(id().name());
-		DataSets.
-			merge(
-				dataSet,
-				representation);
-		Context ctx = new Context(representation);
-		fillInMetadata(
-			contentPreferences,
-			ctx.newIndividual(individualId()),
-			ctx);
-		return representation;
+		return applicationContext().query(endpoint(),query);
 	}
 
 	@Override

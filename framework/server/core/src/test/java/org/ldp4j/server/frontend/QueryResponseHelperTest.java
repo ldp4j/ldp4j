@@ -26,25 +26,42 @@
  */
 package org.ldp4j.server.frontend;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 import org.junit.Test;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.server.testing.TestingUtil;
 
-public class QueryDescriptionHelperTest {
-
+public class QueryResponseHelperTest {
 
 	@Test
-	public void validateSparqlQuery() throws MalformedURLException, IOException {
+	public void validateQueryExtraction() throws MalformedURLException, IOException {
 		Query query =
-			QueryDescriptionHelper.
+			QueryResponseHelper.
 				getQuery(
 					new URL("http://www.example.org/"),
 					"resource/",
 					TestingUtil.loadResource("queries/query_dataset.ttl"));
-		System.out.println(query);
+		assertThat(query.size(),equalTo(2));
+		assertThat(query.getParameter("param1").rawValues(),contains("value1"));
+		assertThat(query.getParameter("param2").rawValues(),contains("value2"));
 	}
+
+	@Test
+	public void validateResourceExtraction() throws MalformedURLException, IOException {
+		List<String> resources =
+			QueryResponseHelper.
+				getResources(
+					new URL("http://www.example.org/"),
+					"resource/",
+					TestingUtil.loadResource("queries/query_dataset.ttl"));
+		assertThat(resources,contains("http://localhost:62631/ldp4j-server-core/ldp4j/api/rootQueryableResource/"));
+	}
+
 }

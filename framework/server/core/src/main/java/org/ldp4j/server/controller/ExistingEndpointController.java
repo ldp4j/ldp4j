@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -88,9 +89,7 @@ final class ExistingEndpointController implements EndpointController {
 	private static final Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
 
 	ExistingEndpointController() {
-
 	}
-
 
 	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {
 		PublicResource resource = context.resource();
@@ -188,7 +187,7 @@ final class ExistingEndpointController implements EndpointController {
 					NamespacesHelper.
 						resourceNamespaces(context.applicationNamespaces()));
 
-			return createReatrievalResponse(context,variant,hasPreferences,preferences, includeEntity, body);
+			return createReatrievalResponse(context,variant,hasPreferences,preferences, includeEntity, body,query);
 		} catch (ApplicationExecutionException e) {
 			return processExecutionException(context, e);
 		} catch (ApplicationContextException e) {
@@ -198,7 +197,8 @@ final class ExistingEndpointController implements EndpointController {
 
 	private Response createReatrievalResponse(OperationContext context,
 			Variant variant, boolean hasPreferences,
-			ContentPreferences preferences, boolean includeEntity, String entity) {
+			ContentPreferences preferences, boolean includeEntity,
+			String entity, Query query) {
 		ResponseBuilder builder=Response.serverError();
 		builder.variant(variant);
 		if(hasPreferences) {
@@ -210,6 +210,15 @@ final class ExistingEndpointController implements EndpointController {
 			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, entity.length());
 		if(includeEntity) {
 			builder.entity(entity);
+		}
+		if(!query.isEmpty()) {
+			builder.
+				header(
+					HttpHeaders.LINK,
+					EndpointControllerUtils.
+						createQueryOfLink(
+							context.base().resolve(context.path()),
+							query));
 		}
 		return builder.build();
 	}
@@ -345,7 +354,12 @@ final class ExistingEndpointController implements EndpointController {
 				LOGGER.error("No constraints identifier defined. Full stacktrace follows",exception);
 				throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR.getStatusCode());
 			}
-			builder.header("Link",EndpointControllerUtils.createLink(context.base()+context.path()+"?ldp:constrainedBy="+ice.getConstraintsId(), LDP.CONSTRAINED_BY.qualifiedEntityName()));
+			builder.header(
+				HttpHeaders.LINK,
+				EndpointControllerUtils.
+					createLink(
+						context.base()+context.path()+"?ldp:constrainedBy="+ice.getConstraintsId(),
+						LDP.CONSTRAINED_BY.qualifiedEntityName()));
 		} else if (rootCause instanceof UnknownResourceException) {
 			statusCode=Status.NOT_FOUND.getStatusCode();
 			body="Resource not found";

@@ -28,14 +28,13 @@ package org.ldp4j.server.frontend;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.*;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 
 import javax.ws.rs.core.Link;
@@ -68,12 +67,14 @@ import org.junit.rules.TestName;
 import org.junit.runner.RunWith;
 import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
 import org.ldp4j.application.ext.Query;
+import org.ldp4j.application.sdk.QueryBuilder;
 import org.ldp4j.commons.testing.categories.DEBUG;
 import org.ldp4j.commons.testing.categories.ExceptionPath;
 import org.ldp4j.commons.testing.categories.HappyPath;
 import org.ldp4j.commons.testing.categories.LDP;
 import org.ldp4j.commons.testing.categories.Setup;
 import org.ldp4j.example.MyApplication;
+import org.ldp4j.server.controller.EndpointControllerUtils;
 import org.ldp4j.server.testing.ServerFrontendTestHelper;
 import org.ldp4j.server.testing.ServerFrontendTestHelper.Metadata;
 import org.ldp4j.server.testing.ServerFrontendWebAppBuilder;
@@ -500,7 +501,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		HappyPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
@@ -509,7 +509,9 @@ public class ServerFrontendITest {
 		LOGGER.info("Started {}",pName);
 		String path = "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?param1&"+pName+"&"+pName;
 		String response = IOUtils.toString(new URL(TestingUtil.resolve(url, path)).openStream());
-		Query query=QueryDescriptionHelper.getQuery(url, path, response);
+		List<String> resources=QueryResponseHelper.getResources(url, path, response);
+		assertThat(resources,hasSize(0));
+		Query query=QueryResponseHelper.getQuery(url, path, response);
 		assertThat(query.size(),equalTo(2));
 		assertThat(query.hasParameter("param1"),equalTo(true));
 		assertThat(query.getParameter("param1").cardinality(),equalTo(1));
@@ -538,6 +540,59 @@ public class ServerFrontendITest {
 		LOGGER.info("Completed {}",testName.getMethodName());
 	}
 
+	@Test
+	@Category({
+		DEBUG.class,
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testQueryResponsesAreNotEnrichedByTheFramework(@ArquillianResource final URL url) throws Exception {
+		String pName = testName.getMethodName();
+		LOGGER.info("Started {}",pName);
+		String path = "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?param1=value1";
+		String response = IOUtils.toString(new URL(TestingUtil.resolve(url, path)).openStream());
+		List<String> resources=QueryResponseHelper.getResources(url, path, response);
+		assertThat(resources,hasSize(0));
+		Query query=QueryResponseHelper.getQuery(url, path, response);
+		assertThat(query.size(),equalTo(1));
+		assertThat(query.hasParameter("param1"),equalTo(true));
+		assertThat(query.getParameter("param1").cardinality(),equalTo(1));
+		assertThat(query.getParameter("param1").rawValues(),hasItems("value1"));
+		LOGGER.info("Completed {}",pName);
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testQueryResponsesHaveSpecificLinkHeader(@ArquillianResource final URL url) throws Exception {
+		String pName = testName.getMethodName();
+		LOGGER.info("Started {}",pName);
+		String resource = "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH;
+		String path = resource+"?method="+testName.getMethodName();
+		String link =
+			EndpointControllerUtils.
+				createQueryOfLink(
+					url+resource,
+					QueryBuilder.
+						newInstance().
+							withParameter("method", testName.getMethodName()).
+							build());
+		Response response =
+			given().
+				accept(TEXT_TURTLE).
+				baseUri(url.toString()).
+			expect().
+				statusCode(OK).
+				contentType(TEXT_TURTLE).
+			when().
+				get(path);
+		assertThat(response.getHeader("Link"),containsString(link));
+		LOGGER.info("Completed {}",pName);
+	}
+
 	private static final String TEXT_TURTLE = "text/turtle";
 	private static final int    OK          = 200;
 
@@ -551,7 +606,7 @@ public class ServerFrontendITest {
 				contentType(TEXT_TURTLE).
 			when().
 				get(path);
-		return QueryDescriptionHelper.getQuery(contextURL, path, response.asString());
+		return QueryResponseHelper.getQuery(contextURL, path, response.asString());
 	}
 
 	private long trunk(long time) {
