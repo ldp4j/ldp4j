@@ -26,6 +26,8 @@
  */
 package org.ldp4j.application.sdk.spi;
 
+import org.ldp4j.application.ext.ObjectTransformationException;
+
 public class ObjectParseException extends ObjectTransformationException {
 
 	private static final long serialVersionUID = 4092528705379062890L;

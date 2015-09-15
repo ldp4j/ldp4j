@@ -28,20 +28,77 @@ package org.ldp4j.application.ext;
 
 import java.util.List;
 
+/**
+ * A collection of values defined for a query parameter. The values are defined
+ * as strings, which can be transformed to other Java types.
+ */
 public interface Parameter {
 
+	/**
+	 * Returns the name of the parameter.
+	 *
+	 * @return the name of the parameter
+	 */
 	String name();
 
+	/**
+	 * Returns {@code true} if this parameter contains multiple values.
+	 *
+	 * @return {@code true} if this parameter contains multiple values
+	 */
 	boolean isMultivalued();
 
+	/**
+	 * Returns the number of values in this parameter. If the parameter contains
+	 * more than {@code Integer.MAX_VALUE} value, returns
+	 * {@code Integer.MAX_VALUE}.
+	 *
+	 * @return the number of values in this parameter
+	 */
 	int cardinality();
 
+	/**
+	 * Returns the first raw value of this parameter.
+	 *
+	 * @return the first raw value of this parameter
+	 */
 	String rawValue();
 
+	/**
+	 * Returns all the raw values of this parameter. If the parameter is not
+	 * multivalued, the result will just contain that parameter's single value.
+	 *
+	 * @return the raw values of this parameter
+	 */
 	List<String> rawValues();
 
+	/**
+	 * Returns the first raw value of this parameter as an instance of a given
+	 * type.
+	 *
+	 * @param clazz
+	 *            the {@code Class} for the type T to which the raw value will
+	 *            be transformed to.
+	 * @return the instance of the specified {@code Class} to which the first
+	 *         raw value of this parameter is transformed to.
+	 * @throws ObjectTransformationException
+	 *             if the raw value cannot be transformed to the specified type
+	 *             T.
+	 */
 	<T> T rawValueAs(Class<? extends T> clazz);
 
+	/**
+	 * Returns the raw values of this parameter as instances of a given type.
+	 *
+	 * @param clazz
+	 *            the {@code Class} for the type T to which the raw values will
+	 *            be transformed to.
+	 * @return the instances of the specified {@code Class} to which the raw
+	 *         values of this parameter are transformed to.
+	 * @throws ObjectTransformationException
+	 *             if any of the raw values cannot be transformed to the
+	 *             specified type T.
+	 */
 	<T> List<T> rawValuesAs(Class<? extends T> clazz);
 
 }

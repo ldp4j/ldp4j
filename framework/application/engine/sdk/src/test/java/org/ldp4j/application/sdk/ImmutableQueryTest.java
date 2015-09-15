@@ -29,8 +29,8 @@ package org.ldp4j.application.sdk;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.hamcrest.Matchers.startsWith;
 
@@ -135,7 +135,7 @@ public class ImmutableQueryTest {
 
 	@Test
 	public void testReturnsEmptyParametersForUnknownNames() {
-		assertThat(queryWithParameters().getParameter(UNEXISTING_PARAMETER),instanceOf(NullQueryParameter.class));
+		assertThat(queryWithParameters().getParameter(UNEXISTING_PARAMETER),nullValue());
 	}
 
 }

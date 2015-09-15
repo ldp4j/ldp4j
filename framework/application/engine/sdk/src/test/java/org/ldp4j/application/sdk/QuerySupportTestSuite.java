@@ -36,7 +36,6 @@ import org.ldp4j.application.sdk.internal.PrimitiveObjectFactoryTest;
 	PrimitiveObjectFactoryTest.class,
 	ObjectUtilTest.class,
 	ImmutableQueryParameterTest.class,
-	NullQueryParameterTest.class,
 	ImmutableQueryTest.class,
 	QueryBuilderTest.class
 })

@@ -37,6 +37,9 @@ import org.ldp4j.application.ext.Query;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableMap;
 
+/**
+ * An immutable {@code Query} implementation.
+ */
 final class ImmutableQuery implements Query {
 
 	private final ImmutableMap<String, ImmutableQueryParameter> parameters;
@@ -66,7 +69,6 @@ final class ImmutableQuery implements Query {
 	 */
 	@Override
 	public boolean hasParameter(String paramName) {
-		checkNotNull(paramName,"Parameter name cannot be null");
 		return this.parameters.containsKey(paramName);
 	}
 
@@ -76,11 +78,7 @@ final class ImmutableQuery implements Query {
 	@Override
 	public Parameter getParameter(String paramName) {
 		checkNotNull(paramName,"Parameter name cannot be null");
-		Parameter parameter=this.parameters.get(paramName);
-		if(parameter==null) {
-			parameter=NullQueryParameter.create(paramName);
-		}
-		return parameter;
+		return this.parameters.get(paramName);
 	}
 
 	/**

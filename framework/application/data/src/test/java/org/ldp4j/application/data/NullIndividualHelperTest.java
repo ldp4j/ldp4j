@@ -26,44 +26,36 @@
  */
 package org.ldp4j.application.data;
 
-import java.io.Serializable;
 import java.net.URI;
 
-public abstract class DataSetHelper {
+import org.junit.Test;
+import org.ldp4j.application.vocabulary.RDFS;
 
-	public static final URI SELF = URI.create("");
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
-	public static interface TripleProcessor<T> extends TripleConsumer {
+public class NullIndividualHelperTest {
 
-		T getResult();
+	private NullIndividualHelper sut=new NullIndividualHelper();
 
+	@Test
+	public void testTypes() throws Exception {
+		assertThat(sut.types(),hasSize(0));
 	}
 
-	public static interface TripleConsumer {
-
-		void consume(Individual<?,?> subject, URI predicate, Literal<?> object);
-
-		void consume(Individual<?,?> subject, URI predicate, Individual<?,?> object);
-
+	@Test
+	public void testPropertyURI() throws Exception {
+		assertThat(sut.property(RDFS.LABEL.as(URI.class)),instanceOf(NullPropertyHelper.class));
 	}
 
-	DataSetHelper() {
+	@Test
+	public void testPropertyString() throws Exception {
+		assertThat(sut.property(RDFS.LABEL.qualifiedEntityName()),instanceOf(NullPropertyHelper.class));
 	}
 
-	public abstract <T extends Serializable, S extends Individual<T, S>> S replace(Serializable from, T to, Class<? extends S> clazz);
-
-	public abstract ManagedIndividual manage(ManagedIndividualId id) throws DataSetModificationException;
-
-	public abstract <T extends Individual<URI,T>> T self();
-
-	public abstract <T extends Individual<URI,T>> T relative(URI path);
-
-	public abstract IndividualHelper externalIndividual(URI uri);
-
-	public abstract IndividualHelper managedIndividual(Name<?> name, String managerId);
-
-	public abstract IndividualHelper relativeIndividual(Name<?> name, String managerId, URI path);
-
-	public abstract IndividualHelper localIndividual(Name<?> name);
+	@Test
+	public void testPropertyTerm() throws Exception {
+		assertThat(sut.property(RDFS.LABEL),instanceOf(NullPropertyHelper.class));
+	}
 
 }

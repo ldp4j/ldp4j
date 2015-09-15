@@ -38,10 +38,10 @@ import java.util.Set;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 
+import org.ldp4j.application.ext.ObjectTransformationException;
 import org.ldp4j.application.sdk.internal.EnumObjectFactory;
 import org.ldp4j.application.sdk.internal.PrimitiveObjectFactory;
 import org.ldp4j.application.sdk.spi.ObjectFactory;
-import org.ldp4j.application.sdk.spi.ObjectTransformationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

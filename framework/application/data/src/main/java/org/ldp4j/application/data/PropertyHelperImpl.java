@@ -179,7 +179,12 @@ final class PropertyHelperImpl implements PropertyHelper {
 	@Override
 	public IndividualPropertyHelper withIndividual(URI id) {
 		if(id!=null) {
-			Individual<?,?> srcIndividual=this.individual.dataSet().individual(id, ExternalIndividual.class);
+			Individual<?,?> srcIndividual=null;
+			if(id.isAbsolute()) {
+				srcIndividual=this.individual.dataSet().individual(id, ExternalIndividual.class);
+			} else {
+				srcIndividual=this.individual.dataSet().individual(id, NewIndividual.class);
+			}
 			this.individual.addValue(this.propertyId,srcIndividual);
 		}
 		return new IndividualPropertyHelperImpl(new IndividualHelperImpl(this.individual),this);

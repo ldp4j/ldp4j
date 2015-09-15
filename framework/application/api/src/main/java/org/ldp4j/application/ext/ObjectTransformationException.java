@@ -20,23 +20,47 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-sdk:0.2.0-SNAPSHOT
- *   Bundle      : ldp4j-application-engine-sdk-0.2.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.sdk.spi;
+package org.ldp4j.application.ext;
 
+/**
+ * This exception is thrown when a parameter raw value cannot be transformed to
+ * an instance of a given type.
+ *
+ * @see Parameter#rawValueAs(Class)
+ * @see Parameter#rawValuesAs(Class)
+ */
 public class ObjectTransformationException extends RuntimeException {
 
 	private static final long serialVersionUID = 1526607378071322728L;
 
 	private final Class<?> valueClass;
 
+	/**
+	 * Create a new instance with a message, cause, and valueClass
+	 *
+	 * @param message
+	 *            the description of the failure
+	 * @param cause
+	 *            the underlying cause of the exception
+	 * @param valueClass
+	 *            the type to which the raw value could not be transformed to
+	 */
 	public ObjectTransformationException(String message, Throwable cause, Class<?> valueClass) {
 		super(message, cause);
 		this.valueClass = valueClass;
 	}
 
+	/**
+	 * Returns the {@code Class} of the type to which a raw value could not be
+	 * transfomed.
+	 *
+	 * @return the {@code Class} of the type to which a raw value could not be
+	 * transfomed
+	 */
 	public Class<?> getValueClass() {
 		return this.valueClass;
 	}

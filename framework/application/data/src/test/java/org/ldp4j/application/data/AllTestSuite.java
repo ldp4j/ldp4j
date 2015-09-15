@@ -20,61 +20,26 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-sdk:0.2.0-SNAPSHOT
- *   Bundle      : ldp4j-application-engine-sdk-0.2.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.2.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-data-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.sdk;
+package org.ldp4j.application.data;
 
-import java.util.Collections;
-import java.util.List;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
-import org.ldp4j.application.ext.Parameter;
+@RunWith(Suite.class)
+@SuiteClasses({
+	DataDSLTest.class,
+	IndividualReferenceTest.class,
+	IndividualReferenceBuilderTest.class,
+	DataSetUtilsTest.class,
+	DataSetHelperTest.class,
+	NullIndividualHelperTest.class,
+	NullPropertyHelperTest.class
+})
+public class AllTestSuite {
 
-final class NullQueryParameter implements Parameter {
-
-	private final String name;
-
-	private NullQueryParameter(String name) {
-		this.name = name;
-	}
-
-	@Override
-	public String name() {
-		return this.name;
-	}
-
-	@Override
-	public boolean isMultivalued() {
-		return false;
-	}
-
-	@Override
-	public <T> List<T> rawValuesAs(Class<? extends T> clazz) {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<String> rawValues() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public <T> T rawValueAs(Class<? extends T> clazz) {
-		return null;
-	}
-
-	@Override
-	public String rawValue() {
-		return null;
-	}
-
-	@Override
-	public int cardinality() {
-		return 0;
-	}
-
-	static Parameter create(String name) {
-		return new NullQueryParameter(name);
-	}
 }

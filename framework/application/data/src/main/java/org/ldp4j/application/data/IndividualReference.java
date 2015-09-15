@@ -145,12 +145,17 @@ public abstract class IndividualReference<T extends Serializable, S extends Indi
 		return dataSet.hasIndividual(ref());
 	}
 
+	/**
+	 * Find the individual of the data set with the same identifier
+	 *
+	 * @param dataSet
+	 *            the data set
+	 * @return the individual with the same identifier, or {@code null} if no
+	 *         individual has the same identifier.
+	 */
+	@SuppressWarnings("unchecked")
 	public Individual<T,S> resolve(DataSet dataSet) {
-		Individual<T, ?> resolvedIndividual = dataSet.individualOfId(ref());
-		if(!clazz.isInstance(resolvedIndividual)) {
-			throw new IllegalStateException("Unexpected type referred individual");
-		}
-		return clazz.cast(resolvedIndividual);
+		return (Individual<T,S>) dataSet.individualOfId(ref());
 	}
 
 	public Individual<T,S> realize(DataSet dataSet) {

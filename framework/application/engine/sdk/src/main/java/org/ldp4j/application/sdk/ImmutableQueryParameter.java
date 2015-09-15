@@ -39,6 +39,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
 
+/**
+ * An immutable {@code Parameter} implementation.
+ */
 final class ImmutableQueryParameter implements Parameter {
 
 	private final String name;
@@ -49,36 +52,57 @@ final class ImmutableQueryParameter implements Parameter {
 		this.rawValues=rawValues;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String name() {
 		return this.name;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public boolean isMultivalued() {
 		return this.rawValues.size()>1;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public int cardinality() {
 		return this.rawValues.size();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String rawValue() {
 		return this.rawValues.get(0);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public List<String> rawValues() {
 		return this.rawValues;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> T rawValueAs(Class<? extends T> clazz) {
 		return ObjectUtil.fromString(clazz, rawValue());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <T> List<T> rawValuesAs(Class<? extends T> clazz) {
 		Builder<T> builder = ImmutableList.<T>builder();
@@ -88,6 +112,9 @@ final class ImmutableQueryParameter implements Parameter {
 		return builder.build();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return

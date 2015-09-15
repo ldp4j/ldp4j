@@ -49,8 +49,8 @@ import org.joda.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 import org.ldp4j.application.data.TimeUtils;
+import org.ldp4j.application.ext.ObjectTransformationException;
 import org.ldp4j.application.sdk.spi.ObjectParseException;
-import org.ldp4j.application.sdk.spi.ObjectTransformationException;
 
 import com.google.common.collect.Lists;
 
