@@ -28,7 +28,11 @@ package org.ldp4j.server.frontend;
 
 import static com.jayway.restassured.RestAssured.given;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -46,6 +50,7 @@ import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpHead;
 import org.apache.http.client.methods.HttpOptions;
+import org.apache.http.client.methods.HttpPatch;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.methods.HttpPut;
 import org.apache.http.client.utils.DateUtils;
@@ -68,7 +73,6 @@ import org.junit.runner.RunWith;
 import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.sdk.QueryBuilder;
-import org.ldp4j.commons.testing.categories.DEBUG;
 import org.ldp4j.commons.testing.categories.ExceptionPath;
 import org.ldp4j.commons.testing.categories.HappyPath;
 import org.ldp4j.commons.testing.categories.LDP;
@@ -414,6 +418,29 @@ public class ServerFrontendITest {
 		ExceptionPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
+	public void testNoPatchSupport(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpPatch patch = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH,HttpPatch.class);
+		patch.setEntity(
+			new StringEntity(
+				TEST_SUITE_BODY,
+				ContentType.create("text/turtle", "UTF-8"))
+		);
+		Metadata patchResponse=HELPER.httpRequest(patch);
+		assertThat(patchResponse.status,equalTo(HttpStatus.SC_METHOD_NOT_ALLOWED));
+		assertThat(patchResponse.body,notNullValue());
+		assertThat(patchResponse.contentType,equalTo("text/plain"));
+		assertThat(patchResponse.language,equalTo(Locale.ENGLISH));
+	}
+
+	@Test
+	@Category({
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
 	public void testNoQuerySupport(@ArquillianResource final URL url) throws Exception {
 		LOGGER.info("Started {}",testName.getMethodName());
 		HELPER.base(url);
@@ -429,7 +456,60 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testMixedQueriesNotAllowed(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH+"?ldp:constrainedBy=12312312321&param1=value1&param2=value2&param2=value3&param3",HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
+		assertThat(getResponse.body,equalTo("Mixed queries not allowed"));
+		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
+	}
+
+	@Test
+	@Category({
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testCannotSpecifyMultipleConstraintReports(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH+"?ldp:constrainedBy=12312312321&ldp:constrainedBy=asdasdasd",HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
+		assertThat(getResponse.body,equalTo("Only one constraint report identifier is allowed"));
+		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
+	}
+
+	@Test
+	@Category({
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testConstraintReportNotFound(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH+"?ldp:constrainedBy=12312312321",HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(HttpStatus.SC_NOT_FOUND));
+		assertThat(getResponse.body,equalTo("Unknown constraint report '12312312321'"));
+		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
+	}
+
+	@Test
+	@Category({
 		ExceptionPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
@@ -448,7 +528,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		ExceptionPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
@@ -467,7 +546,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		ExceptionPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)

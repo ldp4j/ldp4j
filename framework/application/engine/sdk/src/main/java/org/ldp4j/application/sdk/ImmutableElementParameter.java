@@ -26,14 +26,76 @@
  */
 package org.ldp4j.application.sdk;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.util.Objects;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	HttpRequestTestSuite.class,
-	QuerySupportTestSuite.class
-})
-public class AllTestSuites {
+import org.ldp4j.application.engine.context.HttpRequest.Header.Element.Parameter;
+
+import com.google.common.base.MoreObjects;
+
+public final class ImmutableElementParameter implements Parameter {
+
+	private static final long serialVersionUID = -7511803578477277362L;
+
+	private final String name;
+	private final String value;
+
+	ImmutableElementParameter(String name, String value) {
+		this.name = name;
+		this.value = value;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String name() {
+		return this.name;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String value() {
+		return this.value;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return
+			Objects.
+				hash(this.name,this.value);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result = false;
+		if(obj instanceof Parameter) {
+			Parameter that=(Parameter)obj;
+			result=
+				Objects.equals(this.name,that.name()) &&
+				Objects.equals(this.value,that.value());
+		}
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					add("name",this.name).
+					add("value",this.value).
+					toString();
+	}
+
 }

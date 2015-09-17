@@ -34,13 +34,17 @@ public class ObjectParseException extends ObjectTransformationException {
 
 	private final String rawValue;
 
-	public ObjectParseException(Throwable cause, Class<?> valueClass, String rawValue) {
-		super("Could not parse raw value '"+rawValue, cause, valueClass);
+	public ObjectParseException(String message, Throwable cause, Class<?> valueClass, String rawValue) {
+		super(message,cause,valueClass);
 		this.rawValue = rawValue;
 	}
 
-	public ObjectParseException(Class<?> valueClass, String rawValue) {
-		this(null,valueClass,rawValue);
+	public ObjectParseException(Throwable cause, Class<?> valueClass, String rawValue) {
+		this("Could not parse '"+rawValue+"' as '"+valueClass.getName()+"'",cause,valueClass,rawValue);
+	}
+
+	public ObjectParseException(String message, Class<?> valueClass, String rawValue) {
+		this(message,null,valueClass,rawValue);
 	}
 
 	public String getRawValue() {

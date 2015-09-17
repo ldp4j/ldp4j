@@ -30,9 +30,11 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 import org.ldp4j.application.sdk.internal.PrimitiveObjectFactoryTest;
+import org.ldp4j.application.sdk.spi.ObjectParseExceptionTest;
 
 @RunWith(Suite.class)
 @SuiteClasses({
+	ObjectParseExceptionTest.class,
 	PrimitiveObjectFactoryTest.class,
 	ObjectUtilTest.class,
 	ImmutableQueryParameterTest.class,
@@ -40,5 +42,4 @@ import org.ldp4j.application.sdk.internal.PrimitiveObjectFactoryTest;
 	QueryBuilderTest.class
 })
 public class QuerySupportTestSuite {
-
 }

@@ -275,7 +275,7 @@ final class ExistingEndpointController implements EndpointController {
 					status(Status.BAD_REQUEST).
 					type(MediaType.TEXT_PLAIN).
 					language(Locale.ENGLISH).
-					entity("Only one constraint identifier allowed");
+					entity("Only one constraint report identifier is allowed");
 			addRequiredHeaders(context, builder);
 			response=builder.build();
 		}
@@ -293,10 +293,10 @@ final class ExistingEndpointController implements EndpointController {
 			if(report==null) {
 				ResponseBuilder builder=
 					Response.
-						status(Status.BAD_REQUEST).
+						status(Status.NOT_FOUND).
 						type(MediaType.TEXT_PLAIN).
 						language(Locale.ENGLISH).
-						entity("Unknown constraints '"+constraintReportId+"'");
+						entity("Unknown constraint report '"+constraintReportId+"'");
 				addRequiredHeaders(context, builder);
 				return builder.build();
 			}
@@ -352,7 +352,7 @@ final class ExistingEndpointController implements EndpointController {
 				body=Throwables.getStackTraceAsString(rootCause);
 			}
 			if(ice.getConstraintsId()==null) {
-				LOGGER.error("No constraints identifier defined. Full stacktrace follows",exception);
+				LOGGER.error("No constraint report identifier defined. Full stacktrace follows",exception);
 				throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR.getStatusCode());
 			}
 			builder.header(
@@ -470,7 +470,12 @@ final class ExistingEndpointController implements EndpointController {
 			checkPreconditions();
 
 		// Fail as we do not support PATCH yet
-		ResponseBuilder builder=Response.serverError();
+		ResponseBuilder builder=
+				Response.
+				status(Status.METHOD_NOT_ALLOWED).
+				type(MediaType.TEXT_PLAIN).
+				language(Locale.ENGLISH).
+				entity("Patch is not supported");
 		addRequiredHeaders(context, builder);
 		return builder.build();
 	}

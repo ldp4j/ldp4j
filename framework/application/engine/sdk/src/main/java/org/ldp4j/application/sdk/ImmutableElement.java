@@ -27,19 +27,22 @@
 package org.ldp4j.application.sdk;
 
 import java.util.List;
+import java.util.Objects;
 
+import org.ldp4j.application.engine.context.HttpRequest.Header;
 import org.ldp4j.application.engine.context.HttpRequest.Header.Element;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-final class ImmutableElement implements Element {
+public final class ImmutableElement implements Element {
 
 	private static final long serialVersionUID = -7353947392931727162L;
 
 	private final String name;
 	private final ImmutableList<Parameter> parameters;
 
-	ImmutableElement(String name, List<ImmutableHeaderElementParameter> parameters) {
+	ImmutableElement(String name, List<ImmutableElementParameter> parameters) {
 		this.name=name;
 		this.parameters=ImmutableList.<Parameter>copyOf(parameters);
 	}
@@ -58,6 +61,44 @@ final class ImmutableElement implements Element {
 	@Override
 	public ImmutableList<Parameter> parameters() {
 		return this.parameters;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public int hashCode() {
+		return
+			Objects.
+				hash(this.name,this.parameters);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public boolean equals(Object obj) {
+		boolean result = false;
+		if(obj instanceof Element) {
+			Element that=(Element)obj;
+			result=
+				Objects.equals(this.name,that.name()) &&
+				Objects.equals(this.parameters,that.parameters());
+		}
+		return result;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(Header.class).
+					add("name",this.name).
+					add("parameters",this.parameters).
+					toString();
 	}
 
 }

@@ -32,8 +32,11 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-	HttpRequestTestSuite.class,
-	QuerySupportTestSuite.class
+	DateUtilTest.class,
+	ImmutableElementParameterTest.class,
+	ImmutableElementTest.class,
+	ImmutableHeaderTest.class,
+	HttpRequestBuilderTest.class,
 })
-public class AllTestSuites {
+public class HttpRequestTestSuite {
 }

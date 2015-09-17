@@ -50,7 +50,7 @@ public interface Queryable {
 	 *             if the specified resource is not managed by the resource
 	 *             handler.
 	 * @throws InvalidQueryException
-	 *             if the specified query is not valid
+	 *             if the specified query is not valid.
 	 * @throws ApplicationRuntimeException
 	 *             if an internal exception prevents the retrieval of the
 	 *             representation.

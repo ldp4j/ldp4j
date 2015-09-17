@@ -26,76 +26,20 @@
  */
 package org.ldp4j.application.sdk;
 
-import java.util.Objects;
+import com.google.common.collect.ImmutableList;
 
-import org.ldp4j.application.engine.context.HttpRequest.Header.Element.Parameter;
+abstract class HttpRequestSupport {
 
-import com.google.common.base.MoreObjects;
-
-final class ImmutableHeaderElementParameter implements Parameter {
-
-	private static final long serialVersionUID = -7511803578477277362L;
-
-	private final String name;
-	private final String value;
-
-	ImmutableHeaderElementParameter(String name, String value) {
-		this.name = name;
-		this.value = value;
+	protected static ImmutableHeader createHeader(String header, String value, ImmutableElement... elements) {
+		return new ImmutableHeader(header,value,ImmutableList.copyOf(elements));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String name() {
-		return this.name;
+	protected static ImmutableElement createElement(String element, ImmutableElementParameter... parameters) {
+		return new ImmutableElement(element,ImmutableList.copyOf(parameters));
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String value() {
-		return this.value;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int hashCode() {
-		return
-			Objects.
-				hash(this.name,this.value);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		boolean result = false;
-		if(obj instanceof Parameter) {
-			Parameter that=(Parameter)obj;
-			result=
-				Objects.equals(this.name,that.name()) &&
-				Objects.equals(this.value,that.value());
-		}
-		return result;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return
-			MoreObjects.
-				toStringHelper(getClass()).
-					add("name",this.name).
-					add("value",this.value).
-					toString();
+	static ImmutableElementParameter createParameter(String parameter, String value) {
+		return new ImmutableElementParameter(parameter,value);
 	}
 
 }
