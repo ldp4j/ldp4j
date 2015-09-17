@@ -35,10 +35,15 @@ import org.ldp4j.application.data.Literals;
 import org.ldp4j.application.data.LocalIndividual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.ext.InvalidQueryException;
+import org.ldp4j.application.ext.ObjectTransformationException;
+import org.ldp4j.application.ext.Parameter;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.vocabulary.RDF;
 
 public final class QuerySupport {
+
+	public static final String FAILURE = "failure";
 
 	public static final String NAMESPACE = "http://www.ldp4j.org/examples#";
 
@@ -53,8 +58,19 @@ public final class QuerySupport {
 	private QuerySupport() {
 	}
 
-	public static DataSet getDescription(Name<?> id, Query query) {
+	public static DataSet getDescription(Name<?> id, Query query) throws InvalidQueryException {
 		DataSet dataset = DataSets.createDataSet(id);
+
+		if(query.hasParameter(FAILURE)) {
+			Parameter failure=query.getParameter(FAILURE);
+			try {
+				if(failure.rawValueAs(Boolean.class)) {
+					throw new InvalidQueryException("Failure requested", query);
+				}
+			} catch (ObjectTransformationException e) {
+				throw new InvalidQueryException("Could not understand: '"+failure.rawValue()+"' is not a valid boolean value for parameter '"+FAILURE+"'",e,query);
+			}
+		}
 
 		LocalIndividual    qIndividual =dataset.individual(queryId(), LocalIndividual.class);
 		ExternalIndividual qtIndividual=dataset.individual(QuerySupport.QUERY_TYPE, ExternalIndividual.class);

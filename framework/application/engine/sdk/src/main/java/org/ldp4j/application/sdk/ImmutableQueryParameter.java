@@ -44,6 +44,8 @@ import com.google.common.collect.Lists;
  */
 final class ImmutableQueryParameter implements Parameter {
 
+	private static final long serialVersionUID = 5325850847736543804L;
+
 	private final String name;
 	private final ImmutableList<String> rawValues;
 

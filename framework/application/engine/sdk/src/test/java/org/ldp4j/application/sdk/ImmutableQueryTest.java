@@ -32,10 +32,10 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.hamcrest.Matchers.startsWith;
 
 import org.junit.Test;
 import org.ldp4j.application.ext.Parameter;
+import org.ldp4j.commons.testing.Utils;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -88,7 +88,7 @@ public class ImmutableQueryTest {
 
 	@Test
 	public void testHasCustomStringRepresentation() {
-		assertThat(queryWithParameters().toString(),not(startsWith(ImmutableQuery.class.getName())));
+		assertThat(queryWithParameters().toString(),not(equalTo(Utils.defaultToString(queryWithParameters()))));
 	}
 
 	@Test

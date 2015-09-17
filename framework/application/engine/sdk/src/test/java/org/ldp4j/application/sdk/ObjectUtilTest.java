@@ -51,6 +51,7 @@ import org.junit.Test;
 import org.ldp4j.application.data.TimeUtils;
 import org.ldp4j.application.ext.ObjectTransformationException;
 import org.ldp4j.application.sdk.spi.ObjectParseException;
+import org.ldp4j.commons.testing.Utils;
 
 import com.google.common.collect.Lists;
 
@@ -148,6 +149,11 @@ public class ObjectUtilTest {
 	@Before
 	public void setUp() {
 		this.now=new DateTime(new Date());
+	}
+
+	@Test
+	public void verifyIsUtilityClass() {
+		assertThat(Utils.isUtilityClass(ObjectUtil.class),equalTo(true));
 	}
 
 	@Test

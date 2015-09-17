@@ -26,13 +26,14 @@
  */
 package org.ldp4j.application.ext;
 
+import java.io.Serializable;
 import java.util.Set;
 
 /**
  * A collection of {@code Parameter}s, where is each parameter is indexed by its
  * name.
  */
-public interface Query {
+public interface Query extends Serializable {
 
 	/**
 	 * Returns {@code true} if this query contains no parameters.

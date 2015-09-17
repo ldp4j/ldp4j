@@ -26,41 +26,25 @@
  */
 package org.ldp4j.application.data;
 
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.Literal;
-import org.ldp4j.application.data.ValueVisitor;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
-final class LiteralValueExtractor<T> implements ValueVisitor {
-
-	private T value=null;
-
-	private final LiteralAdapter<T> adapter;
-
-	private LiteralValueExtractor(LiteralAdapter<T> adapter) {
-		this.adapter = adapter;
-	}
-
-	@Override
-	public void visitLiteral(Literal<?> value) {
-		value.accept(this.adapter);
-		this.value=this.adapter.adaptedValue();
-	}
-
-	@Override
-	public void visitIndividual(Individual<?, ?> value) {
-		// Discard undesired value
-	}
-
-	T getValue() {
-		return this.value;
-	}
-
-	boolean isAvailable() {
-		return this.value!=null;
-	}
-
-	static <T> LiteralValueExtractor<T> newInstance(Class<? extends T> clazz) {
-		return new LiteralValueExtractor<T>(LiteralAdapter.newInstance(clazz));
-	}
+@RunWith(Suite.class)
+@SuiteClasses({
+	DataDSLTest.class,
+	IndividualReferenceTest.class,
+	IndividualReferenceBuilderTest.class,
+	DataSetUtilsTest.class,
+	DataSetHelperTest.class,
+	NullIndividualHelperTest.class,
+	NullPropertyHelperTest.class,
+	IndividualHelperImplTest.class,
+	PropertyHelperImplTest.class,
+	LiteralAdapterTest.class,
+	LiteralValueExtractorTest.class,
+	IndividualExtractorTest.class,
+})
+public class DataTestSuite {
 
 }

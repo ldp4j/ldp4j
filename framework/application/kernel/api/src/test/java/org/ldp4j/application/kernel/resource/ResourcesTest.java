@@ -20,47 +20,24 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.2.0-SNAPSHOT
- *   Bundle      : ldp4j-application-data-0.2.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-api:0.2.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-kernel-api-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.data;
+package org.ldp4j.application.kernel.resource;
 
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.Literal;
-import org.ldp4j.application.data.ValueVisitor;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
-final class LiteralValueExtractor<T> implements ValueVisitor {
+import org.junit.Test;
+import org.ldp4j.commons.testing.Utils;
 
-	private T value=null;
 
-	private final LiteralAdapter<T> adapter;
+public class ResourcesTest {
 
-	private LiteralValueExtractor(LiteralAdapter<T> adapter) {
-		this.adapter = adapter;
-	}
-
-	@Override
-	public void visitLiteral(Literal<?> value) {
-		value.accept(this.adapter);
-		this.value=this.adapter.adaptedValue();
-	}
-
-	@Override
-	public void visitIndividual(Individual<?, ?> value) {
-		// Discard undesired value
-	}
-
-	T getValue() {
-		return this.value;
-	}
-
-	boolean isAvailable() {
-		return this.value!=null;
-	}
-
-	static <T> LiteralValueExtractor<T> newInstance(Class<? extends T> clazz) {
-		return new LiteralValueExtractor<T>(LiteralAdapter.newInstance(clazz));
+	@Test
+	public void verifyIsUtilityClass() {
+		assertThat(Utils.isUtilityClass(Resources.class),equalTo(true));
 	}
 
 }

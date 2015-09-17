@@ -27,8 +27,8 @@
 package org.ldp4j.application.ext;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.session.ReadSession;
 import org.ldp4j.application.session.ResourceSnapshot;
-import org.ldp4j.application.session.WriteSession;
 
 /**
  * Interface to be implemented by {@link ResourceHandler} implementations that
@@ -44,17 +44,18 @@ public interface Queryable {
 	 * @param query
 	 *            the query to be solved.
 	 * @param session
-	 *            the session to use for registering the side effects of the
-	 *            operation.
+	 *            the session to use for resolving snapshots and individuals.
 	 * @return the data set that represents the specified resource query.
 	 * @throws UnknownResourceException
 	 *             if the specified resource is not managed by the resource
 	 *             handler.
+	 * @throws InvalidQueryException
+	 *             if the specified query is not valid
 	 * @throws ApplicationRuntimeException
-	 *             if an internal exception prevents the deletion of the
-	 *             resource.
+	 *             if an internal exception prevents the retrieval of the
+	 *             representation.
 	 */
-	DataSet query(ResourceSnapshot resource, Query query, WriteSession session)
-				throws UnknownResourceException, ApplicationRuntimeException;
+	DataSet query(ResourceSnapshot resource, Query query, ReadSession session)
+				throws UnknownResourceException, InvalidQueryException, ApplicationRuntimeException;
 
 }

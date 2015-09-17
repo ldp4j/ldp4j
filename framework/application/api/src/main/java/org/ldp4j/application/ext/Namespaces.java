@@ -60,8 +60,6 @@ public interface Namespaces {
 	 * @param prefix
 	 *            prefix to look up
 	 * @return Namespace URI bound to prefix
-	 * @throws NullPointerException
-	 *             when the prefix is {@code null}
 	 */
 	String getNamespaceURI(String prefix);
 
@@ -71,8 +69,6 @@ public interface Namespaces {
 	 * @param namespaceURI
 	 *            URI of the Namespace to look up
 	 * @return Prefix bound to the Namespace URI
-	 * @throws NullPointerException
-	 *             when the prefix is {@code null}
 	 */
 	String getPrefix(String namespaceURI);
 
@@ -82,8 +78,6 @@ public interface Namespaces {
 	 * @param namespaceURI
 	 *            URI of the Namespace to look up
 	 * @return All the prefixes bound to the Namespace URI
-	 * @throws NullPointerException
-	 *             when the prefix is {@code null}
 	 */
 	List<String> getPrefixes(String namespaceURI);
 

@@ -49,5 +49,18 @@
 
 	<name>LDP4j :: Commons :: Testing</name>
 	<description>Common LDP4j testing utilities</description>
-	
+
+	<dependencies>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-integration</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
 </project>

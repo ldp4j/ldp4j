@@ -32,7 +32,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.fail;
 
 import java.net.URI;
@@ -41,6 +40,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.Test;
+import org.ldp4j.commons.testing.Utils;
 
 import com.google.common.collect.ImmutableList;
 
@@ -169,7 +169,7 @@ public class ImmutableQueryParameterTest {
 
 	@Test
 	public void testHasCustomStringRepresentation() {
-		assertThat(singleValuedParameter().toString(),not(startsWith(ImmutableQueryParameter.class.getName())));
+		assertThat(singleValuedParameter().toString(),not(equalTo(Utils.defaultToString(singleValuedParameter()))));
 	}
 
 	private ImmutableQueryParameter mixedParameterValues() {

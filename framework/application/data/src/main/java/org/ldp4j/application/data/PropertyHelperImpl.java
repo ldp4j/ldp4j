@@ -54,8 +54,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 		if(property==null) {
 			return null;
 		}
-		LiteralValueExtractor<T> extractor =
-			new LiteralValueExtractor<T>(new LiteralAdapter<T>(aClazz));
+		LiteralValueExtractor<T> extractor =LiteralValueExtractor.newInstance(aClazz);
 		for(Value value:property) {
 			value.accept(extractor);
 			if(extractor.isAvailable()) {
@@ -91,7 +90,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 		if(property==null) {
 			return null;
 		}
-		IndividualExtractor<T,S> extractor=new IndividualExtractor<T,S>(clazz);
+		IndividualExtractor<T,S> extractor=IndividualExtractor.newInstance(clazz);
 		for(Value value:property) {
 			value.accept(extractor);
 			if(extractor.isAvailable()) {

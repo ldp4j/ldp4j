@@ -74,6 +74,7 @@ import org.ldp4j.commons.testing.categories.HappyPath;
 import org.ldp4j.commons.testing.categories.LDP;
 import org.ldp4j.commons.testing.categories.Setup;
 import org.ldp4j.example.MyApplication;
+import org.ldp4j.example.QuerySupport;
 import org.ldp4j.server.controller.EndpointControllerUtils;
 import org.ldp4j.server.testing.ServerFrontendTestHelper;
 import org.ldp4j.server.testing.ServerFrontendTestHelper.Metadata;
@@ -410,7 +411,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		ExceptionPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
@@ -421,6 +421,25 @@ public class ServerFrontendITest {
 
 		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH+"?param1=value1&param2=value2&param2=value3&param3",HttpGet.class);
 		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(HttpStatus.SC_FORBIDDEN));
+		assertThat(getResponse.body,notNullValue());
+		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testQueryFailure(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QuerySupport.FAILURE+"=true",HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
 		assertThat(getResponse.body,notNullValue());
 		assertThat(getResponse.contentType,equalTo("text/plain"));
@@ -430,6 +449,39 @@ public class ServerFrontendITest {
 	@Test
 	@Category({
 		DEBUG.class,
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testQueryFailure$badValue(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QuerySupport.FAILURE+"=unknown",HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
+		assertThat(getResponse.body,notNullValue());
+		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testQuerySupport$missfailure(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		Query query=queryResource(url, "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QuerySupport.FAILURE+"=false");
+		assertThat(query.size(),equalTo(1));
+		assertThat(query.hasParameter(QuerySupport.FAILURE),equalTo(true));
+		assertThat(query.getParameter(QuerySupport.FAILURE).rawValueAs(Boolean.class),equalTo(false));
+		LOGGER.info("Completed {}",testName.getMethodName());
+	}
+
+	@Test
+	@Category({
 		HappyPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)

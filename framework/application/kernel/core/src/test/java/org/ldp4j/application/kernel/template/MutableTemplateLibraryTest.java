@@ -27,18 +27,17 @@
 package org.ldp4j.application.kernel.template;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.ldp4j.application.kernel.template.Fixture;
-import org.ldp4j.application.kernel.template.TemplateLibraryTest.TemplateConsumer;
 import org.ldp4j.example.BookContainerHandler;
 import org.ldp4j.example.PersonContainerHandler;
-import org.ldp4j.example.PersonHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

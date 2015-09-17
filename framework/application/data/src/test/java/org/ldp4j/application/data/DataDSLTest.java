@@ -40,11 +40,17 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.RDF;
+import org.ldp4j.commons.testing.Utils;
 
 public class DataDSLTest extends DataTestingSupport {
 
 	private static final String TEMPLATE_ID = "template";
 	private static final String READ_ONLY_PROPERTY = "my:property";
+
+	@Test
+	public void verifyIsUtilityClass() {
+		assertThat(Utils.isUtilityClass(DataDSL.class),equalTo(true));
+	}
 
 	@Test
 	public void testDSL() {

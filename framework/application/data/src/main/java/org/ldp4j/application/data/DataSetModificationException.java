@@ -28,9 +28,6 @@ package org.ldp4j.application.data;
 
 public class DataSetModificationException extends Exception {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 5214622641554473538L;
 
 	public DataSetModificationException(String message, Throwable cause) {
@@ -38,7 +35,7 @@ public class DataSetModificationException extends Exception {
 	}
 
 	public DataSetModificationException(String message) {
-		super(message);
+		this(message,null);
 	}
 
 }

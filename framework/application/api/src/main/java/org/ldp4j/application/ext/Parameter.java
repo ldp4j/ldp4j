@@ -26,13 +26,14 @@
  */
 package org.ldp4j.application.ext;
 
+import java.io.Serializable;
 import java.util.List;
 
 /**
  * A collection of values defined for a query parameter. The values are defined
  * as strings, which can be transformed to other Java types.
  */
-public interface Parameter {
+public interface Parameter extends Serializable {
 
 	/**
 	 * Returns the name of the parameter.

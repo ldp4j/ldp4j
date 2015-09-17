@@ -42,6 +42,8 @@ import com.google.common.collect.ImmutableMap;
  */
 final class ImmutableQuery implements Query {
 
+	private static final long serialVersionUID = 663489687029161424L;
+
 	private final ImmutableMap<String, ImmutableQueryParameter> parameters;
 
 	private ImmutableQuery(Map<String, ImmutableQueryParameter> params) {

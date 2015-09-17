@@ -26,41 +26,38 @@
  */
 package org.ldp4j.application.data;
 
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.Literal;
-import org.ldp4j.application.data.ValueVisitor;
+import org.junit.Test;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
-final class LiteralValueExtractor<T> implements ValueVisitor {
+public class LiteralAdapterTest {
 
-	private T value=null;
-
-	private final LiteralAdapter<T> adapter;
-
-	private LiteralValueExtractor(LiteralAdapter<T> adapter) {
-		this.adapter = adapter;
+	@Test
+	public void testVisitLiteral$valid() throws Exception {
+		LiteralAdapter<Number> nAdapter = LiteralAdapter.newInstance(Number.class);
+		nAdapter.visitLiteral(Literals.newLiteral(1));
+		assertThat(nAdapter.adaptedValue(),equalTo((Number)1));
 	}
 
-	@Override
-	public void visitLiteral(Literal<?> value) {
-		value.accept(this.adapter);
-		this.value=this.adapter.adaptedValue();
+	@Test
+	public void testVisitTypedLiteral$valid() throws Exception {
+		LiteralAdapter<Number> nAdapter = LiteralAdapter.newInstance(Number.class);
+		nAdapter.visitTypedLiteral(Literals.newTypedLiteral(1,Datatypes.STRING));
+		assertThat(nAdapter.adaptedValue(),equalTo((Number)1));
 	}
 
-	@Override
-	public void visitIndividual(Individual<?, ?> value) {
-		// Discard undesired value
+	@Test
+	public void testVisitLanguageLiteral$valid() throws Exception {
+		LiteralAdapter<String> nAdapter = LiteralAdapter.newInstance(String.class);
+		nAdapter.visitLanguageLiteral(Literals.newLanguageLiteral("1","en"));
+		assertThat(nAdapter.adaptedValue(),equalTo("1"));
 	}
 
-	T getValue() {
-		return this.value;
-	}
-
-	boolean isAvailable() {
-		return this.value!=null;
-	}
-
-	static <T> LiteralValueExtractor<T> newInstance(Class<? extends T> clazz) {
-		return new LiteralValueExtractor<T>(LiteralAdapter.newInstance(clazz));
+	@Test
+	public void testVisitLanguageLiteral$notValid() throws Exception {
+		LiteralAdapter<Number> nAdapter = LiteralAdapter.newInstance(Number.class);
+		nAdapter.visitLiteral(Literals.newLanguageLiteral("1","en"));
+		assertThat(nAdapter.adaptedValue(),equalTo(null));
 	}
 
 }

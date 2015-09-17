@@ -27,14 +27,16 @@
 package org.ldp4j.example;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.ext.ApplicationRuntimeException;
+import org.ldp4j.application.ext.InvalidQueryException;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.ext.Queryable;
-import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.annotations.Resource;
+import org.ldp4j.application.session.ReadSession;
 import org.ldp4j.application.session.ResourceSnapshot;
-import org.ldp4j.application.session.WriteSession;
 
+/**
+ * An example resource handler that can be queried.
+ */
 @Resource(
 	id=QueryableResourceHandler.ID
 )
@@ -46,8 +48,12 @@ public class QueryableResourceHandler extends InMemoryResourceHandler implements
 		super("QueryableResource");
 	}
 
+	/**
+	 * Instead of retrieving the contents of the resource, return a description
+	 * of the query received.
+	 */
 	@Override
-	public DataSet query(ResourceSnapshot resource, Query query, WriteSession session) throws UnknownResourceException, ApplicationRuntimeException {
+	public DataSet query(ResourceSnapshot resource, Query query, ReadSession session) throws InvalidQueryException {
 		return QuerySupport.getDescription(resource.name(), query);
 	}
 

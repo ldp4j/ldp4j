@@ -33,6 +33,7 @@ import org.junit.runners.Suite.SuiteClasses;
 @RunWith(Suite.class)
 @SuiteClasses({
 	HttpRequestBuilderTest.class,
+	DateUtilTest.class,
 	QuerySupportTestSuite.class
 })
 public class AllTestSuites {

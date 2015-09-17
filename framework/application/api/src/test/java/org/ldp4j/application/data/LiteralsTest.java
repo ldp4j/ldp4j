@@ -27,7 +27,11 @@
 package org.ldp4j.application.data;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
 
 import java.io.Serializable;
@@ -47,6 +51,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
+import org.ldp4j.commons.testing.Utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,6 +76,11 @@ public class LiteralsTest {
 	@Before
 	public void setUp() {
 		this.dateTime = Literals.of(NOW).dateTime();
+	}
+
+	@Test
+	public void verifyIsUtilityClass() {
+		assertThat(Utils.isUtilityClass(Literals.class),equalTo(true));
 	}
 
 	@Test

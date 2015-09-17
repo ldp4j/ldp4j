@@ -55,6 +55,7 @@ import org.ldp4j.application.engine.context.UnsupportedInteractionModelException
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.InvalidContentException;
+import org.ldp4j.application.ext.InvalidQueryException;
 import org.ldp4j.application.ext.Parameter;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.ext.UnknownResourceException;
@@ -187,7 +188,7 @@ final class ExistingEndpointController implements EndpointController {
 					NamespacesHelper.
 						resourceNamespaces(context.applicationNamespaces()));
 
-			return createReatrievalResponse(context,variant,hasPreferences,preferences, includeEntity, body,query);
+			return createReatrievalResponse(context,variant,hasPreferences,preferences,includeEntity,body,query);
 		} catch (ApplicationExecutionException e) {
 			return processExecutionException(context, e);
 		} catch (ApplicationContextException e) {
@@ -246,7 +247,7 @@ final class ExistingEndpointController implements EndpointController {
 		} else if(!context.isResourceQueryable()) {
 			ResponseBuilder builder=
 					Response.
-						status(Status.BAD_REQUEST).
+						status(Status.FORBIDDEN).
 						type(MediaType.TEXT_PLAIN).
 						language(Locale.ENGLISH).
 						entity("Resource cannot be queried");
@@ -363,6 +364,9 @@ final class ExistingEndpointController implements EndpointController {
 		} else if (rootCause instanceof UnknownResourceException) {
 			statusCode=Status.NOT_FOUND.getStatusCode();
 			body="Resource not found";
+		} else if (rootCause instanceof InvalidQueryException) {
+			statusCode=Status.BAD_REQUEST.getStatusCode();
+			body="Invalid query: "+rootCause.getMessage();
 		} else if (rootCause instanceof ApplicationRuntimeException) {
 			statusCode=Status.INTERNAL_SERVER_ERROR.getStatusCode();
 			body=Throwables.getStackTraceAsString(rootCause);

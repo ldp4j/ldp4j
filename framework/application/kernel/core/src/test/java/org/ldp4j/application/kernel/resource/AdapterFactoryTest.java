@@ -54,9 +54,11 @@ import org.ldp4j.application.kernel.session.WriteSessionConfiguration;
 import org.ldp4j.application.kernel.session.WriteSessionService;
 import org.ldp4j.application.session.AttachmentSnapshot;
 import org.ldp4j.application.session.ContainerSnapshot;
+import org.ldp4j.application.session.ReadSession;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.SnapshotVisitor;
 import org.ldp4j.application.session.WriteSession;
+import org.ldp4j.commons.testing.Utils;
 
 @RunWith(JMockit.class)
 public class AdapterFactoryTest {
@@ -79,7 +81,7 @@ public class AdapterFactoryTest {
 		}
 
 		@Override
-		public DataSet query(ResourceSnapshot resource, Query query, WriteSession session) throws ApplicationRuntimeException {
+		public DataSet query(ResourceSnapshot resource, Query query, ReadSession session) throws ApplicationRuntimeException {
 			throw new ApplicationRuntimeException("Failure");
 		}
 
@@ -200,6 +202,11 @@ public class AdapterFactoryTest {
 			throw fail();
 		}
 
+	}
+
+	@Test
+	public void verifyIsUtilityClass() {
+		assertThat(Utils.isUtilityClass(AdapterFactory.class),equalTo(true));
 	}
 
 	@Test
