@@ -37,18 +37,14 @@ import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.application.kernel.spi.ModelFactory;
-import org.ldp4j.application.kernel.template.BasicContainerTemplate;
 import org.ldp4j.application.kernel.template.ContainerTemplate;
-import org.ldp4j.application.kernel.template.DirectContainerTemplate;
-import org.ldp4j.application.kernel.template.IndirectContainerTemplate;
-import org.ldp4j.application.kernel.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.kernel.template.ResourceTemplate;
+import org.ldp4j.application.kernel.template.SimpleTemplateVisitor;
 import org.ldp4j.application.kernel.template.TemplateLibrary;
-import org.ldp4j.application.kernel.template.TemplateVisitor;
 
 final class JPAModelFactory implements ModelFactory {
 
-	private final class RootResourceCreator implements TemplateVisitor {
+	private final class RootResourceCreator extends SimpleTemplateVisitor {
 
 		private final ResourceId id;
 		private JPAResource resource;
@@ -80,38 +76,6 @@ final class JPAModelFactory implements ModelFactory {
 		@Override
 		public void visitContainerTemplate(ContainerTemplate template) {
 			createResource(new JPAContainer(id,null));
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void visitBasicContainerTemplate(BasicContainerTemplate template) {
-			visitContainerTemplate(template);
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void visitMembershipAwareContainerTemplate(MembershipAwareContainerTemplate template) {
-			visitContainerTemplate(template);
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void visitDirectContainerTemplate(DirectContainerTemplate template) {
-			visitContainerTemplate(template);
-		}
-
-		/**
-		 * {@inheritDoc}
-		 */
-		@Override
-		public void visitIndirectContainerTemplate(IndirectContainerTemplate template) {
-			visitContainerTemplate(template);
 		}
 
 	}

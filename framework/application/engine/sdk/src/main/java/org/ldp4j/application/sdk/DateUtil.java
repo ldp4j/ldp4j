@@ -33,7 +33,7 @@ final class DateUtil {
 	private DateUtil() {
 	}
 
-	static Date copy(Date date) {
+	static Date copy(final Date date) {
 		Date tmp=date;
 		if(tmp!=null) {
 			tmp=new Date(tmp.getTime());

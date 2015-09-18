@@ -26,76 +26,45 @@
  */
 package org.ldp4j.application.sdk;
 
-import java.util.Objects;
+import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.ldp4j.application.engine.context.HttpRequest.Header.Element.Parameter;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Map.Entry;
 
-import com.google.common.base.MoreObjects;
+import org.ldp4j.application.ext.Query;
 
-final class ImmutableParameter implements Parameter {
+import com.google.common.collect.LinkedListMultimap;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Maps;
 
-	private static final long serialVersionUID = -7511803578477277362L;
+public final class QueryBuilder {
 
-	private final String name;
-	private final String value;
+	private final ListMultimap<String,Object> parameters;
 
-	ImmutableParameter(String name, String value) {
-		this.name = name;
-		this.value = value;
+	private QueryBuilder() {
+		this.parameters=LinkedListMultimap.create();
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String name() {
-		return this.name;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String value() {
-		return this.value;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public int hashCode() {
-		return
-			Objects.
-				hash(this.name,this.value);
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public boolean equals(Object obj) {
-		boolean result = false;
-		if(obj instanceof Parameter) {
-			Parameter that=(Parameter)obj;
-			result=
-				Objects.equals(this.name,that.name()) &&
-				Objects.equals(this.value,that.value());
+	public Query build() {
+		final Map<String,ImmutableQueryParameter> parameterMap=Maps.newLinkedHashMap();
+		for(Entry<String,Collection<Object>> entry:this.parameters.asMap().entrySet()) {
+			String name = entry.getKey();
+			Collection<Object> rawValues = entry.getValue();
+			parameterMap.put(name,ImmutableQueryParameter.create(name,rawValues));
 		}
-		return result;
+		return ImmutableQuery.create(parameterMap);
 	}
 
-	/**
-	 * {@inheritDoc}
-	 */
-	@Override
-	public String toString() {
-		return
-			MoreObjects.
-				toStringHelper(getClass()).
-					add("name",this.name).
-					add("value",this.value).
-					toString();
+	public QueryBuilder withParameter(String name, Object rawValue) {
+		checkNotNull(name,"Parameter name cannot be null");
+		checkNotNull(rawValue,"Parameter value cannot be null");
+		this.parameters.put(name, rawValue);
+		return this;
+	}
+
+	public static QueryBuilder newInstance() {
+		return new QueryBuilder();
 	}
 
 }

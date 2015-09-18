@@ -34,7 +34,7 @@ import org.ldp4j.application.engine.context.HttpRequest.Header;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-final class ImmutableHeader implements Header {
+public final class ImmutableHeader implements Header {
 
 	private static final long serialVersionUID = 7192427783850618802L;
 

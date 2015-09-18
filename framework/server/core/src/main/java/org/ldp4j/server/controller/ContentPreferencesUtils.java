@@ -26,6 +26,8 @@
  */
 package org.ldp4j.server.controller;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.Set;
@@ -36,8 +38,6 @@ import java.util.regex.Pattern;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.ContentPreferences.ContentPreferencesBuilder;
 import org.ldp4j.application.engine.context.ContentPreferences.Preference;
-
-import static com.google.common.base.Preconditions.*;
 
 final class ContentPreferencesUtils {
 

@@ -31,6 +31,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.Locale;
 
 import org.apache.http.Header;
 import org.apache.http.HttpEntity;
@@ -121,6 +122,8 @@ public final class ServerFrontendTestHelper {
 		public String lastModified;
 		public String location;
 		public int status;
+		public String contentType;
+		public Locale language;
 
 	}
 
@@ -143,6 +146,14 @@ public final class ServerFrontendTestHelper {
 				Header locationHeader = response.getFirstHeader(HttpHeaders.LOCATION);
 				if(locationHeader!=null) {
 					metadata.location=locationHeader.getValue();
+				}
+				Header contentType=response.getFirstHeader(HttpHeaders.CONTENT_TYPE);
+				if(contentType!=null) {
+					metadata.contentType=contentType.getValue();
+				}
+				Header contentLanguage=response.getFirstHeader(HttpHeaders.CONTENT_LANGUAGE);
+				if(contentLanguage!=null) {
+					metadata.language=Locale.forLanguageTag(contentLanguage.getValue());
 				}
 				return responseBody;
 			}

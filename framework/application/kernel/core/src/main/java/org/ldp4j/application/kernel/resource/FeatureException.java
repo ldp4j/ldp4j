@@ -28,40 +28,33 @@ package org.ldp4j.application.kernel.resource;
 
 public class FeatureException extends Exception {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -3427958905010583776L;
 
 	private final String templateId;
 	private final String handlerClassName;
 	private final String featureClassName;
 
+	public FeatureException(String templateId, String handlerClassName, String featureClassName, String message, Throwable cause) {
+		super(message,cause);
+		this.templateId = templateId;
+		this.handlerClassName = handlerClassName;
+		this.featureClassName = featureClassName;
+	}
+
 	public FeatureException(String templateId, String handlerClassName, String featureClassName, String message) {
-		super(message);
-		this.templateId = templateId;
-		this.handlerClassName = handlerClassName;
-		this.featureClassName = featureClassName;
+		this(templateId, handlerClassName, featureClassName, message, null);
 	}
-
-	public FeatureException(String templateId, String handlerClassName, String featureClassName, String message, Throwable t) {
-		super(message,t);
-		this.templateId = templateId;
-		this.handlerClassName = handlerClassName;
-		this.featureClassName = featureClassName;
-	}
-
 
 	public final String getTemplateId() {
-		return templateId;
+		return this.templateId;
 	}
 
 	public final String getHandlerClassName() {
-		return handlerClassName;
+		return this.handlerClassName;
 	}
 
 	public final String getFeatureClassName() {
-		return featureClassName;
+		return this.featureClassName;
 	}
 
 }

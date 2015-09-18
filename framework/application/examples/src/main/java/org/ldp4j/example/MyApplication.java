@@ -54,20 +54,24 @@ public class MyApplication extends Application<Configuration> {
 	private static final String PERSON_CONTAINER_NAME    = "PersonContainer";
 	private static final String PERSON_RESOURCE_NAME     = "PersonResource";
 	private static final String RELATIVE_CONTAINER_NAME  = "RelativeContainer";
+	private static final String QUERYABLE_RESOURCE_NAME  = "QueryableResourceName";
 
 	public static final String ROOT_PERSON_RESOURCE_PATH  = "rootPersonResource/";
 	public static final String ROOT_PERSON_CONTAINER_PATH = "rootPersonContainer/";
+	public static final String ROOT_QUERYABLE_RESOURCE_PATH = "rootQueryableResource/";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(MyApplication.class);
 
 	private final Name<String> personResourceName;
 	private final Name<String> personContainerName;
 	private final Name<String> relativeContainerName;
+	private final Name<String> queryableResourceName;
 
 	public MyApplication() {
 		this.personResourceName = NamingScheme.getDefault().name(PERSON_RESOURCE_NAME);
 		this.personContainerName = NamingScheme.getDefault().name(PERSON_CONTAINER_NAME);
 		this.relativeContainerName = NamingScheme.getDefault().name(RELATIVE_CONTAINER_NAME);
+		this.queryableResourceName = NamingScheme.getDefault().name(QUERYABLE_RESOURCE_NAME);
 	}
 
 	private DataSet getInitialData(String templateId, String name) throws DatatypeConfigurationException {
@@ -93,6 +97,7 @@ public class MyApplication extends Application<Configuration> {
 			PersonHandler resourceHandler = new PersonHandler();
 			PersonContainerHandler containerHandler=new PersonContainerHandler();
 			RelativeContainerHandler relativesHandler=new RelativeContainerHandler();
+			QueryableResourceHandler queryableHandler=new QueryableResourceHandler();
 
 			containerHandler.setHandler(resourceHandler);
 			relativesHandler.setHandler(resourceHandler);
@@ -100,13 +105,17 @@ public class MyApplication extends Application<Configuration> {
 			resourceHandler.add(this.personResourceName, getInitialData(PersonHandler.ID,PERSON_RESOURCE_NAME));
 			containerHandler.add(this.personContainerName, getInitialData(PersonContainerHandler.ID,PERSON_CONTAINER_NAME));
 			relativesHandler.add(this.relativeContainerName, getInitialData(RelativeContainerHandler.ID,RELATIVE_CONTAINER_NAME));
+			queryableHandler.add(this.queryableResourceName, getInitialData(QueryableResourceHandler.ID,QUERYABLE_RESOURCE_NAME));
 
 			bootstrap.addHandler(resourceHandler);
 			bootstrap.addHandler(containerHandler);
 			bootstrap.addHandler(relativesHandler);
+			bootstrap.addHandler(queryableHandler);
 
 			environment.publishResource(this.personResourceName, PersonHandler.class, ROOT_PERSON_RESOURCE_PATH);
 			environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
+			environment.publishResource(this.queryableResourceName, QueryableResourceHandler.class, ROOT_QUERYABLE_RESOURCE_PATH);
+
 			LOGGER.info("Configuration completed.");
 		} catch (DatatypeConfigurationException e) {
 			throw new ApplicationSetupException("Could not setup application",e);

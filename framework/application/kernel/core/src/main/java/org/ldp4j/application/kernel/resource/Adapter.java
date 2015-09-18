@@ -27,6 +27,7 @@
 package org.ldp4j.application.kernel.resource;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.kernel.resource.ResourceId;
 
@@ -35,6 +36,8 @@ interface Adapter {
 	ResourceId resourceId();
 
 	DataSet get() throws FeatureException;
+
+	DataSet query(Query query) throws FeatureException;
 
 	void update(DataSet content) throws FeatureException;
 

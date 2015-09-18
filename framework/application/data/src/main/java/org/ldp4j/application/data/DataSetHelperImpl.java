@@ -124,7 +124,7 @@ final class DataSetHelperImpl extends DataSetHelper {
 
 		@Override
 		public void visitManagedIndividual(ManagedIndividual individual) {
-			this.idInUse=true;
+			this.idInUse=this.id.equals(individual.id());
 		}
 
 		@Override
@@ -188,9 +188,10 @@ final class DataSetHelperImpl extends DataSetHelper {
 
 	@Override
 	public <T extends Serializable, S extends Individual<T, S>>  S replace(Serializable from, T to, Class<? extends S> clazz) {
-		S target=this.dataSet.individual(to, clazz);
+		S target=null;
 		Individual<?, ?> src=this.dataSet.individualOfId(from);
 		if(src!=null) {
+			target=this.dataSet.individual(to, clazz);
 			rename(src,target);
 		}
 		return target;
@@ -248,6 +249,20 @@ final class DataSetHelperImpl extends DataSetHelper {
 	public IndividualHelper localIndividual(Name<?> name) {
 		@SuppressWarnings("rawtypes")
 		LocalIndividual individual = this.dataSet.individual((Name)name, LocalIndividual.class);
+		return new IndividualHelperImpl(individual);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public IndividualHelper externalIndividual(URI uri) {
+		Individual<?, ?> individual=null;
+		if(uri.isAbsolute()) {
+			individual=this.dataSet.individual(uri, ExternalIndividual.class);
+		} else {
+			individual=this.dataSet.individual(uri, NewIndividual.class);
+		}
 		return new IndividualHelperImpl(individual);
 	}
 

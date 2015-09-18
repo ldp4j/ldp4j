@@ -45,7 +45,7 @@ import com.google.common.collect.ImmutableList.Builder;
 
 final class TripleResolver {
 
-	static class TripleResolverBuilder {
+	static final class TripleResolverBuilder {
 
 		private final class ImmutableTripleResolution implements TripleResolution {
 

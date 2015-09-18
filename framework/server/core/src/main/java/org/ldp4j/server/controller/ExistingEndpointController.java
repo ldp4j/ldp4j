@@ -32,6 +32,7 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.ws.rs.WebApplicationException;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -54,6 +55,9 @@ import org.ldp4j.application.engine.context.UnsupportedInteractionModelException
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.InvalidContentException;
+import org.ldp4j.application.ext.InvalidQueryException;
+import org.ldp4j.application.ext.Parameter;
+import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.application.vocabulary.LDP;
@@ -86,9 +90,7 @@ final class ExistingEndpointController implements EndpointController {
 	private static final Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
 
 	ExistingEndpointController() {
-
 	}
-
 
 	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {
 		PublicResource resource = context.resource();
@@ -144,16 +146,19 @@ final class ExistingEndpointController implements EndpointController {
 			checkOperationSupport().
 			checkPreconditions();
 
-		Response response=tryQuery(context,includeEntity,variant);
-		if(response!=null) {
-			return response;
+		Response response=null;
+		Query query = context.getQuery();
+		if(!query.isEmpty()) {
+			response=handleQuery(context,includeEntity,variant,query);
+		} else {
+			response=handleRetrieval(context,includeEntity,variant,query);
 		}
 
-		return handleRetrieval(context, includeEntity, variant);
+		return response;
 
 	}
 
-	private Response handleRetrieval(OperationContext context, boolean includeEntity, Variant variant) {
+	private Response handleRetrieval(OperationContext context, boolean includeEntity, Variant variant, Query query) {
 		try {
 			PublicResource resource=context.resource();
 			ContentPreferences preferences=context.contentPreferences();
@@ -168,7 +173,10 @@ final class ExistingEndpointController implements EndpointController {
 					LOGGER.debug("No preferences specified");
 				}
 			}
-			DataSet entity=resource.entity(preferences);
+			DataSet entity=
+				query.isEmpty()?
+					resource.entity(preferences):
+					resource.query(query, preferences);
 
 			LOGGER.trace("Data set to serialize: \n {}",entity);
 
@@ -180,7 +188,7 @@ final class ExistingEndpointController implements EndpointController {
 					NamespacesHelper.
 						resourceNamespaces(context.applicationNamespaces()));
 
-			return createReatrievalResponse(context,variant,hasPreferences,preferences, includeEntity, body);
+			return createReatrievalResponse(context,variant,hasPreferences,preferences,includeEntity,body,query);
 		} catch (ApplicationExecutionException e) {
 			return processExecutionException(context, e);
 		} catch (ApplicationContextException e) {
@@ -188,10 +196,10 @@ final class ExistingEndpointController implements EndpointController {
 		}
 	}
 
-
 	private Response createReatrievalResponse(OperationContext context,
 			Variant variant, boolean hasPreferences,
-			ContentPreferences preferences, boolean includeEntity, String entity) {
+			ContentPreferences preferences, boolean includeEntity,
+			String entity, Query query) {
 		ResponseBuilder builder=Response.serverError();
 		builder.variant(variant);
 		if(hasPreferences) {
@@ -204,6 +212,15 @@ final class ExistingEndpointController implements EndpointController {
 		if(includeEntity) {
 			builder.entity(entity);
 		}
+		if(!query.isEmpty()) {
+			builder.
+				header(
+					HttpHeaders.LINK,
+					EndpointControllerUtils.
+						createQueryOfLink(
+							context.base().resolve(context.path()),
+							query));
+		}
 		return builder.build();
 	}
 
@@ -211,15 +228,12 @@ final class ExistingEndpointController implements EndpointController {
 		return context.serialize(entity,namespaces,variant.getMediaType());
 	}
 
-	private Response tryQuery(OperationContext context, boolean includeEntity, Variant variant) {
-		if(!context.isQuery()) {
-			return null;
-		}
+	private Response handleQuery(OperationContext context, boolean includeEntity, Variant variant, Query query) {
 		Response response=null;
-		List<String> allParameters = context.getQueryParameters();
-		if(allParameters.contains(CONSTRAINT_QUERY_PARAMETER)) {
-			if(allParameters.size()==1) {
-				response=processConstraintReportRetrieval(context,includeEntity,variant);
+		if(query.hasParameter(CONSTRAINT_QUERY_PARAMETER)) {
+			if(query.size()==1) {
+				Parameter parameter=query.getParameter(CONSTRAINT_QUERY_PARAMETER);
+				response=processConstraintReportRetrieval(context,includeEntity,variant,parameter);
 			} else {
 				ResponseBuilder builder=
 						Response.
@@ -230,45 +244,45 @@ final class ExistingEndpointController implements EndpointController {
 				addRequiredHeaders(context, builder);
 				response=builder.build();
 			}
+		} else if(!context.isResourceQueryable()) {
+			ResponseBuilder builder=
+					Response.
+						status(Status.FORBIDDEN).
+						type(MediaType.TEXT_PLAIN).
+						language(Locale.ENGLISH).
+						entity("Resource cannot be queried");
+			addRequiredHeaders(context, builder);
+			response=builder.build();
 		} else {
-			response=processQuery(context,includeEntity,variant);
+			if(LOGGER.isDebugEnabled()) {
+				LOGGER.debug("Executing query: ");
+				for(String parameter:query.parameterNames()) {
+					LOGGER.debug("  - {} : {}",parameter,query.getParameter(parameter).rawValues());
+				}
+			}
+			response=handleRetrieval(context,includeEntity,variant,query);
 		}
 		return response;
 	}
 
-
-	private Response processConstraintReportRetrieval(OperationContext context, boolean includeEntity, Variant variant) {
-		List<String> constraintIds=context.getQueryParameterValues(CONSTRAINT_QUERY_PARAMETER);
+	private Response processConstraintReportRetrieval(OperationContext context, boolean includeEntity, Variant variant, Parameter parameter) {
 		Response response=null;
-		if(constraintIds.size()==1) {
-			response=processConstraintReportRetrieval(context,includeEntity,variant,constraintIds.get(0));
+		if(parameter.cardinality()==1) {
+			response=handleConstraintReportRetrieval(context,includeEntity,variant,parameter.rawValue());
 		} else {
 			ResponseBuilder builder=
 				Response.
 					status(Status.BAD_REQUEST).
 					type(MediaType.TEXT_PLAIN).
 					language(Locale.ENGLISH).
-					entity("Only one constraint identifier allowed");
+					entity("Only one constraint report identifier is allowed");
 			addRequiredHeaders(context, builder);
 			response=builder.build();
 		}
 		return response;
 	}
 
-	/**
-	 * TODO: Decouple processing whenever the support for queries is available
-	 */
-	private Response processQuery(OperationContext context, boolean includeEntity, Variant variant) {
-		if(LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Executing query: ");
-			for(String parameter:context.getQueryParameters()) {
-				LOGGER.debug("  - {} : {}",parameter,context.getQueryParameterValues(parameter));
-			}
-		}
-		return handleRetrieval(context, includeEntity, variant);
-	}
-
-	private Response processConstraintReportRetrieval(OperationContext context, boolean includeEntity, Variant variant, String constraintReportId) {
+	private Response handleConstraintReportRetrieval(OperationContext context, boolean includeEntity, Variant variant, String constraintReportId) {
 		try {
 			PublicResource resource=context.resource();
 			if(LOGGER.isDebugEnabled()) {
@@ -279,10 +293,10 @@ final class ExistingEndpointController implements EndpointController {
 			if(report==null) {
 				ResponseBuilder builder=
 					Response.
-						status(Status.BAD_REQUEST).
+						status(Status.NOT_FOUND).
 						type(MediaType.TEXT_PLAIN).
 						language(Locale.ENGLISH).
-						entity("Unknown constraints '"+constraintReportId+"'");
+						entity("Unknown constraint report '"+constraintReportId+"'");
 				addRequiredHeaders(context, builder);
 				return builder.build();
 			}
@@ -338,13 +352,21 @@ final class ExistingEndpointController implements EndpointController {
 				body=Throwables.getStackTraceAsString(rootCause);
 			}
 			if(ice.getConstraintsId()==null) {
-				LOGGER.error("No constraints identifier defined. Full stacktrace follows",exception);
+				LOGGER.error("No constraint report identifier defined. Full stacktrace follows",exception);
 				throw new WebApplicationException(Status.INTERNAL_SERVER_ERROR.getStatusCode());
 			}
-			builder.header("Link",EndpointControllerUtils.createLink(context.base()+context.path()+"?ldp:constrainedBy="+ice.getConstraintsId(), LDP.CONSTRAINED_BY.qualifiedEntityName()));
+			builder.header(
+				HttpHeaders.LINK,
+				EndpointControllerUtils.
+					createLink(
+						context.base()+context.path()+"?ldp:constrainedBy="+ice.getConstraintsId(),
+						LDP.CONSTRAINED_BY.qualifiedEntityName()));
 		} else if (rootCause instanceof UnknownResourceException) {
 			statusCode=Status.NOT_FOUND.getStatusCode();
 			body="Resource not found";
+		} else if (rootCause instanceof InvalidQueryException) {
+			statusCode=Status.BAD_REQUEST.getStatusCode();
+			body="Invalid query: "+rootCause.getMessage();
 		} else if (rootCause instanceof ApplicationRuntimeException) {
 			statusCode=Status.INTERNAL_SERVER_ERROR.getStatusCode();
 			body=Throwables.getStackTraceAsString(rootCause);
@@ -448,7 +470,12 @@ final class ExistingEndpointController implements EndpointController {
 			checkPreconditions();
 
 		// Fail as we do not support PATCH yet
-		ResponseBuilder builder=Response.serverError();
+		ResponseBuilder builder=
+				Response.
+				status(Status.METHOD_NOT_ALLOWED).
+				type(MediaType.TEXT_PLAIN).
+				language(Locale.ENGLISH).
+				entity("Patch is not supported");
 		addRequiredHeaders(context, builder);
 		return builder.build();
 	}

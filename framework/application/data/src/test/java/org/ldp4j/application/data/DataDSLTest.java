@@ -29,6 +29,8 @@ package org.ldp4j.application.data;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.ldp4j.application.data.IndividualReference.external;
+import static org.ldp4j.application.data.IndividualReference.managed;
 import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference;
 
 import java.net.URI;
@@ -38,11 +40,49 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.RDF;
+import org.ldp4j.commons.testing.Utils;
 
-public class DataDSLTest {
+public class DataDSLTest extends DataTestingSupport {
 
 	private static final String TEMPLATE_ID = "template";
 	private static final String READ_ONLY_PROPERTY = "my:property";
+
+	@Test
+	public void verifyIsUtilityClass() {
+		assertThat(Utils.isUtilityClass(DataDSL.class),equalTo(true));
+	}
+
+	@Test
+	public void testDSL() {
+		DataSet data=
+		DataDSL.
+		dataSet().
+			individual(id("root")).
+				hasProperty(predicate("dataTypePropertyWithMultipleValues")).
+					withValue("1").
+					withValue("2").
+				hasLink(predicate("objectPropertyWithMultipleReferralsAfterDatatypeProperty")).
+					referringTo(external(EXTERNAL)).
+					referringTo(managed(RESOURCE_NAME,MANAGER_ID)).
+				hasProperty(predicate("dataTypePropertyWithMultipleValuesAfterObjectPropertyWithMultipleReferralsAfterDatatypeProperty")).
+					withValue("3").
+					withValue("4").
+				hasProperty(predicate("dataTypePropertyWithMultipleValuesAfterDataTypePropertyWithMultipleValuesAfterObjectPropertyWithMultipleReferralsAfterDatatypeProperty")).
+					withValue("5").
+					withValue("6").
+				hasLink(predicate("toIndividualAfterReferring")).
+					referringTo(external(EXTERNAL)).
+					toIndividual(external(EXTERNAL)).
+						hasLink(predicate("hasLink")).
+							referringTo(managed(RESOURCE_NAME,MANAGER_ID)).
+				hasLink(predicate("toIndividualWithoutReferring")).
+					toIndividual(external(EXTERNAL)).
+						hasLink(predicate("hasLink")).
+							referringTo(managed(RESOURCE_NAME,MANAGER_ID)).
+			build();
+		System.out.println(data);
+
+	}
 
 	@Test
 	public void testDataDSL() {

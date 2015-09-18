@@ -37,6 +37,7 @@ import org.ldp4j.application.engine.context.ApplicationExecutionException;
 import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
+import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.resource.ResourceId;
 
@@ -65,6 +66,11 @@ final class DefaultGonePublicResource extends DefaultPublicResource {
 
 	@Override
 	public DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException {
+		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
+	}
+
+	@Override
+	public DataSet query(Query query, ContentPreferences contentPreferences) throws ApplicationExecutionException {
 		throw new UnsupportedOperationException(THE_ENDPOINT_IS_GONE);
 	}
 

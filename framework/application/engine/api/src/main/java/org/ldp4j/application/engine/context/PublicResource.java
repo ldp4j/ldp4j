@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.ext.Query;
 
 public interface PublicResource extends PublicEndpoint {
 
@@ -38,6 +39,8 @@ public interface PublicResource extends PublicEndpoint {
 	Map<String, PublicResource> attachments();
 
 	DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException;
+
+	DataSet query(Query query, ContentPreferences contentPreferences) throws ApplicationExecutionException;
 
 	void modify(DataSet dataSet) throws ApplicationExecutionException;
 

@@ -42,7 +42,7 @@ final class HttpRequestFactory {
 	private HttpRequestFactory() {
 	}
 
-	static final HttpRequest create(HttpMethod method, UriInfo uriInfo, HttpHeaders headers, String entity) {
+	static HttpRequest create(HttpMethod method, UriInfo uriInfo, HttpHeaders headers, String entity) {
 		HttpRequestBuilder builder=
 			HttpRequestBuilder.
 				newInstance().

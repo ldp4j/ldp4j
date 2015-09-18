@@ -31,6 +31,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -124,12 +125,12 @@ public final class ValidationConstraintFactory {
 
 		private final Object individualId;
 		private final URI predicate;
-		private final Collection<? extends Value> values;
+		private final Collection<Value> values;
 
 		private MandatoryPropertyValuesValidationConstraint(Object individualId, URI predicate, Collection<? extends Value> values) {
 			this.individualId = individualId;
 			this.predicate = predicate;
-			this.values = values;
+			this.values = Collections.unmodifiableCollection(values);
 		}
 
 		private MandatoryPropertyValuesValidationConstraint(Object individualId, URI predicate, Value... values) {
@@ -155,7 +156,7 @@ public final class ValidationConstraintFactory {
 			checkRemovedValues(property, log);
 		}
 
-		protected final Collection<? extends Value> constrainedValues() {
+		protected final Collection<Value> constrainedValues() {
 			return this.values;
 		}
 

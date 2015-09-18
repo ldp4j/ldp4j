@@ -58,6 +58,8 @@ public abstract class DataSetHelper {
 
 	public abstract <T extends Individual<URI,T>> T relative(URI path);
 
+	public abstract IndividualHelper externalIndividual(URI uri);
+
 	public abstract IndividualHelper managedIndividual(Name<?> name, String managerId);
 
 	public abstract IndividualHelper relativeIndividual(Name<?> name, String managerId, URI path);

@@ -30,6 +30,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import org.ldp4j.application.ext.Namespaces;
@@ -73,8 +74,11 @@ public final class ImmutableNamespaces implements Namespaces {
 	 *            the namespace URI to be mapped to the prefix
 	 * @return a copy of the instance that includes the mapping between the
 	 *         specified namespace URI and prefix.
+	 * @throws NullPointerException if the prefix or namespace URI are null.
 	 */
 	public ImmutableNamespaces withPrefix(String prefix, String namespaceURI) {
+		Objects.requireNonNull(prefix, "Prefix cannot be null");
+		Objects.requireNonNull(namespaceURI, "Namespace URI cannot be null");
 		ImmutableNamespaces result=new ImmutableNamespaces(this.map);
 		result.map.put(prefix, namespaceURI);
 		return result;
@@ -109,8 +113,7 @@ public final class ImmutableNamespaces implements Namespaces {
 	 */
 	@Override
 	public String getNamespaceURI(String prefix) {
-		Object namespaceURI=this.map.get(prefix);
-		return namespaceURI==null?null:namespaceURI.toString();
+		return this.map.get(prefix);
 	}
 
 	/**

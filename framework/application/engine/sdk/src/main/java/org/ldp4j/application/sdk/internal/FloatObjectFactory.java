@@ -20,27 +20,36 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0-SNAPSHOT
- *   Bundle      : ldp4j-application-kernel-core-0.2.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-sdk:0.2.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-engine-sdk-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.kernel;
+package org.ldp4j.application.sdk.internal;
 
-import java.net.URI;
 
-import org.junit.Test;
+import org.ldp4j.application.sdk.spi.ObjectFactory;
+import org.ldp4j.application.sdk.spi.ObjectParseException;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
 
-public class URLTest {
+public class FloatObjectFactory implements ObjectFactory<Float> {
 
-	@Test
-	public void testEncoding() {
-		String query = "ldp:constrainedBy=123213123";
-		URI create=URI.create("http://www.host.org/api/res/0/?"+query);
-		assertThat(create.getQuery(),equalTo(query));
-		assertThat(create.getRawQuery(),equalTo(query));
+	@Override
+	public Class<? extends Float> targetClass() {
+		return Float.class;
+	}
+
+	@Override
+	public Float fromString(String rawValue) {
+		try {
+			return Float.parseFloat(rawValue);
+		} catch (NumberFormatException e) {
+			throw new ObjectParseException(e,Float.class,rawValue);
+		}
+	}
+
+	@Override
+	public String toString(Float value) {
+		return value.toString();
 	}
 
 }
