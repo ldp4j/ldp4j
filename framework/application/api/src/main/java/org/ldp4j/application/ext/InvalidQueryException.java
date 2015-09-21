@@ -34,10 +34,9 @@ package org.ldp4j.application.ext;
  */
 public class InvalidQueryException extends ApplicationUsageException {
 
-	private static final long serialVersionUID = 954186954933177034L;
+	private static final long serialVersionUID = 954186954933177035L;
 
 	private final Query query;
-
 
 	/**
 	 * Create a new instance with a message, a cause, and a query.

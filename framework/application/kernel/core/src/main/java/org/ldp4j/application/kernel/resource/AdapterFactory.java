@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.kernel.resource;
 
+import org.ldp4j.application.ApplicationApiRuntimeException;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.ext.ApplicationException;
 import org.ldp4j.application.ext.ContainerHandler;
@@ -100,7 +101,7 @@ final class AdapterFactory {
 		public final DataSet get() throws FeatureException {
 			try {
 				return this.delegate.get(resource());
-			} catch (ApplicationException e) {
+			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,ResourceHandler.class);
 			} finally {
 				finalizeSession();
@@ -111,7 +112,7 @@ final class AdapterFactory {
 		public final DataSet query(Query query) throws FeatureException {
 			try {
 				return as(Queryable.class).query(resource(), query, writeSession());
-			} catch (ApplicationException e) {
+			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,Queryable.class);
 			} finally {
 				finalizeSession();
@@ -122,7 +123,7 @@ final class AdapterFactory {
 		public final void update(DataSet content) throws FeatureException {
 			try {
 				as(Modifiable.class).update(resource(), content, writeSession());
-			} catch (ApplicationException e) {
+			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,Modifiable.class);
 			} finally {
 				finalizeSession();
@@ -133,7 +134,7 @@ final class AdapterFactory {
 		public final void delete() throws FeatureException {
 			try {
 				as(Deletable.class).delete(resource(),writeSession());
-			} catch (ApplicationException e) {
+			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,Deletable.class);
 			} finally {
 				finalizeSession();
@@ -163,7 +164,7 @@ final class AdapterFactory {
 			try {
 				ResourceSnapshot create = as(ContainerHandler.class).create(resource(),content,writeSession());
 				return detach(create);
-			} catch (ApplicationException e) {
+			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,ContainerHandler.class);
 			} finally {
 				finalizeSession();

@@ -26,6 +26,8 @@
  */
 package org.ldp4j.application.ext;
 
+import org.ldp4j.application.ApplicationApiRuntimeException;
+
 /**
  * This exception is thrown when a parameter raw value cannot be transformed to
  * an instance of a given type.
@@ -33,9 +35,9 @@ package org.ldp4j.application.ext;
  * @see Parameter#rawValueAs(Class)
  * @see Parameter#rawValuesAs(Class)
  */
-public class ObjectTransformationException extends RuntimeException {
+public class ObjectTransformationException extends ApplicationApiRuntimeException {
 
-	private static final long serialVersionUID = 1526607378071322728L;
+	private static final long serialVersionUID = 1526607378071322725L;
 
 	private final Class<?> valueClass;
 

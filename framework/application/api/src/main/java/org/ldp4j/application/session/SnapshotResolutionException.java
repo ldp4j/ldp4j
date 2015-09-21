@@ -26,7 +26,9 @@
  */
 package org.ldp4j.application.session;
 
-public class SnapshotResolutionException extends RuntimeException {
+import org.ldp4j.application.ApplicationApiRuntimeException;
+
+public class SnapshotResolutionException extends ApplicationApiRuntimeException {
 
 	private static final long serialVersionUID = -4416573669573189974L;
 

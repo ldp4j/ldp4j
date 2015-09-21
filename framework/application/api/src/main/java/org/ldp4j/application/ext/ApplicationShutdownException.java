@@ -26,23 +26,44 @@
  */
 package org.ldp4j.application.ext;
 
+/**
+ * This exception may be thrown by an LDP4j Application if any failure prevents
+ * the shutdown of the application.
+ */
 public class ApplicationShutdownException extends ApplicationLifecycleException {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 1517147774180322641L;
+	private static final long serialVersionUID = 1517147774180322645L;
 
+	/**
+	 * Create a new instance with a message and a cause.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationShutdownException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
+	/**
+	 * Create a new instance with a message.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 */
 	public ApplicationShutdownException(String message) {
-		super(message);
+		this(message,null);
 	}
 
+	/**
+	 * Create a new instance with a cause and a default message.
+	 *
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationShutdownException(Throwable cause) {
-		super(cause);
+		this("Unexpected application shutdown exception",cause);
 	}
 
 }

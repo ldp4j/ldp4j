@@ -26,21 +26,45 @@
  */
 package org.ldp4j.application.ext;
 
+import org.ldp4j.application.ApplicationApiRuntimeException;
 
-public class ApplicationRuntimeException extends ApplicationException {
+/**
+ * Base unchecked exception for the LDP4j Application exceptions.
+ */
+public class ApplicationRuntimeException extends ApplicationApiRuntimeException {
 
-	private static final long serialVersionUID = -8352522362783716804L;
+	private static final long serialVersionUID = -8352522362783716805L;
 
-	public ApplicationRuntimeException(String message) {
-		super(message);
-	}
-
-	public ApplicationRuntimeException(Throwable cause) {
-		super(cause);
-	}
-
+	/**
+	 * Create a new instance with a message and a cause.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationRuntimeException(String message, Throwable cause) {
 		super(message, cause);
+	}
+
+	/**
+	 * Create a new instance with a message.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 */
+	public ApplicationRuntimeException(String message) {
+		this(message,null);
+	}
+
+	/**
+	 * Create a new instance with a cause and a default message.
+	 *
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
+	public ApplicationRuntimeException(Throwable cause) {
+		this("Unexpected application runtime exception",cause);
 	}
 
 }

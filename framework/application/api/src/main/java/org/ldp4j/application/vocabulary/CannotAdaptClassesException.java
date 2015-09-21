@@ -26,11 +26,14 @@
  */
 package org.ldp4j.application.vocabulary;
 
-public class CannotAdaptClassesException extends RuntimeException {
+import org.ldp4j.application.ApplicationApiRuntimeException;
 
-	/**
-	 * 
-	 */
+/**
+ * This exception may be thrown by a {@code Term} when an given instance cannot
+ * be adapted to a specific type.
+ */
+public class CannotAdaptClassesException extends ApplicationApiRuntimeException {
+
 	private static final long serialVersionUID = 6745735287272528660L;
 
 	public CannotAdaptClassesException(String message) {

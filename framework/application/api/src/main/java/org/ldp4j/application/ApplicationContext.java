@@ -29,8 +29,6 @@ package org.ldp4j.application;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.IOException;
-
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;

@@ -26,13 +26,13 @@
  */
 package org.ldp4j.application.session;
 
-import org.ldp4j.application.ext.ApplicationException;
+import org.ldp4j.application.ApplicationApiException;
 
 /**
  * This exception may be thrown by a {@code ReadSession} if it cannot be
  * terminated properly.
  */
-public class SessionTerminationException extends ApplicationException {
+public class SessionTerminationException extends ApplicationApiException {
 
 	private static final long serialVersionUID = 222770561146501724L;
 
