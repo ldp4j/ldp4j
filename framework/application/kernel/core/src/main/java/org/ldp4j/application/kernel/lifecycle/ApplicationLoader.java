@@ -42,9 +42,13 @@ import org.ldp4j.application.kernel.transaction.Transaction;
 import org.ldp4j.application.kernel.transaction.TransactionManager;
 import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 final class ApplicationLoader<T extends Configuration> {
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(ApplicationLoader.class);
 
 	private final Class<? extends Application<T>> appClass;
 	private final TransactionManager transactionManager;
@@ -123,22 +127,35 @@ final class ApplicationLoader<T extends Configuration> {
 						WriteSessionConfiguration.
 							builder().
 								build());
+			Throwable failure=null;
 			try {
 				application.initialize(session);
 			} catch (ApplicationInitializationException e) {
-				throw new ApplicationConfigurationException(e);
+				failure=e;
 			} finally {
-				try {
-					session.close();
-				} catch (SessionTerminationException e) {
-					throw new ApplicationConfigurationException(e);
-				}
+				failure=closeQuietly(session, failure);
+			}
+			if(failure!=null) {
+				throw new ApplicationConfigurationException(failure);
 			}
 		} finally {
 			if(transaction.isActive()) {
 				transaction.rollback();
 			}
 		}
+	}
+
+	private Throwable closeQuietly(WriteSession session, Throwable failure) {
+		Throwable result=failure;
+		try {
+			session.close();
+		} catch (SessionTerminationException e) {
+			LOGGER.error("Could not terminate session",e);
+			if(result==null) {
+				result=e;
+			}
+		}
+		return result;
 	}
 
 	private void setup(Application<T> application) throws ApplicationConfigurationException {

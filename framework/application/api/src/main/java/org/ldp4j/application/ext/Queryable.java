@@ -56,6 +56,6 @@ public interface Queryable {
 	 *             representation.
 	 */
 	DataSet query(ResourceSnapshot resource, Query query, ReadSession session)
-				throws UnknownResourceException, InvalidQueryException, ApplicationRuntimeException;
+				throws UnknownResourceException, InvalidQueryException;
 
 }

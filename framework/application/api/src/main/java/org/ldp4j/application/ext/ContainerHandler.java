@@ -62,6 +62,6 @@ public interface ContainerHandler extends ResourceHandler {
 	 *             resource.
 	 */
 	ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session)
-			throws UnknownResourceException, UnsupportedContentException, ApplicationRuntimeException;
+			throws UnknownResourceException, UnsupportedContentException;
 
 }

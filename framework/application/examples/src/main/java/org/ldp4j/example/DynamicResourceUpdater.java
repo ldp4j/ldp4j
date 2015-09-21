@@ -42,6 +42,8 @@ import org.slf4j.LoggerFactory;
 
 final class DynamicResourceUpdater implements Runnable {
 
+	static final URI REFRESHED_ON = URI.create("http://www.ldp4j.org/ns#refreshedOn");
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(MyApplication.class);
 
 	private DynamicResourceHandler handler;
@@ -58,7 +60,7 @@ final class DynamicResourceUpdater implements Runnable {
 		Date date = new Date();
 		LOGGER.debug("Starting update process on {}...",date);
 		try(WriteSession session = ctx.createSession()) {
-			ResourceSnapshot snapshot = session.find(ResourceSnapshot.class, this.name,DynamicResourceHandler.class);
+			ResourceSnapshot snapshot = session.find(ResourceSnapshot.class,this.name,DynamicResourceHandler.class);
 			DataSet dataSet = this.handler.get(snapshot);
 			Individual<?,?> individual =
 				dataSet.
@@ -67,7 +69,7 @@ final class DynamicResourceUpdater implements Runnable {
 							createId(this.name, DynamicResourceHandler.ID));
 			individual.
 				addValue(
-					URI.create("http://www.ldp4j.org/ns#refreshedOn"),
+					REFRESHED_ON,
 					Literals.of(date).dateTime());
 			this.handler.update(this.name, dataSet);
 			session.modify(snapshot);
