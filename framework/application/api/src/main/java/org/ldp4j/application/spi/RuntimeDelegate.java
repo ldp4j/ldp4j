@@ -301,11 +301,6 @@ public abstract class RuntimeDelegate {
 		}
 
 		@Override
-		public void terminateSession(WriteSession session) throws ApplicationContextException {
-			throw new UnsupportedOperationException(ERROR_MESSAGE);
-		}
-
-		@Override
 		public ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session) {
 			throw new UnsupportedOperationException(ERROR_MESSAGE);
 		}
@@ -315,8 +310,6 @@ public abstract class RuntimeDelegate {
 	public abstract boolean isOffline();
 
 	public abstract WriteSession createSession() throws ApplicationContextException;
-
-	public abstract void terminateSession(WriteSession session) throws ApplicationContextException;
 
 	public abstract ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session);
 

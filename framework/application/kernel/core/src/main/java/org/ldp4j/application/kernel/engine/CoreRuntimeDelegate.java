@@ -163,16 +163,10 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 								build());
 			Transaction transaction=transactionManager().currentTransaction();
 			transaction.begin();
-			return new TransactionalWriteSession(transaction, delegate, sessionService);
+			return new TransactionalWriteSession(transaction,delegate);
 		} catch (ApplicationEngineException e) {
 			throw new ApplicationContextException("Could not create session",e);
 		}
-	}
-
-	@Override
-	public void terminateSession(WriteSession session) throws ApplicationContextException {
-		TransactionalWriteSession tSession=(TransactionalWriteSession)session;
-		tSession.terminate();
 	}
 
 	@Override

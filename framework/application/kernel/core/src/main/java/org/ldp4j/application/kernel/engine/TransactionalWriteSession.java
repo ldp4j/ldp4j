@@ -26,10 +26,11 @@
  */
 package org.ldp4j.application.kernel.engine;
 
+import java.io.IOException;
+
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
-import org.ldp4j.application.kernel.session.WriteSessionService;
 import org.ldp4j.application.kernel.transaction.Transaction;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
@@ -41,44 +42,77 @@ final class TransactionalWriteSession implements WriteSession {
 
 	private final Transaction transaction;
 	private final WriteSession delegate;
-	private final WriteSessionService sessionService;
 
-	TransactionalWriteSession(Transaction transaction, WriteSession delegate, WriteSessionService sessionService) {
+	TransactionalWriteSession(Transaction transaction, WriteSession delegate) {
 		this.transaction = transaction;
 		this.delegate = delegate;
-		this.sessionService = sessionService;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <S extends ResourceSnapshot> S find(Class<? extends S> snapshotClass, Name<?> id, Class<? extends ResourceHandler> handlerClass) {
 		return this.delegate.find(snapshotClass, id, handlerClass);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <S extends ResourceSnapshot> S resolve(Class<? extends S> snapshotClass, Individual<?, ?> individual) {
 		return this.delegate.resolve(snapshotClass, individual);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void modify(ResourceSnapshot resource) {
 		this.delegate.modify(resource);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void delete(ResourceSnapshot resource) {
 		this.delegate.delete(resource);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void saveChanges() throws WriteSessionException {
 		this.delegate.saveChanges();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void discardChanges() throws WriteSessionException {
 		this.delegate.discardChanges();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void close() throws IOException {
+		try {
+			this.delegate.close();
+		} finally {
+			if(this.transaction.isActive()) {
+				this.transaction.rollback();
+			}
+		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return
@@ -89,13 +123,4 @@ final class TransactionalWriteSession implements WriteSession {
 					toString();
 	}
 
-	void terminate() {
-		try {
-			this.sessionService.terminateSession(this.delegate);
-		} finally {
-			if(this.transaction.isActive()) {
-				this.transaction.rollback();
-			}
-		}
-	}
 }

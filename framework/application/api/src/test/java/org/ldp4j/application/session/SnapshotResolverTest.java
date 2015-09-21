@@ -53,10 +53,6 @@ public class SnapshotResolverTest {
 		}
 
 		@Override
-		public void terminateSession(WriteSession session) throws ApplicationContextException {
-		}
-
-		@Override
 		public boolean isOffline() {
 			return false;
 		}

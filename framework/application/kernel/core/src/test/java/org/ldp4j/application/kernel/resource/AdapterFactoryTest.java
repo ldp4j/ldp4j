@@ -31,10 +31,12 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.util.Set;
 
 import mockit.Expectations;
 import mockit.Mocked;
+import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 
 import org.junit.Test;
@@ -59,6 +61,7 @@ import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.SnapshotVisitor;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.commons.testing.Utils;
+import org.mockito.internal.verification.VerificationDataImpl;
 
 @RunWith(JMockit.class)
 public class AdapterFactoryTest {
@@ -210,130 +213,136 @@ public class AdapterFactoryTest {
 	}
 
 	@Test
-	public void adapterExposesResourceIdentifier(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration) throws Exception {
-		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), new FailingHandler());
+	public void adapterExposesResourceIdentifier(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration, final @Mocked WriteSession session) throws Exception {
+		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), new FailingHandler(),session);
 		assertThat(adapter.resourceId(),equalTo(ResourceId.createId(resourceName(), templateId())));
 	}
 
 	@Test
-	public void createdAdapterFailsOnInternalGetFailure(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration) throws Exception {
-		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), new FailingHandler());
+	public void createdAdapterFailsOnInternalGetFailure(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration, final @Mocked WriteSession session) throws Exception {
+		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), new FailingHandler(),session);
 		try {
 			adapter.get();
 			fail("Should fail if an exception is thrown on get");
 		} catch(FeatureException e) {
-			verifyExpectedFeatureFailure(e, ResourceHandler.class);
+			verifyExpectedFeatureFailure(e, ResourceHandler.class, session);
 		}
 	}
 
 	@Test
-	public void createdAdapterFailsOnInternalQueryFailure(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration) throws Exception {
-		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), new FailingHandler());
+	public void createdAdapterFailsOnInternalQueryFailure(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration, final @Mocked WriteSession session) throws Exception {
+		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), new FailingHandler(),session);
 		try {
 			adapter.query(null);
 			fail("Should fail if an exception is thrown on query");
 		} catch(FeatureException e) {
-			verifyExpectedFeatureFailure(e, Queryable.class);
+			verifyExpectedFeatureFailure(e, Queryable.class, session);
 		}
 	}
 
 	@Test
-	public void createdAdapterFailsOnInternalUpdateFailure(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration) throws Exception {
-		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), new FailingHandler());
+	public void createdAdapterFailsOnInternalUpdateFailure(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration, final @Mocked WriteSession session) throws Exception {
+		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), new FailingHandler(),session);
 		try {
 			adapter.update(null);
 			fail("Should fail if an exception is thrown on update");
 		} catch(FeatureException e) {
-			verifyExpectedFeatureFailure(e, Modifiable.class);
+			verifyExpectedFeatureFailure(e, Modifiable.class, session);
 		}
 	}
 
 	@Test
-	public void createdAdapterFailsOnInternalDeleteFailure(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration) throws Exception {
-		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), new FailingHandler());
+	public void createdAdapterFailsOnInternalDeleteFailure(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration, final @Mocked WriteSession session) throws Exception {
+		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), new FailingHandler(),session);
 		try {
 			adapter.delete();
 			fail("Should fail if an exception is thrown on delete");
 		} catch(FeatureException e) {
-			verifyExpectedFeatureFailure(e, Deletable.class);
+			verifyExpectedFeatureFailure(e, Deletable.class, session);
 		}
 	}
 
 	@Test
-	public void createdAdapterFailsOnInternalCreateFailure(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration) throws Exception {
-		Adapter adapter=prepareAdapter(resource, service,configuration, new MockContainerSnapshot(), new FailingHandler());
+	public void createdAdapterFailsOnInternalCreateFailure(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration, final @Mocked WriteSession session) throws Exception {
+		Adapter adapter=prepareAdapter(resource, service,configuration, new MockContainerSnapshot(), new FailingHandler(),session);
 		try {
 			adapter.create(null);
 			fail("Should fail if an exception is thrown on create");
 		} catch(FeatureException e) {
-			verifyExpectedFeatureFailure(e, ContainerHandler.class);
+			verifyExpectedFeatureFailure(e, ContainerHandler.class, session);
 		}
 	}
 
 	@Test
-	public void creationOnResourceSnapshotFails(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration) throws Exception {
-		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), new FailingHandler());
+	public void creationOnResourceSnapshotFails(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration, final @Mocked WriteSession session) throws Exception {
+		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), new FailingHandler(),session);
 		try {
 			adapter.create(null);
 			fail("Should fail if an exception is thrown on create");
 		} catch(UnsupportedFeatureException e) {
-			verifyExpectedFeatureException(e, ContainerHandler.class, FailingHandler.class);
+			verifyExpectedFeatureException(e, ContainerHandler.class, FailingHandler.class, session);
 		}
 	}
 
 	@Test
-	public void createdAdapterFailsOnQueryIfHandlerIsNotQueryable(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration) throws Exception {
-		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), simpleHandler());
+	public void createdAdapterFailsOnQueryIfHandlerIsNotQueryable(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration, final @Mocked WriteSession session) throws Exception {
+		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), simpleHandler(),session);
 		try {
 			adapter.query(null);
 			fail("Should fail if an exception is thrown on query");
 		} catch(FeatureException e) {
-			verifyExpectedFeatureException(e, Queryable.class, SimpleHandler.class);
+			verifyExpectedFeatureException(e, Queryable.class, SimpleHandler.class, session);
 		}
 	}
 
 	@Test
-	public void createdAdapterFailsOnUpdateIfHandlerIsNotModifiable(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration) throws Exception {
-		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), simpleHandler());
+	public void createdAdapterFailsOnUpdateIfHandlerIsNotModifiable(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration, final @Mocked WriteSession session) throws Exception {
+		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), simpleHandler(),session);
 		try {
 			adapter.update(null);
 			fail("Should fail if an exception is thrown on update");
 		} catch(FeatureException e) {
-			verifyExpectedFeatureException(e, Modifiable.class, SimpleHandler.class);
+			verifyExpectedFeatureException(e, Modifiable.class, SimpleHandler.class, session);
 		}
 	}
 
 	@Test
-	public void createdAdapterFailsOnDeleteIfHandlerIsNotDeletable(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration) throws Exception {
-		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), simpleHandler());
+	public void createdAdapterFailsOnDeleteIfHandlerIsNotDeletable(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration, final @Mocked WriteSession session) throws Exception {
+		Adapter adapter=prepareAdapter(resource, service,configuration, new MockResourceSnapshot(), simpleHandler(),session);
 		try {
 			adapter.delete();
 			fail("Should fail if an exception is thrown on delete");
 		} catch(FeatureException e) {
-			verifyExpectedFeatureException(e, Deletable.class, SimpleHandler.class);
+			verifyExpectedFeatureException(e, Deletable.class, SimpleHandler.class, session);
 		}
 	}
 
 	@Test
-	public void createdAdapterFailsOnCreateIfHandlerIsNotAContainerHandler(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration) throws Exception {
-		Adapter adapter=prepareAdapter(resource, service,configuration, new MockContainerSnapshot(), simpleHandler());
+	public void createdAdapterFailsOnCreateIfHandlerIsNotAContainerHandler(final @Mocked Resource resource, final @Mocked WriteSessionService service, final @Mocked WriteSessionConfiguration configuration, final @Mocked WriteSession session) throws Exception {
+		Adapter adapter=prepareAdapter(resource, service,configuration, new MockContainerSnapshot(), simpleHandler(),session);
 		try {
 			adapter.create(null);
 			fail("Should fail if an exception is thrown on create");
 		} catch(FeatureException e) {
-			verifyExpectedFeatureException(e, ContainerHandler.class, SimpleHandler.class);
+			verifyExpectedFeatureException(e, ContainerHandler.class, SimpleHandler.class, session);
 		}
 	}
 
-	private void verifyExpectedFeatureFailure(FeatureException failure, Class<?> featureClass) {
+	private void verifyExpectedFeatureFailure(FeatureException failure, Class<?> featureClass, WriteSession session) {
 		assertThat(failure.getCause(),instanceOf(ApplicationRuntimeException.class));
-		verifyExpectedFeatureException(failure, featureClass, FailingHandler.class);
+		verifyExpectedFeatureException(failure, featureClass, FailingHandler.class,session);
 	}
 
-	private void verifyExpectedFeatureException(FeatureException failure, Class<?> featureClass, Class<?> handlerClass) {
+	private void verifyExpectedFeatureException(FeatureException failure, Class<?> featureClass, Class<?> handlerClass, final WriteSession session) {
 		assertThat(failure.getFeatureClassName(),equalTo(featureClass.getCanonicalName()));
 		assertThat(failure.getHandlerClassName(),equalTo(handlerClass.getCanonicalName()));
 		assertThat(failure.getTemplateId(),equalTo(templateId()));
+		try {
+			new Verifications() {{
+				session.close();
+			}};
+		} catch (IOException e) {
+		}
 	}
 
 	private Adapter prepareAdapter(
@@ -341,9 +350,10 @@ public class AdapterFactoryTest {
 			final WriteSessionService service,
 			final WriteSessionConfiguration configuration,
 			final ResourceSnapshot snapshot,
-			final ResourceHandler handler) {
+			final ResourceHandler handler,
+			final WriteSession session) {
 		new Expectations() {{
-			service.createSession(configuration);result=null;
+			service.createSession(configuration);result=session;
 			resource.id();result=ResourceId.createId(resourceName(), templateId());
 			service.attach((WriteSession)any,resource,handler.getClass());result=snapshot;
 		}};

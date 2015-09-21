@@ -20,22 +20,41 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0-SNAPSHOT
- *   Bundle      : ldp4j-application-api-0.2.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.session;
+package org.ldp4j.application.kernel.resource;
 
-import java.io.Closeable;
+/**
+ * This exception may be thrown by the {@code ResourceControllerService} if the
+ * the session used for executing the requested operation could not be
+ * terminated properly after the execution of the operation.
+ */
+public class CouldNotTerminateSessionException extends RuntimeException {
 
-import org.ldp4j.application.data.Individual;
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.ext.ResourceHandler;
+	private static final long serialVersionUID = -7399479410873878744L;
 
-public interface ReadSession extends Closeable {
+	/**
+	 * Create a new instance with a message and a cause.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
+	public CouldNotTerminateSessionException(String message, Throwable cause) {
+		super(message, cause);
+	}
 
-	<S extends ResourceSnapshot> S find(Class<? extends S> snapshotClass, Name<?> id, Class<? extends ResourceHandler> handlerClass);
-
-	<S extends ResourceSnapshot> S resolve(Class<? extends S> snapshotClass, Individual<?,?> individual);
+	/**
+	 * Create a new instance with a cause.
+	 *
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
+	public CouldNotTerminateSessionException(Throwable cause) {
+		this("Could not terminate session",cause);
+	}
 
 }

@@ -26,6 +26,8 @@
  */
 package org.ldp4j.application.kernel.resource;
 
+import java.io.IOException;
+
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.ext.ApplicationException;
 import org.ldp4j.application.ext.ContainerHandler;
@@ -79,7 +81,11 @@ final class AdapterFactory {
 		}
 
 		protected final void finalizeSession() {
-			this.service.terminateSession(this.session);
+			try {
+				this.session.close();
+			} catch (IOException e) {
+				throw new CouldNotTerminateSessionException(e);
+			}
 		}
 
 		protected final Resource detach(ResourceSnapshot snapshot) {

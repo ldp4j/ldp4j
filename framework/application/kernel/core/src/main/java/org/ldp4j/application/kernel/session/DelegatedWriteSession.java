@@ -30,6 +30,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -259,6 +260,9 @@ final class DelegatedWriteSession implements WriteSession {
 		return clazz.cast(newSnapshot);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <S extends ResourceSnapshot> S find(
 			Class<? extends S> snapshotClass,
@@ -277,6 +281,9 @@ final class DelegatedWriteSession implements WriteSession {
 		return snapshotClass.cast(resource);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <S extends ResourceSnapshot> S resolve(
 			final Class<? extends S> snapshotClass,
@@ -292,6 +299,9 @@ final class DelegatedWriteSession implements WriteSession {
 		return result;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void modify(ResourceSnapshot resource) {
 		checkNotNull(resource,RESOURCE_CANNOT_BE_NULL);
@@ -301,6 +311,9 @@ final class DelegatedWriteSession implements WriteSession {
 		delegatedResource.modify();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void delete(ResourceSnapshot resource) {
 		checkNotNull(resource,RESOURCE_CANNOT_BE_NULL);
@@ -310,6 +323,9 @@ final class DelegatedWriteSession implements WriteSession {
 		delegatedResource.delete();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void saveChanges() throws WriteSessionException {
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,this.status);
@@ -321,11 +337,22 @@ final class DelegatedWriteSession implements WriteSession {
 		this.writeSessionService.commitSession(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void discardChanges() throws WriteSessionException {
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,this.status);
 		this.status=Status.ABORTED;
 		this.writeSessionService.rollbackSession(this);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void close() throws IOException {
+		this.writeSessionService.terminateSession(this);
 	}
 
 }

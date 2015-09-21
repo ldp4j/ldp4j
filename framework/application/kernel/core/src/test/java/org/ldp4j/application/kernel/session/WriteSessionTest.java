@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -153,7 +154,7 @@ public class WriteSessionTest {
 	}
 
 	@Test
-	public void testSession() throws WriteSessionException {
+	public void testSession() throws Exception {
 		Resource rootResource = initialize();
 
 		// BEGIN First interaction
@@ -320,11 +321,11 @@ public class WriteSessionTest {
 		logAction(Stage.HANDLING,action,resource);
 	}
 
-	private void terminateSession(Action action, ResourceSnapshot resource) throws WriteSessionException {
+	private void terminateSession(Action action, ResourceSnapshot resource) throws WriteSessionException, IOException {
 		logAction(Stage.TERMINATION,action,resource);
 		this.uow.accept(new UnitOfWorkInspector());
 		this.sut.saveChanges();
-		this.writeSessionService.terminateSession(this.sut);
+		this.sut.close();
 		assertThat(transaction.isActive(),equalTo(false));
 	}
 

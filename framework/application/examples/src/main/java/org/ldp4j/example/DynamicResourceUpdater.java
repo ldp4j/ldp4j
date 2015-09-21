@@ -57,26 +57,21 @@ final class DynamicResourceUpdater implements Runnable {
 		ApplicationContext ctx = ApplicationContext.getInstance();
 		Date date = new Date();
 		LOGGER.debug("Starting update process on {}...",date);
-		try {
-			WriteSession session = ctx.createSession();
-			try {
-				ResourceSnapshot snapshot = session.find(ResourceSnapshot.class, this.name,DynamicResourceHandler.class);
-				DataSet dataSet = this.handler.get(snapshot);
-				Individual<?,?> individual =
-					dataSet.
-						individualOfId(
-							ManagedIndividualId.
-								createId(this.name, DynamicResourceHandler.ID));
-				individual.
-					addValue(
-						URI.create("http://www.ldp4j.org/ns#refreshedOn"),
-						Literals.of(date).dateTime());
-				this.handler.update(this.name, dataSet);
-				session.modify(snapshot);
-				session.saveChanges();
-			} finally {
-				ctx.disposeSession(session);
-			}
+		try(WriteSession session = ctx.createSession()) {
+			ResourceSnapshot snapshot = session.find(ResourceSnapshot.class, this.name,DynamicResourceHandler.class);
+			DataSet dataSet = this.handler.get(snapshot);
+			Individual<?,?> individual =
+				dataSet.
+					individualOfId(
+						ManagedIndividualId.
+							createId(this.name, DynamicResourceHandler.ID));
+			individual.
+				addValue(
+					URI.create("http://www.ldp4j.org/ns#refreshedOn"),
+					Literals.of(date).dateTime());
+			this.handler.update(this.name, dataSet);
+			session.modify(snapshot);
+			session.saveChanges();
 		} catch (Exception e) {
 			LOGGER.error("Could not update resource",e);
 		} finally {
