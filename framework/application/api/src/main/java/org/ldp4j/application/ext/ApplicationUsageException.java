@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.ext;
 
+
 public abstract class ApplicationUsageException extends ApplicationException {
 
 	/**

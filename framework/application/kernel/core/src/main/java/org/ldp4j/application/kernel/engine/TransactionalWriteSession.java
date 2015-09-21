@@ -26,13 +26,12 @@
  */
 package org.ldp4j.application.kernel.engine;
 
-import java.io.IOException;
-
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.kernel.transaction.Transaction;
 import org.ldp4j.application.session.ResourceSnapshot;
+import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 
@@ -100,7 +99,7 @@ final class TransactionalWriteSession implements WriteSession {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void close() throws IOException {
+	public void close() throws SessionTerminationException {
 		try {
 			this.delegate.close();
 		} finally {

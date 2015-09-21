@@ -26,8 +26,6 @@
  */
 package org.ldp4j.application.kernel.lifecycle;
 
-import java.io.IOException;
-
 import org.ldp4j.application.engine.ApplicationConfigurationException;
 import org.ldp4j.application.engine.ApplicationContextBootstrapException;
 import org.ldp4j.application.ext.Application;
@@ -42,6 +40,7 @@ import org.ldp4j.application.kernel.spi.RuntimeDelegate;
 import org.ldp4j.application.kernel.template.TemplateManagementService;
 import org.ldp4j.application.kernel.transaction.Transaction;
 import org.ldp4j.application.kernel.transaction.TransactionManager;
+import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
 
 
@@ -131,7 +130,7 @@ final class ApplicationLoader<T extends Configuration> {
 			} finally {
 				try {
 					session.close();
-				} catch (IOException e) {
+				} catch (SessionTerminationException e) {
 					throw new ApplicationConfigurationException(e);
 				}
 			}

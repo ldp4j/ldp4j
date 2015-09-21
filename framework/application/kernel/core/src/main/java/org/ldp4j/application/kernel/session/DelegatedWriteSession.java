@@ -30,7 +30,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
-import java.io.IOException;
 import java.net.URI;
 import java.util.Date;
 import java.util.LinkedHashMap;
@@ -50,6 +49,7 @@ import org.ldp4j.application.kernel.template.ResourceTemplate;
 import org.ldp4j.application.kernel.template.TemplateIntrospector;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
+import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.slf4j.Logger;
@@ -351,7 +351,7 @@ final class DelegatedWriteSession implements WriteSession {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public void close() throws IOException {
+	public void close() throws SessionTerminationException {
 		this.writeSessionService.terminateSession(this);
 	}
 

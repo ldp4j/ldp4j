@@ -31,7 +31,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.fail;
 
-import java.io.IOException;
 import java.util.Set;
 
 import mockit.Expectations;
@@ -61,7 +60,6 @@ import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.SnapshotVisitor;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.commons.testing.Utils;
-import org.mockito.internal.verification.VerificationDataImpl;
 
 @RunWith(JMockit.class)
 public class AdapterFactoryTest {
@@ -341,7 +339,7 @@ public class AdapterFactoryTest {
 			new Verifications() {{
 				session.close();
 			}};
-		} catch (IOException e) {
+		} catch (Exception e) {
 		}
 	}
 

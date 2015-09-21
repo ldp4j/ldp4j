@@ -35,6 +35,7 @@ import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.session.ResourceSnapshot;
+import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.application.spi.RuntimeDelegate;
@@ -133,7 +134,7 @@ public final class ApplicationContext {
 		 * {@inheritDoc}
 		 */
 		@Override
-		public void close() throws IOException {
+		public void close() throws SessionTerminationException {
 			try {
 				clearSession(this);
 				if(!this.dispossed) {
@@ -142,7 +143,7 @@ public final class ApplicationContext {
 					this.nativeSession.close();
 				}
 			} catch (ApplicationContextException e) {
-				throw new IOException("Could not close session",e);
+				throw new SessionTerminationException("Could not close native session",e);
 			}
 		}
 
@@ -234,7 +235,7 @@ public final class ApplicationContext {
 		clearSession(session);
 		try {
 			session.close();
-		} catch (IOException e) {
+		} catch (SessionTerminationException e) {
 			throw new ApplicationContextException("Could not close session",e);
 		}
 	}

@@ -32,7 +32,6 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
-import java.io.IOException;
 import java.util.Arrays;
 import java.util.Date;
 
@@ -48,11 +47,6 @@ import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.impl.InMemoryRuntimeDelegate;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.kernel.service.ServiceRegistry;
-import org.ldp4j.application.kernel.session.DelegatedContainerSnapshot;
-import org.ldp4j.application.kernel.session.DelegatedResourceSnapshot;
-import org.ldp4j.application.kernel.session.UnitOfWork;
-import org.ldp4j.application.kernel.session.WriteSessionConfiguration;
-import org.ldp4j.application.kernel.session.WriteSessionService;
 import org.ldp4j.application.kernel.session.UnitOfWork.Visitor;
 import org.ldp4j.application.kernel.spi.ModelFactory;
 import org.ldp4j.application.kernel.spi.RuntimeDelegate;
@@ -61,7 +55,6 @@ import org.ldp4j.application.kernel.transaction.Transaction;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
-import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.example.AddressHandler;
 import org.ldp4j.example.BookContainerHandler;
 import org.ldp4j.example.BookHandler;
@@ -321,7 +314,7 @@ public class WriteSessionTest {
 		logAction(Stage.HANDLING,action,resource);
 	}
 
-	private void terminateSession(Action action, ResourceSnapshot resource) throws WriteSessionException, IOException {
+	private void terminateSession(Action action, ResourceSnapshot resource) throws Exception {
 		logAction(Stage.TERMINATION,action,resource);
 		this.uow.accept(new UnitOfWorkInspector());
 		this.sut.saveChanges();

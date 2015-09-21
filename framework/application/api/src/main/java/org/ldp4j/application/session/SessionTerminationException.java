@@ -24,23 +24,48 @@
  *   Bundle      : ldp4j-application-api-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.ext;
+package org.ldp4j.application.session;
 
+import org.ldp4j.application.ext.ApplicationException;
 
-public class ApplicationRuntimeException extends ApplicationException {
+/**
+ * This exception may be thrown by a {@code ReadSession} if it cannot be
+ * terminated properly.
+ */
+public class SessionTerminationException extends ApplicationException {
 
-	private static final long serialVersionUID = -8352522362783716804L;
+	private static final long serialVersionUID = 222770561146501724L;
 
-	public ApplicationRuntimeException(String message) {
-		super(message);
-	}
-
-	public ApplicationRuntimeException(Throwable cause) {
-		super(cause);
-	}
-
-	public ApplicationRuntimeException(String message, Throwable cause) {
+	/**
+	 * Create a new instance with a message and a cause.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
+	public SessionTerminationException(String message, Throwable cause) {
 		super(message, cause);
+	}
+
+	/**
+	 * Create a new instance with a message.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 */
+	public SessionTerminationException(String message) {
+		this(message,null);
+	}
+
+	/**
+	 * Create a new instance with a cause.
+	 *
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
+	public SessionTerminationException(Throwable cause) {
+		this("Could not terminate session",cause);
 	}
 
 }

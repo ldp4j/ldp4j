@@ -26,16 +26,17 @@
  */
 package org.ldp4j.application.session;
 
-import java.io.Closeable;
-
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
 
-public interface ReadSession extends Closeable {
+public interface ReadSession extends AutoCloseable {
 
 	<S extends ResourceSnapshot> S find(Class<? extends S> snapshotClass, Name<?> id, Class<? extends ResourceHandler> handlerClass);
 
 	<S extends ResourceSnapshot> S resolve(Class<? extends S> snapshotClass, Individual<?,?> individual);
+
+	@Override
+	void close() throws SessionTerminationException;
 
 }
