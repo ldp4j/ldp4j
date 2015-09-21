@@ -20,23 +20,22 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-conformance-fixture:0.2.0-SNAPSHOT
- *   Bundle      : ldp4j-conformance-fixture-0.2.0-SNAPSHOT.war
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.conformance.fixture;
+package org.ldp4j.application.session;
 
-import org.ldp4j.application.ext.annotations.Resource;
+public class SnapshotResolutionException extends RuntimeException {
 
-@Resource(
-	id=TCKFDynamicResourceHandler.ID
-)
-public class TCKFDynamicResourceHandler extends InMemoryResourceHandler {
+	private static final long serialVersionUID = -4416573669573189974L;
 
-	public static final String ID="DynamicResourceHandler";
+	public SnapshotResolutionException(String message) {
+		super(message);
+	}
 
-	public TCKFDynamicResourceHandler() {
-		super(ID);
+	public SnapshotResolutionException(String message, Throwable cause) {
+		super(message, cause);
 	}
 
 }

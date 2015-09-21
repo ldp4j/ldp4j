@@ -65,6 +65,8 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 
 	private TransactionManager transactionManager;
 
+	private DefaultApplicationContext activeContext;
+
 	public DefaultApplicationEngine() {
 	}
 
@@ -136,6 +138,10 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		}
 	}
 
+	DefaultApplicationContext activeContext() {
+		return this.activeContext;
+	}
+
 	WriteSessionService writeSessionService() {
 		return this.writeSessionService;
 	}
@@ -156,6 +162,10 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		return this.resourceControllerService;
 	}
 
+	TransactionManager transactionManager() {
+		return this.transactionManager;
+	}
+
 	private static final class DefaultApplicationContextManager extends ApplicationContextManager<DefaultApplicationContext> {
 
 		private final DefaultApplicationEngine defaultApplicationEngine;
@@ -169,6 +179,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 		protected DefaultApplicationContext createContext(String applicationClassName) throws ApplicationContextCreationException {
 			DefaultApplicationContext currentContext=new DefaultApplicationContext(this.defaultApplicationEngine);
 			currentContext.initialize(applicationClassName);
+			this.defaultApplicationEngine.activeContext=currentContext;
 			return currentContext;
 		}
 
@@ -177,6 +188,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 			try {
 				this.defaultApplicationEngine.applicationLifecycleService().shutdown();
 				applicationContext.shutdown();
+				this.defaultApplicationEngine.activeContext=null;
 				return this.defaultApplicationEngine.applicationLifecycleService().isShutdown();
 			} catch (ApplicationShutdownException e) {
 				throw new ApplicationContextTerminationException(e);
@@ -225,10 +237,6 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 	@Override
 	protected ApplicationContextManager<DefaultApplicationContext> applicationContextManager() {
 		return new DefaultApplicationContextManager(this);
-	}
-
-	TransactionManager transactionManager() {
-		return this.transactionManager;
 	}
 
 }

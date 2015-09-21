@@ -28,7 +28,11 @@ package org.ldp4j.example;
 
 import static org.ldp4j.application.data.IndividualReferenceBuilder.newReference;
 
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.util.Date;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 
@@ -49,16 +53,20 @@ import org.ldp4j.application.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+
 public class MyApplication extends Application<Configuration> {
 
 	private static final String PERSON_CONTAINER_NAME    = "PersonContainer";
 	private static final String PERSON_RESOURCE_NAME     = "PersonResource";
 	private static final String RELATIVE_CONTAINER_NAME  = "RelativeContainer";
-	private static final String QUERYABLE_RESOURCE_NAME  = "QueryableResourceName";
+	private static final String QUERYABLE_RESOURCE_NAME  = "QueryableResource";
+	private static final String DYNAMIC_RESOURCE_NAME    = "DynamicResource";
 
-	public static final String ROOT_PERSON_RESOURCE_PATH  = "rootPersonResource/";
-	public static final String ROOT_PERSON_CONTAINER_PATH = "rootPersonContainer/";
+	public static final String ROOT_PERSON_RESOURCE_PATH    = "rootPersonResource/";
+	public static final String ROOT_PERSON_CONTAINER_PATH   = "rootPersonContainer/";
 	public static final String ROOT_QUERYABLE_RESOURCE_PATH = "rootQueryableResource/";
+	public static final String ROOT_DYNAMIC_RESOURCE_PATH   = "rootDynamicResource/";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(MyApplication.class);
 
@@ -66,12 +74,17 @@ public class MyApplication extends Application<Configuration> {
 	private final Name<String> personContainerName;
 	private final Name<String> relativeContainerName;
 	private final Name<String> queryableResourceName;
+	private final Name<String> dynamicResourceName;
+
+	private DynamicResourceHandler dynamicResourceHandler;
+	private ScheduledExecutorService executorService;
 
 	public MyApplication() {
 		this.personResourceName = NamingScheme.getDefault().name(PERSON_RESOURCE_NAME);
 		this.personContainerName = NamingScheme.getDefault().name(PERSON_CONTAINER_NAME);
 		this.relativeContainerName = NamingScheme.getDefault().name(RELATIVE_CONTAINER_NAME);
 		this.queryableResourceName = NamingScheme.getDefault().name(QUERYABLE_RESOURCE_NAME);
+		this.dynamicResourceName = NamingScheme.getDefault().name(DYNAMIC_RESOURCE_NAME);
 	}
 
 	private DataSet getInitialData(String templateId, String name) throws DatatypeConfigurationException {
@@ -98,6 +111,7 @@ public class MyApplication extends Application<Configuration> {
 			PersonContainerHandler containerHandler=new PersonContainerHandler();
 			RelativeContainerHandler relativesHandler=new RelativeContainerHandler();
 			QueryableResourceHandler queryableHandler=new QueryableResourceHandler();
+			this.dynamicResourceHandler = new DynamicResourceHandler();
 
 			containerHandler.setHandler(resourceHandler);
 			relativesHandler.setHandler(resourceHandler);
@@ -106,16 +120,33 @@ public class MyApplication extends Application<Configuration> {
 			containerHandler.add(this.personContainerName, getInitialData(PersonContainerHandler.ID,PERSON_CONTAINER_NAME));
 			relativesHandler.add(this.relativeContainerName, getInitialData(RelativeContainerHandler.ID,RELATIVE_CONTAINER_NAME));
 			queryableHandler.add(this.queryableResourceName, getInitialData(QueryableResourceHandler.ID,QUERYABLE_RESOURCE_NAME));
+			this.dynamicResourceHandler.add(this.dynamicResourceName, getInitialData(DynamicResourceHandler.ID,DYNAMIC_RESOURCE_NAME));
 
 			bootstrap.addHandler(resourceHandler);
 			bootstrap.addHandler(containerHandler);
 			bootstrap.addHandler(relativesHandler);
 			bootstrap.addHandler(queryableHandler);
+			bootstrap.addHandler(this.dynamicResourceHandler);
 
 			environment.publishResource(this.personResourceName, PersonHandler.class, ROOT_PERSON_RESOURCE_PATH);
 			environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
 			environment.publishResource(this.queryableResourceName, QueryableResourceHandler.class, ROOT_QUERYABLE_RESOURCE_PATH);
+			environment.publishResource(this.dynamicResourceName, DynamicResourceHandler.class, ROOT_DYNAMIC_RESOURCE_PATH);
 
+			this.executorService =
+				Executors.
+					newScheduledThreadPool(
+						1,
+						new ThreadFactoryBuilder().
+							setNameFormat("daemon-updater-thread-%d").
+							setUncaughtExceptionHandler(
+								new UncaughtExceptionHandler() {
+									@Override
+									public void uncaughtException(Thread t, Throwable e) {
+										LOGGER.error(String.format("Thread %s died",t.getName()),e);
+									}
+								}).
+							build());
 			LOGGER.info("Configuration completed.");
 		} catch (DatatypeConfigurationException e) {
 			throw new ApplicationSetupException("Could not setup application",e);
@@ -136,12 +167,32 @@ public class MyApplication extends Application<Configuration> {
 		} catch (WriteSessionException e) {
 			throw new ApplicationInitializationException("Could not initialize application",e);
 		}
+		this.executorService.
+		scheduleAtFixedRate(
+			new DynamicResourceUpdater(this.dynamicResourceHandler,this.dynamicResourceName),
+			1,
+			15,TimeUnit.SECONDS);
+		this.executorService.
+			schedule(
+				new DynamicResourceResolver(this.dynamicResourceHandler,this.dynamicResourceName),
+				3,TimeUnit.SECONDS);
 		LOGGER.info("Initialization completed.");
 	}
 
 	@Override
 	public void shutdown() {
-		LOGGER.info("Shutting down application");
+		LOGGER.info("Shutting down application...");
+		this.executorService.shutdown();
+		boolean finished=this.executorService.isTerminated();
+		while(!finished) {
+			try {
+				this.executorService.awaitTermination(100, TimeUnit.MILLISECONDS);
+				finished=this.executorService.isTerminated();
+			} catch (InterruptedException e) {
+				finished=true;
+			}
+		}
+		LOGGER.info("Shutdown completed.");
 	}
 
 }

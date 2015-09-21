@@ -32,12 +32,14 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.ReflectPermission;
+import java.net.URI;
 import java.util.Properties;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.ApplicationContextException;
+import org.ldp4j.application.session.ReadSession;
 import org.ldp4j.application.session.WriteSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -303,6 +305,11 @@ public abstract class RuntimeDelegate {
 			throw new UnsupportedOperationException(ERROR_MESSAGE);
 		}
 
+		@Override
+		public ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session) {
+			throw new UnsupportedOperationException(ERROR_MESSAGE);
+		}
+
 	}
 
 	public abstract boolean isOffline();
@@ -311,5 +318,6 @@ public abstract class RuntimeDelegate {
 
 	public abstract void terminateSession(WriteSession session) throws ApplicationContextException;
 
+	public abstract ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session);
 
 }

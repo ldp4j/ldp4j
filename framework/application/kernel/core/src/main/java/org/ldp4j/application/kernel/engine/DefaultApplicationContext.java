@@ -217,9 +217,9 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	private PublicResource resolveResource(final String path) {
 		checkNotNull(path,"Endpoint path cannot be null");
 		Endpoint endpoint=
-				engine().
-					endpointManagementService().
-						resolveEndpoint(path);
+			engine().
+				endpointManagementService().
+					resolveEndpoint(path);
 		return this.factory.createResource(endpoint);
 	}
 

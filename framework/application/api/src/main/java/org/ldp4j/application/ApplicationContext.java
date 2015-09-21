@@ -26,6 +26,9 @@
  */
 package org.ldp4j.application;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -35,8 +38,6 @@ import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.application.spi.RuntimeDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.google.common.base.Preconditions.*;
 
 
 /**
@@ -159,7 +160,9 @@ public final class ApplicationContext {
 			if(this.delegate.isOffline()) {
 				throw failure(null,"The Application Engine is off-line");
 			}
-			return new SafeWriteSession(this.delegate.createSession());
+			SafeWriteSession session = new SafeWriteSession(this.delegate.createSession());
+			this.session.set(session);
+			return session;
 		} catch (UnsupportedOperationException e) {
 			throw failure(e,"No Application Engine is available");
 		}
@@ -183,14 +186,13 @@ public final class ApplicationContext {
 	 */
 	public void disposeSession(WriteSession session) throws ApplicationContextException {
 		checkNotNull(session,"Session cannot be null");
-		checkArgument(session instanceof SafeWriteSession,"Unknown session");
 		if(this.session.get()!=session) {
 			throw failure(null,"Session '%s' is not owned by current thread",session);
 		}
+		this.session.remove();
 		SafeWriteSession safeWriteSession = (SafeWriteSession)session;
 		safeWriteSession.dispose();
 	}
-
 
 	/**
 	 * Get the Application context.

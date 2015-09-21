@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
@@ -40,6 +41,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Link;
 
@@ -73,10 +75,12 @@ import org.junit.runner.RunWith;
 import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.sdk.QueryBuilder;
+import org.ldp4j.commons.testing.categories.DEBUG;
 import org.ldp4j.commons.testing.categories.ExceptionPath;
 import org.ldp4j.commons.testing.categories.HappyPath;
 import org.ldp4j.commons.testing.categories.LDP;
 import org.ldp4j.commons.testing.categories.Setup;
+import org.ldp4j.example.DynamicResourceResolver;
 import org.ldp4j.example.MyApplication;
 import org.ldp4j.example.QuerySupport;
 import org.ldp4j.server.controller.EndpointControllerUtils;
@@ -87,6 +91,7 @@ import org.ldp4j.server.testing.TestingUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Stopwatch;
 import com.jayway.restassured.response.Response;
 
 @RunWith(Arquillian.class)
@@ -95,6 +100,8 @@ public class ServerFrontendITest {
 	private static final String NL = System.getProperty("line.separator");
 
 	private static ServerFrontendTestHelper HELPER;
+
+	private static Stopwatch WATCH;
 
 	private static final String EXAMPLE_BODY =
 		"@prefix sav : <http://test/vocab#> ."+NL+
@@ -128,6 +135,7 @@ public class ServerFrontendITest {
 	@BeforeClass
 	public static void setUpClass() throws Exception {
 		HELPER=new ServerFrontendTestHelper(LOGGER);
+		WATCH=Stopwatch.createStarted();
 	}
 
 	@AfterClass
@@ -727,6 +735,33 @@ public class ServerFrontendITest {
 				get(path);
 		assertThat(response.getHeader("Link"),containsString(link));
 		LOGGER.info("Completed {}",pName);
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testDynamicResourceHandler(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		while(WATCH.elapsed(TimeUnit.SECONDS)<10) {
+
+		}
+
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_DYNAMIC_RESOURCE_PATH,HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(OK));
+		assertThat(getResponse.body,notNullValue());
+		assertThat(getResponse.contentType,equalTo(TEXT_TURTLE));
+
+		DynamicResponseHelper helper = new DynamicResponseHelper(url,MyApplication.ROOT_DYNAMIC_RESOURCE_PATH,getResponse.body);
+		assertThat(helper.getUpdates(),not(hasSize(0)));
+		assertThat(helper.getResolution(),equalTo(DynamicResourceResolver.CANONICAL_BASE.resolve(MyApplication.ROOT_DYNAMIC_RESOURCE_PATH).toString()));
+		assertThat(helper.getRoundtrip(),equalTo("OK"));
 	}
 
 	private static final String TEXT_TURTLE = "text/turtle";
