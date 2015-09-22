@@ -133,16 +133,12 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public void close() throws SessionTerminationException {
-			try {
-				clearSession(this);
-				if(!this.dispossed) {
-					this.dispossed=true;
-					ApplicationContext.this.session.remove();
-					this.nativeSession.close();
-				}
-			} catch (ApplicationContextException e) {
-				throw new SessionTerminationException("Could not close native session",e);
+			if(this.dispossed) {
+				return;
 			}
+			clearSession(this);
+			this.dispossed=true;
+			this.nativeSession.close();
 		}
 
 	}
@@ -171,21 +167,12 @@ public final class ApplicationContext {
 		return new ApplicationContextException(message,cause);
 	}
 
-	/**
-	 * Dispose a {@code WriteSession}. Once the session has been disposed it
-	 * will not be active (usable) any longer.
-	 *
-	 * @param session
-	 *            the session to be disposed
-	 * @throws ApplicationContextException
-	 *             if the session cannot be disposed, e.g., the session is not
-	 *             owned by the current thread.
-	 */
-	private void clearSession(WriteSession session) throws ApplicationContextException {
-		if(this.session.get()!=session) {
-			throw failure(null,"Session '%s' is not owned by current thread",session);
+	private boolean clearSession(WriteSession session) {
+		boolean result = this.session.get()==session;
+		if(result) {
+			this.session.remove();
 		}
-		this.session.remove();
+		return result;
 	}
 
 	/**
@@ -201,16 +188,16 @@ public final class ApplicationContext {
 		if(this.session.get()!=null) {
 			throw failure(null,"Thread already has an active session");
 		}
-		try {
-			if(this.delegate.isOffline()) {
-				throw failure(null,"The Application Engine is off-line");
-			}
-			SafeWriteSession safeSession = new SafeWriteSession(this.delegate.createSession());
-			this.session.set(safeSession);
-			return safeSession;
-		} catch (UnsupportedOperationException e) {
-			throw failure(e,"No Application Engine is available");
+		if(this.delegate.isOffline()) {
+			throw failure(null,"The Application Engine is off-line");
 		}
+		WriteSession nativeSession=this.delegate.createSession();
+		if(nativeSession==null) {
+			throw failure(null,"Could not create native write session");
+		}
+		SafeWriteSession safeSession = new SafeWriteSession(nativeSession);
+		this.session.set(safeSession);
+		return safeSession;
 	}
 
 
@@ -230,11 +217,13 @@ public final class ApplicationContext {
 	@Deprecated
 	public void disposeSession(WriteSession session) throws ApplicationContextException {
 		checkNotNull(session,"Session cannot be null");
-		clearSession(session);
+		if(!clearSession(session)) {
+			throw failure(null,"Session '%s' is not owned by the current thread",session);
+		}
 		try {
 			session.close();
 		} catch (SessionTerminationException e) {
-			throw new ApplicationContextException("Could not close session",e);
+			throw failure(e,"Could not close session '%X'",session.hashCode());
 		}
 	}
 
