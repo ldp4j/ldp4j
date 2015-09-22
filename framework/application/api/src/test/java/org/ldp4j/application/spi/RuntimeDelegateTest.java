@@ -27,20 +27,25 @@
 package org.ldp4j.application.spi;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
 
-import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.PrintStream;
 import java.lang.reflect.ReflectPermission;
 import java.net.URI;
 import java.security.Permission;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 
 import mockit.Mock;
 import mockit.MockUp;
@@ -48,9 +53,7 @@ import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -60,7 +63,6 @@ import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 
 import com.google.common.collect.Lists;
-import com.google.common.io.Files;
 
 @RunWith(JMockit.class)
 public class RuntimeDelegateTest {
@@ -72,8 +74,6 @@ public class RuntimeDelegateTest {
 	@Mocked URI endpoint;
 	@Mocked WriteSession session;
 	@Mocked ResourceSnapshot snapshot;
-
-	private static PrintStream err;
 
 	private RuntimeDelegate sut() {
 		RuntimeDelegate instance = RuntimeDelegate.getInstance();
@@ -87,12 +87,6 @@ public class RuntimeDelegateTest {
 		assertThat(sut.getClass().getSimpleName(),equalTo("DefaultRuntimeDelegate"));
 	}
 
-	private File spiFile() {
-		File target = new File("target/test-classes/META-INF/services/"+RuntimeDelegate.class.getName());
-		target.getParentFile().mkdirs();
-		return target;
-	}
-
 	private boolean hasReflectionPermission(List<Permission> perms) {
 		boolean found=false;
 		for(Permission p:perms) {
@@ -101,14 +95,6 @@ public class RuntimeDelegateTest {
 			}
 		}
 		return found;
-	}
-
-	private void cleanFile(File target) {
-		if(target.exists()) {
-			if(!target.delete()) {
-				target.deleteOnExit();
-			}
-		}
 	}
 
 	private File setUpExtension(String className) throws Exception {
@@ -125,18 +111,6 @@ public class RuntimeDelegateTest {
 		return newFile;
 	}
 
-	@BeforeClass
-	public static void setUpBefore() {
-		err = System.err;
-		PrintStream customErr = new PrintStream(new ByteArrayOutputStream());
-		System.setErr(customErr);
-	}
-
-	@AfterClass
-	public static void tearDownAfter() {
-		System.setErr(err);
-	}
-
 	@Before
 	public void setUp() {
 		System.clearProperty(RuntimeDelegate.APPLICATION_ENGINE_SPI_PROPERTY);
@@ -146,15 +120,7 @@ public class RuntimeDelegateTest {
 
 	@After
 	public void tearDown() {
-		cleanFile(spiFile());
 		System.clearProperty(RuntimeDelegate.APPLICATION_ENGINE_SPI_PROPERTY);
-	}
-
-	@Test
-	public void testGetInstance$spi$enabled() throws Exception {
-		System.clearProperty(RuntimeDelegate.APPLICATION_ENGINE_SPI_FINDER);
-		Files.copy(new File("src/test/resources/spi.delegates.cfg"),spiFile());
-		assertThat(sut(),instanceOf(CustomRuntimeDelegate.class));
 	}
 
 	@Test
@@ -162,6 +128,39 @@ public class RuntimeDelegateTest {
 		RuntimeDelegate sut1 = sut();
 		RuntimeDelegate sut2 = sut();
 		assertThat(sut2,sameInstance(sut1));
+	}
+
+	@Test
+	public void testGetInstance$spi$enabled() throws Exception {
+		System.clearProperty(RuntimeDelegate.APPLICATION_ENGINE_SPI_FINDER);
+		new MockUp<ServiceLoader<RuntimeDelegate>>() {
+			@Mock
+			public Iterator<RuntimeDelegate> iterator() {
+				return new Iterator<RuntimeDelegate>() {
+					int counter=0;
+					@Override
+					public boolean hasNext() {
+						this.counter++;
+						return this.counter<3;
+					}
+					@Override
+					public RuntimeDelegate next() {
+						if(counter<2) {
+							throw new ServiceConfigurationError("FAILURE");
+						} else {
+							return new CustomRuntimeDelegate();
+						}
+					}
+					@Override
+					public void remove() {
+					}
+				};
+			}
+
+		};
+
+//		Files.copy(new File("src/test/resources/spi.delegates.cfg"),spiFile());
+		assertThat(sut(),instanceOf(CustomRuntimeDelegate.class));
 	}
 
 	@Test
@@ -387,7 +386,6 @@ public class RuntimeDelegateTest {
 			private final List<Permission> permissions=Lists.newArrayList();
 			@Override
 			public void checkPermission(Permission permission) {
-				System.out.println("checkPermission"+permission+"");
 				this.permissions.add(permission);
 			}
 		};
@@ -412,7 +410,6 @@ public class RuntimeDelegateTest {
 				if(permission instanceof ReflectPermission) {
 					ReflectPermission rp=(ReflectPermission)permission;
 					if(rp.getName().equals("suppressAccessChecks")) {
-						System.out.println("checkPermission"+permission+"");
 						throw new SecurityException("FAILURE");
 					}
 				}
