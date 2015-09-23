@@ -138,7 +138,7 @@ public class ImmutableTerm implements Term {
 	 * @return (never returns)
 	 */
 	@Override
-	protected final Object clone() throws CloneNotSupportedException {
+	protected final Object clone() throws CloneNotSupportedException { // NOSONAR
 		throw new CloneNotSupportedException();
 	}
 
