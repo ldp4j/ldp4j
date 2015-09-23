@@ -30,6 +30,7 @@ install:
 - "/bin/true"
 
 script:
+- chmod ugo+x ./.travis/travis.sh
 - ./.travis/travis.sh
 
 env:

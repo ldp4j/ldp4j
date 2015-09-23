@@ -9,6 +9,10 @@ else
   echo Executing Travis CI build...
 fi
 
+chmod ugo+x ./.travis/deploy.sh
+chmod ugo+x ./.travis/install.sh
+chmod ugo+x ./.travis/build.sh
+
 if [ "${TRAVIS_PULL_REQUEST}" = "false" ];
 then
   case "${TRAVIS_BRANCH}" in
