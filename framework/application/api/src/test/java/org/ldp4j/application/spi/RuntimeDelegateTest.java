@@ -63,7 +63,6 @@ import org.ldp4j.application.session.WriteSession;
 
 import com.google.common.collect.Lists;
 
-@Ignore("Fails on Travis CI")
 @RunWith(JMockit.class)
 public class RuntimeDelegateTest {
 
@@ -113,6 +112,7 @@ public class RuntimeDelegateTest {
 	@After
 	public void tearDown() {
 		System.clearProperty(RuntimeDelegate.APPLICATION_ENGINE_SPI_PROPERTY);
+		System.clearProperty(RuntimeDelegate.APPLICATION_ENGINE_SPI_FINDER);
 	}
 
 	@Test
