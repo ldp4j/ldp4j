@@ -739,7 +739,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		HappyPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
@@ -762,6 +761,26 @@ public class ServerFrontendITest {
 		assertThat(helper.getUpdates(),not(hasSize(0)));
 		assertThat(helper.getResolution(),equalTo(DynamicResourceResolver.CANONICAL_BASE.resolve(MyApplication.ROOT_DYNAMIC_RESOURCE_PATH).toString()));
 		assertThat(helper.getRoundtrip(),equalTo("OK"));
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testBadResourceHandler(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_BAD_RESOURCE_PATH,HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(HttpStatus.SC_INTERNAL_SERVER_ERROR));
+		assertThat(getResponse.body,notNullValue());
+		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
+
 	}
 
 	private static final String TEXT_TURTLE = "text/turtle";

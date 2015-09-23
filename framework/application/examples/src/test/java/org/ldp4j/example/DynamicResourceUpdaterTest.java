@@ -45,6 +45,7 @@ import org.ldp4j.application.data.ManagedIndividual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
+import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.session.ReadSession;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.SessionTerminationException;
@@ -153,7 +154,7 @@ public class DynamicResourceUpdaterTest {
 		verifyResult(snapshot,handler,true);
 	}
 
-	private void verifyResult(final ResourceSnapshot snapshot, DynamicResourceHandler handler, boolean b) {
+	private void verifyResult(final ResourceSnapshot snapshot, DynamicResourceHandler handler, boolean b) throws UnknownResourceException {
 		DataSet dataSet = handler.get(snapshot);
 		Individual<?, ?> resource=dataSet.individualOfId(ManagedIndividualId.createId(RID, DynamicResourceHandler.ID));
 		assertThat(resource.hasProperty(DynamicResourceUpdater.REFRESHED_ON),equalTo(b));

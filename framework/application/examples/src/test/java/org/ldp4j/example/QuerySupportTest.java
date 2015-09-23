@@ -26,8 +26,12 @@
  */
 package org.ldp4j.example;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -41,9 +45,15 @@ import org.ldp4j.application.ext.InvalidQueryException;
 import org.ldp4j.application.ext.ObjectTransformationException;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.sdk.QueryBuilder;
+import org.ldp4j.commons.testing.Utils;
 
 
 public class QuerySupportTest {
+
+	@Test
+	public void verifyIsUtilityClass() {
+		assertThat(Utils.isUtilityClass(QuerySupport.class),equalTo(true));
+	}
 
 	@Test
 	public void testGetDescription() throws Exception {

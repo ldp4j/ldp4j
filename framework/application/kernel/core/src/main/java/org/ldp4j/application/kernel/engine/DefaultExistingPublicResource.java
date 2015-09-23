@@ -239,7 +239,11 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 
 	@Override
 	protected DataSet resourceData(ContentPreferences contentPreferences) throws ApplicationExecutionException {
-		return applicationContext().getResource(endpoint());
+		DataSet response = applicationContext().getResource(endpoint());
+		if(response==null) {
+			throw new ApplicationExecutionException("No response returned");
+		}
+		return response;
 	}
 
 	@Override

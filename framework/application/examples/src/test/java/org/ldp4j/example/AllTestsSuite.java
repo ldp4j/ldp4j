@@ -26,33 +26,18 @@
  */
 package org.ldp4j.example;
 
-import java.util.Map;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.ext.ApplicationRuntimeException;
-import org.ldp4j.application.ext.ContainerHandler;
-
-import com.google.common.collect.Maps;
-
-public abstract class InMemoryContainerHandler extends InMemoryResourceHandler implements ContainerHandler {
-
-	private final Map<Name<String>,NameProvider> nameProviders;
-
-	protected InMemoryContainerHandler(String handlerName) {
-		super(handlerName);
-		this.nameProviders=Maps.newLinkedHashMap();
-	}
-
-	public final void addNameProvider(Name<String> containerName, NameProvider provider) {
-		this.nameProviders.put(containerName, provider);
-	}
-
-	public final NameProvider nameProvider(Name<?> containerName) {
-		NameProvider result = this.nameProviders.get(containerName);
-		if(result==null) {
-			throw new ApplicationRuntimeException("Unknown container '"+containerName+"'");
-		}
-		return result;
-	}
+@RunWith(Suite.class)
+@SuiteClasses({
+	NameProviderTest.class,
+	InMemoryResourceHandlerTest.class,
+	InMemoryContainerHandlerTest.class,
+	QuerySupportTest.class,
+	DynamicResourceUpdaterTest.class
+})
+public class AllTestsSuite {
 
 }

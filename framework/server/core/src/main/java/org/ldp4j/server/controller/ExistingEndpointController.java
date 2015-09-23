@@ -370,6 +370,9 @@ final class ExistingEndpointController implements EndpointController {
 		} else if (rootCause instanceof ApplicationRuntimeException) {
 			statusCode=Status.INTERNAL_SERVER_ERROR.getStatusCode();
 			body=Throwables.getStackTraceAsString(rootCause);
+		} else {
+			statusCode=Status.INTERNAL_SERVER_ERROR.getStatusCode();
+			body=Throwables.getStackTraceAsString(exception);
 		}
 		builder.
 			type(MediaType.TEXT_PLAIN).

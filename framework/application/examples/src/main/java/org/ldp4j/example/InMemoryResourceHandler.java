@@ -26,79 +26,73 @@
  */
 package org.ldp4j.example;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.session.ResourceSnapshot;
 
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Multimap;
+public abstract class InMemoryResourceHandler implements ResourceHandler {
 
-public class InMemoryResourceHandler implements ResourceHandler {
-
-	private static final Multimap<String,ResourceHandler> loadedHandlers=LinkedListMultimap.<String, ResourceHandler>create();
 	private final String handlerName;
 	private final Map<Name<?>, DataSet> resources;
-	
+
 	protected InMemoryResourceHandler(String handlerName) {
 		this.handlerName=handlerName;
 		this.resources=new LinkedHashMap<Name<?>,DataSet>();
 	}
 
+	protected final String getHandlerName() {
+		return handlerName;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @throws UnknownResourceException if the resource is not known.
+	 */
 	@Override
-	public DataSet get(ResourceSnapshot resource) {
+	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException {
 		DataSet dataSet = this.resources.get(resource.name());
 		if(dataSet==null) {
-			throw new IllegalStateException("Unknown resource '"+resource.name()+"'");
+			throw new UnknownResourceException("Unknown resource '"+resource.name()+"'");
 		}
 		return dataSet;
 	}
-	
-	public void add(Name<?> name, DataSet data) {
+
+	public final void add(Name<?> name, DataSet data) {
 		this.resources.put(name,data);
 	}
 
-	public void update(Name<?> name, DataSet data) {
+	public final void update(Name<?> name, DataSet data) {
 		remove(name);
 		add(name,data);
 	}
-	
-	public void clear() {
+
+	public final void clear() {
 		this.resources.clear();
 	}
-	
-	public int size() {
+
+	public final int size() {
 		return this.resources.size();
 	}
-	
-	public void remove(Name<?> name) {
+
+	public final void remove(Name<?> name) {
 		this.resources.remove(name);
 	}
-	
-	public boolean hasResource(Name<?> resourceName) {
+
+	public final boolean hasResource(Name<?> resourceName) {
 		return this.resources.containsKey(resourceName);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return getHandlerName();
 	}
 
-	protected String getHandlerName() {
-		return handlerName;
-	}
-
-	public static <T extends ResourceHandler> List<T> getInstances(Class<? extends T> handlerClass) {
-		List<T> result = new ArrayList<T>();
-		for(ResourceHandler handler:loadedHandlers.get(handlerClass.getCanonicalName())) {
-			result.add(handlerClass.cast(handler));
-		}
-		return result;
-	}
-	
 }

@@ -40,6 +40,7 @@ import org.ldp4j.application.data.validation.Validator;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.Modifiable;
+import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.annotations.Attachment;
 import org.ldp4j.application.ext.annotations.Resource;
 import org.ldp4j.application.session.ResourceSnapshot;
@@ -85,7 +86,7 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 	}
 
 	@Override
-	public void delete(ResourceSnapshot resource, WriteSession session) {
+	public void delete(ResourceSnapshot resource, WriteSession session) throws UnknownResourceException {
 		DataSet dataSet = get(resource);
 		try {
 			logDebug(resource,"Deleting state:%n%s",dataSet);
@@ -100,7 +101,7 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 	}
 
 	@Override
-	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InconsistentContentException {
+	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InconsistentContentException, UnknownResourceException {
 		DataSet dataSet = get(resource);
 		logDebug(resource, "Enforcing consistency...");
 		enforceConsistency(resource,content,dataSet);

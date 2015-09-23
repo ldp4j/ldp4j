@@ -62,11 +62,13 @@ public class MyApplication extends Application<Configuration> {
 	private static final String RELATIVE_CONTAINER_NAME  = "RelativeContainer";
 	private static final String QUERYABLE_RESOURCE_NAME  = "QueryableResource";
 	private static final String DYNAMIC_RESOURCE_NAME    = "DynamicResource";
+	private static final String BAD_RESOURCE_NAME        = "BadResource";
 
 	public static final String ROOT_PERSON_RESOURCE_PATH    = "rootPersonResource/";
 	public static final String ROOT_PERSON_CONTAINER_PATH   = "rootPersonContainer/";
 	public static final String ROOT_QUERYABLE_RESOURCE_PATH = "rootQueryableResource/";
 	public static final String ROOT_DYNAMIC_RESOURCE_PATH   = "rootDynamicResource/";
+	public static final String ROOT_BAD_RESOURCE_PATH       = "rootBadResource/";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(MyApplication.class);
 
@@ -75,6 +77,7 @@ public class MyApplication extends Application<Configuration> {
 	private final Name<String> relativeContainerName;
 	private final Name<String> queryableResourceName;
 	private final Name<String> dynamicResourceName;
+	private final Name<String> badResourceName;
 
 	private DynamicResourceHandler dynamicResourceHandler;
 	private ScheduledExecutorService executorService;
@@ -85,6 +88,7 @@ public class MyApplication extends Application<Configuration> {
 		this.relativeContainerName = NamingScheme.getDefault().name(RELATIVE_CONTAINER_NAME);
 		this.queryableResourceName = NamingScheme.getDefault().name(QUERYABLE_RESOURCE_NAME);
 		this.dynamicResourceName = NamingScheme.getDefault().name(DYNAMIC_RESOURCE_NAME);
+		this.badResourceName = NamingScheme.getDefault().name(BAD_RESOURCE_NAME);
 	}
 
 	private DataSet getInitialData(String templateId, String name) throws DatatypeConfigurationException {
@@ -127,11 +131,14 @@ public class MyApplication extends Application<Configuration> {
 			bootstrap.addHandler(relativesHandler);
 			bootstrap.addHandler(queryableHandler);
 			bootstrap.addHandler(this.dynamicResourceHandler);
+			bootstrap.addHandlerClass(BadResourceHandler.class);
+
 
 			environment.publishResource(this.personResourceName, PersonHandler.class, ROOT_PERSON_RESOURCE_PATH);
 			environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
 			environment.publishResource(this.queryableResourceName, QueryableResourceHandler.class, ROOT_QUERYABLE_RESOURCE_PATH);
 			environment.publishResource(this.dynamicResourceName, DynamicResourceHandler.class, ROOT_DYNAMIC_RESOURCE_PATH);
+			environment.publishResource(this.badResourceName, BadResourceHandler.class, ROOT_BAD_RESOURCE_PATH);
 
 			this.executorService =
 				Executors.

@@ -26,33 +26,21 @@
  */
 package org.ldp4j.example;
 
-import java.util.Map;
+import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.ext.annotations.Resource;
+import org.ldp4j.application.session.ResourceSnapshot;
 
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.ext.ApplicationRuntimeException;
-import org.ldp4j.application.ext.ContainerHandler;
+@Resource(
+	id=BadResourceHandler.ID
+)
+public class BadResourceHandler implements ResourceHandler {
 
-import com.google.common.collect.Maps;
+	public static final String ID="BadResourceHandler";
 
-public abstract class InMemoryContainerHandler extends InMemoryResourceHandler implements ContainerHandler {
-
-	private final Map<Name<String>,NameProvider> nameProviders;
-
-	protected InMemoryContainerHandler(String handlerName) {
-		super(handlerName);
-		this.nameProviders=Maps.newLinkedHashMap();
-	}
-
-	public final void addNameProvider(Name<String> containerName, NameProvider provider) {
-		this.nameProviders.put(containerName, provider);
-	}
-
-	public final NameProvider nameProvider(Name<?> containerName) {
-		NameProvider result = this.nameProviders.get(containerName);
-		if(result==null) {
-			throw new ApplicationRuntimeException("Unknown container '"+containerName+"'");
-		}
-		return result;
+	@Override
+	public DataSet get(ResourceSnapshot resource) {
+		return null;
 	}
 
 }

@@ -62,7 +62,7 @@ import org.ldp4j.application.kernel.transaction.Transaction;
 import org.ldp4j.application.sdk.QueryBuilder;
 import org.ldp4j.example.BookContainerHandler;
 import org.ldp4j.example.BookHandler;
-import org.ldp4j.example.InMemoryContainerHandler.NameProvider;
+import org.ldp4j.example.NameProvider;
 import org.ldp4j.example.PersonHandler;
 import org.ldp4j.example.QueryableResourceHandler;
 
@@ -105,7 +105,7 @@ public class ResourceControllerServiceTest {
 		return initial;
 	}
 
-	private Name<?> name(String id) {
+	private Name<String> name(String id) {
 		return NamingScheme.getDefault().name(id);
 	}
 
@@ -261,7 +261,7 @@ public class ResourceControllerServiceTest {
 	@Test
 	public void testCreateResource() throws Exception {
 		String resourcePath = "post";
-		final Name<?> resourceName = name(resourcePath);
+		final Name<String> resourceName = name(resourcePath);
 		final DataSet initialData = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
 
 		// BEGIN initialization
