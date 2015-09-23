@@ -69,7 +69,6 @@ public class TermUtilsTest {
 	@Test
 	public void testToTermName$valid() throws Exception {
 		for(Entry<String, String> entry:termMappings.entrySet()) {
-			System.out.println("Trying: "+entry.getKey());
 			assertThat(entry.getKey()+"-->"+entry.getValue(),TermUtils.toTermName(entry.getKey()),equalTo(entry.getValue()));
 		}
 	}

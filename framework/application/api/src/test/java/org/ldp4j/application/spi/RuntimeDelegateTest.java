@@ -36,14 +36,12 @@ import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.ReflectPermission;
 import java.net.URI;
 import java.security.Permission;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Properties;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 
@@ -97,18 +95,10 @@ public class RuntimeDelegateTest {
 		return found;
 	}
 
-	private File setUpExtension(String className) throws Exception {
-		Properties properties=new Properties();
-		properties.setProperty(RuntimeDelegate.APPLICATION_ENGINE_SPI_PROPERTY, className);
-		return setUpExtension(properties);
-	}
-
-	private File setUpExtension(Properties properties) throws Exception {
-		File newFile = tmp.newFile();
-		try(FileOutputStream out = new FileOutputStream(newFile)) {
-			properties.store(out,"");
-		}
-		return newFile;
+	private File extensionConfigFile(String fileName) {
+		File file = new File("src/test/resources/extensions/"+fileName);
+		assertThat(file.canRead(),equalTo(true));
+		return file;
 	}
 
 	@Before
@@ -158,8 +148,6 @@ public class RuntimeDelegateTest {
 			}
 
 		};
-
-//		Files.copy(new File("src/test/resources/spi.delegates.cfg"),spiFile());
 		assertThat(sut(),instanceOf(CustomRuntimeDelegate.class));
 	}
 
@@ -170,17 +158,11 @@ public class RuntimeDelegateTest {
 
 	@Test
 	public void testGetInstance$extension$notReadable() throws Exception {
-		final File file=setUpExtension("NotFound");
+		final File file=new File("Not exists");
 		new MockUp<RuntimeDelegate>() {
 			@Mock
 			File getConfigurationFile() {
 				return file;
-			}
-		};
-		new MockUp<File>() {
-			@Mock
-			public boolean canRead() {
-				return false;
 			}
 		};
 		verifyIsDefault(sut());
@@ -206,7 +188,7 @@ public class RuntimeDelegateTest {
 
 	@Test
 	public void testGetInstance$extension$ioException$readFailure() throws Exception {
-		final File file=setUpExtension("IOERROR");
+		final File file=extensionConfigFile("empty.cfg");
 		new MockUp<RuntimeDelegate>() {
 			@Mock
 			File getConfigurationFile() {
@@ -234,17 +216,11 @@ public class RuntimeDelegateTest {
 
 	@Test
 	public void testGetInstance$extension$ioException$closeFailure() throws Exception {
-		final File file=setUpExtension("IOERROR");
+		final File file=extensionConfigFile("empty.cfg");
 		new MockUp<RuntimeDelegate>() {
 			@Mock
 			File getConfigurationFile() {
 				return file;
-			}
-		};
-		new MockUp<File>() {
-			@Mock
-			public boolean canRead() {
-				return true;
 			}
 		};
 		new MockUp<FileInputStream>() {
@@ -258,17 +234,11 @@ public class RuntimeDelegateTest {
 
 	@Test
 	public void testGetInstance$extension$ioException$runtimeFailure() throws Exception {
-		final File file=setUpExtension("IOERROR");
+		final File file=extensionConfigFile("empty.cfg");
 		new MockUp<RuntimeDelegate>() {
 			@Mock
 			File getConfigurationFile() {
 				return file;
-			}
-		};
-		new MockUp<File>() {
-			@Mock
-			public boolean canRead() {
-				return true;
 			}
 		};
 		new MockUp<FileInputStream>() {
@@ -286,7 +256,7 @@ public class RuntimeDelegateTest {
 
 	@Test
 	public void testGetInstance$extension$empty() throws Exception {
-		final File file=setUpExtension(new Properties());
+		final File file=extensionConfigFile("empty.cfg");
 		new MockUp<RuntimeDelegate>() {
 			@Mock
 			File getConfigurationFile() {
@@ -298,7 +268,7 @@ public class RuntimeDelegateTest {
 
 	@Test
 	public void testGetInstance$extension$notFound() throws Exception {
-		final File file=setUpExtension("NotFound");
+		final File file=extensionConfigFile("not_found.cfg");
 		new MockUp<RuntimeDelegate>() {
 			@Mock
 			File getConfigurationFile() {
@@ -310,7 +280,7 @@ public class RuntimeDelegateTest {
 
 	@Test
 	public void testGetInstance$extension$notValid() throws Exception {
-		final File file=setUpExtension(NotRuntimeDelegate.class.getName());
+		final File file=extensionConfigFile("not_valid.cfg");
 		new MockUp<RuntimeDelegate>() {
 			@Mock
 			File getConfigurationFile() {
@@ -322,7 +292,7 @@ public class RuntimeDelegateTest {
 
 	@Test
 	public void testGetInstance$extension$notInstantiable() throws Exception {
-		final File file=setUpExtension(AbstractRuntimeDelegate.class.getName());
+		final File file=extensionConfigFile("not_instantiable.cfg");
 		new MockUp<RuntimeDelegate>() {
 			@Mock
 			File getConfigurationFile() {
@@ -334,7 +304,7 @@ public class RuntimeDelegateTest {
 
 	@Test
 	public void testGetInstance$extension$privateConstructor() throws Exception {
-		final File file=setUpExtension(HiddenRuntimeDelegate.class.getName());
+		final File file=extensionConfigFile("private_constructor.cfg");
 		new MockUp<RuntimeDelegate>() {
 			@Mock
 			File getConfigurationFile() {
