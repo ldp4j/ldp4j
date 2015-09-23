@@ -41,7 +41,7 @@ script:
   fi
 
 after_success:
-- mv /tmp/cache-trick $HOME/.m2/repository/org/ldp4j/ 
+- mv /tmp/cache-trick/ $HOME/.m2/repository/org/ldp4j
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ];
   then
     case "${TRAVIS_BRANCH}" in
