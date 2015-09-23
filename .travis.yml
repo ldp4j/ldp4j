@@ -1,25 +1,34 @@
 sudo: false
-cache:
-  directories:
-  - "$HOME/.m2/repository"
-  - "$HOME/.sonar"
 language: java
 jdk:
 - oraclejdk7
+
 notifications:
   email:
     recipients:
     - ldp4j-commits@googlegroups.com
     on_success: always
     on_failure: always
+
+cache:
+  directories:
+  - "$HOME/.m2/repository"
+  - "$HOME/.sonar"
+
+before_cache:
+  - mkdir /tmp/cache-trick
+  - mv $HOME/.m2/repository/org/ldp4j /tmp/cache-trick/
+
 before_install:
 - openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in config/src/main/resources/ci/secring.gpg.enc
   -out local.secring.gpg -d
 - openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in config/src/main/resources/ci/pubring.gpg.enc
   -out local.pubring.gpg -d
 - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+
 install:
 - "/bin/true"
+
 script:
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ];
   then
@@ -30,6 +39,8 @@ script:
   else
     echo mvn clean install -B -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;
   fi
+
+after_success:
 - if [ "${TRAVIS_PULL_REQUEST}" = "false" ];
   then
     case "${TRAVIS_BRANCH}" in
@@ -39,8 +50,7 @@ script:
       *)        echo "Skip SonarQube analysis (${TRAVIS_BRANCH})";;
     esac
   fi
-- mkdir /tmp/cache-trick
-- mv $HOME/.m2/repository/org/ldp4j /tmp/cache-trick/
+
 env:
   global:
   - secure: AAVZNDVtE0dgPK7qZacSe6CUP0rGQG1SWQEzo8e0BH3WhJGFhM4vNQTR6N6KzjgUHmstfEM7nOdIcTSpHd+RFCKhDbZYl7iN1ZYUG/sn9KGbjyDWkC3EAddP4LZ9yDqQ1iYg5tQh59XC/Dne/peXOJRAf+RocjuhvGXsC3rT0/c=
