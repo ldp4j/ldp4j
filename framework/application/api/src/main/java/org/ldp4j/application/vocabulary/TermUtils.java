@@ -37,7 +37,6 @@ final class TermUtils {
 		private final StringBuilder builder=new StringBuilder();
 		private final List<Character> buffer=new ArrayList<Character>();
 		private int mark=0;
-		private int groups=0;
 
 		public void push(char character) {
 			builder.append(Character.toUpperCase(character));
@@ -45,16 +44,12 @@ final class TermUtils {
 
 		public void startGroup(int position) {
 			mark=position;
-			groups++;
 		}
 		public void save(char character) {
 			buffer.add(character);
 		}
 
 		public void pushGroup() {
-			if(buffer.isEmpty() || groups==0) {
-				return;
-			}
 			if(mark!=0) {
 				builder.append("_");
 			}
@@ -88,24 +83,15 @@ final class TermUtils {
 		public TermUtils.State accept(int position, char character, TermUtils.Context state) {
 			if(Character.isUpperCase(character)) {
 				return handleUpperCase(position,character,state);
-			} else if(Character.isLowerCase(character)) {
+			} else { // Must be Character.isLowerCase(character)
 				return handleLowerCase(position,character,state);
-			} else {
-				return handleOther(position,character,state);
 			}
 		}
 
-		protected TermUtils.State handleUpperCase(int position, char character, TermUtils.Context state) {
-			throw new UnsupportedOperationException("Upper case characters are not allowed at this time");
-		}
+		protected abstract TermUtils.State handleUpperCase(int position, char character, TermUtils.Context state);
 
-		protected TermUtils.State handleLowerCase(int position, char character, TermUtils.Context state) {
-			throw new UnsupportedOperationException("Lower case characters are not allowed at this time");
-		}
+		protected abstract TermUtils.State handleLowerCase(int position, char character, TermUtils.Context state);
 
-		protected TermUtils.State handleOther(int position, char character, TermUtils.Context state) {
-			throw new UnsupportedOperationException("Non letter characters are not allowed at this time");
-		}
 	}
 
 	private static final class Start extends TermUtils.State {
@@ -146,7 +132,7 @@ final class TermUtils {
 		TermUtils.State state=new Start();
 		TermUtils.Context context=new Context();
 		for(int i=0;i<string.length();i++) {
-			state=state.accept(i,string.charAt(i), context);
+			state=state.accept(i,string.charAt(i),context);
 		}
 		return context.complete();
 

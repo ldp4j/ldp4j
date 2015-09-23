@@ -39,15 +39,15 @@ import org.ldp4j.application.vocabulary.Vocabulary;
 import com.google.common.collect.ImmutableList;
 
 final class TypeAdapter<S,T> {
-	
+
 	static final String ADAPTER_NAME_CONVENTION = "adaptTo";
 
-	protected static final class QNameAdapter {
+	static final class QNameAdapter {
 		private QNameAdapter() {
 		}
 		public static QName adaptTo(Term term) {
 			Vocabulary<? extends Term> vocabulary = term.getDeclaringVocabulary();
-			return 
+			return
 				new QName(
 					vocabulary.getNamespace(),
 					term.entityName(),
@@ -55,7 +55,7 @@ final class TypeAdapter<S,T> {
 		}
 	}
 
-	protected static final class URIAdapter {
+	static final class URIAdapter {
 		private URIAdapter(){
 		}
 		public static URI adaptTo(Term term) {
@@ -80,6 +80,7 @@ final class TypeAdapter<S,T> {
 	}
 
 	T adapt(S value) {
+		System.err.println(adapterMethod);
 		try {
 			T result = resultClass.cast(adapterMethod.invoke(null, value));
 			if(result==null) {
@@ -95,10 +96,10 @@ final class TypeAdapter<S,T> {
 			throw new IllegalStateException(getAdapterFailureMessage("failed while adapting value '%s'",value),e);
 		}
 	}
-	
+
 	// TODO: Make this extensible
 	private static Collection<Class<?>> findTypeAdapters() {
-		return 
+		return
 			ImmutableList.
 				<Class<?>>builder().
 					add(
@@ -118,14 +119,14 @@ final class TypeAdapter<S,T> {
 		}
 		throw new CannotAdaptClassesException(
 			"Could not find adapter of adapting class '" +
-			validator.getTargetClass().getCanonicalName() + 
+			validator.getTargetClass().getCanonicalName() +
 			"' to '" + targetType.getCanonicalName() + "'");
 	}
 
 	/**
 	 * Get an adapter capable of transforming instances of a source type into
 	 * instances of a target type.
-	 * 
+	 *
 	 * @param sourceType
 	 *            The type of the instances that the adapter should be able to
 	 *            transform.
@@ -144,7 +145,7 @@ final class TypeAdapter<S,T> {
 
 	/**
 	 * Transform a given object into an instance of the specified type.
-	 * 
+	 *
 	 * @param object
 	 *            The object that is to be transformed.
 	 * @param resultClass

@@ -24,26 +24,15 @@
  *   Bundle      : ldp4j-application-api-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application;
+package org.ldp4j.application.vocabulary;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
-import org.ldp4j.application.data.LiteralsTest;
-import org.ldp4j.application.ext.annotations.MembershipRelationTest;
-import org.ldp4j.application.session.SnapshotResolverTest;
-import org.ldp4j.application.spi.RuntimeDelegateTest;
-import org.ldp4j.application.vocabulary.VocabularyTestsSuite;
+final class External {
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	VocabularyTestsSuite.class,
-	ApplicationContextTest.class,
-	LiteralsTest.class,
-	MembershipRelationTest.class,
-	SnapshotResolverTest.class,
-	RuntimeDelegateTest.class
-})
-public class AllTestsSuite {
+	@SuppressWarnings("unused")
+	private static void privateMethod() {
+	}
+
+	public static void noParameterMethod() {
+	}
 
 }

@@ -139,7 +139,6 @@ public class ImmutableTerm implements Term {
 	 */
 	@Override
 	protected final Object clone() throws CloneNotSupportedException {
-		super.clone();
 		throw new CloneNotSupportedException();
 	}
 
@@ -168,9 +167,7 @@ public class ImmutableTerm implements Term {
 	@Override
 	public int compareTo(Term other) {
 		ImmutableTerm self = this;
-		// TODO: This is too strict, replace by an ordering based on namespace, vocabulary identity, and then on the ordering within the namespace
-		if (self.getClass() != other.getClass() && // optimization
-			self.getDeclaringVocabulary() != other.getDeclaringVocabulary()) {
+		if(self.getDeclaringVocabulary() != other.getDeclaringVocabulary()) {
 			throw new ClassCastException();
 		}
 		return self.ordinal - other.ordinal();

@@ -30,11 +30,24 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
 
 import java.net.URI;
+import java.util.Arrays;
 
 import org.junit.Test;
 import org.ldp4j.application.vocabulary.LDP;
 
 public class MembershipRelationTest {
+
+	@Test
+	public void testValues() {
+		assertThat(Arrays.asList(MembershipRelation.values()),contains(MembershipRelation.HAS_MEMBER,MembershipRelation.IS_MEMBER_OF));
+	}
+
+	@Test
+	public void testValueOf() {
+		for(MembershipRelation value:MembershipRelation.values()) {
+			assertThat(MembershipRelation.valueOf(value.toString()),equalTo(value));
+		}
+	}
 
 	@Test
 	public void testTerm$hasMember() throws Exception {

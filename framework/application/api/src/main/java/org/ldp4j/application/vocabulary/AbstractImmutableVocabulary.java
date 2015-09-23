@@ -34,6 +34,7 @@ import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
 
+import static java.util.Objects.*;
 
 /**
  * A base vocabulary implementation for creating immutable vocabularies that
@@ -119,7 +120,7 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 
 	private void checkStatus(Status status) {
 		if(!this.status.equals(status)) {
-			throw new IllegalStateException(status.getFailure(namespace));
+			throw new IllegalStateException(status.getFailure(this.namespace));
 		}
 	}
 
@@ -129,18 +130,19 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 				String.format(
 					"Vocabulary '%s' (%s) initialization failure: ",
 					this.namespace,
-					getClass().getCanonicalName());
+					getClass().getName());
 			throw new IllegalArgumentException(failureHeader.concat(String.format(message,args)));
 		}
 	}
 
 	/**
 	 * Get the unique identifier of the vocabulary.
+	 *
 	 * @return The identifier of the vocabulary.
 	 * @see java.util.UUID
 	 */
 	public final UUID getId() {
-		return id;
+		return this.id;
 	}
 
 	/**
@@ -148,7 +150,7 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 	 */
 	@Override
 	public final String getNamespace() {
-		return namespace;
+		return this.namespace;
 	}
 
 	/**
@@ -156,7 +158,7 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 	 */
 	@Override
 	public final String getPreferredPrefix() {
-		return prefix;
+		return this.prefix;
 	}
 
 	/**
@@ -166,8 +168,8 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 	public final T[] terms() {
 		checkStatus(Status.INITIALIZED);
 		@SuppressWarnings("unchecked")
-		T[] array=(T[])Array.newInstance(termClass, ordinal);
-		return terms.values().toArray(array);
+		T[] array=(T[])Array.newInstance(this.termClass,this.ordinal);
+		return this.terms.values().toArray(array);
 	}
 
 	/**
@@ -176,7 +178,7 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 	@Override
 	public final int size() {
 		checkStatus(Status.INITIALIZED);
-		return ordinal;
+		return this.ordinal+1;
 	}
 
 	/**
@@ -185,12 +187,10 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 	@Override
 	public final T fromName(String name) {
 		checkStatus(Status.INITIALIZED);
-		if(name==null) {
-			throw new IllegalArgumentException("Object 'name' cannot be null");
-		}
-		Integer termOrdinal = nameOrdinal.get(name);
+		requireNonNull(name,"Term name cannot be null");
+		Integer termOrdinal = this.nameOrdinal.get(name);
 		if(termOrdinal!=null) {
-			return terms.get(termOrdinal);
+			return this.terms.get(termOrdinal);
 		}
 		return null;
 	}
@@ -201,10 +201,10 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 	@Override
 	public T fromOrdinal(int ordinal) {
 		checkStatus(Status.INITIALIZED);
-		if(ordinal<0 || this.ordinal<=ordinal) {
+		if(ordinal<0 || this.ordinal<ordinal) {
 			throw new IndexOutOfBoundsException("No term available with ordinal '"+ordinal+"'");
 		}
-		return terms.get(ordinal);
+		return this.terms.get(ordinal);
 	}
 
 	/**
@@ -215,15 +215,15 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 		checkStatus(Status.INITIALIZED);
 		try {
 			@SuppressWarnings("unchecked")
-			TypeAdapter<T,V> adapter = (TypeAdapter<T, V>) TypeAdapter.createAdapter(termClass,value.getClass());
-			for(T candidate:terms.values()) {
+			TypeAdapter<T,V> adapter = (TypeAdapter<T, V>) TypeAdapter.createAdapter(this.termClass,value.getClass());
+			for(T candidate:this.terms.values()) {
 				if(value.equals(adapter.adapt(candidate))) {
 					return candidate;
 				}
 			}
 			return null;
 		} catch (CannotAdaptClassesException e) {
-			throw new UnsupportedOperationException("Class '"+termClass.getCanonicalName()+" cannot be transformed to '"+value.getClass().getCanonicalName()+"'",e);
+			throw new UnsupportedOperationException("Class '"+this.termClass.getCanonicalName()+" cannot be transformed to '"+value.getClass().getCanonicalName()+"'",e);
 		}
 	}
 
@@ -233,7 +233,7 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 	@Override
 	public final Iterator<T> iterator() {
 		checkStatus(Status.INITIALIZED);
-		final Iterator<? extends T> iterator = terms.values().iterator();
+		final Iterator<? extends T> iterator = this.terms.values().iterator();
 		return new Iterator<T>() {
 			@Override
 			public boolean hasNext() {
@@ -282,7 +282,7 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 	 *            the term to be registered.
 	 * @throws IllegalArgumentException
 	 *             if the specified term instance cannot be registered, either
-	 *             because the ordinal is invalid or because the another term
+	 *             because the ordinal is invalid or because another term
 	 *             with the same name has already been registered.
 	 * @throws IllegalStateException
 	 *             if the vocabulary has been already initialized.
@@ -290,7 +290,7 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 	protected final <S extends ImmutableTerm> void registerTerm(S term) {
 		checkStatus(Status.INITIALIZING);
 		checkInitializationPrecondition(this.nameOrdinal.containsKey(term.name()),"Term '%s' has not been reserved",term.name());
-		checkInitializationPrecondition(term.ordinal()>=0 && term.ordinal()<=this.ordinal,"invalid ordinal '%d' for reserved name '%s'",term.ordinal(),term.name());
+		checkInitializationPrecondition(term.ordinal()>=0 && term.ordinal()<=this.ordinal,"Invalid ordinal '%d' for reserved name '%s'",term.ordinal(),term.name());
 		this.terms.put(term.ordinal(),this.termClass.cast(term));
 	}
 
@@ -304,11 +304,12 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 	 */
 	protected final void initialize() {
 		checkStatus(Status.INITIALIZING);
-		if(!(terms.size()==nameOrdinal.size())) {
-			throw new IllegalStateException(String.format(
-				"Vocabulary '%s' (%s) initialization failure: not all reserved names have been registered",
-				namespace,
-				getClass().getCanonicalName()));
+		if(this.terms.size()!=this.nameOrdinal.size()) {
+			throw new IllegalStateException(
+				String.format(
+					"Vocabulary '%s' (%s) initialization failure: not all reserved names have been registered",
+					this.namespace,
+					getClass().getName()));
 		}
 		this.status=Status.INITIALIZED;
 	}
