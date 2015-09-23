@@ -80,7 +80,6 @@ final class TypeAdapter<S,T> {
 	}
 
 	T adapt(S value) {
-		System.err.println(adapterMethod);
 		try {
 			T result = resultClass.cast(adapterMethod.invoke(null, value));
 			if(result==null) {
