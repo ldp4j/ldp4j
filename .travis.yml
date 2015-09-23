@@ -30,24 +30,7 @@ install:
 - "/bin/true"
 
 script:
-- if [ "${TRAVIS_PULL_REQUEST}" = "false" ];
-  then
-    if [ "${TRAVIS_BRANCH}" = "master" ] || [ "${TRAVIS_BRANCH}" = "develop" ];
-    then mvn clean deploy -B -Dcodebase.directory=`pwd` -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;
-    else mvn clean install -B -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;
-    fi
-  else
-    echo mvn clean install -B -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;
-  fi
-- if [ "${TRAVIS_PULL_REQUEST}" = "false" ];
-  then
-    case "${TRAVIS_BRANCH}" in
-      master)   mvn sonar:sonar -B -Dsonar.branch=$TRAVIS_BRANCH -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;;
-      develop)  mvn sonar:sonar -B -Dsonar.branch=$TRAVIS_BRANCH -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;;
-      feature*) mvn sonar:sonar -B -Dsonar.branch=$TRAVIS_BRANCH -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;;
-      *)        echo "Skip SonarQube analysis (${TRAVIS_BRANCH})";;
-    esac
-  fi
+- ./.travis/travis.sh
 
 env:
   global:
