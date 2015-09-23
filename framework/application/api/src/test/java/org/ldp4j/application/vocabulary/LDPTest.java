@@ -26,9 +26,15 @@
  */
 package org.ldp4j.application.vocabulary;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+
 import java.net.URI;
 
 import javax.xml.namespace.QName;
+
+import org.junit.Test;
+import org.ldp4j.commons.testing.Utils;
 
 public class LDPTest extends AbstractVocabularyTest<LDP> {
 
@@ -55,6 +61,11 @@ public class LDPTest extends AbstractVocabularyTest<LDP> {
 	@Override
 	protected QName unknownQNameTerm() {
 		return new QName("urn:","unknown","urn");
+	}
+
+	@Test
+	public void verifyIsUtilityClass() {
+		assertThat(Utils.isUtilityClass(LDP.class),equalTo(true));
 	}
 
 }

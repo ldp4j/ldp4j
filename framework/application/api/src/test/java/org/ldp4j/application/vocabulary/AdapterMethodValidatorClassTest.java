@@ -26,13 +26,23 @@
  */
 package org.ldp4j.application.vocabulary;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
+
 import java.net.URI;
+
+import org.junit.Test;
 
 public class AdapterMethodValidatorClassTest extends AbstractAdapterMethodValidatorTest {
 
 	@Override
 	protected AdapterMethodValidator sut() {
 		return AdapterMethodValidator.newInstance(URI.class,String.class);
+	}
+
+	@Test
+	public void testNewInstance() {
+		assertThat(sut(),notNullValue());
 	}
 
 }
