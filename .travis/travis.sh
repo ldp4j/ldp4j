@@ -17,7 +17,7 @@ if [ "${TRAVIS_PULL_REQUEST}" = "false" ];
 then
   case "${TRAVIS_BRANCH}" in
     master)   ./.travis/deploy.sh $mode;;
-    develop)  ./.travis/install.sh $mode;;
+    develop)  ./.travis/deploy.sh $mode;;
     feature*) ./.travis/install.sh $mode;;
     *)        ./.travis/build.sh $mode;;
   esac
