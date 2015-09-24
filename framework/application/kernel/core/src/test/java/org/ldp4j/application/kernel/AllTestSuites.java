@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 import org.ldp4j.application.kernel.constraints.ConstraintsTestSuite;
+import org.ldp4j.application.kernel.engine.EngineTestSuite;
 import org.ldp4j.application.kernel.lifecycle.LifecycleTestSuite;
 import org.ldp4j.application.kernel.resource.ResourceTestSuite;
 import org.ldp4j.application.kernel.session.SessionTestSuite;
@@ -42,6 +43,7 @@ import org.ldp4j.application.kernel.template.TemplateTestSuite;
 	ResourceTestSuite.class,
 	SessionTestSuite.class,
 	TemplateTestSuite.class,
+	EngineTestSuite.class,
 })
 public class AllTestSuites {
 

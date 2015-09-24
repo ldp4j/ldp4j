@@ -53,8 +53,7 @@ public final class NameProvider {
 			if(this.pendingNames.isEmpty()) {
 				throw new ApplicationRuntimeException(String.format("No more %s names available for resource '%s'",tag,NameProvider.this.owner));
 			}
-			Name<String> result = this.pendingNames.pop();
-			return result;
+			return this.pendingNames.pop();
 		}
 
 		private void addName(Name<String> name) {

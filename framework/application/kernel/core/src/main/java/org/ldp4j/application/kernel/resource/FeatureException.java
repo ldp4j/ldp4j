@@ -26,6 +26,8 @@
  */
 package org.ldp4j.application.kernel.resource;
 
+import org.ldp4j.application.session.ResourceSnapshot;
+
 public class FeatureException extends Exception {
 
 	private static final long serialVersionUID = -3427958905010583776L;
@@ -34,15 +36,22 @@ public class FeatureException extends Exception {
 	private final String handlerClassName;
 	private final String featureClassName;
 
-	public FeatureException(String templateId, String handlerClassName, String featureClassName, String message, Throwable cause) {
+	private FeatureException(String templateId, String handlerClassName, String featureClassName, String message, Throwable cause) {
 		super(message,cause);
 		this.templateId = templateId;
 		this.handlerClassName = handlerClassName;
 		this.featureClassName = featureClassName;
 	}
 
-	public FeatureException(String templateId, String handlerClassName, String featureClassName, String message) {
-		this(templateId, handlerClassName, featureClassName, message, null);
+	public FeatureException(ResourceSnapshot resource, Class<?> feature, String message, Throwable cause) {
+		this(resource.templateId(),resource.handlerClass().getName(),feature.getName(),message,cause);
+	}
+
+	public FeatureException(ResourceSnapshot resource, Class<?> feature, Throwable cause) {
+		this(resource.templateId(),resource.handlerClass().getName(),feature.getName(),"Unexpected feature exception",cause);
+	}
+	public FeatureException(ResourceSnapshot resource, Class<?> feature, String message) {
+		this(resource.templateId(),resource.handlerClass().getName(),feature.getName(),message,null);
 	}
 
 	public final String getTemplateId() {

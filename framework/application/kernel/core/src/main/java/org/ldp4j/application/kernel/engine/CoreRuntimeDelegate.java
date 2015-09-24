@@ -48,12 +48,12 @@ import org.slf4j.LoggerFactory;
 
 public final class CoreRuntimeDelegate extends RuntimeDelegate {
 
-	private final class DefaultSnapshotResolver implements ResourceSnapshotResolver {
+	final class DefaultSnapshotResolver implements ResourceSnapshotResolver {
 
 		private final URI canonicalBase;
 		private final ReadSession session;
 
-		private DefaultSnapshotResolver(URI canonicalBase, ReadSession session) {
+		protected DefaultSnapshotResolver(URI canonicalBase, ReadSession session) {
 			this.canonicalBase = canonicalBase;
 			this.session = session;
 		}
@@ -70,7 +70,7 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 						resolveResource(
 							resourceId);
 				URI result = null;
-				if(endpoint!=null) {
+				if(endpoint!=null && endpoint.deleted()==null) {
 					result=this.canonicalBase.resolve(endpoint.path());
 				}
 				return result;
@@ -164,7 +164,7 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 			Transaction transaction=transactionManager().currentTransaction();
 			transaction.begin();
 			return new TransactionalWriteSession(transaction,delegate);
-		} catch (ApplicationEngineException e) {
+		} catch (Exception e) {
 			throw new ApplicationContextException("Could not create session",e);
 		}
 	}

@@ -24,25 +24,16 @@
  *   Bundle      : ldp4j-application-kernel-core-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.kernel.resource;
+package org.ldp4j.application.kernel.engine;
 
-import org.ldp4j.application.session.ResourceSnapshot;
+import org.junit.runner.RunWith;
+import org.junit.runners.Suite;
+import org.junit.runners.Suite.SuiteClasses;
 
-public class UnsupportedFeatureException extends FeatureException {
-
-	private static final long serialVersionUID = 1166012584105906659L;
-
-	public UnsupportedFeatureException(ResourceSnapshot snapshot, Class<?> feature) {
-		super(snapshot,feature,defaultMessage(snapshot, feature));
-	}
-
-	private static String defaultMessage(ResourceSnapshot snapshot, Class<?> feature) {
-		return
-			String.format(
-				"Resource handler '%s' from template '%s' does not support feature '%s'",
-				snapshot.handlerClass().getName(),
-				snapshot.templateId(),
-				feature.getName());
-	}
+@RunWith(Suite.class)
+@SuiteClasses({
+	CoreRuntimeDelegateTest.class,
+})
+public class EngineTestSuite {
 
 }

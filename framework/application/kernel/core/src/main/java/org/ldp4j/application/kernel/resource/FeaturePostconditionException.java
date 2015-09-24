@@ -28,21 +28,22 @@ package org.ldp4j.application.kernel.resource;
 
 import org.ldp4j.application.session.ResourceSnapshot;
 
-public class UnsupportedFeatureException extends FeatureException {
+public class FeaturePostconditionException extends FeatureException {
 
-	private static final long serialVersionUID = 1166012584105906659L;
+	private static final long serialVersionUID = 6188750973521430039L;
 
-	public UnsupportedFeatureException(ResourceSnapshot snapshot, Class<?> feature) {
-		super(snapshot,feature,defaultMessage(snapshot, feature));
+	public FeaturePostconditionException(ResourceSnapshot snapshot, Class<?> feature, String violation) {
+		super(snapshot,feature,defaultMessage(snapshot, feature, violation));
 	}
 
-	private static String defaultMessage(ResourceSnapshot snapshot, Class<?> feature) {
+	private static String defaultMessage(ResourceSnapshot snapshot, Class<?> feature, String violation) {
 		return
 			String.format(
-				"Resource handler '%s' from template '%s' does not support feature '%s'",
+				"Postcondition failure of resource handler '%s' from template '%s' after executing feature '%s': %s",
 				snapshot.handlerClass().getName(),
 				snapshot.templateId(),
-				feature.getName());
+				feature.getName(),
+				violation);
 	}
 
 }

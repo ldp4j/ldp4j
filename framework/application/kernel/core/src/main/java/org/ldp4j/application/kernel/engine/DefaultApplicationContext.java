@@ -43,6 +43,7 @@ import org.ldp4j.application.engine.context.InvalidIndirectIdentifierException;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.ext.Application;
+import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InvalidContentException;
@@ -59,6 +60,7 @@ import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.endpoint.EndpointRepository;
 import org.ldp4j.application.kernel.resource.Container;
 import org.ldp4j.application.kernel.resource.FeatureExecutionException;
+import org.ldp4j.application.kernel.resource.FeaturePostconditionException;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.application.kernel.resource.ResourceRepository;
@@ -206,6 +208,8 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		LOGGER.error(errorMessage,e);
 		if(e instanceof FeatureExecutionException) {
 			return new ApplicationExecutionException(errorMessage,e.getCause());
+		} else if(e instanceof FeaturePostconditionException) {
+			return new ApplicationExecutionException(errorMessage,new ApplicationRuntimeException(e.getMessage()));
 		}
 		throw new ApplicationContextException(errorMessage,e);
 	}
