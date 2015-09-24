@@ -20,26 +20,43 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.2.0-SNAPSHOT
- *   Bundle      : ldp4j-application-examples-0.2.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0-SNAPSHOT
+ *   Bundle      : ldp4j-server-core-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.example;
+package org.ldp4j.server.testing.fixture;
 
 import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.ext.ResourceHandler;
-import org.ldp4j.application.ext.annotations.Resource;
+import org.ldp4j.application.ext.ContainerHandler;
+import org.ldp4j.application.ext.Query;
+import org.ldp4j.application.ext.Queryable;
+import org.ldp4j.application.ext.annotations.BasicContainer;
+import org.ldp4j.application.session.ContainerSnapshot;
+import org.ldp4j.application.session.ReadSession;
 import org.ldp4j.application.session.ResourceSnapshot;
+import org.ldp4j.application.session.WriteSession;
+import org.ldp4j.example.PersonHandler;
 
-@Resource(
-	id=BadResourceHandler.ID
+@BasicContainer(
+	id=BadResourceHandler.ID,
+	memberHandler=PersonHandler.class
 )
-public class BadResourceHandler implements ResourceHandler {
+public class BadResourceHandler implements ContainerHandler, Queryable {
 
 	public static final String ID="BadResourceHandler";
 
 	@Override
 	public DataSet get(ResourceSnapshot resource) {
+		return null;
+	}
+
+	@Override
+	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
+		return null;
+	}
+
+	@Override
+	public DataSet query(ResourceSnapshot resource, Query query, ReadSession session) {
 		return null;
 	}
 

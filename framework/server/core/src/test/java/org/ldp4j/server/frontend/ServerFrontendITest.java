@@ -88,6 +88,7 @@ import org.ldp4j.server.testing.ServerFrontendTestHelper;
 import org.ldp4j.server.testing.ServerFrontendTestHelper.Metadata;
 import org.ldp4j.server.testing.ServerFrontendWebAppBuilder;
 import org.ldp4j.server.testing.TestingUtil;
+import org.ldp4j.server.testing.fixture.TestingApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -769,17 +770,62 @@ public class ServerFrontendITest {
 		ExceptionPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
-	public void testBadResourceHandler(@ArquillianResource final URL url) throws Exception {
+	public void testGetPostconditionFailure(@ArquillianResource final URL url) throws Exception {
 		LOGGER.info("Started {}",testName.getMethodName());
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 
-		HttpGet get = HELPER.newRequest(MyApplication.ROOT_BAD_RESOURCE_PATH,HttpGet.class);
+		HttpGet get = HELPER.newRequest(TestingApplication.ROOT_BAD_RESOURCE_PATH,HttpGet.class);
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_INTERNAL_SERVER_ERROR));
 		assertThat(getResponse.body,notNullValue());
 		assertThat(getResponse.contentType,equalTo("text/plain"));
 		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
+
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testQueryPostConditionFailure(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpGet get = HELPER.newRequest(TestingApplication.ROOT_BAD_RESOURCE_PATH+"?exampleQuery=parameter",HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(HttpStatus.SC_INTERNAL_SERVER_ERROR));
+		assertThat(getResponse.body,notNullValue());
+		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
+
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testPostPostconditionFailure(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpPost post = HELPER.newRequest(TestingApplication.ROOT_BAD_RESOURCE_PATH,HttpPost.class);
+		post.setEntity(
+			new StringEntity(
+					TEST_SUITE_BODY,
+				ContentType.create("text/turtle", "UTF-8"))
+		);
+		Metadata response=HELPER.httpRequest(post);
+		assertThat(response.status,equalTo(HttpStatus.SC_INTERNAL_SERVER_ERROR));
+		assertThat(response.body,notNullValue());
+		assertThat(response.contentType,equalTo("text/plain"));
+		assertThat(response.language,equalTo(Locale.ENGLISH));
 
 	}
 
