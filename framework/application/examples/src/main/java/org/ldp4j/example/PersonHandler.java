@@ -71,20 +71,45 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(PersonHandler.class);
 
+	/**
+	 * The identifier of the template defined by the handler.
+	 */
 	public static final String ID="personTemplate";
 
+	/**
+	 * The identifier of the relative attachment of the template defined by the handler.
+	 */
 	public static final String RELATIVES_ID   = "personRelatives";
+
+	/**
+	 * The path of the relative attachment of the template defined by the handler.
+	 */
 	public static final String RELATIVES_PATH = "relatives";
 
+	/**
+	 * The identifier of the address attachment of the template defined by the handler.
+	 */
 	public static final String ADDRESS_ID="address";
+
+	/**
+	 * The path of the address attachment of the template defined by the handler.
+	 */
 	public static final String ADDRESS_PATH="address";
 
 	public static final URI READ_ONLY_PROPERTY = URI.create("http://www.example.org/vocab#creationDate");
 
+	/**
+	 * Create a new instance.
+	 */
 	public PersonHandler() {
 		super("Person");
 	}
 
+	/**
+	 * {@inheritDoc}<br/>
+	 *
+	 * Delete a person resource.
+	 */
 	@Override
 	public void delete(ResourceSnapshot resource, WriteSession session) throws UnknownResourceException {
 		DataSet dataSet = get(resource);
@@ -100,6 +125,11 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 		}
 	}
 
+	/**
+	 * {@inheritDoc} <br/>
+	 *
+	 * Update a person resource.
+	 */
 	@Override
 	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InconsistentContentException, UnknownResourceException {
 		DataSet dataSet = get(resource);

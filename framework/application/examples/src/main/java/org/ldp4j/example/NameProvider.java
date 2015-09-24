@@ -37,6 +37,10 @@ import java.util.Objects;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 
+/**
+ * Utility class for managing the collections of names that can be used for
+ * identifying the resources upon creation at runtime.
+ */
 public final class NameProvider {
 
 	private final class NameSource {
@@ -84,10 +88,22 @@ public final class NameProvider {
 		return result;
 	}
 
+	/**
+	 * Return the name of the owner of the name provider.
+	 *
+	 * @return the name of the name provider.
+	 */
 	public Name<String> owner() {
 		return this.owner;
 	}
 
+	/**
+	 * Return the pending names for the specified attachment.
+	 *
+	 * @param attachmentId
+	 *            the name of the attachment.
+	 * @return the pending names for the specified attachment.
+	 */
 	public List<Name<String>> pendingAttachmentNames(String attachmentId) {
 		List<Name<String>> result = new ArrayList<Name<String>>();
 		NameSource source = this.attachmentNameSources.get(attachmentId);
@@ -97,34 +113,84 @@ public final class NameProvider {
 		return result;
 	}
 
+	/**
+	 * Return the pending resource names.
+	 *
+	 * @return the pending resource names.
+	 */
 	public List<Name<String>> pendingResourceNames() {
 		return new ArrayList<Name<String>>(this.resourceNamesSource.pendingNames);
 	}
 
+	/**
+	 * Return the pending member names.
+	 *
+	 * @return the pending member names.
+	 */
 	public List<Name<String>> pendingMemberNames() {
 		return new ArrayList<Name<String>>(this.memberNamesSource.pendingNames);
 	}
 
+	/**
+	 * Add a resource name to the list of available resource names.
+	 *
+	 * @param nextName
+	 *            the resource name.
+	 */
 	public void addResourceName(Name<String> nextName) {
 		this.resourceNamesSource.addName(nextName);
 	}
 
+	/**
+	 * Add a member name to the list of available member names.
+	 *
+	 * @param nextName
+	 *            the member name.
+	 */
 	public void addMemberName(Name<String> nextName) {
 		this.memberNamesSource.addName(nextName);
 	}
 
+	/**
+	 * Add a name to the list of available names for a given attachment.
+	 *
+	 * @param attachmentId
+	 *            the name of the attachment.
+	 * @param nextName
+	 *            the member name.
+	 */
 	public void addAttachmentName(String attachmentId, Name<String> nextName) {
 		nameSource(attachmentId).addName(nextName);
 	}
 
+	/**
+	 * Return the next available resource name. The name will be removed from
+	 * the list of available resource names.
+	 *
+	 * @return the next available resource name.
+	 */
 	public Name<String> nextResourceName() {
 		return this.resourceNamesSource.nextName();
 	}
 
+	/**
+	 * Return the next available member name. The name will be removed from
+	 * the list of available member names.
+	 *
+	 * @return the next available member name.
+	 */
 	public Name<String> nextMemberName() {
 		return this.memberNamesSource.nextName();
 	}
 
+	/**
+	 * Return the next available name for a given attachment. The name will be
+	 * removed from the list of available names for the specified attachment.
+	 *
+	 * @param attachmentId
+	 *            the name of the attachment.
+	 * @return the next available name for the specified attachment.
+	 */
 	public Name<String> nextAttachmentName(String attachmentId) {
 		NameSource result = this.attachmentNameSources.get(attachmentId);
 		if(result==null) {
@@ -133,6 +199,13 @@ public final class NameProvider {
 		return result.nextName();
 	}
 
+	/**
+	 * Create a new name provider.
+	 *
+	 * @param resource
+	 *            the name of the owner of the name provider.
+	 * @return a name provider.
+	 */
 	public static NameProvider create(Name<String> resource) {
 		Objects.requireNonNull(resource,"Owner name cannot be null");
 		return new NameProvider(resource);

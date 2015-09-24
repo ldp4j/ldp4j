@@ -52,13 +52,24 @@ public enum MembershipRelation {
 
 	private MembershipRelation(Term term) {
 		this.term = term;
-
 	}
 
+	/**
+	 * Return the {@code Term} from the LDP vocabulary that represents the
+	 * membership relation.
+	 *
+	 * @return the {@code Term} from the LDP vocabulary that represents the
+	 *         membership relation.
+	 */
 	public Term term() {
 		return term;
 	}
 
+	/**
+	 * Return the {@code URI} that represents the membership relation.
+	 *
+	 * @return the {@code URI} that represents the membership relation.
+	 */
 	public URI toURI() {
 		return term.as(URI.class);
 	}

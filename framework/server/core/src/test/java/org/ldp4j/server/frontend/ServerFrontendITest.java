@@ -82,7 +82,7 @@ import org.ldp4j.commons.testing.categories.LDP;
 import org.ldp4j.commons.testing.categories.Setup;
 import org.ldp4j.example.DynamicResourceResolver;
 import org.ldp4j.example.MyApplication;
-import org.ldp4j.example.QuerySupport;
+import org.ldp4j.example.QueryableResourceHandler;
 import org.ldp4j.server.controller.EndpointControllerUtils;
 import org.ldp4j.server.testing.ServerFrontendTestHelper;
 import org.ldp4j.server.testing.ServerFrontendTestHelper.Metadata;
@@ -527,7 +527,7 @@ public class ServerFrontendITest {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 
-		HttpGet get = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QuerySupport.FAILURE+"=true",HttpGet.class);
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QueryableResourceHandler.FAILURE+"=true",HttpGet.class);
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
 		assertThat(getResponse.body,notNullValue());
@@ -545,7 +545,7 @@ public class ServerFrontendITest {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 
-		HttpGet get = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QuerySupport.FAILURE+"=unknown",HttpGet.class);
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QueryableResourceHandler.FAILURE+"=unknown",HttpGet.class);
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
 		assertThat(getResponse.body,notNullValue());
@@ -560,10 +560,10 @@ public class ServerFrontendITest {
 	@OperateOnDeployment(DEPLOYMENT)
 	public void testQuerySupport$missfailure(@ArquillianResource final URL url) throws Exception {
 		LOGGER.info("Started {}",testName.getMethodName());
-		Query query=queryResource(url, "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QuerySupport.FAILURE+"=false");
+		Query query=queryResource(url, "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QueryableResourceHandler.FAILURE+"=false");
 		assertThat(query.size(),equalTo(1));
-		assertThat(query.hasParameter(QuerySupport.FAILURE),equalTo(true));
-		assertThat(query.getParameter(QuerySupport.FAILURE).rawValueAs(Boolean.class),equalTo(false));
+		assertThat(query.hasParameter(QueryableResourceHandler.FAILURE),equalTo(true));
+		assertThat(query.getParameter(QueryableResourceHandler.FAILURE).rawValueAs(Boolean.class),equalTo(false));
 		LOGGER.info("Completed {}",testName.getMethodName());
 	}
 

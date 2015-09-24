@@ -315,10 +315,32 @@ public abstract class RuntimeDelegate {
 
 	}
 
+	/**
+	 * Return if the application is offline.
+	 *
+	 * @return if the application is offline.
+	 */
 	public abstract boolean isOffline();
 
+	/**
+	 * Create a {@code WriteSession}.
+	 *
+	 * @return a write session.
+	 * @throws ApplicationContextException
+	 *             if the session could not be created.
+	 */
 	public abstract WriteSession createSession() throws ApplicationContextException;
 
+	/**
+	 * Create a {@code ResourceSnapshotResolver}
+	 *
+	 * @param canonicalBase
+	 *            the canonical base URI of the application.
+	 * @param session
+	 *            the {@code ReadSession} that the resolver may use for finding
+	 *            out the snapshots.
+	 * @return a resolver.
+	 */
 	public abstract ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session);
 
 }

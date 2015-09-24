@@ -32,11 +32,17 @@ import org.ldp4j.application.ext.annotations.Resource;
 	id=AddressHandler.ID
 )
 public class AddressHandler extends InMemoryResourceHandler {
-	
+
+	/**
+	 * The template identifier of the handler.
+	 */
 	public static final String ID="addressTemplate";
 
+	/**
+	 * Create a new instance.
+	 */
 	public AddressHandler() {
 		super("Address");
 	}
-	
+
 }

@@ -35,6 +35,9 @@ import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.session.ResourceSnapshot;
 
+/**
+ * An example in-memory resource handler.
+ */
 public abstract class InMemoryResourceHandler implements ResourceHandler {
 
 	private final String handlerName;
@@ -62,27 +65,67 @@ public abstract class InMemoryResourceHandler implements ResourceHandler {
 		return dataSet;
 	}
 
+	/**
+	 * Create a new resource to the collection of resource managed by the
+	 * handler. If the name is already in use, the representation will be
+	 * updated.
+	 *
+	 * @param name
+	 *            the name of the new resource.
+	 * @param data
+	 *            the default representation for the resource.
+	 */
 	public final void add(Name<?> name, DataSet data) {
 		this.resources.put(name,data);
 	}
 
+	/**
+	 * Update the representation of a resource managed by the handler.
+	 *
+	 * @param name
+	 *            the name of the resource.
+	 * @param data
+	 *            the new representation.
+	 */
 	public final void update(Name<?> name, DataSet data) {
 		remove(name);
 		add(name,data);
 	}
 
+	/**
+	 * Remove all the resources managed by the handler.
+	 */
 	public final void clear() {
 		this.resources.clear();
 	}
 
+	/**
+	 * Return the number or resources managed by the handler.
+	 *
+	 * @return the number of resources managed by the handler.
+	 */
 	public final int size() {
 		return this.resources.size();
 	}
 
+	/**
+	 * Remove a resource managed by the handler.
+	 *
+	 * @param name
+	 *            the name of the resource to be removed.
+	 */
 	public final void remove(Name<?> name) {
 		this.resources.remove(name);
 	}
 
+	/**
+	 * Return {@code true} if the handler manages a given resource,
+	 * {@code false} otherwise.
+	 *
+	 * @param resourceName
+	 *            the name of the resource
+	 * @return whether or not the handler manages the specified resource.
+	 */
 	public final boolean hasResource(Name<?> resourceName) {
 		return this.resources.containsKey(resourceName);
 	}

@@ -50,11 +50,24 @@ public final class DynamicResourceResolver implements Runnable {
 	private DynamicResourceHandler handler;
 	private Name<String> name;
 
+	/**
+	 * Create a new instance with a handler and a resource name.
+	 *
+	 * @param handler
+	 *            the handler that holds the resource to be resolved.
+	 * @param name
+	 *            the name of the resource to be resolved.
+	 */
 	public DynamicResourceResolver(DynamicResourceHandler handler, Name<String> name) {
 		this.handler = handler;
 		this.name = name;
 	}
 
+	/**
+	 * Update the resource representation adding the path where the resource is
+	 * published and whether or not if given that URI it can be resolved to the
+	 * same resource.
+	 */
 	@Override
 	public void run() {
 		ApplicationContext ctx = ApplicationContext.getInstance();

@@ -41,9 +41,7 @@ import org.ldp4j.application.ext.Parameter;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.vocabulary.RDF;
 
-public final class QuerySupport {
-
-	public static final String FAILURE = "failure";
+final class QuerySupport {
 
 	public static final String NAMESPACE = "http://www.ldp4j.org/examples#";
 
@@ -58,17 +56,17 @@ public final class QuerySupport {
 	private QuerySupport() {
 	}
 
-	public static DataSet getDescription(Name<?> id, Query query) throws InvalidQueryException {
+	static DataSet getDescription(Name<?> id, Query query) throws InvalidQueryException {
 		DataSet dataset = DataSets.createDataSet(id);
 
-		if(query.hasParameter(FAILURE)) {
-			Parameter failure=query.getParameter(FAILURE);
+		if(query.hasParameter(QueryableResourceHandler.FAILURE)) {
+			Parameter failure=query.getParameter(QueryableResourceHandler.FAILURE);
 			try {
 				if(failure.rawValueAs(Boolean.class)) {
 					throw new InvalidQueryException("Failure requested", query);
 				}
 			} catch (ObjectTransformationException e) {
-				throw new InvalidQueryException("Could not understand: '"+failure.rawValue()+"' is not a valid boolean value for parameter '"+FAILURE+"'",e,query);
+				throw new InvalidQueryException("Could not understand: '"+failure.rawValue()+"' is not a valid boolean value for parameter '"+QueryableResourceHandler.FAILURE+"'",e,query);
 			}
 		}
 
@@ -94,12 +92,12 @@ public final class QuerySupport {
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static Name parameterId(String parameterName) {
+	static Name parameterId(String parameterName) {
 		return NamingScheme.getDefault().name("parameter",parameterName);
 	}
 
 	@SuppressWarnings("rawtypes")
-	public static Name queryId() {
+	static Name queryId() {
 		return NamingScheme.getDefault().name("query");
 	}
 

@@ -34,8 +34,6 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import javax.xml.datatype.DatatypeConfigurationException;
-
 import org.ldp4j.application.data.DataDSL;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
@@ -55,6 +53,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
+/**
+ * An example LDP4j application
+ */
 public class MyApplication extends Application<Configuration> {
 
 	private static final String PERSON_CONTAINER_NAME    = "PersonContainer";
@@ -63,11 +64,25 @@ public class MyApplication extends Application<Configuration> {
 	private static final String QUERYABLE_RESOURCE_NAME  = "QueryableResource";
 	private static final String DYNAMIC_RESOURCE_NAME    = "DynamicResource";
 
+	/**
+	 * The path for a root person resource
+	 */
 	public static final String ROOT_PERSON_RESOURCE_PATH    = "rootPersonResource/";
-	public static final String ROOT_PERSON_CONTAINER_PATH   = "rootPersonContainer/";
-	public static final String ROOT_QUERYABLE_RESOURCE_PATH = "rootQueryableResource/";
-	public static final String ROOT_DYNAMIC_RESOURCE_PATH   = "rootDynamicResource/";
 
+	/**
+	 * The path for a root person container resource
+	 */
+	public static final String ROOT_PERSON_CONTAINER_PATH   = "rootPersonContainer/";
+
+	/**
+	 * The path for a root queryable resource
+	 */
+	public static final String ROOT_QUERYABLE_RESOURCE_PATH = "rootQueryableResource/";
+
+	/**
+	 * The path for a root dynamic  resource
+	 */
+	public static final String ROOT_DYNAMIC_RESOURCE_PATH   = "rootDynamicResource/";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(MyApplication.class);
 
@@ -80,6 +95,9 @@ public class MyApplication extends Application<Configuration> {
 	private DynamicResourceHandler dynamicResourceHandler;
 	private ScheduledExecutorService executorService;
 
+	/**
+	 * Create a new instance
+	 */
 	public MyApplication() {
 		this.personResourceName = NamingScheme.getDefault().name(PERSON_RESOURCE_NAME);
 		this.personContainerName = NamingScheme.getDefault().name(PERSON_CONTAINER_NAME);
@@ -88,7 +106,8 @@ public class MyApplication extends Application<Configuration> {
 		this.dynamicResourceName = NamingScheme.getDefault().name(DYNAMIC_RESOURCE_NAME);
 	}
 
-	private DataSet getInitialData(String templateId, String name) throws DatatypeConfigurationException {
+	private DataSet getInitialData(String templateId, String name)
+			{
 		return
 			DataDSL.
 				dataSet().
@@ -104,56 +123,58 @@ public class MyApplication extends Application<Configuration> {
 						build();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void setup(Environment environment, Bootstrap<Configuration> bootstrap) throws ApplicationSetupException {
 		LOGGER.info("Configuring application: {}, {}",environment,bootstrap);
-		try {
-			PersonHandler resourceHandler = new PersonHandler();
-			PersonContainerHandler containerHandler=new PersonContainerHandler();
-			RelativeContainerHandler relativesHandler=new RelativeContainerHandler();
-			QueryableResourceHandler queryableHandler=new QueryableResourceHandler();
-			this.dynamicResourceHandler = new DynamicResourceHandler();
+		PersonHandler resourceHandler = new PersonHandler();
+		PersonContainerHandler containerHandler=new PersonContainerHandler();
+		RelativeContainerHandler relativesHandler=new RelativeContainerHandler();
+		QueryableResourceHandler queryableHandler=new QueryableResourceHandler();
+		this.dynamicResourceHandler = new DynamicResourceHandler();
 
-			containerHandler.setHandler(resourceHandler);
-			relativesHandler.setHandler(resourceHandler);
+		containerHandler.setHandler(resourceHandler);
+		relativesHandler.setHandler(resourceHandler);
 
-			resourceHandler.add(this.personResourceName, getInitialData(PersonHandler.ID,PERSON_RESOURCE_NAME));
-			containerHandler.add(this.personContainerName, getInitialData(PersonContainerHandler.ID,PERSON_CONTAINER_NAME));
-			relativesHandler.add(this.relativeContainerName, getInitialData(RelativeContainerHandler.ID,RELATIVE_CONTAINER_NAME));
-			queryableHandler.add(this.queryableResourceName, getInitialData(QueryableResourceHandler.ID,QUERYABLE_RESOURCE_NAME));
-			this.dynamicResourceHandler.add(this.dynamicResourceName, getInitialData(DynamicResourceHandler.ID,DYNAMIC_RESOURCE_NAME));
+		resourceHandler.add(this.personResourceName, getInitialData(PersonHandler.ID,PERSON_RESOURCE_NAME));
+		containerHandler.add(this.personContainerName, getInitialData(PersonContainerHandler.ID,PERSON_CONTAINER_NAME));
+		relativesHandler.add(this.relativeContainerName, getInitialData(RelativeContainerHandler.ID,RELATIVE_CONTAINER_NAME));
+		queryableHandler.add(this.queryableResourceName, getInitialData(QueryableResourceHandler.ID,QUERYABLE_RESOURCE_NAME));
+		this.dynamicResourceHandler.add(this.dynamicResourceName, getInitialData(DynamicResourceHandler.ID,DYNAMIC_RESOURCE_NAME));
 
-			bootstrap.addHandler(resourceHandler);
-			bootstrap.addHandler(containerHandler);
-			bootstrap.addHandler(relativesHandler);
-			bootstrap.addHandler(queryableHandler);
-			bootstrap.addHandler(this.dynamicResourceHandler);
+		bootstrap.addHandler(resourceHandler);
+		bootstrap.addHandler(containerHandler);
+		bootstrap.addHandler(relativesHandler);
+		bootstrap.addHandler(queryableHandler);
+		bootstrap.addHandler(this.dynamicResourceHandler);
 
-			environment.publishResource(this.personResourceName, PersonHandler.class, ROOT_PERSON_RESOURCE_PATH);
-			environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
-			environment.publishResource(this.queryableResourceName, QueryableResourceHandler.class, ROOT_QUERYABLE_RESOURCE_PATH);
-			environment.publishResource(this.dynamicResourceName, DynamicResourceHandler.class, ROOT_DYNAMIC_RESOURCE_PATH);
+		environment.publishResource(this.personResourceName, PersonHandler.class, ROOT_PERSON_RESOURCE_PATH);
+		environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
+		environment.publishResource(this.queryableResourceName, QueryableResourceHandler.class, ROOT_QUERYABLE_RESOURCE_PATH);
+		environment.publishResource(this.dynamicResourceName, DynamicResourceHandler.class, ROOT_DYNAMIC_RESOURCE_PATH);
 
-			this.executorService =
-				Executors.
-					newScheduledThreadPool(
-						1,
-						new ThreadFactoryBuilder().
-							setNameFormat("daemon-updater-thread-%d").
-							setUncaughtExceptionHandler(
-								new UncaughtExceptionHandler() {
-									@Override
-									public void uncaughtException(Thread t, Throwable e) {
-										LOGGER.error(String.format("Thread %s died",t.getName()),e);
-									}
-								}).
-							build());
-			LOGGER.info("Configuration completed.");
-		} catch (DatatypeConfigurationException e) {
-			throw new ApplicationSetupException("Could not setup application",e);
-		}
+		this.executorService =
+			Executors.
+				newScheduledThreadPool(
+					1,
+					new ThreadFactoryBuilder().
+						setNameFormat("daemon-updater-thread-%d").
+						setUncaughtExceptionHandler(
+							new UncaughtExceptionHandler() {
+								@Override
+								public void uncaughtException(Thread t, Throwable e) {
+									LOGGER.error(String.format("Thread %s died",t.getName()),e);
+								}
+							}).
+						build());
+		LOGGER.info("Configuration completed.");
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void initialize(WriteSession session) throws ApplicationInitializationException {
 		LOGGER.info("Initializing application: {}",session);
@@ -180,6 +201,9 @@ public class MyApplication extends Application<Configuration> {
 		LOGGER.info("Initialization completed.");
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void shutdown() {
 		LOGGER.info("Shutting down application...");

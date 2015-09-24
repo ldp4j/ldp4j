@@ -34,6 +34,9 @@ import org.ldp4j.application.ext.ContainerHandler;
 
 import com.google.common.collect.Maps;
 
+/**
+ * An example in-memory container handler.
+ */
 public abstract class InMemoryContainerHandler extends InMemoryResourceHandler implements ContainerHandler {
 
 	private final Map<Name<String>,NameProvider> nameProviders;
@@ -43,10 +46,25 @@ public abstract class InMemoryContainerHandler extends InMemoryResourceHandler i
 		this.nameProviders=Maps.newLinkedHashMap();
 	}
 
+	/**
+	 * Add a name provider for a container resource.
+	 *
+	 * @param containerName
+	 *            the name of the container.
+	 * @param provider
+	 *            the name provider.
+	 */
 	public final void addNameProvider(Name<String> containerName, NameProvider provider) {
 		this.nameProviders.put(containerName, provider);
 	}
 
+	/**
+	 * Return the name provider registered for a given container resource.
+	 *
+	 * @param containerName
+	 *            the name of the container.
+	 * @return the provider for the specified container resource.
+	 */
 	public final NameProvider nameProvider(Name<?> containerName) {
 		NameProvider result = this.nameProviders.get(containerName);
 		if(result==null) {

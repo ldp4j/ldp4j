@@ -33,8 +33,14 @@ import org.ldp4j.application.ext.annotations.Resource;
 )
 public class DynamicResourceHandler extends InMemoryResourceHandler {
 
+	/**
+	 * The identifier of the template defined by the handler.
+	 */
 	public static final String ID="DynamicResourceHandler";
 
+	/**
+	 * Create a new instance.
+	 */
 	public DynamicResourceHandler() {
 		super(ID);
 	}

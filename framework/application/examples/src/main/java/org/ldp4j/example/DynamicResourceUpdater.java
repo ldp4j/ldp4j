@@ -49,11 +49,23 @@ final class DynamicResourceUpdater implements Runnable {
 	private DynamicResourceHandler handler;
 	private Name<String> name;
 
+	/**
+	 * Create a new instance with a handler and a resource name.
+	 *
+	 * @param handler
+	 *            the handler that holds the resource to be updated.
+	 * @param name
+	 *            the name of the resource to be updated.
+	 */
 	public DynamicResourceUpdater(DynamicResourceHandler handler, Name<String> name) {
 		this.handler = handler;
 		this.name = name;
 	}
 
+	/**
+	 * Update the resource representation adding a temporal timestamp of when
+	 * the resource was last updated.
+	 */
 	@Override
 	public void run() {
 		ApplicationContext ctx = ApplicationContext.getInstance();

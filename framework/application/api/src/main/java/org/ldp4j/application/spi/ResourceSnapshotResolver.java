@@ -29,11 +29,37 @@ package org.ldp4j.application.spi;
 import java.net.URI;
 
 import org.ldp4j.application.session.ResourceSnapshot;
+import org.ldp4j.application.session.SnapshotResolutionException;
 
+/**
+ * Utility class for resolving the endpoints (URI) where the resources managed
+ * by the LDP4j framework are published, and for discovering which resources are
+ * addressed by a given URI.
+ */
 public interface ResourceSnapshotResolver {
 
+	/**
+	 * Return the URI used to publish a resource.
+	 *
+	 * @param snapshot
+	 *            the snapshot of the resource that is to be resolved.
+	 * @throws SnapshotResolutionException
+	 *             if the snapshot cannot be resolved to a URI.
+	 * @return the URI used to published the resource that represents the
+	 *         snapshot.
+	 */
 	ResourceSnapshot resolve(URI endpoint);
 
+	/**
+	 * Return a snapshot of the resource published at a given URI.
+	 *
+	 * @param endpoint
+	 *            the URI that is to be resolved.
+	 * @throws SnapshotResolutionException
+	 *             if the URI cannot be resolved to a resource snapshot.
+	 * @return a snapshot of the resource that is published at the specified
+	 *         endpoint.
+	 */
 	URI resolve(ResourceSnapshot resource);
 
 }

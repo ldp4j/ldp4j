@@ -81,7 +81,7 @@ public class QuerySupportTest {
 		Query query =
 			QueryBuilder.
 				newInstance().
-					withParameter(QuerySupport.FAILURE, "true").
+					withParameter(QueryableResourceHandler.FAILURE, "true").
 					build();
 		try {
 			QuerySupport.getDescription(id, query);
@@ -98,7 +98,7 @@ public class QuerySupportTest {
 		Query query =
 			QueryBuilder.
 				newInstance().
-					withParameter(QuerySupport.FAILURE, "FALSE").
+					withParameter(QueryableResourceHandler.FAILURE, "FALSE").
 					build();
 		DataSet data=QuerySupport.getDescription(id, query);
 		System.out.println(data);
@@ -106,7 +106,7 @@ public class QuerySupportTest {
 		DataSetHelper dHelper = DataSetUtils.newHelper(data);
 		IndividualHelper qInd = dHelper.localIndividual(QuerySupport.queryId());
 		assertThat(qInd.types(),contains(QuerySupport.QUERY_TYPE));
-		IndividualHelper pInd = dHelper.localIndividual(QuerySupport.parameterId(QuerySupport.FAILURE));
+		IndividualHelper pInd = dHelper.localIndividual(QuerySupport.parameterId(QueryableResourceHandler.FAILURE));
 		assertThat(pInd.types(),contains(QuerySupport.PARAMETER_TYPE));
 	}
 
@@ -116,7 +116,7 @@ public class QuerySupportTest {
 		Query query =
 			QueryBuilder.
 				newInstance().
-					withParameter(QuerySupport.FAILURE, "not a boolean").
+					withParameter(QueryableResourceHandler.FAILURE, "not a boolean").
 					build();
 		try {
 			QuerySupport.getDescription(id, query);

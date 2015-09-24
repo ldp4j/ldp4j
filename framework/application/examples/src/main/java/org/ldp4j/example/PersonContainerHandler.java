@@ -50,21 +50,38 @@ import org.ldp4j.application.session.WriteSessionException;
 )
 public class PersonContainerHandler extends InMemoryContainerHandler {
 
+	/**
+	 * The identifier of the template defined by the handler.
+	 */
 	public static final String ID="personContainerTemplate";
 
 	private PersonHandler handler;
 
 	private AtomicInteger id;
 
+	/**
+	 * Create a new instance.
+	 */
 	public PersonContainerHandler() {
 		super("PersonContainer");
 		this.id=new AtomicInteger();
 	}
 
+	/**
+	 * Set the person handler associated to this handler.
+	 *
+	 * @param handler
+	 *            the person handler.
+	 */
 	public void setHandler(PersonHandler handler) {
 		this.handler = handler;
 	}
 
+	/**
+	 * {@inheritDoc}<br/>
+	 *
+	 * Create a new person resource.
+	 */
 	@Override
 	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
 		Name<?> name=

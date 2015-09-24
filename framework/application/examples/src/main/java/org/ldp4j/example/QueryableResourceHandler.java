@@ -42,8 +42,20 @@ import org.ldp4j.application.session.ResourceSnapshot;
 )
 public class QueryableResourceHandler extends InMemoryResourceHandler implements Queryable {
 
+	/**
+	 * The identifier of the template defined by the handler.
+	 */
 	public static final String ID="queryableResourceTemplate";
 
+	/**
+	 * The query parameter name to provide to raise a failure in the processing
+	 * of the query.
+	 */
+	public static final String FAILURE = "failure";
+
+	/**
+	 * Create a new instance.
+	 */
 	public QueryableResourceHandler() {
 		super("QueryableResource");
 	}
