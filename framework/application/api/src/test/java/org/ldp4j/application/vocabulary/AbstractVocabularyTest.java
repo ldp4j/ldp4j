@@ -68,7 +68,7 @@ public abstract class AbstractVocabularyTest<T extends AbstractImmutableVocabula
 
 	@Test
 	public void testFromName() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		for(Term term:vocabulary.terms()) {
 			assertThat(
 				vocabulary.fromName(term.name()),
@@ -78,7 +78,7 @@ public abstract class AbstractVocabularyTest<T extends AbstractImmutableVocabula
 
 	@Test
 	public void testFromName$unknown() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		assertThat(
 			vocabulary.fromName("$$"),
 			nullValue());
@@ -86,13 +86,13 @@ public abstract class AbstractVocabularyTest<T extends AbstractImmutableVocabula
 
 	@Test(expected=NullPointerException.class)
 	public void testFromName$null() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		vocabulary.fromName(null);
 	}
 
 	@Test
 	public void testFromOrdinal() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		for(Term term:vocabulary.terms()) {
 			assertThat(
 				"fromOrdinal("+term.name()+".ordinal()) failed",
@@ -103,19 +103,19 @@ public abstract class AbstractVocabularyTest<T extends AbstractImmutableVocabula
 
 	@Test(expected=IndexOutOfBoundsException.class)
 	public void testFromOrdinal$outOfBounds$upper() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		vocabulary.fromOrdinal(vocabulary.size()+1);
 	}
 
 	@Test(expected=IndexOutOfBoundsException.class)
 	public void testFromOrdinal$outOfBounds$lower() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		vocabulary.fromOrdinal(-1);
 	}
 
 	@Test
 	public void testFromValue() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		for(Term term:vocabulary.terms()) {
 			assertThat(
 				vocabulary.fromValue(term.as(URI.class)),
@@ -125,55 +125,55 @@ public abstract class AbstractVocabularyTest<T extends AbstractImmutableVocabula
 
 	@Test(expected=NullPointerException.class)
 	public void testFromValue$null() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		vocabulary.fromValue(null);
 	}
 
 	@Test(expected=UnsupportedOperationException.class)
 	public void testFromValue$incompatible() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		vocabulary.fromValue("1");
 	}
 
 	@Test
 	public void testFromValue$compatible$unknown$uri() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		assertThat(vocabulary.fromValue(unknownURITerm()),nullValue());
 	}
 
 	@Test
 	public void testFromValue$compatible$unknown$qname() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		assertThat(vocabulary.fromValue(unknownQNameTerm()),nullValue());
 	}
 
 	@Test
 	public void testSize() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		assertThat(vocabulary.size(),equalTo(vocabulary.terms().length));
 	}
 
 	@Test
 	public void testIterator() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		assertThat(Lists.newArrayList(vocabulary),contains((Term[])vocabulary.terms()));
 	}
 
 	@Test(expected=UnsupportedOperationException.class)
 	public void testIterator$removeNotSupported() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		vocabulary.iterator().remove();
 	}
 
 	@Test
 	public void testValues() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		assertThat(Lists.newArrayList((Term[])Deencapsulation.invoke(vocabulary.getClass(),"values")),contains((Term[])vocabulary.terms()));
 	}
 
 	@Test
 	public void testValueOf$fromString() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		for(Term term:vocabulary.terms()) {
 			assertThat(
 				(Term)Deencapsulation.invoke(vocabulary.getClass(),"valueOf",term.name()),
@@ -183,7 +183,7 @@ public abstract class AbstractVocabularyTest<T extends AbstractImmutableVocabula
 
 	@Test
 	public void testValueOf$fromURI() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		for(Term term:vocabulary.terms()) {
 			assertThat(
 				(Term)Deencapsulation.invoke(vocabulary.getClass(),"valueOf",term.as(URI.class)),
@@ -193,7 +193,7 @@ public abstract class AbstractVocabularyTest<T extends AbstractImmutableVocabula
 
 	@Test
 	public void testValueOf$fromQName() {
-		Vocabulary<? extends Term> vocabulary = vocabulary();
+		Vocabulary vocabulary = vocabulary();
 		for(Term term:vocabulary.terms()) {
 			assertThat(
 				(Term)Deencapsulation.invoke(vocabulary.getClass(),"valueOf",term.as(QName.class)),

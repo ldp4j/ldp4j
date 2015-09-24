@@ -39,7 +39,7 @@ import java.io.Serializable;
  * @author Miguel Esteban Guti&eacute;rrez
  * @see Term
  */
-public interface Vocabulary<T extends Term> extends Iterable<T>, Serializable {
+public interface Vocabulary extends Iterable<Term>, Serializable {
 
 	/**
 	 * Get the namespace of the vocabulary.
@@ -70,7 +70,7 @@ public interface Vocabulary<T extends Term> extends Iterable<T>, Serializable {
 	 * @return the terms defined for the vocabulary or an empty array if no
 	 *         terms are defined.
 	 */
-	T[] terms();
+	Term[] terms();
 
 	/**
 	 * Returns the vocabulary term with the specified name. The name must match
@@ -82,7 +82,7 @@ public interface Vocabulary<T extends Term> extends Iterable<T>, Serializable {
 	 * @throws IllegalArgumentException
 	 *             if {@code name} is null.
 	 */
-	T fromName(String name);
+	Term fromName(String name);
 
 	/**
 	 * Returns the vocabulary term specified in a given position.
@@ -94,7 +94,7 @@ public interface Vocabulary<T extends Term> extends Iterable<T>, Serializable {
 	 *             if the specified ordinal is lower than {@code 0} or greater
 	 *             or equal than {@code #size()}.
 	 */
-	T fromOrdinal(int ordinal);
+	Term fromOrdinal(int ordinal);
 
 	/**
 	 * Returns the vocabulary term that matches the specified value.
@@ -108,6 +108,6 @@ public interface Vocabulary<T extends Term> extends Iterable<T>, Serializable {
 	 *             instances a compatible class.
 	 * @see Term#as(Class)
 	 */
-	<V> T fromValue(V value);
+	<V> Term fromValue(V value);
 
 }

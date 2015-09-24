@@ -38,18 +38,19 @@ final class TermUtils {
 		private final List<Character> buffer=new ArrayList<Character>();
 		private int mark=0;
 
-		public void push(char character) {
+		private final void push(char character) {
 			builder.append(Character.toUpperCase(character));
 		}
 
-		public void startGroup(int position) {
+		private final void startGroup(int position) {
 			mark=position;
 		}
-		public void save(char character) {
+
+		private final void save(char character) {
 			buffer.add(character);
 		}
 
-		public void pushGroup() {
+		private final void pushGroup() {
 			if(mark!=0) {
 				builder.append("_");
 			}
@@ -64,7 +65,7 @@ final class TermUtils {
 			buffer.clear();
 		}
 
-		public String complete() {
+		private final String complete() {
 			if(!buffer.isEmpty()) {
 				if(mark>0) {
 					builder.append("_");
@@ -80,7 +81,7 @@ final class TermUtils {
 
 	private abstract static class State {
 
-		public TermUtils.State accept(int position, char character, TermUtils.Context state) {
+		private TermUtils.State accept(int position, char character, TermUtils.Context state) {
 			if(Character.isUpperCase(character)) {
 				return handleUpperCase(position,character,state);
 			} else { // Must be Character.isLowerCase(character)

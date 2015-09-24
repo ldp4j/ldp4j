@@ -30,6 +30,7 @@ import java.lang.reflect.Array;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.UUID;
@@ -79,7 +80,7 @@ import static java.util.Objects.*;
  * @author Miguel Esteban Guti&eacute;rrez
  * @see ImmutableTerm
  */
-public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> implements Vocabulary<T> {
+public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> implements Vocabulary {
 
 	private static final long serialVersionUID = -6913490730122202939L;
 
@@ -112,10 +113,23 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 
 	private Status status=Status.INITIALIZING;
 
+	/**
+	 * Create a new instance with a term class, a namespace, and a preferred
+	 * prefix.
+	 *
+	 * @param clazz
+	 *            the type of terms held by the vocabulary.
+	 * @param namespace
+	 *            the namespace of the vocabulary.
+	 * @param prefix
+	 *            the preferred prefix of the vocabulary.
+	 * @throws NullPointerException
+	 *             if any of the parameters is {@code null}.
+	 */
 	public AbstractImmutableVocabulary(Class<T> clazz, String namespace, String prefix) {
-		this.termClass = clazz;
-		this.namespace = namespace;
-		this.prefix = prefix;
+		this.termClass = Objects.requireNonNull(clazz,"Term class cannot be null");
+		this.namespace = Objects.requireNonNull(namespace,"Namespace cannot be null");
+		this.prefix = Objects.requireNonNull(prefix,"Preferred prefix cannot be null");
 	}
 
 	private void checkStatus(Status status) {
@@ -231,17 +245,17 @@ public abstract class AbstractImmutableVocabulary<T extends ImmutableTerm> imple
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final Iterator<T> iterator() {
+	public final Iterator<Term> iterator() {
 		checkStatus(Status.INITIALIZED);
-		final Iterator<? extends T> iterator = this.terms.values().iterator();
-		return new Iterator<T>() {
+		final Iterator<? extends Term> iterator = this.terms.values().iterator();
+		return new Iterator<Term>() {
 			@Override
 			public boolean hasNext() {
 				return iterator.hasNext();
 			}
 
 			@Override
-			public T next() {
+			public Term next() {
 				return iterator.next();
 			}
 

@@ -30,23 +30,28 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.Collection;
+import java.util.Objects;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import javax.xml.namespace.QName;
 
-import org.ldp4j.application.vocabulary.Term;
-import org.ldp4j.application.vocabulary.Vocabulary;
-
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 final class TypeAdapter<S,T> {
-
-	static final String ADAPTER_NAME_CONVENTION = "adaptTo";
 
 	static final class QNameAdapter {
 		private QNameAdapter() {
 		}
+		/**
+		 * Transform a term to a {@code QName}.
+		 *
+		 * @param term
+		 *            the term to adapt.
+		 * @return a {@code QName} object that represents the specified term.
+		 */
 		public static QName adaptTo(Term term) {
-			Vocabulary<? extends Term> vocabulary = term.getDeclaringVocabulary();
+			Vocabulary vocabulary = term.getDeclaringVocabulary();
 			return
 				new QName(
 					vocabulary.getNamespace(),
@@ -58,9 +63,29 @@ final class TypeAdapter<S,T> {
 	static final class URIAdapter {
 		private URIAdapter(){
 		}
+		/**
+		 * Transform a term to a {@code URI}.
+		 *
+		 * @param term
+		 *            the term to adapt.
+		 * @return a {@code URI} object that represents the specified term.
+		 */
 		public static URI adaptTo(Term term) {
-			return URI.create(term.getDeclaringVocabulary().getNamespace()+term.entityName());
+			return
+				URI.
+					create(
+						term.getDeclaringVocabulary().getNamespace()+
+						term.entityName());
 		}
+	}
+
+	static final String ADAPTER_NAME_CONVENTION = "adaptTo";
+
+	static final CopyOnWriteArrayList<Class<?>> ADAPTER_CLASSES=Lists.newCopyOnWriteArrayList();
+
+	static {
+		registerAdapterClass(URIAdapter.class);
+		registerAdapterClass(QNameAdapter.class);
 	}
 
 	private final Class<? extends T> resultClass;
@@ -71,10 +96,6 @@ final class TypeAdapter<S,T> {
 		this.resultClass = resultClass;
 	}
 
-	/**
-	 * @param value
-	 * @return
-	 */
 	private String getAdapterFailureMessage(String messageTemplate, Object... args) {
 		return String.format("Chosen adapter method '%s' ",adapterMethod).concat(String.format(messageTemplate,args));
 	}
@@ -83,7 +104,6 @@ final class TypeAdapter<S,T> {
 		try {
 			T result = resultClass.cast(adapterMethod.invoke(null, value));
 			if(result==null) {
-				// TODO: Think about having fallback adapter methods...
 				throw new IllegalStateException(getAdapterFailureMessage("could not adapt value '%s",value));
 			}
 			return result;
@@ -96,16 +116,8 @@ final class TypeAdapter<S,T> {
 		}
 	}
 
-	// TODO: Make this extensible
 	private static Collection<Class<?>> findTypeAdapters() {
-		return
-			ImmutableList.
-				<Class<?>>builder().
-					add(
-						TypeAdapter.QNameAdapter.class,
-						TypeAdapter.URIAdapter.class
-					).
-					build();
+		return ImmutableList.copyOf(TypeAdapter.ADAPTER_CLASSES);
 	}
 
 	private static <S,T> TypeAdapter<S,T> doCreateAdapter(Class<? extends T> targetType, AdapterMethodValidator validator) {
@@ -120,6 +132,19 @@ final class TypeAdapter<S,T> {
 			"Could not find adapter of adapting class '" +
 			validator.getTargetClass().getCanonicalName() +
 			"' to '" + targetType.getCanonicalName() + "'");
+	}
+
+	/**
+	 * Register a new adapter class.
+	 *
+	 * @param clazz
+	 *            the adapter class.
+	 * @throws NullPointerException
+	 *             if the adapter class is {@code null}.
+	 */
+	static void registerAdapterClass(Class<?> clazz) {
+		Objects.requireNonNull(clazz,"Adapter class cannot be null");
+		TypeAdapter.ADAPTER_CLASSES.addIfAbsent(clazz);
 	}
 
 	/**

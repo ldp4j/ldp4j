@@ -84,7 +84,7 @@ public interface Term extends Comparable<Term>, Serializable {
 	 * @return the Vocabulary object corresponding to this term constant's
 	 *         vocabulary type
 	 */
-	Vocabulary<? extends Term> getDeclaringVocabulary();
+	Vocabulary getDeclaringVocabulary();
 
 	/**
 	 * Transform the term to an instance of the specified type.
