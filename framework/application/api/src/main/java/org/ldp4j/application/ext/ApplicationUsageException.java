@@ -26,23 +26,43 @@
  */
 package org.ldp4j.application.ext;
 
+/**
+ * Base checked exception for the LDP4j Application usage exceptions.
+ */
 public abstract class ApplicationUsageException extends ApplicationException {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = -5587982746340556713L;
+	private static final long serialVersionUID = -5587982746340556715L;
 
+	/**
+	 * Create a new instance with a message and a cause.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationUsageException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
+	/**
+	 * Create a new instance with a message.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 */
 	public ApplicationUsageException(String message) {
-		super(message);
+		this(message,null);
 	}
 
+	/**
+	 * Create a new instance with a cause and a default message.
+	 *
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationUsageException(Throwable cause) {
-		super(cause);
+		this("Unexpected application usage exception",cause);
 	}
 
 }

@@ -33,46 +33,51 @@ import java.lang.reflect.Modifier;
 final class AdapterMethodValidator {
 
 	private interface TypeValidator {
-		
+
 		boolean isValid(Class<?> parameterType);
+
 		Class<?> getTargetClass();
-		
+
 	}
 
 	private static final class SubclassTypeValidator implements TypeValidator {
+
 		private final Class<?> subClass;
-	
+
 		private SubclassTypeValidator(Class<?> termClass) {
 			this.subClass = termClass;
 		}
-	
+
 		@Override
 		public boolean isValid(Class<?> parameterType) {
-			return parameterType.isAssignableFrom(subClass);
+			return parameterType.isAssignableFrom(this.subClass);
 		}
-	
+
 		@Override
 		public Class<?> getTargetClass() {
-			return subClass;
+			return this.subClass;
 		}
+
 	}
 
 	private static final class InstanceTypeValidator implements TypeValidator {
+
 		private final Object instance;
-	
+
 		private InstanceTypeValidator(Object term) {
 			this.instance = term;
 		}
-	
+
 		@Override
 		public boolean isValid(Class<?> parameterType) {
 			return parameterType.isInstance(instance);
 		}
-	
+
 		@Override
 		public Class<?> getTargetClass() {
-			return instance.getClass();
+			return this.instance.getClass();
 		}
+
 	}
 
 	private final Class<?> returnType;
@@ -84,30 +89,30 @@ final class AdapterMethodValidator {
 	}
 
 	boolean isValid(Method method) {
-		return 
-			TypeAdapter.ADAPTER_NAME_CONVENTION.equals(method.getName()) && 
-			hasValidSignature(method) && 
+		return
+			TypeAdapter.ADAPTER_NAME_CONVENTION.equals(method.getName()) &&
+			hasValidSignature(method) &&
 			isVisible(method);
 	}
 
 	Class<?> getTargetClass() {
-		return parameterValidator.getTargetClass();
+		return this.parameterValidator.getTargetClass();
 	}
 
 	private boolean hasValidSignature(Method method) {
-		return 
-			returnType.isAssignableFrom(method.getReturnType()) && 
+		return
+			this.returnType.isAssignableFrom(method.getReturnType()) &&
 			method.getParameterTypes().length==1 &&
-			parameterValidator.isValid(method.getParameterTypes()[0]);
+			this.parameterValidator.isValid(method.getParameterTypes()[0]);
 	}
 
 	private boolean isVisible(Method method) {
 		int modifiers = method.getModifiers();
-		return 
-			Modifier.isStatic(modifiers) && 
+		return
+			Modifier.isStatic(modifiers) &&
 			Modifier.isPublic(modifiers);
 	}
-	
+
 	static AdapterMethodValidator newInstance(Class<?> returnType, Class<?> parameterType) {
 		return new AdapterMethodValidator(returnType, new SubclassTypeValidator(parameterType));
 	}

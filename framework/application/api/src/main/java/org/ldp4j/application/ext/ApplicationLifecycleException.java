@@ -26,23 +26,45 @@
  */
 package org.ldp4j.application.ext;
 
+
+
+/**
+ * Base checked exception for the LDP4j Application lifecycle exceptions.
+ */
 public abstract class ApplicationLifecycleException extends ApplicationException {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 6710263710747257071L;
+	private static final long serialVersionUID = 6710263710747257075L;
 
+	/**
+	 * Create a new instance with a message and a cause.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationLifecycleException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
+	/**
+	 * Create a new instance with a message.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 */
 	public ApplicationLifecycleException(String message) {
-		super(message);
+		this(message,null);
 	}
 
+	/**
+	 * Create a new instance with a cause and a default message.
+	 *
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationLifecycleException(Throwable cause) {
-		super(cause);
+		super("Unexpected application lifecycle exception",cause);
 	}
 
 }

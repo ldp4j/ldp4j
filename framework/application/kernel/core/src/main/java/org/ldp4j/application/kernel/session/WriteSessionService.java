@@ -119,9 +119,7 @@ public final class WriteSessionService implements Service {
 		return new DelegatedWriteSession(configuration,this);
 	}
 
-	public void terminateSession(WriteSession writeSession) {
-		checkArgument(writeSession instanceof DelegatedWriteSession);
-		DelegatedWriteSession session=(DelegatedWriteSession)writeSession;
+	void terminateSession(DelegatedWriteSession session) {
 		try {
 			switch(session.status()) {
 				case ACTIVE:

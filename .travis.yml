@@ -1,46 +1,38 @@
 sudo: false
-cache:
-  directories:
-  - "$HOME/.m2/repository"
-  - "$HOME/.sonar"
 language: java
 jdk:
 - oraclejdk7
+
 notifications:
   email:
     recipients:
     - ldp4j-commits@googlegroups.com
     on_success: always
     on_failure: always
+
+cache:
+  directories:
+  - "$HOME/.m2/repository"
+  - "$HOME/.sonar"
+
+before_cache:
+  - mkdir /tmp/cache-trick
+  - mv $HOME/.m2/repository/org/ldp4j /tmp/cache-trick/
+
 before_install:
 - openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in config/src/main/resources/ci/secring.gpg.enc
   -out local.secring.gpg -d
 - openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in config/src/main/resources/ci/pubring.gpg.enc
   -out local.pubring.gpg -d
 - if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+
 install:
 - "/bin/true"
+
 script:
-- if [ "${TRAVIS_PULL_REQUEST}" = "false" ];
-  then
-    if [ "${TRAVIS_BRANCH}" = "master" ] || [ "${TRAVIS_BRANCH}" = "develop" ];
-    then mvn clean deploy -B -Dcodebase.directory=`pwd` -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;
-    else mvn clean install -B -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;
-    fi
-  else
-    echo mvn clean install -B -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;
-  fi
-- if [ "${TRAVIS_PULL_REQUEST}" = "false" ];
-  then
-    case "${TRAVIS_BRANCH}" in
-      master)   mvn sonar:sonar -B -Dsonar.branch=$TRAVIS_BRANCH -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;;
-      develop)  mvn sonar:sonar -B -Dsonar.branch=$TRAVIS_BRANCH -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;;
-      feature*) mvn sonar:sonar -B -Dsonar.branch=$TRAVIS_BRANCH -Dcoverage.reports.dir=`pwd`/target/all --settings config/src/main/resources/ci/settings.xml;;
-      *)        echo "Skip SonarQube analysis (${TRAVIS_BRANCH})";;
-    esac
-  fi
-- mkdir /tmp/cache-trick
-- mv $HOME/.m2/repository/org/ldp4j /tmp/cache-trick/
+- chmod ugo+x ./.travis/travis.sh
+- ./.travis/travis.sh
+
 env:
   global:
   - secure: AAVZNDVtE0dgPK7qZacSe6CUP0rGQG1SWQEzo8e0BH3WhJGFhM4vNQTR6N6KzjgUHmstfEM7nOdIcTSpHd+RFCKhDbZYl7iN1ZYUG/sn9KGbjyDWkC3EAddP4LZ9yDqQ1iYg5tQh59XC/Dne/peXOJRAf+RocjuhvGXsC3rT0/c=

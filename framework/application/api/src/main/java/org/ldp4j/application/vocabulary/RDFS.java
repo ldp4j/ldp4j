@@ -303,14 +303,14 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	}
 
 	/**
-	 * Find the term that matches the specified URI.
+	 * Find the term that matches the specified name.
 	 *
 	 * @param term
-	 *            A {@code String}-based representation of the term's URI.
-	 * @return The {@code Term} that matches the specified URI.
+	 *            A {@code String}-based representation of the term's name.
+	 * @return The {@code Term} that matches the specified name.
 	 */
 	public static Term valueOf(String term) {
-		return getInstance().fromValue(term);
+		return getInstance().fromName(term);
 	}
 
 	/**

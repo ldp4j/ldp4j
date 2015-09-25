@@ -26,6 +26,7 @@
  */
 package org.ldp4j.application.kernel.resource;
 
+import org.ldp4j.application.ApplicationApiRuntimeException;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.ext.ApplicationException;
 import org.ldp4j.application.ext.ContainerHandler;
@@ -38,6 +39,7 @@ import org.ldp4j.application.kernel.session.WriteSessionConfiguration;
 import org.ldp4j.application.kernel.session.WriteSessionService;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
+import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.SnapshotVisitor;
 import org.ldp4j.application.session.WriteSession;
 
@@ -67,7 +69,7 @@ final class AdapterFactory {
 			if(clazz.isInstance(this.delegate)) {
 				return clazz.cast(this.delegate);
 			}
-			throw new UnsupportedFeatureException(this.resourceId.templateId(),this.delegate.getClass().getCanonicalName(),clazz.getCanonicalName());
+			throw new UnsupportedFeatureException(resource(),clazz);
 		}
 
 		protected final T resource() {
@@ -75,15 +77,25 @@ final class AdapterFactory {
 		}
 
 		protected final FeatureException featureException(Throwable cause, Class<?> feature) {
-			return new FeatureExecutionException(this.resourceId.templateId(),this.delegate.getClass().getCanonicalName(),feature.getCanonicalName(),cause);
+			return new FeatureExecutionException(resource(),feature,cause);
 		}
 
 		protected final void finalizeSession() {
-			this.service.terminateSession(this.session);
+			try {
+				this.session.close();
+			} catch (SessionTerminationException e) {
+				throw new CouldNotTerminateSessionException(e);
+			}
 		}
 
 		protected final Resource detach(ResourceSnapshot snapshot) {
 			return this.service.detach(this.session, snapshot);
+		}
+
+		protected final void checkResponseNotNull(Object response, Class<?> feature, String violation) throws FeaturePostconditionException {
+			if(response==null) {
+				throw new FeaturePostconditionException(resource(),feature,violation);
+			}
 		}
 
 		@Override
@@ -94,8 +106,10 @@ final class AdapterFactory {
 		@Override
 		public final DataSet get() throws FeatureException {
 			try {
-				return this.delegate.get(resource());
-			} catch (ApplicationException e) {
+				DataSet dataSet = this.delegate.get(resource());
+				checkResponseNotNull(dataSet,ResourceHandler.class,"No data set returned");
+				return dataSet;
+			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,ResourceHandler.class);
 			} finally {
 				finalizeSession();
@@ -105,8 +119,10 @@ final class AdapterFactory {
 		@Override
 		public final DataSet query(Query query) throws FeatureException {
 			try {
-				return as(Queryable.class).query(resource(), query, writeSession());
-			} catch (ApplicationException e) {
+				DataSet dataSet = as(Queryable.class).query(resource(), query, writeSession());
+				checkResponseNotNull(dataSet,Queryable.class,"No data set returned");
+				return dataSet;
+			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,Queryable.class);
 			} finally {
 				finalizeSession();
@@ -117,7 +133,7 @@ final class AdapterFactory {
 		public final void update(DataSet content) throws FeatureException {
 			try {
 				as(Modifiable.class).update(resource(), content, writeSession());
-			} catch (ApplicationException e) {
+			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,Modifiable.class);
 			} finally {
 				finalizeSession();
@@ -128,7 +144,7 @@ final class AdapterFactory {
 		public final void delete() throws FeatureException {
 			try {
 				as(Deletable.class).delete(resource(),writeSession());
-			} catch (ApplicationException e) {
+			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,Deletable.class);
 			} finally {
 				finalizeSession();
@@ -138,11 +154,7 @@ final class AdapterFactory {
 		@Override
 		public Resource create(DataSet content) throws FeatureException {
 			finalizeSession();
-			throw
-				new UnsupportedFeatureException(
-					this.resourceId.templateId(),
-					this.delegate.getClass().getCanonicalName(),
-					ContainerHandler.class.getCanonicalName());
+			throw new UnsupportedFeatureException(resource(),ContainerHandler.class);
 		}
 
 	}
@@ -157,8 +169,9 @@ final class AdapterFactory {
 		public Resource create(DataSet content) throws FeatureException {
 			try {
 				ResourceSnapshot create = as(ContainerHandler.class).create(resource(),content,writeSession());
+				checkResponseNotNull(create, ContainerHandler.class, "No resource created");
 				return detach(create);
-			} catch (ApplicationException e) {
+			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,ContainerHandler.class);
 			} finally {
 				finalizeSession();

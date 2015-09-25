@@ -26,8 +26,12 @@
  */
 package org.ldp4j.example;
 
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -41,9 +45,15 @@ import org.ldp4j.application.ext.InvalidQueryException;
 import org.ldp4j.application.ext.ObjectTransformationException;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.sdk.QueryBuilder;
+import org.ldp4j.commons.testing.Utils;
 
 
 public class QuerySupportTest {
+
+	@Test
+	public void verifyIsUtilityClass() {
+		assertThat(Utils.isUtilityClass(QuerySupport.class),equalTo(true));
+	}
 
 	@Test
 	public void testGetDescription() throws Exception {
@@ -56,7 +66,6 @@ public class QuerySupportTest {
 					withParameter("param2", "value1").
 					build();
 		DataSet data=QuerySupport.getDescription(id, query);
-		System.out.println(data);
 		assertThat((Object)data.name(),sameInstance((Object)id));
 		DataSetHelper dHelper = DataSetUtils.newHelper(data);
 		IndividualHelper qInd = dHelper.localIndividual(QuerySupport.queryId());
@@ -71,7 +80,7 @@ public class QuerySupportTest {
 		Query query =
 			QueryBuilder.
 				newInstance().
-					withParameter(QuerySupport.FAILURE, "true").
+					withParameter(QueryableResourceHandler.FAILURE, "true").
 					build();
 		try {
 			QuerySupport.getDescription(id, query);
@@ -88,15 +97,14 @@ public class QuerySupportTest {
 		Query query =
 			QueryBuilder.
 				newInstance().
-					withParameter(QuerySupport.FAILURE, "FALSE").
+					withParameter(QueryableResourceHandler.FAILURE, "FALSE").
 					build();
 		DataSet data=QuerySupport.getDescription(id, query);
-		System.out.println(data);
 		assertThat((Object)data.name(),sameInstance((Object)id));
 		DataSetHelper dHelper = DataSetUtils.newHelper(data);
 		IndividualHelper qInd = dHelper.localIndividual(QuerySupport.queryId());
 		assertThat(qInd.types(),contains(QuerySupport.QUERY_TYPE));
-		IndividualHelper pInd = dHelper.localIndividual(QuerySupport.parameterId(QuerySupport.FAILURE));
+		IndividualHelper pInd = dHelper.localIndividual(QuerySupport.parameterId(QueryableResourceHandler.FAILURE));
 		assertThat(pInd.types(),contains(QuerySupport.PARAMETER_TYPE));
 	}
 
@@ -106,7 +114,7 @@ public class QuerySupportTest {
 		Query query =
 			QueryBuilder.
 				newInstance().
-					withParameter(QuerySupport.FAILURE, "not a boolean").
+					withParameter(QueryableResourceHandler.FAILURE, "not a boolean").
 					build();
 		try {
 			QuerySupport.getDescription(id, query);
@@ -128,7 +136,6 @@ public class QuerySupportTest {
 					withParameter("param2", "value1").
 					build();
 		DataSet data=QuerySupport.getDescription(id, query);
-		System.out.println(data);
 		assertThat((Object)data.name(),sameInstance((Object)id));
 		DataSetHelper dHelper = DataSetUtils.newHelper(data);
 		IndividualHelper qInd = dHelper.localIndividual(QuerySupport.queryId());

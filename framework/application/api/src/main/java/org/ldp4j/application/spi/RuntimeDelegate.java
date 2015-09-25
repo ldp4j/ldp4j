@@ -32,12 +32,16 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.ReflectPermission;
+import java.net.URI;
+import java.util.Iterator;
 import java.util.Properties;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.ldp4j.application.ApplicationContextException;
+import org.ldp4j.application.session.ReadSession;
+import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,29 +91,28 @@ public abstract class RuntimeDelegate {
 
 	/**
 	 * Obtain an {@code RuntimeDelegate} instance using the method described
-	 * in {@link RuntimeDelegate#engine()}.
+	 * in {@link RuntimeDelegate#getInstance()}.
 	 *
-	 * @return an instance of {@code ApplicationEngine} if available, or null if
+	 * @return an instance of {@code RuntimeDelegate} if available, or null if
 	 *         a default implementation class is to be selected.
 	 */
 	private static RuntimeDelegate findDelegate() {
+		RuntimeDelegate result=null;
 		try {
-			RuntimeDelegate result=createRuntimeDelegateFromSPI();
+			result=createRuntimeDelegateFromSPI();
 			if(result==null) {
 				result=createRuntimeDelegateFromConfigurationFile();
 			}
-
 			if(result==null) {
 				String delegateClassName = System.getProperty(APPLICATION_ENGINE_SPI_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createRuntimeDelegateForClassName(delegateClassName);
 				}
 			}
-
-			return result;
 		} catch (Exception ex) {
-			throw new IllegalStateException("Could not find application engine",ex);
+			LOGGER.warn("Could not find application engine",ex);
 		}
+		return result;
 	}
 
 	private static RuntimeDelegate createRuntimeDelegateFromConfigurationFile() {
@@ -125,17 +128,13 @@ public abstract class RuntimeDelegate {
 				if(delegateClassName!=null) {
 					result=createRuntimeDelegateForClassName(delegateClassName);
 				}
-				if(delegateClassName==null && LOGGER.isWarnEnabled()) {
-					LOGGER.warn("Configuration file '"+configFile.getAbsolutePath()+"' does not define a delegate class name");
+				if(delegateClassName==null) {
+					LOGGER.warn("Configuration file '{}' does not define a delegate class name",configFile.getAbsolutePath());
 				}
 			} catch(FileNotFoundException e) {
-				if(LOGGER.isDebugEnabled()) {
-					LOGGER.debug("Could not find runtime instance configuration file '"+configFile.getAbsolutePath()+"'",e);
-				}
+				LOGGER.debug("Could not find runtime instance configuration file '{}'",configFile.getAbsolutePath(),e);
 			} catch(IOException e) {
-				if(LOGGER.isWarnEnabled()) {
-					LOGGER.warn("Could not load runtime instance configuration file '"+configFile.getAbsolutePath()+"'",e);
-				}
+				LOGGER.warn("Could not load runtime instance configuration file '{}'",configFile.getAbsolutePath(),e);
 			} finally {
 				closeQuietly(is, "Could not close configuration properties");
 			}
@@ -156,29 +155,31 @@ public abstract class RuntimeDelegate {
 
 	/**
 	 * Close an input stream logging possible failures.
-	 * @param is The input stream that is to be closed.
-	 * @param message The message to log in case of failure.
+	 *
+	 * @param is
+	 *            The input stream that is to be closed.
+	 * @param message
+	 *            The message to log in case of failure.
 	 */
 	private static void closeQuietly(InputStream is, String message) {
 		if(is!=null) {
-		try {
-			is.close();
-		} catch (Exception e) {
-			if(LOGGER.isWarnEnabled()) {
+			try {
+				is.close();
+			} catch (Exception e) {
 				LOGGER.warn(message,e);
 			}
-		}
 		}
 	}
 
 	private static RuntimeDelegate createRuntimeDelegateFromSPI() {
 		if(!DISABLE.equalsIgnoreCase(System.getProperty(APPLICATION_ENGINE_SPI_FINDER))) {
-			try {
-				for (RuntimeDelegate delegate : ServiceLoader.load(RuntimeDelegate.class)) {
-					return delegate;
+			Iterator<RuntimeDelegate> iterator = ServiceLoader.load(RuntimeDelegate.class).iterator();
+			while(iterator.hasNext()) {
+				try {
+					return iterator.next();
+				} catch (ServiceConfigurationError ex) {
+					LOGGER.error("Could not load {} service. Full stacktrace follows.",RuntimeDelegate.class.getCanonicalName(),ex);
 				}
-			} catch (ServiceConfigurationError ex) {
-				LOGGER.error("Could not load "+RuntimeDelegate.class.getCanonicalName()+" service. Full stacktrace follows:",ex);
 			}
 		}
 		return null;
@@ -203,25 +204,23 @@ public abstract class RuntimeDelegate {
 	}
 
 	private static void handleFailure(String delegateClassName, String action, Exception failure) {
-		if(LOGGER.isWarnEnabled()) {
-			LOGGER.warn("Could not "+action+" delegate class "+delegateClassName,failure);
-		}
+		LOGGER.warn("Could not {} delegate class {}",action,delegateClassName,failure);
 	}
 
 	/**
-	 * Obtain a {@code ApplicationEngine} instance. If an instance had not
-	 * already been created and set via {@link #setEngine(RuntimeDelegate)},
+	 * Obtain a {@code RuntimeDelegate} instance. If an instance had not
+	 * already been created and set via {@link RuntimeDelegate#setDelegate(RuntimeDelegate)},
 	 * the first invocation will create an instance which will then be cached
 	 * for future use.
 	 *
 	 * <p>
-	 * The algorithm used to locate the {@code ApplicationEngine} subclass to
+	 * The algorithm used to locate the {@code RuntimeDelegate} subclass to
 	 * use consists of the following steps:
 	 * </p>
 	 * <ul>
 	 * <li>
 	 * If a resource with the name of
-	 * {@code META-INF/services/org.ldp4j.application.engine.ApplicationEngine}
+	 * {@code META-INF/services/}<tt>{@value #APPLICATION_ENGINE_SPI_PROPERTY}</tt>
 	 * exists, then its first line, if present, is used as the UTF-8 encoded
 	 * name of the implementation class.</li>
 	 * <li>
@@ -238,7 +237,7 @@ public abstract class RuntimeDelegate {
 	 * Finally, a default implementation class name is used.</li>
 	 * </ul>
 	 *
-	 * @return an instance of {@code ApplicationEngine}.
+	 * @return an instance of {@code RuntimeDelegate}.
 	 */
 	public static RuntimeDelegate getInstance() {
 		RuntimeDelegate result = RuntimeDelegate.CACHED_DELEGATE.get();
@@ -260,19 +259,19 @@ public abstract class RuntimeDelegate {
 
 	/**
 	 * Set the {@code RuntimeDelegate} that will be used by clients. If this method
-	 * is not called prior to {@link RuntimeDelegate#engine()} then an
+	 * is not called prior to {@link RuntimeDelegate#getInstance()} then an
 	 * implementation will be sought as described in
-	 * {@link RuntimeDelegate#engine()}.
+	 * {@link RuntimeDelegate#getInstance()}.
 	 *
 	 * @param delegate
-	 *            the {@code ApplicationEngine} runtime delegate instance.
+	 *            the {@code RuntimeDelegate} runtime delegate instance.
 	 * @throws SecurityException
 	 *             if there is a security manager and the permission
 	 *             ReflectPermission("suppressAccessChecks") has not been
 	 *             granted.
 	 */
 	public static void setInstance(final RuntimeDelegate delegate) {
-		SecurityManager security = System.getSecurityManager();
+		SecurityManager security = getSecurityManager();
 		if (security != null) {
 			security.checkPermission(SUPPRESS_ACCESS_CHECKS_PERMISSION);
 		}
@@ -281,35 +280,67 @@ public abstract class RuntimeDelegate {
 		}
 	}
 
+
+	private static SecurityManager getSecurityManager() {
+		return System.getSecurityManager();
+	}
+
 	private static class DefaultRuntimeDelegate extends RuntimeDelegate {
 
-		private static final String ERROR_MESSAGE=
-				String.format(
-					"No implementation for class '%s' could be found",
-					RuntimeDelegate.class.getName());
+		private static final class NullResourceSnapshotResolver implements ResourceSnapshotResolver {
+			@Override
+			public URI resolve(ResourceSnapshot resource) {
+				return null;
+			}
+			@Override
+			public ResourceSnapshot resolve(URI endpoint) {
+				return null;
+			}
+		}
 
 		@Override
-		public WriteSession createSession() {
-			throw new UnsupportedOperationException(ERROR_MESSAGE);
+		public WriteSession createSession() throws ApplicationContextException {
+			throw new ApplicationContextException("No runtime delegate found");
 		}
 
 		@Override
 		public boolean isOffline() {
-			throw new UnsupportedOperationException(ERROR_MESSAGE);
+			return true;
 		}
 
 		@Override
-		public void terminateSession(WriteSession session) throws ApplicationContextException {
-			throw new UnsupportedOperationException(ERROR_MESSAGE);
+		public ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session) {
+			return new NullResourceSnapshotResolver();
 		}
 
 	}
 
+	/**
+	 * Return if the application is offline.
+	 *
+	 * @return if the application is offline.
+	 */
 	public abstract boolean isOffline();
 
+	/**
+	 * Create a {@code WriteSession}.
+	 *
+	 * @return a write session.
+	 * @throws ApplicationContextException
+	 *             if the session could not be created.
+	 */
 	public abstract WriteSession createSession() throws ApplicationContextException;
 
-	public abstract void terminateSession(WriteSession session) throws ApplicationContextException;
-
+	/**
+	 * Create a {@code ResourceSnapshotResolver}
+	 *
+	 * @param canonicalBase
+	 *            the canonical base URI of the application.
+	 * @param session
+	 *            the {@code ReadSession} that the resolver may use for finding
+	 *            out the snapshots.
+	 * @return a resolver.
+	 */
+	public abstract ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session);
 
 }

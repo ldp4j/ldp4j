@@ -26,20 +26,45 @@
  */
 package org.ldp4j.application.ext;
 
-public abstract class ApplicationException extends Exception {
+import org.ldp4j.application.ApplicationApiException;
 
-	private static final long serialVersionUID = -3181626528397838636L;
+/**
+ * Base checked exception for the LDP4j Application exceptions.
+ */
+public abstract class ApplicationException extends ApplicationApiException {
 
+	private static final long serialVersionUID = -3181626528397838635L;
+
+	/**
+	 * Create a new instance with a message and a cause.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
+	/**
+	 * Create a new instance with a message.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 */
 	public ApplicationException(String message) {
-		super(message);
+		this(message,null);
 	}
 
+	/**
+	 * Create a new instance with a cause and a default message.
+	 *
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationException(Throwable cause) {
-		super(cause);
+		this("Unexpected application exception",cause);
 	}
 
 }

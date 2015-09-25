@@ -20,23 +20,29 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-conformance-fixture:0.2.0-SNAPSHOT
- *   Bundle      : ldp4j-conformance-fixture-0.2.0-SNAPSHOT.war
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-api-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.conformance.fixture;
+package org.ldp4j.application.vocabulary;
 
-import org.ldp4j.application.ext.annotations.Resource;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.*;
 
-@Resource(
-	id=TCKFDynamicResourceHandler.ID
-)
-public class TCKFDynamicResourceHandler extends InMemoryResourceHandler {
+import java.net.URI;
 
-	public static final String ID="DynamicResourceHandler";
+import org.junit.Test;
 
-	public TCKFDynamicResourceHandler() {
-		super(ID);
+public class AdapterMethodValidatorClassTest extends AbstractAdapterMethodValidatorTest {
+
+	@Override
+	protected AdapterMethodValidator sut() {
+		return AdapterMethodValidator.newInstance(URI.class,String.class);
+	}
+
+	@Test
+	public void testNewInstance() {
+		assertThat(sut(),notNullValue());
 	}
 
 }

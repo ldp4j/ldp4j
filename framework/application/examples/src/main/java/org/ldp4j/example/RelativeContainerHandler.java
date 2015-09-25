@@ -26,77 +26,30 @@
  */
 package org.ldp4j.example;
 
-import java.net.URI;
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetHelper;
-import org.ldp4j.application.data.DataSetUtils;
-import org.ldp4j.application.data.Literals;
-import org.ldp4j.application.data.ManagedIndividual;
-import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.annotations.DirectContainer;
 import org.ldp4j.application.ext.annotations.MembershipRelation;
-import org.ldp4j.application.session.ContainerSnapshot;
-import org.ldp4j.application.session.ResourceSnapshot;
-import org.ldp4j.application.session.WriteSession;
-import org.ldp4j.application.session.WriteSessionException;
 
+/**
+ * Example direct container template handler
+ */
 @DirectContainer(
 	id=RelativeContainerHandler.ID,
 	memberHandler=PersonHandler.class,
 	membershipRelation=MembershipRelation.HAS_MEMBER,
 	membershipPredicate="http://www.ldp4j.org/vocabularies/example#hasRelative"
 )
-public class RelativeContainerHandler extends InMemoryContainerHandler {
+public class RelativeContainerHandler extends AbstractPersonContainerHandler {
 
+	/**
+	 * The identifier of the template defined by the handler.
+	 */
 	public static final String ID="relativeContainerTemplate";
-	private PersonHandler handler;
 
-	private AtomicInteger id;
-
+	/**
+	 * Create a new instance.
+	 */
 	public RelativeContainerHandler() {
 		super("RelativeContainer");
-		this.id=new AtomicInteger();
-	}
-
-	@Override
-	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
-		Name<?> name=
-			NamingScheme.
-				getDefault().
-					name(id.incrementAndGet());
-
-		DataSetHelper helper=
-				DataSetUtils.newHelper(representation);
-
-		ManagedIndividual individual =
-			helper.
-				replace(
-					DataSetHelper.SELF,
-					ManagedIndividualId.createId(name,PersonHandler.ID),
-					ManagedIndividual.class);
-
-		individual.
-			addValue(
-				URI.create("http://www.example.org/vocab#creationDate"),
-				Literals.of(new Date()).dateTime());
-		try {
-			handler.add(name, representation);
-			ResourceSnapshot member = container.addMember(name);
-			session.saveChanges();
-			return member;
-		} catch (WriteSessionException e) {
-			handler.remove(name);
-			throw new IllegalStateException("Could not create member",e);
-		}
-	}
-
-	public void setHandler(PersonHandler resourceHandler) {
-		this.handler = resourceHandler;
 	}
 
 }

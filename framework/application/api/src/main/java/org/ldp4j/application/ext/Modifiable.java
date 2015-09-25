@@ -61,7 +61,6 @@ public interface Modifiable {
 			throws
 				UnknownResourceException,
 				UnsupportedContentException,
-				InconsistentContentException,
-				ApplicationRuntimeException;
+				InconsistentContentException;
 
 }

@@ -26,6 +26,8 @@
  */
 package org.ldp4j.application.vocabulary;
 
+import java.util.Objects;
+
 
 /**
  * A term implementation that enforces the creation of immutable terms defined
@@ -46,8 +48,20 @@ public class ImmutableTerm implements Term {
 	private final AbstractImmutableVocabulary<? extends ImmutableTerm> vocabulary;
 	private final String entityName;
 
+	/**
+	 * Create a new term for a vocabulary and entity.
+	 *
+	 * @param vocabulary
+	 *            the vocabulary to which the term will belong to.
+	 * @param entityName
+	 *            the entity name of the term.
+	 * @throws NullPointerException
+	 *             if any of the vocabulary is {@code null}.
+	 * @throws IllegalArgumentException
+	 *             if the entity name is not valid.
+	 */
 	public ImmutableTerm(AbstractImmutableVocabulary<? extends ImmutableTerm> vocabulary, String entityName) {
-		this.vocabulary = vocabulary;
+		this.vocabulary = Objects.requireNonNull(vocabulary,"Vocabulary cannot be null");
 		this.entityName = entityName;
 		this.name = TermUtils.toTermName(entityName);
 		this.ordinal = vocabulary.reserveTermName(this.name);
@@ -90,7 +104,7 @@ public class ImmutableTerm implements Term {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final Vocabulary<? extends ImmutableTerm> getDeclaringVocabulary() {
+	public final Vocabulary getDeclaringVocabulary() {
 		return vocabulary;
 	}
 
@@ -138,8 +152,7 @@ public class ImmutableTerm implements Term {
 	 * @return (never returns)
 	 */
 	@Override
-	protected final Object clone() throws CloneNotSupportedException {
-		super.clone();
+	protected final Object clone() throws CloneNotSupportedException { // NOSONAR
 		throw new CloneNotSupportedException();
 	}
 
@@ -168,9 +181,7 @@ public class ImmutableTerm implements Term {
 	@Override
 	public int compareTo(Term other) {
 		ImmutableTerm self = this;
-		// TODO: This is too strict, replace by an ordering based on namespace, vocabulary identity, and then on the ordering within the namespace
-		if (self.getClass() != other.getClass() && // optimization
-			self.getDeclaringVocabulary() != other.getDeclaringVocabulary()) {
+		if(self.getDeclaringVocabulary() != other.getDeclaringVocabulary()) {
 			throw new ClassCastException();
 		}
 		return self.ordinal - other.ordinal();

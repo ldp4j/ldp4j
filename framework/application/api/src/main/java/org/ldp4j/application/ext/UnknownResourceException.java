@@ -26,23 +26,44 @@
  */
 package org.ldp4j.application.ext;
 
+/**
+ * This exception may be thrown by an LDP4j Application if an operation cannot
+ * be carried out because the specified target resource does not exist.
+ */
 public class UnknownResourceException extends ApplicationUsageException {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 1641191423008569285L;
 
+	/**
+	 * Create a new instance with a message and a cause.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public UnknownResourceException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
+	/**
+	 * Create a new instance with a message.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 */
 	public UnknownResourceException(String message) {
-		super(message);
+		this(message,null);
 	}
 
+	/**
+	 * Create a new instance with a cause and a default message.
+	 *
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public UnknownResourceException(Throwable cause) {
-		super(cause);
+		super("Unknown resource exception",cause);
 	}
 
 }

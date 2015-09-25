@@ -26,151 +26,51 @@
  */
 package org.ldp4j.example;
 
-import java.util.ArrayList;
-import java.util.Deque;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
 
-import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.ContainerHandler;
-import org.ldp4j.application.session.ContainerSnapshot;
-import org.ldp4j.application.session.ResourceSnapshot;
-import org.ldp4j.application.session.WriteSession;
 
-public class InMemoryContainerHandler extends InMemoryResourceHandler implements ContainerHandler {
+import com.google.common.collect.Maps;
 
-	public static class NameProvider {
+/**
+ * An example in-memory container handler.
+ */
+public abstract class InMemoryContainerHandler extends InMemoryResourceHandler implements ContainerHandler {
 
-		public class NameSource {
-
-			private final Deque<Name<?>> pendingNames;
-			private final List<Name<?>> consumedNames;
-			private final String tag;
-
-			private NameSource(String tag) {
-				this.tag = tag;
-				this.pendingNames=new LinkedList<Name<?>>();
-				this.consumedNames=new ArrayList<Name<?>>();
-			}
-
-			public Name<?> nextName() {
-				if(this.pendingNames.isEmpty()) {
-					throw new IllegalStateException(String.format("No more '%s' names available for resource '%s'",tag,NameProvider.this.owner));
-				}
-				Name<?> result = this.pendingNames.pop();
-				this.consumedNames.add(result);
-				return result;
-			}
-
-			public void addName(Name<?> name) {
-				this.pendingNames.addLast(name);
-			}
-
-			public boolean isServed(Name<?> name) {
-				return this.consumedNames.contains(name);
-			}
-
-			public boolean isPending(Name<?> name) {
-				return this.pendingNames.contains(name);
-			}
-
-		}
-
-
-		private final Name<?> owner;
-		private final Map<String,NameSource> attachmentNameSources;
-		private final NameSource resourceNamesSource;
-		private final NameSource memberNamesSource;
-
-		private NameProvider(Name<?> owner) {
-			this.owner = owner;
-			this.attachmentNameSources=new LinkedHashMap<String, NameSource>();
-			this.resourceNamesSource=new NameSource("resource");
-			this.memberNamesSource=new NameSource("member");
-		}
-
-		public Name<?> owner() {
-			return this.owner;
-		}
-
-		private NameSource nameSource(String attachmentId) {
-			NameSource result = this.attachmentNameSources.get(attachmentId);
-			if(result==null) {
-				result=new NameSource("attachment <<"+attachmentId+">>");
-				this.attachmentNameSources.put(attachmentId, result);
-			}
-			return result;
-		}
-
-		public List<Name<?>> pendingAttachmentNames(String attachmentId) {
-			List<Name<?>> result = new ArrayList<Name<?>>();
-			NameSource source = this.attachmentNameSources.get(attachmentId);
-			if(source!=null) {
-				result.addAll(source.pendingNames);
-			}
-			return result;
-		}
-
-		public List<Name<?>> pendingResourceNames() {
-			return new ArrayList<Name<?>>(this.resourceNamesSource.pendingNames);
-		}
-
-		public List<Name<?>> pendingMemberNames() {
-			return new ArrayList<Name<?>>(this.memberNamesSource.pendingNames);
-		}
-
-		public void addResourceName(Name<?> nextName) {
-			this.resourceNamesSource.addName(nextName);
-		}
-
-		public void addMemberName(Name<?> nextName) {
-			this.memberNamesSource.addName(nextName);
-		}
-
-		public void addAttachmentName(String attachmentId, Name<?> nextName) {
-			nameSource(attachmentId).addName(nextName);
-		}
-
-		public Name<?> nextResourceName() {
-			return this.resourceNamesSource.nextName();
-		}
-
-		public Name<?> nextMemberName() {
-			return this.memberNamesSource.nextName();
-		}
-
-		public static NameProvider create(Name<?> resource) {
-			return new NameProvider(resource);
-		}
-
-	}
-
-	private final Map<Name<?>,NameProvider> nameProviders;
+	private final Map<Name<String>,NameProvider> nameProviders;
 
 	protected InMemoryContainerHandler(String handlerName) {
 		super(handlerName);
-		this.nameProviders=new HashMap<Name<?>, NameProvider>();
+		this.nameProviders=Maps.newLinkedHashMap();
 	}
 
-	public final void addNameProvider(Name<?> containerName, NameProvider provider) {
+	/**
+	 * Add a name provider for a container resource.
+	 *
+	 * @param containerName
+	 *            the name of the container.
+	 * @param provider
+	 *            the name provider.
+	 */
+	public final void addNameProvider(Name<String> containerName, NameProvider provider) {
 		this.nameProviders.put(containerName, provider);
 	}
 
+	/**
+	 * Return the name provider registered for a given container resource.
+	 *
+	 * @param containerName
+	 *            the name of the container.
+	 * @return the provider for the specified container resource.
+	 */
 	public final NameProvider nameProvider(Name<?> containerName) {
 		NameProvider result = this.nameProviders.get(containerName);
 		if(result==null) {
-			throw new IllegalStateException("Unknown container '"+containerName+"'");
+			throw new ApplicationRuntimeException("Unknown container '"+containerName+"'");
 		}
 		return result;
-	}
-
-	@Override
-	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
-		throw new UnsupportedOperationException("["+getHandlerName()+"] Method not implemented yet");
 	}
 
 }

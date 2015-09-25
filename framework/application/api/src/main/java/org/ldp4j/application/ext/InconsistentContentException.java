@@ -28,20 +28,52 @@ package org.ldp4j.application.ext;
 
 import org.ldp4j.application.data.constraints.Constraints;
 
+/**
+ * This exception may be thrown by an LDP4j Application if the data to be used
+ * to update a resource is not consistent with the current representation of the
+ * resource, i.e., the properties managed by the application have been modified
+ * in any manner.
+ */
 public class InconsistentContentException extends InvalidContentException {
 
-	private static final long serialVersionUID = -9204136391485005628L;
+	private static final long serialVersionUID = -9204136391485005625L;
 
+	/**
+	 * Create a new instance with a message, a cause, and constraints.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 * @param constraints
+	 *            the constraints that are not satisfied by the input data.
+	 */
 	public InconsistentContentException(String message, Throwable cause, Constraints constraints) {
 		super(message, cause, constraints);
 	}
 
+	/**
+	 * Create a new instance with a message and constraints.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param constraints
+	 *            the constraints that are not satisfied by the input data.
+	 */
 	public InconsistentContentException(String message, Constraints constraints) {
-		super(message,constraints);
+		this(message,null,constraints);
 	}
 
+	/**
+	 * Create a new instance with a cause, constraints, and a default message.
+	 *
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 * @param constraints
+	 *            the constraints that are not satisfied by the input data.
+	 */
 	public InconsistentContentException(Throwable cause, Constraints constraints) {
-		super(cause,constraints);
+		this("Content is not consistent with the current resource state",cause,constraints);
 	}
 
 }

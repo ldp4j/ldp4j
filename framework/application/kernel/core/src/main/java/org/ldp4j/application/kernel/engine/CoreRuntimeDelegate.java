@@ -26,19 +26,98 @@
  */
 package org.ldp4j.application.kernel.engine;
 
+import java.net.URI;
+
 import org.ldp4j.application.ApplicationContextException;
 import org.ldp4j.application.engine.ApplicationEngine;
 import org.ldp4j.application.engine.ApplicationEngineException;
+import org.ldp4j.application.kernel.endpoint.Endpoint;
+import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.application.kernel.session.WriteSessionConfiguration;
 import org.ldp4j.application.kernel.session.WriteSessionService;
 import org.ldp4j.application.kernel.transaction.Transaction;
 import org.ldp4j.application.kernel.transaction.TransactionManager;
+import org.ldp4j.application.session.ReadSession;
+import org.ldp4j.application.session.ResourceSnapshot;
+import org.ldp4j.application.session.SnapshotResolutionException;
 import org.ldp4j.application.session.WriteSession;
+import org.ldp4j.application.spi.ResourceSnapshotResolver;
 import org.ldp4j.application.spi.RuntimeDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 public final class CoreRuntimeDelegate extends RuntimeDelegate {
+
+	final class DefaultSnapshotResolver implements ResourceSnapshotResolver {
+
+		private final URI canonicalBase;
+		private final ReadSession session;
+
+		protected DefaultSnapshotResolver(URI canonicalBase, ReadSession session) {
+			this.canonicalBase = canonicalBase;
+			this.session = session;
+		}
+
+		@Override
+		public URI resolve(ResourceSnapshot resource) {
+			ResourceId resourceId =
+				ResourceId.createId(
+					resource.name(),
+					resource.templateId());
+			try {
+				Endpoint endpoint =
+					context().
+						resolveResource(
+							resourceId);
+				URI result = null;
+				if(endpoint!=null && endpoint.deleted()==null) {
+					result=this.canonicalBase.resolve(endpoint.path());
+				}
+				return result;
+			} catch (ApplicationEngineException e) {
+				throw new SnapshotResolutionException("Could not resolve endpoint for resource '"+resourceId+"'",e);
+			}
+		}
+
+		@Override
+		public ResourceSnapshot resolve(URI endpoint) {
+			ResourceSnapshot result=null;
+			if(!endpoint.isOpaque()) {
+				URI path=this.canonicalBase.relativize(endpoint);
+				if(!path.isAbsolute()) {
+					result = resolveManagedResource(path);
+				}
+			}
+			return result;
+		}
+
+		private ResourceSnapshot resolveManagedResource(URI path) {
+			try {
+				Endpoint endpoint=
+					applicationEngine().
+						endpointManagementService().
+							resolveEndpoint(path.toString());
+				ResourceSnapshot result=null;
+				if(endpoint!=null && endpoint.deleted()==null) {
+					org.ldp4j.application.kernel.resource.Resource resource =
+						context().
+							resolveResource(endpoint);
+					if(resource!=null) {
+						ResourceId resourceId = resource.id();
+						result=
+							this.session.
+								find(
+									ResourceSnapshot.class,
+									resourceId.name(),
+									context().resourceTemplate(resource).handlerClass());
+					}
+				}
+				return result;
+			} catch (Exception e) {
+				throw new SnapshotResolutionException("Could not resolve resource for endpoint '"+this.canonicalBase.resolve(path)+"'",e);
+			}
+		}
+	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(CoreRuntimeDelegate.class);
 
@@ -47,6 +126,10 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 			ApplicationEngine.
 				engine().
 					unwrap(DefaultApplicationEngine.class);
+	}
+
+	private DefaultApplicationContext context() throws ApplicationEngineException {
+		return applicationEngine().activeContext();
 	}
 
 	private WriteSessionService sessionService() throws ApplicationEngineException {
@@ -71,27 +154,24 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 	@Override
 	public WriteSession createSession() throws ApplicationContextException {
 		try {
+			WriteSessionService sessionService = sessionService();
 			WriteSession delegate =
-				sessionService().
+				sessionService.
 					createSession(
 						WriteSessionConfiguration.
 							builder().
 								build());
 			Transaction transaction=transactionManager().currentTransaction();
 			transaction.begin();
-			return new TransactionalWriteSession(transaction, delegate);
-		} catch (ApplicationEngineException e) {
-			throw new ApplicationContextException("Unsupported application engine implementation",e);
+			return new TransactionalWriteSession(transaction,delegate);
+		} catch (Exception e) {
+			throw new ApplicationContextException("Could not create session",e);
 		}
 	}
 
 	@Override
-	public void terminateSession(WriteSession session) throws ApplicationContextException {
-		try {
-			sessionService().terminateSession(session);
-		} catch (ApplicationEngineException e) {
-			throw new ApplicationContextException("Unsupported application engine implementation",e);
-		}
+	public ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session) {
+		return new DefaultSnapshotResolver(canonicalBase,session);
 	}
 
 }

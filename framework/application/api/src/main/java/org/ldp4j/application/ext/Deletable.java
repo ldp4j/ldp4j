@@ -51,6 +51,6 @@ public interface Deletable {
 	 *             resource.
 	 */
 	void delete(ResourceSnapshot resource, WriteSession session)
-				throws UnknownResourceException, ApplicationRuntimeException;
+				throws UnknownResourceException;
 
 }

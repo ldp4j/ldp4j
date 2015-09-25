@@ -26,17 +26,19 @@
  */
 package org.ldp4j.application;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
+
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.session.ResourceSnapshot;
+import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.application.spi.RuntimeDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import static com.google.common.base.Preconditions.*;
 
 
 /**
@@ -70,30 +72,45 @@ public final class ApplicationContext {
 			checkState(!this.completed,"Session has already been completed");
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public <S extends ResourceSnapshot> S resolve(Class<? extends S> snapshotClass, Individual<?, ?> individual) {
 			verifyExecutability();
 			return this.nativeSession.resolve(snapshotClass,individual);
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public <S extends ResourceSnapshot> S find(Class<? extends S> snapshotClass, Name<?> id, Class<? extends ResourceHandler> handlerClass) {
 			verifyExecutability();
 			return this.nativeSession.find(snapshotClass,id,handlerClass);
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void modify(ResourceSnapshot resource) {
 			verifyExecutability();
 			this.nativeSession.modify(resource);
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void delete(ResourceSnapshot resource) {
 			verifyExecutability();
 			this.nativeSession.delete(resource);
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void saveChanges() throws WriteSessionException {
 			verifyExecutability();
@@ -101,6 +118,9 @@ public final class ApplicationContext {
 			this.nativeSession.saveChanges();
 		}
 
+		/**
+		 * {@inheritDoc}
+		 */
 		@Override
 		public void discardChanges() throws WriteSessionException {
 			verifyExecutability();
@@ -108,12 +128,17 @@ public final class ApplicationContext {
 			this.nativeSession.discardChanges();
 		}
 
-		void dispose() throws ApplicationContextException {
-			if(!this.dispossed) {
-				this.dispossed=true;
-				ApplicationContext.this.session.remove();
-				ApplicationContext.this.delegate.terminateSession(this.nativeSession);
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public void close() throws SessionTerminationException {
+			if(this.dispossed) {
+				return;
 			}
+			clearSession(this);
+			this.dispossed=true;
+			this.nativeSession.close();
 		}
 
 	}
@@ -142,6 +167,14 @@ public final class ApplicationContext {
 		return new ApplicationContextException(message,cause);
 	}
 
+	private boolean clearSession(WriteSession session) {
+		boolean result = this.session.get()==session;
+		if(result) {
+			this.session.remove();
+		}
+		return result;
+	}
+
 	/**
 	 * Create a {@code WriteSession}. Only one write session can be active per
 	 * thread. Sessions should not be shared among threads.
@@ -155,14 +188,16 @@ public final class ApplicationContext {
 		if(this.session.get()!=null) {
 			throw failure(null,"Thread already has an active session");
 		}
-		try {
-			if(this.delegate.isOffline()) {
-				throw failure(null,"The Application Engine is off-line");
-			}
-			return new SafeWriteSession(this.delegate.createSession());
-		} catch (UnsupportedOperationException e) {
-			throw failure(e,"No Application Engine is available");
+		if(this.delegate.isOffline()) {
+			throw failure(null,"The Application Engine is off-line");
 		}
+		WriteSession nativeSession=this.delegate.createSession();
+		if(nativeSession==null) {
+			throw failure(null,"Could not create native write session");
+		}
+		SafeWriteSession safeSession = new SafeWriteSession(nativeSession);
+		this.session.set(safeSession);
+		return safeSession;
 	}
 
 
@@ -174,23 +209,23 @@ public final class ApplicationContext {
 	 *            the session to be disposed
 	 * @throws NullPointerException
 	 *             if the session is null.
-	 * @throws IllegalArgumentException
-	 *             if the session to be disposed was not created by the
-	 *             Application Context.
 	 * @throws ApplicationContextException
 	 *             if the session cannot be disposed, e.g., the session is not
 	 *             owned by the current thread.
+	 * @deprecated Use the {@link WriteSession#close()} method instead.
 	 */
+	@Deprecated
 	public void disposeSession(WriteSession session) throws ApplicationContextException {
 		checkNotNull(session,"Session cannot be null");
-		checkArgument(session instanceof SafeWriteSession,"Unknown session");
-		if(this.session.get()!=session) {
-			throw failure(null,"Session '%s' is not owned by current thread",session);
+		if(!clearSession(session)) {
+			throw failure(null,"Session '%s' is not owned by the current thread",session);
 		}
-		SafeWriteSession safeWriteSession = (SafeWriteSession)session;
-		safeWriteSession.dispose();
+		try {
+			session.close();
+		} catch (SessionTerminationException e) {
+			throw failure(e,"Could not close session '%X'",session.hashCode());
+		}
 	}
-
 
 	/**
 	 * Get the Application context.

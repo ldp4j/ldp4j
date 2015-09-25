@@ -32,6 +32,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
@@ -40,6 +41,7 @@ import java.net.URL;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Link;
 
@@ -73,20 +75,24 @@ import org.junit.runner.RunWith;
 import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.sdk.QueryBuilder;
+import org.ldp4j.commons.testing.categories.DEBUG;
 import org.ldp4j.commons.testing.categories.ExceptionPath;
 import org.ldp4j.commons.testing.categories.HappyPath;
 import org.ldp4j.commons.testing.categories.LDP;
 import org.ldp4j.commons.testing.categories.Setup;
+import org.ldp4j.example.DynamicResourceResolver;
 import org.ldp4j.example.MyApplication;
-import org.ldp4j.example.QuerySupport;
+import org.ldp4j.example.QueryableResourceHandler;
 import org.ldp4j.server.controller.EndpointControllerUtils;
 import org.ldp4j.server.testing.ServerFrontendTestHelper;
 import org.ldp4j.server.testing.ServerFrontendTestHelper.Metadata;
 import org.ldp4j.server.testing.ServerFrontendWebAppBuilder;
 import org.ldp4j.server.testing.TestingUtil;
+import org.ldp4j.server.testing.fixture.TestingApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Stopwatch;
 import com.jayway.restassured.response.Response;
 
 @RunWith(Arquillian.class)
@@ -95,6 +101,8 @@ public class ServerFrontendITest {
 	private static final String NL = System.getProperty("line.separator");
 
 	private static ServerFrontendTestHelper HELPER;
+
+	private static Stopwatch WATCH;
 
 	private static final String EXAMPLE_BODY =
 		"@prefix sav : <http://test/vocab#> ."+NL+
@@ -128,6 +136,7 @@ public class ServerFrontendITest {
 	@BeforeClass
 	public static void setUpClass() throws Exception {
 		HELPER=new ServerFrontendTestHelper(LOGGER);
+		WATCH=Stopwatch.createStarted();
 	}
 
 	@AfterClass
@@ -518,7 +527,7 @@ public class ServerFrontendITest {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 
-		HttpGet get = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QuerySupport.FAILURE+"=true",HttpGet.class);
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QueryableResourceHandler.FAILURE+"=true",HttpGet.class);
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
 		assertThat(getResponse.body,notNullValue());
@@ -536,7 +545,7 @@ public class ServerFrontendITest {
 		HELPER.base(url);
 		HELPER.setLegacy(false);
 
-		HttpGet get = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QuerySupport.FAILURE+"=unknown",HttpGet.class);
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QueryableResourceHandler.FAILURE+"=unknown",HttpGet.class);
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
 		assertThat(getResponse.body,notNullValue());
@@ -551,10 +560,10 @@ public class ServerFrontendITest {
 	@OperateOnDeployment(DEPLOYMENT)
 	public void testQuerySupport$missfailure(@ArquillianResource final URL url) throws Exception {
 		LOGGER.info("Started {}",testName.getMethodName());
-		Query query=queryResource(url, "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QuerySupport.FAILURE+"=false");
+		Query query=queryResource(url, "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?"+QueryableResourceHandler.FAILURE+"=false");
 		assertThat(query.size(),equalTo(1));
-		assertThat(query.hasParameter(QuerySupport.FAILURE),equalTo(true));
-		assertThat(query.getParameter(QuerySupport.FAILURE).rawValueAs(Boolean.class),equalTo(false));
+		assertThat(query.hasParameter(QueryableResourceHandler.FAILURE),equalTo(true));
+		assertThat(query.getParameter(QueryableResourceHandler.FAILURE).rawValueAs(Boolean.class),equalTo(false));
 		LOGGER.info("Completed {}",testName.getMethodName());
 	}
 
@@ -727,6 +736,97 @@ public class ServerFrontendITest {
 				get(path);
 		assertThat(response.getHeader("Link"),containsString(link));
 		LOGGER.info("Completed {}",pName);
+	}
+
+	@Test
+	@Category({
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testDynamicResourceHandler(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		while(WATCH.elapsed(TimeUnit.SECONDS)<10) {
+
+		}
+
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_DYNAMIC_RESOURCE_PATH,HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(OK));
+		assertThat(getResponse.body,notNullValue());
+		assertThat(getResponse.contentType,equalTo(TEXT_TURTLE));
+
+		DynamicResponseHelper helper = new DynamicResponseHelper(url,MyApplication.ROOT_DYNAMIC_RESOURCE_PATH,getResponse.body);
+		assertThat(helper.getUpdates(),not(hasSize(0)));
+		assertThat(helper.getResolution(),equalTo(DynamicResourceResolver.CANONICAL_BASE.resolve(MyApplication.ROOT_DYNAMIC_RESOURCE_PATH).toString()));
+		assertThat(helper.getRoundtrip(),equalTo("OK"));
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testGetPostconditionFailure(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpGet get = HELPER.newRequest(TestingApplication.ROOT_BAD_RESOURCE_PATH,HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(HttpStatus.SC_INTERNAL_SERVER_ERROR));
+		assertThat(getResponse.body,notNullValue());
+		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
+
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testQueryPostConditionFailure(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpGet get = HELPER.newRequest(TestingApplication.ROOT_BAD_RESOURCE_PATH+"?exampleQuery=parameter",HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(HttpStatus.SC_INTERNAL_SERVER_ERROR));
+		assertThat(getResponse.body,notNullValue());
+		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
+
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		ExceptionPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testPostPostconditionFailure(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpPost post = HELPER.newRequest(TestingApplication.ROOT_BAD_RESOURCE_PATH,HttpPost.class);
+		post.setEntity(
+			new StringEntity(
+					TEST_SUITE_BODY,
+				ContentType.create("text/turtle", "UTF-8"))
+		);
+		Metadata response=HELPER.httpRequest(post);
+		assertThat(response.status,equalTo(HttpStatus.SC_INTERNAL_SERVER_ERROR));
+		assertThat(response.body,notNullValue());
+		assertThat(response.contentType,equalTo("text/plain"));
+		assertThat(response.language,equalTo(Locale.ENGLISH));
+
 	}
 
 	private static final String TEXT_TURTLE = "text/turtle";

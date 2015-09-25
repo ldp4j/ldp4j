@@ -51,7 +51,6 @@ public interface ResourceHandler {
 	 *             if an internal exception prevents the retrieval of the
 	 *             representation.
 	 */
-	DataSet get(ResourceSnapshot resource)
-			throws UnknownResourceException, ApplicationRuntimeException;
+	DataSet get(ResourceSnapshot resource) throws UnknownResourceException;
 
 }

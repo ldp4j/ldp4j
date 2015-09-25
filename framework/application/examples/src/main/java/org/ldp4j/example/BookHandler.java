@@ -29,6 +29,9 @@ package org.ldp4j.example;
 import org.ldp4j.application.ext.annotations.Attachment;
 import org.ldp4j.application.ext.annotations.Resource;
 
+/**
+ * An example resource handler with a single attachment.
+ */
 @Resource(
 	id=BookHandler.ID,
 	attachments={
@@ -40,11 +43,17 @@ import org.ldp4j.application.ext.annotations.Resource;
 	}
 )
 public class BookHandler extends InMemoryResourceHandler {
-	
+
+	/**
+	 * The identifier of the template defined by the handler.
+	 */
 	public static final String ID="bookTemplate";
 
+	/**
+	 * Create a new instance.
+	 */
 	public BookHandler() {
 		super("Book");
 	}
-	
+
 }

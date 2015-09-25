@@ -26,12 +26,23 @@
  */
 package org.ldp4j.application.kernel.resource;
 
+import org.ldp4j.application.session.ResourceSnapshot;
+
 public class UnsupportedFeatureException extends FeatureException {
 
 	private static final long serialVersionUID = 1166012584105906659L;
 
-	public UnsupportedFeatureException(String templateId, String handlerClassName, String featureClassName) {
-		super(templateId,handlerClassName,featureClassName,String.format("ResourceHandlerAdapter '%s' from template '%s' does not support feature '%s'",handlerClassName,templateId,featureClassName));
+	public UnsupportedFeatureException(ResourceSnapshot snapshot, Class<?> feature) {
+		super(snapshot,feature,defaultMessage(snapshot, feature));
+	}
+
+	private static String defaultMessage(ResourceSnapshot snapshot, Class<?> feature) {
+		return
+			String.format(
+				"Resource handler '%s' from template '%s' does not support feature '%s'",
+				snapshot.handlerClass().getName(),
+				snapshot.templateId(),
+				feature.getName());
 	}
 
 }
