@@ -28,6 +28,9 @@ package org.ldp4j.example;
 
 import org.ldp4j.application.ext.annotations.Resource;
 
+/**
+ * Example resource handler without attachments.
+ */
 @Resource(
 	id=AddressHandler.ID
 )

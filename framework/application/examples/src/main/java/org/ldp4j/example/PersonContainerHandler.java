@@ -29,7 +29,7 @@ package org.ldp4j.example;
 import org.ldp4j.application.ext.annotations.BasicContainer;
 
 /**
- * Example basic container template handler
+ * Example basic container template handler.
  */
 @BasicContainer(
 	id = PersonContainerHandler.ID,

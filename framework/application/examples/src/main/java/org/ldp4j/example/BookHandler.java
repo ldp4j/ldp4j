@@ -29,6 +29,9 @@ package org.ldp4j.example;
 import org.ldp4j.application.ext.annotations.Attachment;
 import org.ldp4j.application.ext.annotations.Resource;
 
+/**
+ * An example resource handler with a single attachment.
+ */
 @Resource(
 	id=BookHandler.ID,
 	attachments={

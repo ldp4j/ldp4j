@@ -28,6 +28,10 @@ package org.ldp4j.example;
 
 import org.ldp4j.application.ext.annotations.Resource;
 
+/**
+ * An example resource handler whose resource representations will be updated
+ * dynamically at runtime.
+ */
 @Resource(
 	id=DynamicResourceHandler.ID
 )

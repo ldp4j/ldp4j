@@ -40,6 +40,9 @@ import org.ldp4j.application.session.WriteSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility class that demonstrates how to update a resource at runtime.
+ */
 final class DynamicResourceUpdater implements Runnable {
 
 	static final URI REFRESHED_ON = URI.create("http://www.ldp4j.org/ns#refreshedOn");

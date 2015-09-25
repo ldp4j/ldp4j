@@ -36,7 +36,7 @@ import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 
 /**
- * Example indirect container template handler
+ * Example indirect container template handler.
  */
 @IndirectContainer(
 	id = BookContainerHandler.ID,

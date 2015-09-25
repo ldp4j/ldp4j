@@ -39,6 +39,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	QueryableResourceHandlerTest.class,
 	AddressHandlerTest.class,
 	BookContainerHandlerTest.class,
+	PersonHandlerTest.class,
 	PersonContainerHandlerTest.class,
 	DynamicResourceUpdaterTest.class,
 	DynamicResourceResolverTest.class,

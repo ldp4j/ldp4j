@@ -54,15 +54,15 @@ import org.slf4j.LoggerFactory;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 /**
- * An example LDP4j application
+ * An example LDP4j application.
  */
 public class MyApplication extends Application<Configuration> {
 
 	static final class LoggedUncaughtExceptionHandler implements UncaughtExceptionHandler {
 
-		private Logger logger;
+		private final Logger logger; // NOSONAR
 
-		public LoggedUncaughtExceptionHandler(Logger logger) {
+		LoggedUncaughtExceptionHandler(Logger logger) {
 			this.logger = logger;
 		}
 

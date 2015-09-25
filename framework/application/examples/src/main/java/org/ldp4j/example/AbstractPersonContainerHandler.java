@@ -43,6 +43,9 @@ import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 
+/**
+ * Base container for managing collections of persons.
+ */
 public class AbstractPersonContainerHandler extends InMemoryContainerHandler {
 
 	private PersonHandler handler;

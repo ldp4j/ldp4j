@@ -41,6 +41,10 @@ import org.ldp4j.application.session.WriteSession;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Utility class that demonstrates how to resolve at runtime an snapshot address
+ * and viceversa.
+ */
 public final class DynamicResourceResolver implements Runnable {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(MyApplication.class);
