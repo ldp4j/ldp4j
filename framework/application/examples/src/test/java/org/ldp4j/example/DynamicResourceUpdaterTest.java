@@ -26,18 +26,17 @@
  */
 package org.ldp4j.example;
 
-import java.net.URI;
-
-import static org.hamcrest.MatcherAssert.*;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import mockit.Deencapsulation;
 import mockit.Expectations;
 import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
 
-import org.junit.BeforeClass;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.ldp4j.application.ApplicationContextException;
+import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.Individual;
@@ -46,56 +45,25 @@ import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.UnknownResourceException;
-import org.ldp4j.application.session.ReadSession;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
-import org.ldp4j.application.spi.ResourceSnapshotResolver;
-import org.ldp4j.application.spi.RuntimeDelegate;
 
 @RunWith(JMockit.class)
 public class DynamicResourceUpdaterTest {
 
-	private static final MockedRuntimeDelegate DELEGATE = new MockedRuntimeDelegate();
-
-	private static final class MockedRuntimeDelegate extends RuntimeDelegate {
-
-		private WriteSession session;
-		private boolean failure;
-
-		public void setSession(WriteSession session) {
-			this.session = session;
-		}
-
-		@Override
-		public boolean isOffline() {
-			return false;
-		}
-
-		@Override
-		public WriteSession createSession() throws ApplicationContextException {
-			if(this.failure) {
-				throw new ApplicationContextException("failure");
-			}
-			return this.session;
-		}
-
-		@Override
-		public ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session) {
-			return null;
-		}
-
-		public void setFailure(boolean failure) {
-			this.failure = failure;
-		}
-	}
-
 	private static final Name<String> RID = NamingScheme.getDefault().name("resource");
 
-	@BeforeClass
-	public static void setUpBefore() {
-		RuntimeDelegate.setInstance(DELEGATE);
+	private MockedRuntimeDelegate delegate;
+
+	@Before
+	public void setUp() {
+		this.delegate=new MockedRuntimeDelegate();
+		Deencapsulation.setField(
+			ApplicationContext.getInstance(),
+			"delegate",
+			this.delegate);
 	}
 
 	@Test
@@ -161,8 +129,8 @@ public class DynamicResourceUpdaterTest {
 	}
 
 	private DynamicResourceUpdater workingSut(DynamicResourceHandler handler, final WriteSession session, final ResourceSnapshot snapshot) {
-		DELEGATE.setSession(session);
-		DELEGATE.setFailure(false);
+		delegate.setSession(session);
+		delegate.setFailure(false);
 		new Expectations() {{
 			snapshot.name();result=RID;
 			session.find(ResourceSnapshot.class, RID, DynamicResourceHandler.class);result=snapshot;
@@ -171,8 +139,8 @@ public class DynamicResourceUpdaterTest {
 	}
 
 	private DynamicResourceUpdater runtimeFailureSut(DynamicResourceHandler handler, final WriteSession session, final ResourceSnapshot snapshot) {
-		DELEGATE.setSession(session);
-		DELEGATE.setFailure(false);
+		delegate.setSession(session);
+		delegate.setFailure(false);
 		new Expectations() {{
 			snapshot.name();result=RID;
 			session.find(ResourceSnapshot.class, RID, DynamicResourceHandler.class);result=new IllegalStateException("FAILURE");
@@ -181,8 +149,8 @@ public class DynamicResourceUpdaterTest {
 	}
 
 	private DynamicResourceUpdater nullWriteSessionSut(DynamicResourceHandler handler, final WriteSession session, final ResourceSnapshot snapshot) throws WriteSessionException {
-		DELEGATE.setSession(null);
-		DELEGATE.setFailure(false);
+		delegate.setSession(null);
+		delegate.setFailure(false);
 		new Expectations() {{
 			snapshot.name();result=RID;
 		}};
@@ -190,8 +158,8 @@ public class DynamicResourceUpdaterTest {
 	}
 
 	private DynamicResourceUpdater writeSessionCreationFailureSut(DynamicResourceHandler handler, final WriteSession session, final ResourceSnapshot snapshot) throws WriteSessionException {
-		DELEGATE.setSession(session);
-		DELEGATE.setFailure(true);
+		delegate.setSession(session);
+		delegate.setFailure(true);
 		new Expectations() {{
 			snapshot.name();result=RID;
 		}};
@@ -199,8 +167,8 @@ public class DynamicResourceUpdaterTest {
 	}
 
 	private DynamicResourceUpdater writeSessionFailureSut(DynamicResourceHandler handler, final WriteSession session, final ResourceSnapshot snapshot) throws WriteSessionException {
-		DELEGATE.setSession(session);
-		DELEGATE.setFailure(false);
+		delegate.setSession(session);
+		delegate.setFailure(false);
 		new Expectations() {{
 			snapshot.name();result=RID;
 			session.find(ResourceSnapshot.class, RID, DynamicResourceHandler.class);result=snapshot;
@@ -210,8 +178,8 @@ public class DynamicResourceUpdaterTest {
 	}
 
 	private DynamicResourceUpdater writeSessionFailureWithTerminationFailureSut(DynamicResourceHandler handler, final WriteSession session, final ResourceSnapshot snapshot) throws Exception {
-		DELEGATE.setSession(session);
-		DELEGATE.setFailure(false);
+		delegate.setSession(session);
+		delegate.setFailure(false);
 		new Expectations() {{
 			snapshot.name();result=RID;
 			session.find(ResourceSnapshot.class, RID, DynamicResourceHandler.class);result=snapshot;
@@ -222,8 +190,8 @@ public class DynamicResourceUpdaterTest {
 	}
 
 	private DynamicResourceUpdater writeSessionTerminationSut(DynamicResourceHandler handler, final WriteSession session, final ResourceSnapshot snapshot) throws Exception {
-		DELEGATE.setSession(session);
-		DELEGATE.setFailure(false);
+		delegate.setSession(session);
+		delegate.setFailure(false);
 		new Expectations() {{
 			snapshot.name();result=RID;
 			session.find(ResourceSnapshot.class, RID, DynamicResourceHandler.class);result=snapshot;
@@ -236,7 +204,6 @@ public class DynamicResourceUpdaterTest {
 		DataSet dataSet = DataSets.createDataSet(RID);
 		dataSet.individual(ManagedIndividualId.createId(RID, DynamicResourceHandler.ID), ManagedIndividual.class);
 		handler.add(RID,dataSet);
-		DynamicResourceUpdater sut = new DynamicResourceUpdater(handler, RID);
-		return sut;
+		return new DynamicResourceUpdater(handler, RID);
 	}
 }

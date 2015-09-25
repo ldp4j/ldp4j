@@ -26,30 +26,48 @@
  */
 package org.ldp4j.example;
 
-import org.ldp4j.application.ext.annotations.DirectContainer;
-import org.ldp4j.application.ext.annotations.MembershipRelation;
+import java.net.URI;
 
-/**
- * Example direct container template handler
- */
-@DirectContainer(
-	id=RelativeContainerHandler.ID,
-	memberHandler=PersonHandler.class,
-	membershipRelation=MembershipRelation.HAS_MEMBER,
-	membershipPredicate="http://www.ldp4j.org/vocabularies/example#hasRelative"
-)
-public class RelativeContainerHandler extends AbstractPersonContainerHandler {
+import org.ldp4j.application.ApplicationContextException;
+import org.ldp4j.application.session.ReadSession;
+import org.ldp4j.application.session.WriteSession;
+import org.ldp4j.application.spi.ResourceSnapshotResolver;
+import org.ldp4j.application.spi.RuntimeDelegate;
 
-	/**
-	 * The identifier of the template defined by the handler.
-	 */
-	public static final String ID="relativeContainerTemplate";
+final class MockedRuntimeDelegate extends RuntimeDelegate {
 
-	/**
-	 * Create a new instance.
-	 */
-	public RelativeContainerHandler() {
-		super("RelativeContainer");
+	private WriteSession session;
+	private boolean failure;
+	private ResourceSnapshotResolver resolver;
+
+	void setSession(WriteSession session) {
+		this.session = session;
+	}
+
+	void setFailure(boolean failure) {
+		this.failure = failure;
+	}
+
+	void setResolver(ResourceSnapshotResolver resolver) {
+		this.resolver = resolver;
+	}
+
+	@Override
+	public boolean isOffline() {
+		return false;
+	}
+
+	@Override
+	public WriteSession createSession() throws ApplicationContextException {
+		if(this.failure) {
+			throw new ApplicationContextException("failure");
+		}
+		return this.session;
+	}
+
+	@Override
+	public ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session) {
+		return resolver;
 	}
 
 }

@@ -36,7 +36,13 @@ import org.junit.runners.Suite.SuiteClasses;
 	InMemoryResourceHandlerTest.class,
 	InMemoryContainerHandlerTest.class,
 	QuerySupportTest.class,
-	DynamicResourceUpdaterTest.class
+	QueryableResourceHandlerTest.class,
+	AddressHandlerTest.class,
+	BookContainerHandlerTest.class,
+	PersonContainerHandlerTest.class,
+	DynamicResourceUpdaterTest.class,
+	DynamicResourceResolverTest.class,
+	MyApplicationTest.class
 })
 public class AllTestsSuite {
 

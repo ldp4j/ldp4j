@@ -58,6 +58,20 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
  */
 public class MyApplication extends Application<Configuration> {
 
+	static final class LoggedUncaughtExceptionHandler implements UncaughtExceptionHandler {
+
+		private Logger logger;
+
+		public LoggedUncaughtExceptionHandler(Logger logger) {
+			this.logger = logger;
+		}
+
+		@Override
+		public void uncaughtException(Thread t, Throwable e) {
+			this.logger.error(String.format("Thread %s died",t.getName()),e);
+		}
+	}
+
 	private static final String PERSON_CONTAINER_NAME    = "PersonContainer";
 	private static final String PERSON_RESOURCE_NAME     = "PersonResource";
 	private static final String RELATIVE_CONTAINER_NAME  = "RelativeContainer";
@@ -88,7 +102,7 @@ public class MyApplication extends Application<Configuration> {
 
 	private final Name<String> personResourceName;
 	private final Name<String> personContainerName;
-	private final Name<String> relativeContainerName;
+	private final Name<String> relativeContainerResourceName;
 	private final Name<String> queryableResourceName;
 	private final Name<String> dynamicResourceName;
 
@@ -101,13 +115,12 @@ public class MyApplication extends Application<Configuration> {
 	public MyApplication() {
 		this.personResourceName = NamingScheme.getDefault().name(PERSON_RESOURCE_NAME);
 		this.personContainerName = NamingScheme.getDefault().name(PERSON_CONTAINER_NAME);
-		this.relativeContainerName = NamingScheme.getDefault().name(RELATIVE_CONTAINER_NAME);
+		this.relativeContainerResourceName = NamingScheme.getDefault().name(RELATIVE_CONTAINER_NAME);
 		this.queryableResourceName = NamingScheme.getDefault().name(QUERYABLE_RESOURCE_NAME);
 		this.dynamicResourceName = NamingScheme.getDefault().name(DYNAMIC_RESOURCE_NAME);
 	}
 
-	private DataSet getInitialData(String templateId, String name)
-			{
+	private DataSet getInitialData(String templateId, String name) {
 		return
 			DataDSL.
 				dataSet().
@@ -121,6 +134,31 @@ public class MyApplication extends Application<Configuration> {
 								hasLink("http://www.ldp4j.org/vocabulary/example#hasWife").
 									referringTo(newReference().toLocalIndividual().named("Consuelo")).
 						build();
+	}
+
+	/** Exposed for testing */
+	protected final Name<String> personResourceName() {
+		return this.personResourceName;
+	}
+
+	/** Exposed for testing */
+	protected final Name<String> personContainerName() {
+		return this.personContainerName;
+	}
+
+	/** Exposed for testing */
+	protected final Name<String> relativeContainerResourceName() {
+		return this.relativeContainerResourceName;
+	}
+
+	/** Exposed for testing */
+	protected final Name<String> dynamicResourceName() {
+		return this.dynamicResourceName;
+	}
+
+	/** Exposed for testing */
+	protected final DynamicResourceHandler dynamicResourceHandler() {
+		return this.dynamicResourceHandler;
 	}
 
 	/**
@@ -140,7 +178,7 @@ public class MyApplication extends Application<Configuration> {
 
 		resourceHandler.add(this.personResourceName, getInitialData(PersonHandler.ID,PERSON_RESOURCE_NAME));
 		containerHandler.add(this.personContainerName, getInitialData(PersonContainerHandler.ID,PERSON_CONTAINER_NAME));
-		relativesHandler.add(this.relativeContainerName, getInitialData(RelativeContainerHandler.ID,RELATIVE_CONTAINER_NAME));
+		relativesHandler.add(this.relativeContainerResourceName, getInitialData(RelativeContainerHandler.ID,RELATIVE_CONTAINER_NAME));
 		queryableHandler.add(this.queryableResourceName, getInitialData(QueryableResourceHandler.ID,QUERYABLE_RESOURCE_NAME));
 		this.dynamicResourceHandler.add(this.dynamicResourceName, getInitialData(DynamicResourceHandler.ID,DYNAMIC_RESOURCE_NAME));
 
@@ -161,13 +199,7 @@ public class MyApplication extends Application<Configuration> {
 					1,
 					new ThreadFactoryBuilder().
 						setNameFormat("daemon-updater-thread-%d").
-						setUncaughtExceptionHandler(
-							new UncaughtExceptionHandler() {
-								@Override
-								public void uncaughtException(Thread t, Throwable e) {
-									LOGGER.error(String.format("Thread %s died",t.getName()),e);
-								}
-							}).
+						setUncaughtExceptionHandler(new LoggedUncaughtExceptionHandler(LOGGER)).
 						build());
 		LOGGER.info("Configuration completed.");
 	}
@@ -182,7 +214,7 @@ public class MyApplication extends Application<Configuration> {
 		LOGGER.info("Root resource.......: "+person);
 		LOGGER.info("Root basic container: "+session.find(ResourceSnapshot.class,this.personContainerName,PersonContainerHandler.class));
 
-		ContainerSnapshot relativesContainer = person.createAttachedResource(ContainerSnapshot.class, PersonHandler.RELATIVES_ID, this.relativeContainerName, RelativeContainerHandler.class);
+		ContainerSnapshot relativesContainer = person.createAttachedResource(ContainerSnapshot.class, PersonHandler.RELATIVES_ID, this.relativeContainerResourceName, RelativeContainerHandler.class);
 		LOGGER.info("Attached resource...: "+relativesContainer);
 		try {
 			session.saveChanges();

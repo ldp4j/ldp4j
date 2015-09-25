@@ -81,7 +81,7 @@ final class TypeAdapter<S,T> {
 
 	static final String ADAPTER_NAME_CONVENTION = "adaptTo";
 
-	static final CopyOnWriteArrayList<Class<?>> ADAPTER_CLASSES=Lists.newCopyOnWriteArrayList();
+	static final CopyOnWriteArrayList<Class<?>> ADAPTER_CLASSES=Lists.newCopyOnWriteArrayList(); // NOSONAR
 
 	static {
 		registerAdapterClass(URIAdapter.class);

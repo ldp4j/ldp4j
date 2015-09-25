@@ -66,7 +66,6 @@ public class QuerySupportTest {
 					withParameter("param2", "value1").
 					build();
 		DataSet data=QuerySupport.getDescription(id, query);
-		System.out.println(data);
 		assertThat((Object)data.name(),sameInstance((Object)id));
 		DataSetHelper dHelper = DataSetUtils.newHelper(data);
 		IndividualHelper qInd = dHelper.localIndividual(QuerySupport.queryId());
@@ -101,7 +100,6 @@ public class QuerySupportTest {
 					withParameter(QueryableResourceHandler.FAILURE, "FALSE").
 					build();
 		DataSet data=QuerySupport.getDescription(id, query);
-		System.out.println(data);
 		assertThat((Object)data.name(),sameInstance((Object)id));
 		DataSetHelper dHelper = DataSetUtils.newHelper(data);
 		IndividualHelper qInd = dHelper.localIndividual(QuerySupport.queryId());
@@ -138,7 +136,6 @@ public class QuerySupportTest {
 					withParameter("param2", "value1").
 					build();
 		DataSet data=QuerySupport.getDescription(id, query);
-		System.out.println(data);
 		assertThat((Object)data.name(),sameInstance((Object)id));
 		DataSetHelper dHelper = DataSetUtils.newHelper(data);
 		IndividualHelper qInd = dHelper.localIndividual(QuerySupport.queryId());

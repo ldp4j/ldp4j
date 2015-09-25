@@ -26,30 +26,16 @@
  */
 package org.ldp4j.example;
 
-import org.ldp4j.application.ext.annotations.DirectContainer;
-import org.ldp4j.application.ext.annotations.MembershipRelation;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
-/**
- * Example direct container template handler
- */
-@DirectContainer(
-	id=RelativeContainerHandler.ID,
-	memberHandler=PersonHandler.class,
-	membershipRelation=MembershipRelation.HAS_MEMBER,
-	membershipPredicate="http://www.ldp4j.org/vocabularies/example#hasRelative"
-)
-public class RelativeContainerHandler extends AbstractPersonContainerHandler {
+import org.junit.Test;
 
-	/**
-	 * The identifier of the template defined by the handler.
-	 */
-	public static final String ID="relativeContainerTemplate";
+public class AddressHandlerTest {
 
-	/**
-	 * Create a new instance.
-	 */
-	public RelativeContainerHandler() {
-		super("RelativeContainer");
+	@Test
+	public void testAddressHandler() throws Exception {
+		assertThat(new AddressHandler().toString(),equalTo("Address"));
 	}
 
 }

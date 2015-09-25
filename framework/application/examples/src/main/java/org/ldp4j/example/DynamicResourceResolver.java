@@ -43,9 +43,16 @@ import org.slf4j.LoggerFactory;
 
 public final class DynamicResourceResolver implements Runnable {
 
-	public static final URI CANONICAL_BASE = URI.create("http://www.ldp4j.org/fixture/ldp4j/api/");
-
 	private static final Logger LOGGER=LoggerFactory.getLogger(MyApplication.class);
+
+	/** Predicate used for exposing whether or not the resolution roundtrip works */
+	public static final URI SNAPSHOT_RESOLUTION = URI.create("http://www.ldp4j.org/ns#snapshotResolution");
+
+	/** Predicate used for exposing the URI used for publishing the resource */
+	public static final URI SNAPSHOT_ENDPOINT = URI.create("http://www.ldp4j.org/ns#snapshotEndpoint");
+
+	/** Canonical base URI used for resolving the resources */
+	public static final URI CANONICAL_BASE = URI.create("http://www.ldp4j.org/fixture/ldp4j/api/");
 
 	private DynamicResourceHandler handler;
 	private Name<String> name;
@@ -94,12 +101,12 @@ public final class DynamicResourceResolver implements Runnable {
 
 			individual.
 				addValue(
-					URI.create("http://www.ldp4j.org/ns#snapshotEndpoint"),
+					SNAPSHOT_ENDPOINT,
 					Literals.newLiteral(snapshotEndpoint));
 			individual.
 				addValue(
-					URI.create("http://www.ldp4j.org/ns#snapshotResolution"),
-					Literals.newLiteral(roundtrip(snapshotResolver, snapshotEndpoint,snapshot)));
+					SNAPSHOT_RESOLUTION,
+					Literals.newLiteral(roundtrip(snapshotResolver,snapshotEndpoint,snapshot)));
 
 			this.handler.update(this.name, dataSet);
 

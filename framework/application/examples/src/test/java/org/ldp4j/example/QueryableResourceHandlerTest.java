@@ -26,30 +26,27 @@
  */
 package org.ldp4j.example;
 
-import org.ldp4j.application.ext.annotations.DirectContainer;
-import org.ldp4j.application.ext.annotations.MembershipRelation;
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.integration.junit4.JMockit;
 
-/**
- * Example direct container template handler
- */
-@DirectContainer(
-	id=RelativeContainerHandler.ID,
-	memberHandler=PersonHandler.class,
-	membershipRelation=MembershipRelation.HAS_MEMBER,
-	membershipPredicate="http://www.ldp4j.org/vocabularies/example#hasRelative"
-)
-public class RelativeContainerHandler extends AbstractPersonContainerHandler {
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.ldp4j.application.data.Name;
+import org.ldp4j.application.ext.Query;
+import org.ldp4j.application.session.ResourceSnapshot;
 
-	/**
-	 * The identifier of the template defined by the handler.
-	 */
-	public static final String ID="relativeContainerTemplate";
+@RunWith(JMockit.class)
+public class QueryableResourceHandlerTest {
 
-	/**
-	 * Create a new instance.
-	 */
-	public RelativeContainerHandler() {
-		super("RelativeContainer");
+	@Test
+	public void testQuery(@Mocked final ResourceSnapshot snapshot, @Mocked final Name<?> name, @Mocked final Query query) throws Exception {
+		QueryableResourceHandler sut = new QueryableResourceHandler();
+		new Expectations() {{
+			snapshot.name();result=name;
+			QuerySupport.getDescription(name, query);
+		}};
+		sut.query(snapshot, query, null);
 	}
 
 }

@@ -26,86 +26,80 @@
  */
 package org.ldp4j.example;
 
+import java.net.URI;
+import java.util.Date;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.DataSetHelper;
+import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.Literals;
+import org.ldp4j.application.data.ManagedIndividual;
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
-import org.ldp4j.application.ext.annotations.IndirectContainer;
-import org.ldp4j.application.ext.annotations.MembershipRelation;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 
-/**
- * Example indirect container template handler
- */
-@IndirectContainer(
-	id = BookContainerHandler.ID,
-	memberHandler = BookHandler.class,
-	membershipRelation=MembershipRelation.HAS_MEMBER,
-	membershipPredicate="http://www.ldp4j.org/vocabularies/example#hasBook",
-	insertedContentRelation = BookContainerHandler.INSERTED_CONTENT_RELATION
-)
-public class BookContainerHandler extends InMemoryContainerHandler {
+public class AbstractPersonContainerHandler extends InMemoryContainerHandler {
+
+	private PersonHandler handler;
+
+	private AtomicInteger id;
 
 	/**
-	 * The inserted content relation of the template defined by the handler.
+	 * Create a new instance with a given name
 	 */
-	public static final String INSERTED_CONTENT_RELATION = "http://www.ldp4j.org/vocabularies/example#bookshelf";
-
-	/**
-	 * The template identifier of the handler.
-	 */
-	public static final String ID="bookContainerTemplate";
-
-	private BookHandler handler;
-
-	/**
-	 * Create a new instance.
-	 */
-	public BookContainerHandler() {
-		super("BookContainer");
+	protected AbstractPersonContainerHandler(String name) {
+		super(name);
+		this.id=new AtomicInteger();
 	}
 
 	/**
-	 * Set the book handler associated to this handler.
+	 * Set the person handler associated to this handler.
 	 *
 	 * @param handler
-	 *            the book handler.
+	 *            the person handler.
 	 */
-	public void setBookHandler(BookHandler handler) {
+	public final void setHandler(PersonHandler handler) {
 		this.handler = handler;
-	}
-
-	/**
-	 * Return the book handler associated to this handler.
-	 *
-	 * @return the book handler associated to this handler.
-	 * @throws IllegalStateException
-	 *             if no associated book handler has been defined.
-	 */
-	public BookHandler bookHandler() {
-		if(this.handler==null) {
-			throw new IllegalStateException("Handler not initialized yet");
-		}
-		return this.handler;
 	}
 
 	/**
 	 * {@inheritDoc}<br/>
 	 *
-	 * Create a new book resource.
+	 * Create a new person resource.
 	 */
 	@Override
-	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
-		NameProvider nameProvider = nameProvider(container.name());
-		Name<?> nextName = nameProvider.nextMemberName();
+	public final ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
+		Name<?> name=
+			NamingScheme.
+				getDefault().
+					name(id.incrementAndGet());
+
+		DataSetHelper helper=
+					DataSetUtils.newHelper(representation);
+
+		ManagedIndividual individual =
+			helper.
+				replace(
+					DataSetHelper.SELF,
+					ManagedIndividualId.createId(name,PersonHandler.ID),
+					ManagedIndividual.class);
+
+		individual.
+			addValue(
+				URI.create("http://www.example.org/vocab#creationDate"),
+				Literals.of(new Date()).dateTime());
 		try {
-			bookHandler().add(nextName,representation);
-			ResourceSnapshot newMember = container.addMember(nextName);
+			this.handler.add(name, representation);
+			ResourceSnapshot member = container.addMember(name);
 			session.saveChanges();
-			return newMember;
+			return member;
 		} catch (Exception e) {
-			bookHandler().remove(nextName);
+			this.handler.remove(name);
 			throw new ApplicationRuntimeException("Could not create member",e);
 		}
 	}
