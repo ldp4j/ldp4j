@@ -89,7 +89,8 @@ final class TripleSetBuilder {
 			}
 			URI path=resourceResolver.resolveResource(id);
 			if(path==null) {
-				throw new IllegalStateException("Could not resolve individual '"+id+"'");
+				return null;
+//				throw new IllegalStateException("Could not resolve individual '"+id+"'");
 			} else if(indirectId!=null) {
 				path=path.resolve(indirectId);
 			}
@@ -207,8 +208,8 @@ final class TripleSetBuilder {
 		private final Resource<?> subject;
 		private final URI predicate;
 
-		private TripleGenerator(Individual<?,?> individual, Property property) {
-			this.subject = toResource(individual);
+		private TripleGenerator(Resource<?> resource, Property property) {
+			this.subject = resource;
 			this.predicate = property.predicate();
 		}
 
@@ -219,8 +220,8 @@ final class TripleSetBuilder {
 				return;
 			}
 			Resource<?> object = toResource(individual);
-			// Object individual is a NewIndividual
 			if(object==null) {
+				// Object individual is a NewIndividual or an unknown Managed Individual
 				return;
 			}
 			triples.add(
@@ -292,9 +293,14 @@ final class TripleSetBuilder {
 	void generateTriples(Individual<?,?> individual) {
 		Object id = individual.id();
 		if(!visitedIndividuals.contains(id)) {
+			Resource<?> resource = toResource(individual);
+			if(resource==null) {
+				// Could not resolve resource, so skip processing
+				return;
+			}
 			visitedIndividuals.add(id);
 			for(Property property:individual) {
-				property.accept(new TripleGenerator(individual,property));
+				property.accept(new TripleGenerator(resource,property));
 			}
 		}
 	}

@@ -40,9 +40,14 @@ import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.data.DataSetHelper;
+import org.ldp4j.application.data.DataSetUtils;
+import org.ldp4j.application.data.DataSets;
 import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.data.RelativeIndividualId;
+import org.ldp4j.application.vocabulary.RDFS;
 
 public class DataTransformatorTest {
 
@@ -125,6 +130,50 @@ public class DataTransformatorTest {
 				mediaType(new MediaType("text","turtle"));
 
 		sut.unmarshall(loadResource("/data/public-uri-clash.ttl"));
+	}
+
+	@Test
+	public void testMarshallOmmitsUnknownManagedIndividuals() throws Exception {
+		DataTransformator sut =
+			DataTransformator.
+				create(URI.create("http://localhost:8080/ldp4j-server-tckf/ldp4j/")).
+				surrogateEndpoint(URI.create("api/basic_container/")).
+				enableResolution(
+					new ResourceResolver() {
+						@Override
+						public URI resolveResource(ManagedIndividualId id) {
+							return null;
+						}
+						@Override
+						public ManagedIndividualId resolveLocation(URI path) {
+							return null;
+						}
+					}
+				).
+				mediaType(new MediaType("text","turtle"));
+		DataSet dataSet = DataSets.createDataSet(name("test"));
+		DataSetHelper helper = DataSetUtils.newHelper(dataSet);
+		helper.
+			managedIndividual(name("unknown"),"managerId").
+				property(RDFS.LABEL).
+					withLiteral("label").
+				property("http://www.example.org/vocab#targetManagedResource").
+					withIndividual(name("missing"),"missingManagerId").
+				property("http://www.example.org/vocab#targetBNode").
+					withIndividual("unknown");
+		helper.
+			localIndividual(name("unknown")).
+				property(RDFS.LABEL).
+					withLiteral("label").
+				property("http://www.example.org/vocab#targetManagedResource").
+					withIndividual(name("unknown"),"managerId");
+
+		String marshall = sut.marshall(dataSet);
+		System.out.println(marshall);
+	}
+
+	private Name<String> name(String id) {
+		return NamingScheme.getDefault().name(id);
 	}
 
 	@Test
