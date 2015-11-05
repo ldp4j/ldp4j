@@ -26,11 +26,10 @@
  */
 package org.ldp4j.application.kernel.engine;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkState;
 
 import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.resource.Resource;
-import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.application.kernel.template.ResourceTemplate;
 import org.ldp4j.application.kernel.template.TemplateIntrospector;
 
@@ -48,12 +47,6 @@ final class DefaultPublicResourceFactory {
 		ResourceTemplate template = this.applicationContext.resourceTemplate(resource);
 		checkState(template!=null,"Could not find template for resource %s",resource.id());
 		return template;
-	}
-
-	DefaultPublicResource createResource(ResourceId resourceId) {
-		Endpoint endpoint=this.applicationContext.resolveResource(resourceId);
-		checkState(endpoint!=null,"Could not resolve resource %s",resourceId);
-		return createResource(endpoint);
 	}
 
 	DefaultPublicResource createResource(Endpoint endpoint) {

@@ -229,7 +229,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 
 	private PublicResource resolveResource(ManagedIndividualId id) {
 		checkNotNull(id,"Individual identifier cannot be null");
-		return this.factory.createResource(ResourceId.createId(id.name(), id.managerId()));
+		return this.factory.createResource(resolveResource(ResourceId.createId(id.name(), id.managerId())));
 	}
 
 	private void processConstraintValidationFailure(Resource resource, Throwable failure) {

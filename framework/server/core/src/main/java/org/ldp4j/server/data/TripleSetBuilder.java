@@ -68,7 +68,6 @@ import org.ldp4j.rdf.util.TripleSet;
 
 final class TripleSetBuilder {
 
-
 	/**
 	 * TODO: Verify that the translation of managed individuals with indirect id
 	 * works as mandated by the specification
@@ -87,37 +86,36 @@ final class TripleSetBuilder {
 			if(indirectId!=null) {
 				id=ManagedIndividualId.createId(id.name(),id.managerId());
 			}
-			URI path=resourceResolver.resolveResource(id);
+			URI path=TripleSetBuilder.this.resourceResolver.resolveResource(id);
 			if(path==null) {
 				return null;
-//				throw new IllegalStateException("Could not resolve individual '"+id+"'");
 			} else if(indirectId!=null) {
 				path=path.resolve(indirectId);
 			}
-			return uriRef(base.resolve(path));
+			return uriRef(TripleSetBuilder.this.base.resolve(path));
 		}
 
 		@Override
 		public void visitManagedIndividual(ManagedIndividual individual) {
 			ManagedIndividualId id = individual.id();
-			resource=resolveManagedIndividualId(id);
+			this.resource=resolveManagedIndividualId(id);
 		}
 
 		@Override
 		public void visitRelativeIndividual(RelativeIndividual individual) {
 			RelativeIndividualId id = individual.id();
 			ManagedIndividualId mid = ManagedIndividualId.createId(id.path(), id.parentId());
-			resource=resolveManagedIndividualId(mid);
+			this.resource=resolveManagedIndividualId(mid);
 		}
 
 		@Override
 		public void visitLocalIndividual(LocalIndividual individual) {
-			resource=toSessionResource(individual.name());
+			this.resource=toSessionResource(individual.name());
 		}
 
 		@Override
 		public void visitExternalIndividual(ExternalIndividual individual) {
-			resource=uriRef(individual.id());
+			this.resource=uriRef(individual.id());
 		}
 
 		@Override
@@ -144,46 +142,47 @@ final class TripleSetBuilder {
 
 		@Override
 		public void visitURI(URI id) {
-			resource=blankNode(id.toString());
+			this.resource=blankNode(id.toString());
 		}
 
 		@Override
 		public void visitQName(QName id) {
-			resource=blankNode(id.toString());
+			this.resource=blankNode(id.toString());
 		}
 
 		@Override
 		public void visitTerm(Term id) {
-			resource=blankNode(id.qualifiedEntityName());
+			this.resource=blankNode(id.qualifiedEntityName());
 		}
 
 		@Override
 		public void visitString(String id) {
-			resource=blankNode(id);
+			this.resource=blankNode(id);
 		}
 
 		@Override
 		public void visitNumber(Number id) {
-			resource=blankNode(id.toString());
+			this.resource=blankNode(id.toString());
 		}
 
 		@Override
 		public void visitObject(Object id) {
-			resource=blankNode(id.toString());
+			this.resource=blankNode(id.toString());
 		}
+
 	}
 
 	private final class TripleGenerator implements ValueVisitor {
 
 		class LiteralTranslator implements LiteralVisitor {
 			private void append(org.ldp4j.rdf.Literal<?> object) {
-				triples.add(
-						triple(
-							subject,
-							predicate,
-							object
-						)
-					);
+				TripleSetBuilder.this.triples.add(
+					triple(
+						TripleGenerator.this.subject,
+						TripleGenerator.this.predicate,
+						object
+					)
+				);
 			}
 			@Override
 			public void visitLiteral(Literal<?> literal) {
@@ -216,7 +215,7 @@ final class TripleSetBuilder {
 		@Override
 		public void visitIndividual(Individual<?,?> individual) {
 			// Individual is a NewIndividual, ignore
-			if(subject==null) {
+			if(this.subject==null) {
 				return;
 			}
 			Resource<?> object = toResource(individual);
@@ -224,10 +223,10 @@ final class TripleSetBuilder {
 				// Object individual is a NewIndividual or an unknown Managed Individual
 				return;
 			}
-			triples.add(
+			TripleSetBuilder.this.triples.add(
 				triple(
-					subject,
-					predicate,
+					this.subject,
+					this.predicate,
 					object
 				)
 			);
@@ -237,7 +236,7 @@ final class TripleSetBuilder {
 		@Override
 		public void visitLiteral(Literal<?> literal) {
 			// Individual is a NewIndividual, ignore
-			if(subject==null) {
+			if(this.subject==null) {
 				return;
 			}
 			literal.accept(new LiteralTranslator());

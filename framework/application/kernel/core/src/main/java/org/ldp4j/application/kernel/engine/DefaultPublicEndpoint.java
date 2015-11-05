@@ -69,7 +69,7 @@ abstract class DefaultPublicEndpoint implements PublicEndpoint {
 	}
 
 	protected final DefaultPublicResource createResource(ResourceId resourceId) {
-		return this.factory.createResource(resourceId);
+		return this.factory.createResource(this.applicationContext.resolveResource(resourceId));
 	}
 
 	protected final ResourceTemplate template() {

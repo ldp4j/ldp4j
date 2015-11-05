@@ -80,6 +80,7 @@ import org.ldp4j.commons.testing.categories.ExceptionPath;
 import org.ldp4j.commons.testing.categories.HappyPath;
 import org.ldp4j.commons.testing.categories.LDP;
 import org.ldp4j.commons.testing.categories.Setup;
+import org.ldp4j.example.BadDataResourceHandler;
 import org.ldp4j.example.DynamicResourceResolver;
 import org.ldp4j.example.MyApplication;
 import org.ldp4j.example.QueryableResourceHandler;
@@ -766,7 +767,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		ExceptionPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
@@ -786,7 +786,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		ExceptionPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
@@ -806,7 +805,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		ExceptionPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)
@@ -827,6 +825,28 @@ public class ServerFrontendITest {
 		assertThat(response.contentType,equalTo("text/plain"));
 		assertThat(response.language,equalTo(Locale.ENGLISH));
 
+	}
+
+	@Test
+	@Category({
+		DEBUG.class,
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testBadDataResourceHandler(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+
+		HttpGet get = HELPER.newRequest(MyApplication.ROOT_BAD_DATA_RESOURCE_PATH,HttpGet.class);
+		Metadata getResponse=HELPER.httpRequest(get);
+		assertThat(getResponse.status,equalTo(OK));
+		assertThat(getResponse.body,notNullValue());
+		assertThat(getResponse.contentType,equalTo(TEXT_TURTLE));
+
+		BadDataResponseHelper helper = new BadDataResponseHelper(url,MyApplication.ROOT_BAD_DATA_RESOURCE_PATH,getResponse.body);
+		assertThat(helper.getProperties(),hasItems(BadDataResourceHandler.CREATED_ON,BadDataResourceHandler.HAS_WIFE));
+		assertThat(helper.getProperties(),not(hasItems(BadDataResourceHandler.FILTERED_PROPERTIES)));
 	}
 
 	private static final String TEXT_TURTLE = "text/turtle";

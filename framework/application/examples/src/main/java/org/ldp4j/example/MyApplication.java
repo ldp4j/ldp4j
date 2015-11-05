@@ -77,6 +77,7 @@ public class MyApplication extends Application<Configuration> {
 	private static final String RELATIVE_CONTAINER_NAME  = "RelativeContainer";
 	private static final String QUERYABLE_RESOURCE_NAME  = "QueryableResource";
 	private static final String DYNAMIC_RESOURCE_NAME    = "DynamicResource";
+	private static final String BAD_DATA_RESOURCE_NAME   = "BadDataResource";
 
 	/**
 	 * The path for a root person resource
@@ -98,6 +99,11 @@ public class MyApplication extends Application<Configuration> {
 	 */
 	public static final String ROOT_DYNAMIC_RESOURCE_PATH   = "rootDynamicResource/";
 
+	/**
+	 * The path for a root bad data resource
+	 */
+	public static final String ROOT_BAD_DATA_RESOURCE_PATH  = "rootBadDataResource/";
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(MyApplication.class);
 
 	private final Name<String> personResourceName;
@@ -105,6 +111,7 @@ public class MyApplication extends Application<Configuration> {
 	private final Name<String> relativeContainerResourceName;
 	private final Name<String> queryableResourceName;
 	private final Name<String> dynamicResourceName;
+	private final Name<String> badDataResourceName;
 
 	private DynamicResourceHandler dynamicResourceHandler;
 	private ScheduledExecutorService executorService;
@@ -118,6 +125,7 @@ public class MyApplication extends Application<Configuration> {
 		this.relativeContainerResourceName = NamingScheme.getDefault().name(RELATIVE_CONTAINER_NAME);
 		this.queryableResourceName = NamingScheme.getDefault().name(QUERYABLE_RESOURCE_NAME);
 		this.dynamicResourceName = NamingScheme.getDefault().name(DYNAMIC_RESOURCE_NAME);
+		this.badDataResourceName = NamingScheme.getDefault().name(BAD_DATA_RESOURCE_NAME);
 	}
 
 	private DataSet getInitialData(String templateId, String name) {
@@ -157,6 +165,11 @@ public class MyApplication extends Application<Configuration> {
 	}
 
 	/** Exposed for testing */
+	protected final Name<String> badDataResourceName() {
+		return this.badDataResourceName;
+	}
+
+	/** Exposed for testing */
 	protected final DynamicResourceHandler dynamicResourceHandler() {
 		return this.dynamicResourceHandler;
 	}
@@ -172,6 +185,7 @@ public class MyApplication extends Application<Configuration> {
 		RelativeContainerHandler relativesHandler=new RelativeContainerHandler();
 		QueryableResourceHandler queryableHandler=new QueryableResourceHandler();
 		this.dynamicResourceHandler = new DynamicResourceHandler();
+		BadDataResourceHandler badDataHandler=new BadDataResourceHandler();
 
 		containerHandler.setHandler(resourceHandler);
 		relativesHandler.setHandler(resourceHandler);
@@ -181,17 +195,20 @@ public class MyApplication extends Application<Configuration> {
 		relativesHandler.add(this.relativeContainerResourceName, getInitialData(RelativeContainerHandler.ID,RELATIVE_CONTAINER_NAME));
 		queryableHandler.add(this.queryableResourceName, getInitialData(QueryableResourceHandler.ID,QUERYABLE_RESOURCE_NAME));
 		this.dynamicResourceHandler.add(this.dynamicResourceName, getInitialData(DynamicResourceHandler.ID,DYNAMIC_RESOURCE_NAME));
+		badDataHandler.add(this.badDataResourceName, badDataHandler.getRepresentation());
 
 		bootstrap.addHandler(resourceHandler);
 		bootstrap.addHandler(containerHandler);
 		bootstrap.addHandler(relativesHandler);
 		bootstrap.addHandler(queryableHandler);
 		bootstrap.addHandler(this.dynamicResourceHandler);
+		bootstrap.addHandler(badDataHandler);
 
 		environment.publishResource(this.personResourceName, PersonHandler.class, ROOT_PERSON_RESOURCE_PATH);
 		environment.publishResource(this.personContainerName, PersonContainerHandler.class, ROOT_PERSON_CONTAINER_PATH);
 		environment.publishResource(this.queryableResourceName, QueryableResourceHandler.class, ROOT_QUERYABLE_RESOURCE_PATH);
 		environment.publishResource(this.dynamicResourceName, DynamicResourceHandler.class, ROOT_DYNAMIC_RESOURCE_PATH);
+		environment.publishResource(this.badDataResourceName, BadDataResourceHandler.class, ROOT_BAD_DATA_RESOURCE_PATH);
 
 		this.executorService =
 			Executors.
