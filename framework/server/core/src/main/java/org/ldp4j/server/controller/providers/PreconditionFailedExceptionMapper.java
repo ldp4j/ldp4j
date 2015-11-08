@@ -42,13 +42,12 @@ public class PreconditionFailedExceptionMapper implements ExceptionMapper<Precon
 
 	@Override
 	public Response toResponse(PreconditionFailedException throwable) {
-		String message = String.format("Precondition failed");
 		ResponseBuilder builder=
 			Response.
 				status(throwable.getStatusCode()).
 				language(Locale.ENGLISH).
 				type(MediaType.TEXT_PLAIN).
-				entity(message);
+				entity(String.format("Precondition failed: %s",throwable.getMessage()));
 		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
 		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.resourceClass());
 		return builder.build();

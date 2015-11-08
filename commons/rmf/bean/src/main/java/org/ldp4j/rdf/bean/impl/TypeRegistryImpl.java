@@ -41,7 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 class TypeRegistryImpl implements TypeRegistry {
-	
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(TypeRegistryImpl.class);
 
 	private static final AtomicLong COUNTER=new AtomicLong();
@@ -54,7 +54,7 @@ class TypeRegistryImpl implements TypeRegistry {
 		this.id=COUNTER.incrementAndGet();
 		this.definitions=new HashMap<Integer, Type>();
 	}
-	
+
 	protected final long getId() {
 		return id;
 	}
@@ -90,7 +90,7 @@ class TypeRegistryImpl implements TypeRegistry {
 			lock.writeLock().unlock();
 		}
 	}
-	
+
 	@Override
 	public void deregister(Class<?> clazz) {
 		lock.writeLock().lock();
@@ -116,7 +116,7 @@ class TypeRegistryImpl implements TypeRegistry {
 		StringWriter result = new StringWriter();
 		PrintWriter out=new PrintWriter(result);
 		out.printf("TypeRegistryImpl(%d) {%n",getId());
-		out.printf("\tDefinitions {");
+		out.print("\tDefinitions {");
 		for(Entry<?, ?> entry:definitions.entrySet()) {
 			out.printf("%n\t\t%s",entry.getValue());
 		}

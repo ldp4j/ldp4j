@@ -63,8 +63,9 @@ abstract class ParentState {
 
 		@Override
 		DelegatedResourceSnapshot parent(DelegatedResourceSnapshot ctx) {
-			checkState(!isRoot(ctx),"Resource %s does not have parent",ctx.name());
+			checkState(!isRoot(ctx),"Resource %s does not have parent",ctx.resourceId());
 			DelegatedResourceSnapshot parent=ctx.session().resolveResource(this.child.parentId());
+			checkState(parent!=null,"Could not resolve parent resource %s for resource",this.child.parentId(),ctx.resourceId());
 			ctx.setParentState(ParentState.childOf(parent));
 			return parent;
 		}

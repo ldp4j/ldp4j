@@ -64,16 +64,6 @@ public class BadDataResourceHandler extends InMemoryResourceHandler {
 	public static final String HAS_WIFE = "http://www.ldp4j.org/vocabulary/example#hasWife";
 
 	/**
-	 * All the properties that will be filtered.
-	 */
-	public static final String[] FILTERED_PROPERTIES={
-		HAS_FATHER,
-		AGE,
-		CREATION_DATE,
-		KNOWS
-	};
-
-	/**
 	 * The identifier of the template defined by the handler.
 	 */
 	public static final String ID="BadDataResourceHandler";
@@ -110,6 +100,18 @@ public class BadDataResourceHandler extends InMemoryResourceHandler {
 								hasLink(HAS_WIFE).
 									referringTo(newReference().toLocalIndividual().named("Consuelo")).
 					build();
+	}
+
+	/**
+	 * All the properties that will be filtered.
+	 */
+	public static final String[] filteredProperties() {
+		return new String[]{
+			HAS_FATHER,
+			AGE,
+			CREATION_DATE,
+			KNOWS
+		};
 	}
 
 }

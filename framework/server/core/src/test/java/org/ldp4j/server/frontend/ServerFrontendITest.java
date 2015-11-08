@@ -846,7 +846,7 @@ public class ServerFrontendITest {
 
 		BadDataResponseHelper helper = new BadDataResponseHelper(url,MyApplication.ROOT_BAD_DATA_RESOURCE_PATH,getResponse.body);
 		assertThat(helper.getProperties(),hasItems(BadDataResourceHandler.CREATED_ON,BadDataResourceHandler.HAS_WIFE));
-		assertThat(helper.getProperties(),not(hasItems(BadDataResourceHandler.FILTERED_PROPERTIES)));
+		assertThat(helper.getProperties(),not(hasItems(BadDataResourceHandler.filteredProperties())));
 	}
 
 	private static final String TEXT_TURTLE = "text/turtle";

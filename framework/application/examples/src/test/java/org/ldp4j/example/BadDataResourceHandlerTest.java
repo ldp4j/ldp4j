@@ -20,30 +20,22 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-api:0.2.0-SNAPSHOT
- *   Bundle      : ldp4j-application-kernel-api-0.2.0-SNAPSHOT.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.2.0-SNAPSHOT
+ *   Bundle      : ldp4j-application-examples-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.kernel.resource;
+package org.ldp4j.example;
 
-public interface Attachment {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
-	/**
-	 * Retrieve the identifier of the attachment
-	 * @return The identifier of the attachment
-	 */
-	String id();
+import org.junit.Test;
 
-	/**
-	 * Retrieve the identifier of the attached resource
-	 * @return The identifier of the attached resource
-	 */
-	ResourceId resourceId();
+public class BadDataResourceHandlerTest {
 
-	/**
-	 * Retrieve the current incarnation of the attachment
-	 * @return The version of the attachment
-	 */
-	long version();
+	@Test
+	public void testFilteredProperties() throws Exception {
+		assertThat(BadDataResourceHandler.filteredProperties().length,equalTo(4));
+	}
 
 }

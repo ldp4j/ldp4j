@@ -380,7 +380,7 @@ public final class URI {
 		}
 		out.printf("\t- Fragment............: %s%n",uri.getFragment());
 		out.printf("\t- Flags...............: %s%n",uriFlags(uri));
-		out.printf("}");
+		out.print("}");
 		out.flush();
 		writer.flush();
 		return writer.toString();

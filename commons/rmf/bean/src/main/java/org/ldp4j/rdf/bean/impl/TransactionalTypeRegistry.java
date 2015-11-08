@@ -37,18 +37,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class TransactionalTypeRegistry extends TypeRegistryImpl {
-	
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(TransactionalTypeRegistry.class);
 
 	private TransactionalTypeRegistry original;
-	
+
 	private final Map<Integer,Type> newDefinitions;
-	
+
 	TransactionalTypeRegistry() {
 		super();
 		this.newDefinitions=new HashMap<Integer, Type>();
 	}
-	
+
 	@Override
 	public boolean register(Class<?> clazz, Type type) {
 		getLock().writeLock().lock();
@@ -78,7 +78,7 @@ final class TransactionalTypeRegistry extends TypeRegistryImpl {
 			getLock().readLock().unlock();
 		}
 	}
-	
+
 	void rollback() {
 		getLock().writeLock().lock();
 		try {
@@ -110,13 +110,13 @@ final class TransactionalTypeRegistry extends TypeRegistryImpl {
 			getLock().writeLock().unlock();
 		}
 	}
-	
+
 	@Override
 	public String toString() {
 		StringWriter result = new StringWriter();
 		PrintWriter out=new PrintWriter(result);
 		out.printf("TransactionalTypeRegistryImpl(%d) {%n",getId());
-		out.printf("\tDefinitions {");
+		out.print("\tDefinitions {");
 		for(Entry<?, ?> entry:this.newDefinitions.entrySet()) {
 			out.printf("%n\t\t%s",entry.getValue());
 		}

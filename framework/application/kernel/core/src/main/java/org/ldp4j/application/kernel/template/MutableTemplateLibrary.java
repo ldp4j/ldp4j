@@ -151,13 +151,13 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 					 * backend supports it (for the time being we are using
 					 * Sesame and it requires using HTTP URIs)
 					 */
-					throw new TemplateCreationException(id,uriType+" cannot be a opaque URI ("+predicate+")");
+					throw new TemplateCreationException(id,String.format("%s cannot be a opaque URI (%s)",uriType,predicate));
 				} else if(!uri.isAbsolute()) {
-					throw new TemplateCreationException(id,uriType+" cannot be a hierarchical relative URI ("+predicate+")");
+					throw new TemplateCreationException(id,String.format("%s cannot be a hierarchical relative URI (%s)",uriType,predicate));
 				}
 				return uri;
 			} catch (URISyntaxException e) {
-				throw new TemplateCreationException(id,String.format(uriType+" value '%s' is not valid",predicate),e);
+				throw new TemplateCreationException(id,String.format("%s value '%s' is not valid",uriType,predicate),e);
 			}
 		}
 

@@ -201,6 +201,7 @@ final class AttachmentSnapshotCollection {
 		AttachmentSnapshotCollection repository=new AttachmentSnapshotCollection();
 		for(Attachment attachment:resource.attachments()) {
 			DelegatedResourceSnapshot snapshot = session.resolveResource(attachment.resourceId());
+			checkState(snapshot!=null,"Could not resolve attached resource of attachment %s of resource %s",attachment,resource.id());
 			DelegatedAttachmentSnapshot newAttachment=new DelegatedAttachmentSnapshot(attachment.id(),snapshot);
 			repository.safeAttach(newAttachment);
 		}

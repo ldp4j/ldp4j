@@ -116,7 +116,9 @@ final class MemberCollection {
 				@Override
 				public void visitContainer(Container resource) {
 					for(Member member:resource.members()) {
-						memberRepository.registerMember(session.resolveResource(member.memberId()));
+						DelegatedResourceSnapshot memberResourceSnapshot = session.resolveResource(member.memberId());
+						checkState(memberResourceSnapshot!=null,"Could not resolve member %s of container %s",member,resource);
+						memberRepository.registerMember(memberResourceSnapshot);
 					}
 				}
 			}

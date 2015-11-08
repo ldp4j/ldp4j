@@ -83,14 +83,14 @@ final class SnapshotFactory {
 				public void visitResource(Resource resource) {
 					DelegatedResourceSnapshot snapshot=new DelegatedResourceSnapshot(resource.id(),template.handlerClass());
 					snapshot.setParentState(ParentState.parentOf(resource));
-					snapshot.setPersistencyState(PersistencyState.newPersistent(resource,template,session));
+					snapshot.setPersistencyState(PersistencyState.newPersistentReferenceState(resource.id(),template));
 					result.set(snapshot);
 				}
 				@Override
 				public void visitContainer(Container resource) {
 					DelegatedContainerSnapshot snapshot=new DelegatedContainerSnapshot(resource.id(),handlerClass(template,ContainerHandler.class));
 					snapshot.setParentState(ParentState.parentOf(resource));
-					snapshot.setPersistencyState(PersistencyState.newPersistent(resource,template,session));
+					snapshot.setPersistencyState(PersistencyState.newPersistentReferenceState(resource.id(),template));
 					result.set(snapshot);
 				}
 			}
