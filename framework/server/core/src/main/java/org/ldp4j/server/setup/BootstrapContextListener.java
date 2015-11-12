@@ -26,6 +26,8 @@
  */
 package org.ldp4j.server.setup;
 
+import java.io.File;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextAttributeEvent;
 import javax.servlet.ServletContextAttributeListener;
@@ -94,8 +96,13 @@ public final class BootstrapContextListener implements ServletContextListener {
 		}
 
 		try {
-			ApplicationEngine engine = ApplicationEngine.engine();
+			ApplicationEngine engine =
+				ApplicationEngine.
+					engine().
+						withContextPath(servletContext.getContextPath()).
+						withTemporalDirectory((File)servletContext.getAttribute(ServletContext.TEMPDIR));
 			engine.start();
+			LOGGER.info("Started LDP4j Application Engine in context {}. Using temporal directory {}",engine.contextPath(),engine.temporalDirectory());
 			loadApplicationContext(servletContext, engine);
 		} catch (ApplicationEngineRuntimeException e) {
 			LOGGER.error("Could not configure LDP4j Server Frontend due to an unexpected LDP4j Application Engine failure. Full stacktrace follows:",e);
