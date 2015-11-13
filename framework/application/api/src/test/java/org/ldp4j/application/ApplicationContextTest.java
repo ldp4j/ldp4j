@@ -32,6 +32,9 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
+
+import java.util.concurrent.TimeUnit;
+
 import mockit.Deencapsulation;
 import mockit.Expectations;
 import mockit.Mocked;
@@ -565,6 +568,112 @@ public class ApplicationContextTest {
 		}};
 	}
 
+	@Test
+	public void testWriteSession$forceSessionClose$happyPath(@Mocked final WriteSession nativeSession) throws Exception {
+		new Expectations() {{
+			delegate.createSession();result=nativeSession;
+		}};
+		ApplicationContext sut = createContext();
+		WriteSession session = sut.createSession();
+		System.out.println("Created session "+session);
+		session.saveChanges();
+		System.out.println("Session saved "+session);
+		session=null;
+		System.out.println("Session nulled");
+		int i=0;
+		while(i<10) {
+			i++;
+			System.gc();
+		}
+		System.out.println(sut);
+		TimeUnit.MILLISECONDS.sleep(3000);
+		System.out.println(sut);
+		new Verifications() {{
+			nativeSession.saveChanges();maxTimes=1;minTimes=1;
+			nativeSession.close();maxTimes=1;minTimes=1;
+		}};
+	}
+
+	@Test
+	public void testWriteSession$forceSessionClose$failurePath(@Mocked final WriteSession nativeSession) throws Exception {
+		new Expectations() {{
+			delegate.createSession();result=nativeSession;
+			nativeSession.close();result=new SessionTerminationException("failure");
+		}};
+		ApplicationContext sut = createContext();
+		WriteSession session = sut.createSession();
+		System.out.println("Created session "+session);
+		session.saveChanges();
+		System.out.println("Session saved "+session);
+		session=null;
+		System.out.println("Session nulled");
+		int i=0;
+		while(i<10) {
+			i++;
+			System.gc();
+		}
+		System.out.println(sut);
+		TimeUnit.MILLISECONDS.sleep(3000);
+		System.out.println(sut);
+		new Verifications() {{
+			nativeSession.saveChanges();maxTimes=1;minTimes=1;
+			nativeSession.close();maxTimes=1;minTimes=1;
+		}};
+	}
+
+	@Test
+	public void testWriteSession$forceSessionClose$errorPath(@Mocked final WriteSession nativeSession) throws Exception {
+		new Expectations() {{
+			delegate.createSession();result=nativeSession;
+			nativeSession.close();result=new IllegalStateException("failure");
+		}};
+		ApplicationContext sut = createContext();
+		WriteSession session = sut.createSession();
+		System.out.println("Created session "+session);
+		session.saveChanges();
+		System.out.println("Session saved "+session);
+		session=null;
+		System.out.println("Session nulled");
+		int i=0;
+		while(i<10) {
+			i++;
+			System.gc();
+		}
+		System.out.println(sut);
+		TimeUnit.MILLISECONDS.sleep(3000);
+		System.out.println(sut);
+		new Verifications() {{
+			nativeSession.saveChanges();maxTimes=1;minTimes=1;
+			nativeSession.close();maxTimes=1;minTimes=1;
+		}};
+	}
+
+	@Test
+	public void testWriteSession$forceSessionClose$interruptionPath(@Mocked final WriteSession nativeSession) throws Exception {
+		new Expectations() {{
+			delegate.createSession();result=nativeSession;
+			nativeSession.close();result=new InterruptedException("failure");
+		}};
+		ApplicationContext sut = createContext();
+		WriteSession session = sut.createSession();
+		System.out.println("Created session "+session);
+		session.saveChanges();
+		System.out.println("Session saved "+session);
+		session=null;
+		System.out.println("Session nulled");
+		int i=0;
+		while(i<10) {
+			i++;
+			System.gc();
+		}
+		System.out.println(sut);
+		TimeUnit.MILLISECONDS.sleep(3000);
+		System.out.println(sut);
+		new Verifications() {{
+			nativeSession.saveChanges();maxTimes=1;minTimes=1;
+			nativeSession.close();maxTimes=1;minTimes=1;
+		}};
+	}
 
 	public static class CustomResourceHandler implements ResourceHandler {
 		@Override

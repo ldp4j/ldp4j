@@ -29,6 +29,11 @@ package org.ldp4j.application;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
+import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
+
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -39,6 +44,9 @@ import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.application.spi.RuntimeDelegate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.MoreObjects;
+import com.google.common.collect.Maps;
 
 
 /**
@@ -58,18 +66,132 @@ public final class ApplicationContext {
 
 	private final class SafeWriteSession implements WriteSession {
 
-		private final WriteSession nativeSession;
+		private final WriteSession delegate;
 
-		private boolean dispossed;
+		private boolean disposed;
 		private boolean completed;
 
-		private SafeWriteSession(WriteSession session) {
-			this.nativeSession = session;
+		private long id;
+
+		private SafeWriteSession(WriteSession delegate) {
+			this.delegate = delegate;
+			this.id=SESSION_COUNTER.incrementAndGet();
+		}
+
+		private void doDispose() throws SessionTerminationException {
+			clearSession(this);
+			this.disposed=true;
+			this.delegate.close();
 		}
 
 		private void verifyExecutability() {
-			checkState(!this.dispossed,"Session has already been dispossed");
+			checkState(!this.disposed,"Session has already been disposed");
 			checkState(!this.completed,"Session has already been completed");
+		}
+
+		long id() {
+			return this.id;
+		}
+
+		synchronized void dispose() {
+			LOGGER.warn("Closing session {} which was not closed by the user...",this);
+			try {
+				doDispose();
+			} catch (SessionTerminationException e) {
+				LOGGER.error("Could not close session {}",this,e);
+			}
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public synchronized <S extends ResourceSnapshot> S resolve(Class<? extends S> snapshotClass, Individual<?, ?> individual) {
+			verifyExecutability();
+			return this.delegate.resolve(snapshotClass,individual);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public synchronized <S extends ResourceSnapshot> S find(Class<? extends S> snapshotClass, Name<?> id, Class<? extends ResourceHandler> handlerClass) {
+			verifyExecutability();
+			return this.delegate.find(snapshotClass,id,handlerClass);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public synchronized void modify(ResourceSnapshot resource) {
+			verifyExecutability();
+			this.delegate.modify(resource);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public synchronized void delete(ResourceSnapshot resource) {
+			verifyExecutability();
+			this.delegate.delete(resource);
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public synchronized void saveChanges() throws WriteSessionException {
+			verifyExecutability();
+			this.delegate.saveChanges();
+			this.completed=true;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public synchronized void discardChanges() throws WriteSessionException {
+			verifyExecutability();
+			this.delegate.discardChanges();
+			this.completed=true;
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public synchronized void close() throws SessionTerminationException {
+			if(this.disposed) {
+				return;
+			}
+			doDispose();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public synchronized String toString() {
+			return
+				MoreObjects.
+					toStringHelper(getClass()).
+						add("id",this.id).
+						add("completed",this.completed).
+						add("disposed",this.disposed).
+						add("delegate",this.delegate).
+						toString();
+		}
+
+	}
+
+	private final class ContextWriteSession implements WriteSession {
+
+		private final WriteSession delegate;
+
+		private ContextWriteSession(WriteSession delegate) {
+			this.delegate = delegate;
 		}
 
 		/**
@@ -77,8 +199,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public <S extends ResourceSnapshot> S resolve(Class<? extends S> snapshotClass, Individual<?, ?> individual) {
-			verifyExecutability();
-			return this.nativeSession.resolve(snapshotClass,individual);
+			return this.delegate.resolve(snapshotClass,individual);
 		}
 
 		/**
@@ -86,8 +207,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public <S extends ResourceSnapshot> S find(Class<? extends S> snapshotClass, Name<?> id, Class<? extends ResourceHandler> handlerClass) {
-			verifyExecutability();
-			return this.nativeSession.find(snapshotClass,id,handlerClass);
+			return this.delegate.find(snapshotClass,id,handlerClass);
 		}
 
 		/**
@@ -95,8 +215,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public void modify(ResourceSnapshot resource) {
-			verifyExecutability();
-			this.nativeSession.modify(resource);
+			this.delegate.modify(resource);
 		}
 
 		/**
@@ -104,8 +223,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public void delete(ResourceSnapshot resource) {
-			verifyExecutability();
-			this.nativeSession.delete(resource);
+			this.delegate.delete(resource);
 		}
 
 		/**
@@ -113,9 +231,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public void saveChanges() throws WriteSessionException {
-			verifyExecutability();
-			this.completed=true;
-			this.nativeSession.saveChanges();
+			this.delegate.saveChanges();
 		}
 
 		/**
@@ -123,9 +239,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public void discardChanges() throws WriteSessionException {
-			verifyExecutability();
-			this.completed=true;
-			this.nativeSession.discardChanges();
+			this.delegate.discardChanges();
 		}
 
 		/**
@@ -133,46 +247,123 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public void close() throws SessionTerminationException {
-			if(this.dispossed) {
-				return;
+			this.delegate.close();
+		}
+
+		/**
+		 * {@inheritDoc}
+		 */
+		@Override
+		public String toString() {
+			return
+				MoreObjects.
+					toStringHelper(getClass()).
+						add("delegate",this.delegate).
+						toString();
+		}
+
+	}
+
+	private static final class ContextWriteSessionReference extends WeakReference<ContextWriteSession> {
+
+		private SafeWriteSession safeSession;
+
+		public ContextWriteSessionReference(ContextWriteSession referent, SafeWriteSession safeSession) {
+			super(referent,REFERENCE_QUEUE);
+			this.safeSession = safeSession;
+		}
+
+		SafeWriteSession safeSession() {
+			return this.safeSession;
+		}
+
+		@Override
+		public String toString() {
+			return
+				MoreObjects.
+					toStringHelper(getClass()).
+						omitNullValues().
+							add("enqueued",super.isEnqueued()).
+							add("safeSession",this.safeSession).
+							toString();
+		}
+
+
+	}
+
+	private static class WriteSessionCleaner extends Thread {
+
+		private WriteSessionCleaner() {
+			setPriority(Thread.MAX_PRIORITY);
+			setName("ApplicationContext-WriteSessionCleaner");
+			setDaemon(true);
+			setUncaughtExceptionHandler(
+				new UncaughtExceptionHandler() {
+					@Override
+					public void uncaughtException(Thread t, Throwable e) {
+						LOGGER.error("Cleaner thread unexpectedly died. Full stacktrace follows",e);
+						launch();
+					}
+				}
+			);
+		}
+
+		public void run() {
+			while (true) {
+				try {
+					ContextWriteSessionReference ref=(ContextWriteSessionReference)REFERENCE_QUEUE.remove();
+					SafeWriteSession session = ref.safeSession();
+					LOGGER.trace("Session {} is now weakly reachable...",session);
+					session.dispose();
+				} catch (InterruptedException e) {
+					// ignore
+				}
 			}
-			clearSession(this);
-			this.dispossed=true;
-			this.nativeSession.close();
+		}
+
+		static void launch() {
+			new WriteSessionCleaner().start();
 		}
 
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ApplicationContext.class);
 
-	private final RuntimeDelegate delegate;
+	private static final AtomicLong SESSION_COUNTER=new AtomicLong();
 
-	private final ThreadLocal<WriteSession> session;
+	private static final ReferenceQueue<ContextWriteSession> REFERENCE_QUEUE=new ReferenceQueue<ContextWriteSession>();
+
+	private final RuntimeDelegate delegate;
+	private final Map<Long,ContextWriteSessionReference> references;
+	private final Map<Long,Long> sessionOwner;
+	private final Map<Long,Long> threadSession;
 
 	private ApplicationContext() {
 		this.delegate=RuntimeDelegate.getInstance();
-		this.session=new ThreadLocal<WriteSession>();
+		this.references=Maps.newLinkedHashMap();
+		this.sessionOwner=Maps.newLinkedHashMap();
+		this.threadSession=Maps.newLinkedHashMap();
+		WriteSessionCleaner.launch();
 		LOGGER.info("Initialized Application Context");
 	}
 
 	private ApplicationContextException failure(Throwable cause, String fmt, Object... args) {
 		String message=String.format(fmt,args);
-
 		if(cause!=null) {
 			LOGGER.error(message+". Full stacktrace follows",cause);
 		} else {
 			LOGGER.error(message);
 		}
-
 		return new ApplicationContextException(message,cause);
 	}
 
-	private boolean clearSession(WriteSession session) {
-		boolean result = this.session.get()==session;
-		if(result) {
-			this.session.remove();
-		}
-		return result;
+	private synchronized boolean clearSession(SafeWriteSession session) {
+		long sessionId=session.id();
+		long ownerId  =this.sessionOwner.get(sessionId);
+		this.references.remove(sessionId);
+		this.sessionOwner.remove(sessionId);
+		this.threadSession.remove(ownerId);
+		return ownerId==Thread.currentThread().getId();
 	}
 
 	/**
@@ -184,8 +375,8 @@ public final class ApplicationContext {
 	 *             if no write session can be created for whichever reason,
 	 *             e.g., the Application Engine is off-line or is not available.
 	 */
-	public WriteSession createSession() throws ApplicationContextException {
-		if(this.session.get()!=null) {
+	public synchronized WriteSession createSession() throws ApplicationContextException {
+		if(this.threadSession.containsKey(Thread.currentThread().getId())) {
 			throw failure(null,"Thread already has an active session");
 		}
 		if(this.delegate.isOffline()) {
@@ -196,8 +387,12 @@ public final class ApplicationContext {
 			throw failure(null,"Could not create native write session");
 		}
 		SafeWriteSession safeSession = new SafeWriteSession(nativeSession);
-		this.session.set(safeSession);
-		return safeSession;
+		ContextWriteSession leakedSession = new ContextWriteSession(safeSession);
+		ContextWriteSessionReference reference = new ContextWriteSessionReference(leakedSession,safeSession);
+		this.references.put(safeSession.id(),reference);
+		this.sessionOwner.put(safeSession.id(),Thread.currentThread().getId());
+		this.threadSession.put(Thread.currentThread().getId(),safeSession.id());
+		return leakedSession;
 	}
 
 
@@ -217,14 +412,30 @@ public final class ApplicationContext {
 	@Deprecated
 	public void disposeSession(WriteSession session) throws ApplicationContextException {
 		checkNotNull(session,"Session cannot be null");
-		if(!clearSession(session)) {
-			throw failure(null,"Session '%s' is not owned by the current thread",session);
+		if(!ContextWriteSession.class.isInstance(session)) {
+			throw failure(null,"Unknown session %s",session);
 		}
 		try {
 			session.close();
 		} catch (SessionTerminationException e) {
 			throw failure(e,"Could not close session '%X'",session.hashCode());
 		}
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public synchronized String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					omitNullValues().
+					add("delegate",this.delegate).
+					add("references",this.references).
+					add("sessionOwner",this.sessionOwner).
+					add("threadSession",this.threadSession).
+					toString();
 	}
 
 	/**
