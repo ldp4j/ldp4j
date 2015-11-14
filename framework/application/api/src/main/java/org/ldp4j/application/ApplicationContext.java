@@ -64,16 +64,15 @@ public final class ApplicationContext {
 
 	}
 
-	private final class SafeWriteSession implements WriteSession {
+	private final class State implements WriteSession {
 
+		private final long id;
 		private final WriteSession delegate;
 
 		private boolean disposed;
 		private boolean completed;
 
-		private long id;
-
-		private SafeWriteSession(WriteSession delegate) {
+		private State(WriteSession delegate) {
 			this.delegate = delegate;
 			this.id=SESSION_COUNTER.incrementAndGet();
 		}
@@ -188,10 +187,10 @@ public final class ApplicationContext {
 
 	private final class ContextWriteSession implements WriteSession {
 
-		private final WriteSession delegate;
+		private final State state;
 
-		private ContextWriteSession(WriteSession delegate) {
-			this.delegate = delegate;
+		private ContextWriteSession(State state) {
+			this.state = state;
 		}
 
 		/**
@@ -199,7 +198,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public <S extends ResourceSnapshot> S resolve(Class<? extends S> snapshotClass, Individual<?, ?> individual) {
-			return this.delegate.resolve(snapshotClass,individual);
+			return this.state.resolve(snapshotClass,individual);
 		}
 
 		/**
@@ -207,7 +206,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public <S extends ResourceSnapshot> S find(Class<? extends S> snapshotClass, Name<?> id, Class<? extends ResourceHandler> handlerClass) {
-			return this.delegate.find(snapshotClass,id,handlerClass);
+			return this.state.find(snapshotClass,id,handlerClass);
 		}
 
 		/**
@@ -215,7 +214,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public void modify(ResourceSnapshot resource) {
-			this.delegate.modify(resource);
+			this.state.modify(resource);
 		}
 
 		/**
@@ -223,7 +222,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public void delete(ResourceSnapshot resource) {
-			this.delegate.delete(resource);
+			this.state.delete(resource);
 		}
 
 		/**
@@ -231,7 +230,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public void saveChanges() throws WriteSessionException {
-			this.delegate.saveChanges();
+			this.state.saveChanges();
 		}
 
 		/**
@@ -239,7 +238,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public void discardChanges() throws WriteSessionException {
-			this.delegate.discardChanges();
+			this.state.discardChanges();
 		}
 
 		/**
@@ -247,7 +246,7 @@ public final class ApplicationContext {
 		 */
 		@Override
 		public void close() throws SessionTerminationException {
-			this.delegate.close();
+			this.state.close();
 		}
 
 		/**
@@ -258,7 +257,7 @@ public final class ApplicationContext {
 			return
 				MoreObjects.
 					toStringHelper(getClass()).
-						add("delegate",this.delegate).
+						add("state",this.state).
 						toString();
 		}
 
@@ -266,15 +265,15 @@ public final class ApplicationContext {
 
 	private static final class ContextWriteSessionReference extends WeakReference<ContextWriteSession> {
 
-		private SafeWriteSession safeSession;
+		private State state;
 
-		public ContextWriteSessionReference(ContextWriteSession referent, SafeWriteSession safeSession) {
+		public ContextWriteSessionReference(ContextWriteSession referent, State state) {
 			super(referent,REFERENCE_QUEUE);
-			this.safeSession = safeSession;
+			this.state = state;
 		}
 
-		SafeWriteSession safeSession() {
-			return this.safeSession;
+		State state() {
+			return this.state;
 		}
 
 		@Override
@@ -284,7 +283,7 @@ public final class ApplicationContext {
 					toStringHelper(getClass()).
 						omitNullValues().
 							add("enqueued",super.isEnqueued()).
-							add("safeSession",this.safeSession).
+							add("state",this.state).
 							toString();
 		}
 
@@ -308,11 +307,12 @@ public final class ApplicationContext {
 			);
 		}
 
+		@Override
 		public void run() {
 			while (true) {
 				try {
 					ContextWriteSessionReference ref=(ContextWriteSessionReference)REFERENCE_QUEUE.remove();
-					SafeWriteSession session = ref.safeSession();
+					ApplicationContext.State session = ref.state();
 					LOGGER.trace("Session {} is now weakly reachable...",session);
 					session.dispose();
 				} catch (InterruptedException e) {
@@ -357,7 +357,7 @@ public final class ApplicationContext {
 		return new ApplicationContextException(message,cause);
 	}
 
-	private synchronized boolean clearSession(SafeWriteSession session) {
+	private synchronized boolean clearSession(State session) {
 		long sessionId=session.id();
 		long ownerId  =this.sessionOwner.get(sessionId);
 		this.references.remove(sessionId);
@@ -386,7 +386,7 @@ public final class ApplicationContext {
 		if(nativeSession==null) {
 			throw failure(null,"Could not create native write session");
 		}
-		SafeWriteSession safeSession = new SafeWriteSession(nativeSession);
+		State safeSession = new State(nativeSession);
 		ContextWriteSession leakedSession = new ContextWriteSession(safeSession);
 		ContextWriteSessionReference reference = new ContextWriteSessionReference(leakedSession,safeSession);
 		this.references.put(safeSession.id(),reference);
