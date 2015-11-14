@@ -137,7 +137,7 @@ public class EnvironmentImplTest {
 				this.templateManagementService,
 				modelFactory,
 				this.endpointRepository,
-				this.resourceRepository);
+				this.resourceRepository, new DefaultLifecycleEnvironment());
 	}
 
 	@After

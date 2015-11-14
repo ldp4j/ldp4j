@@ -28,6 +28,7 @@ package org.ldp4j.application.setup;
 
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.lifecycle.LifecycleEnvironment;
 
 /**
  * Utility interface for initializing the root resources of an LDP4j
@@ -51,5 +52,7 @@ public interface Environment {
 	 *            a single '/'.
 	 */
 	void publishResource(Name<?> resourceName, Class<? extends ResourceHandler> handlerClass, String path);
+
+	LifecycleEnvironment lifecycle();
 
 }
