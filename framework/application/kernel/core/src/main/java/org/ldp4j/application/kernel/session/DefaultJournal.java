@@ -44,13 +44,13 @@ import com.google.common.collect.Maps;
 
 final class DefaultJournal implements Journal {
 
-	private static final class RecordImpl implements Record {
+	private static final class DefaultRecord implements Record {
 
 		private final long id;
 		private final long timestamp;
 		private final Map<String,Object> fields;
 
-		private RecordImpl(long id, long timestamp, Map<String,Object> fields) {
+		private DefaultRecord(long id, long timestamp, Map<String,Object> fields) {
 			this.id=id;
 			this.timestamp=timestamp;
 			this.fields=fields;
@@ -66,7 +66,7 @@ final class DefaultJournal implements Journal {
 			return this.timestamp;
 		}
 
-		private RecordImpl withField(String key, Object value) {
+		private DefaultRecord withField(String key, Object value) {
 			this.fields.put(key, value);
 			return this;
 		}
@@ -82,22 +82,22 @@ final class DefaultJournal implements Journal {
 						toString();
 		}
 
-		private static RecordImpl newInstance(long id) {
-			return new RecordImpl(id,System.currentTimeMillis(),Maps.<String,Object>newLinkedHashMap());
+		private static DefaultRecord newInstance(long id) {
+			return new DefaultRecord(id,System.currentTimeMillis(),Maps.<String,Object>newLinkedHashMap());
 		}
 
 	}
 
-	private final class JournalerImpl implements Journaler {
+	private final class DefaultJournaler implements Journaler {
 
-		private Record populateMemberRecord(RecordImpl record, DelegatedContainerSnapshot snapshot, DelegatedResourceSnapshot member) {
+		private Record populateMemberRecord(DefaultRecord record, DelegatedContainerSnapshot snapshot, DelegatedResourceSnapshot member) {
 			return
 				populateSnapshotInformation(record, snapshot).
 					withField("member.id",id(member.resourceId())).
 					withField("member.object",member.hashCode());
 		}
 
-		private Record populateAttachmentRecord(RecordImpl record, DelegatedResourceSnapshot snapshot, DelegatedAttachmentSnapshot attachment) {
+		private Record populateAttachmentRecord(DefaultRecord record, DelegatedResourceSnapshot snapshot, DelegatedAttachmentSnapshot attachment) {
 			return
 				populateSnapshotInformation(record, snapshot).
 					withField("attachment.id",attachment.id()).
@@ -106,7 +106,7 @@ final class DefaultJournal implements Journal {
 					withField("attachment.snapshot.object",attachment.resource().hashCode());
 		}
 
-		private RecordImpl populateSnapshotInformation(RecordImpl record, DelegatedResourceSnapshot snapshot) {
+		private DefaultRecord populateSnapshotInformation(DefaultRecord record, DelegatedResourceSnapshot snapshot) {
 			return
 				record.
 					withField("snapshot.id",id(snapshot.resourceId())).
@@ -125,7 +125,7 @@ final class DefaultJournal implements Journal {
 		}
 
 		private void populateLoadRecord(String operation, ResourceId resourceId, Object resource) {
-			RecordImpl record=
+			DefaultRecord record=
 				newRecord(operation).
 					withField("id",id(resourceId));
 			if(resource!=null) {
@@ -280,11 +280,11 @@ final class DefaultJournal implements Journal {
 		this.sessionId = sessionId;
 		this.records=Lists.newCopyOnWriteArrayList();
 		this.recordCount=new AtomicLong();
-		this.journaler=new JournalerImpl();
+		this.journaler=new DefaultJournaler();
 	}
 
-	private RecordImpl newRecord(String string) {
-		RecordImpl record = RecordImpl.newInstance(this.recordCount.incrementAndGet());
+	private DefaultRecord newRecord(String string) {
+		DefaultRecord record = DefaultRecord.newInstance(this.recordCount.incrementAndGet());
 		this.records.add(record);
 		return record.withField("action", string);
 	}

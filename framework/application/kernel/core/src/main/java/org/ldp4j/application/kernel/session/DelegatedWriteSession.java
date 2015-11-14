@@ -148,6 +148,7 @@ final class DelegatedWriteSession implements WriteSession {
 				this.resourceCache.put(resourceId, resource);
 			}
 		}
+		JournalingService.getInstance().journaler().resolveSnapshot(resourceId,resource);
 		return resource;
 	}
 
@@ -203,7 +204,9 @@ final class DelegatedWriteSession implements WriteSession {
 	}
 
 	Resource loadResource(ResourceId resourceId) {
-		return this.writeSessionService.resourceOfId(resourceId);
+		Resource resource = this.writeSessionService.resourceOfId(resourceId);
+		JournalingService.getInstance().journaler().loadResource(resourceId,resource);
+		return resource;
 	}
 
 	DelegatedResourceSnapshot resolveResource(ResourceId resourceId) {
@@ -308,6 +311,7 @@ final class DelegatedWriteSession implements WriteSession {
 		checkArgument(resource instanceof DelegatedResourceSnapshot,"Unknown resource '%s'",resource.name());
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,status);
 		DelegatedResourceSnapshot delegatedResource=(DelegatedResourceSnapshot)resource;
+		JournalingService.getInstance().journaler().modifySnapshot(delegatedResource);
 		delegatedResource.modify();
 	}
 
@@ -320,6 +324,7 @@ final class DelegatedWriteSession implements WriteSession {
 		checkArgument(resource instanceof DelegatedResourceSnapshot,"Unknown resource '%s'",resource.name());
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,status);
 		DelegatedResourceSnapshot delegatedResource=(DelegatedResourceSnapshot)resource;
+		JournalingService.getInstance().journaler().deleteSnapshot(delegatedResource);
 		delegatedResource.delete();
 	}
 
@@ -329,6 +334,7 @@ final class DelegatedWriteSession implements WriteSession {
 	@Override
 	public void saveChanges() throws WriteSessionException {
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,this.status);
+		JournalingService.getInstance().journaler().saveChanges();
 		this.status=Status.COMPLETED;
 		for(Entry<ResourceId, DelegatedResourceSnapshot> entry:this.resourceCache.entrySet()) {
 			DelegatedResourceSnapshot resource = entry.getValue();
@@ -343,6 +349,7 @@ final class DelegatedWriteSession implements WriteSession {
 	@Override
 	public void discardChanges() throws WriteSessionException {
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,this.status);
+		JournalingService.getInstance().journaler().discardChanges();
 		this.status=Status.ABORTED;
 		this.writeSessionService.rollbackSession(this);
 	}
@@ -352,6 +359,7 @@ final class DelegatedWriteSession implements WriteSession {
 	 */
 	@Override
 	public void close() throws SessionTerminationException {
+		JournalingService.getInstance().journaler().close();
 		this.writeSessionService.terminateSession(this);
 	}
 

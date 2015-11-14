@@ -83,19 +83,21 @@ final class SnapshotFactory {
 				public void visitResource(Resource resource) {
 					DelegatedResourceSnapshot snapshot=new DelegatedResourceSnapshot(resource.id(),template.handlerClass());
 					snapshot.setParentState(ParentState.parentOf(resource));
-					snapshot.setPersistencyState(PersistencyState.newPersistentReferenceState(resource.id(),template));
+					snapshot.setPersistencyState(PersistencyState.newPersistentReferenceState(resource,template));
 					result.set(snapshot);
 				}
 				@Override
 				public void visitContainer(Container resource) {
 					DelegatedContainerSnapshot snapshot=new DelegatedContainerSnapshot(resource.id(),handlerClass(template,ContainerHandler.class));
 					snapshot.setParentState(ParentState.parentOf(resource));
-					snapshot.setPersistencyState(PersistencyState.newPersistentReferenceState(resource.id(),template));
+					snapshot.setPersistencyState(PersistencyState.newPersistentReferenceState(resource,template));
 					result.set(snapshot);
 				}
 			}
 		);
-		return result.get();
+		DelegatedResourceSnapshot snapshot = result.get();
+		JournalingService.getInstance().journaler().createPersistentSnapshot(snapshot,resource);
+		return snapshot;
 	}
 
 	DelegatedResourceSnapshot newTransient(ResourceId resourceId, DelegatedResourceSnapshot parent) {
@@ -107,6 +109,7 @@ final class SnapshotFactory {
 		} else {
 			snapshot.setParentState(ParentState.childOf(parent));
 		}
+		JournalingService.getInstance().journaler().createTransientSnapshot(snapshot,resourceId,parent);
 		return snapshot;
 	}
 

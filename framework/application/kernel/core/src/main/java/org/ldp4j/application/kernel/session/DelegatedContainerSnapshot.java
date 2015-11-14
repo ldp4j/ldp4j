@@ -87,13 +87,17 @@ final class DelegatedContainerSnapshot extends DelegatedResourceSnapshot impleme
 
 	@Override
 	public ResourceSnapshot addMember(final Name<?> resourceName) {
-		return super.persistencyState().addMember(resourceName,this);
+		DelegatedResourceSnapshot member = super.persistencyState().addMember(resourceName,this);
+		JournalingService.getInstance().journaler().createMemberSnapshot(this,member);
+		return member;
 	}
 
 	@Override
 	public boolean removeMember(ResourceSnapshot member) {
 		checkArgument(member instanceof DelegatedResourceSnapshot,UNSUPPORTED_SNAPSHOT_TYPE);
-		return super.persistencyState().removeMember((DelegatedResourceSnapshot)member,this);
+		DelegatedResourceSnapshot memberSnapshot = (DelegatedResourceSnapshot)member;
+		JournalingService.getInstance().journaler().deleteMemberSnapshot(this,memberSnapshot);
+		return super.persistencyState().removeMember(memberSnapshot,this);
 	}
 
 	boolean softRemoveMember(ResourceSnapshot member) {

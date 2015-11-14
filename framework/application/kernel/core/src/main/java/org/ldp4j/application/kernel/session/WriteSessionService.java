@@ -116,7 +116,9 @@ public final class WriteSessionService implements Service {
 	public WriteSession createSession(WriteSessionConfiguration configuration) {
 		UnitOfWork.newCurrent();
 		logLifecycleMessage("Created write session: %s",configuration);
-		return new DelegatedWriteSession(configuration,this);
+		DelegatedWriteSession session=new DelegatedWriteSession(configuration,this);
+		JournalingService.getInstance().createJournal(session);
+		return session;
 	}
 
 	void terminateSession(DelegatedWriteSession session) {
@@ -200,6 +202,7 @@ public final class WriteSessionService implements Service {
 						relativePath,
 						generateEntityTag(resource),
 						lastModified);
+			JournalingService.getInstance().journaler().createResource(resource,newEndpoint);
 			if(LOGGER.isTraceEnabled()) {
 				LOGGER.trace("Created "+resource);
 				LOGGER.trace("Created "+newEndpoint);
@@ -217,6 +220,7 @@ public final class WriteSessionService implements Service {
 						resource,
 						generateEntityTag(resource),
 						lastModified);
+			JournalingService.getInstance().journaler().modifyResource(resource,endpoint);
 			if(LOGGER.isTraceEnabled()) {
 				LOGGER.trace("Modified "+resource);
 				LOGGER.trace("Modified "+endpoint);
@@ -234,6 +238,7 @@ public final class WriteSessionService implements Service {
 					deleteResourceEndpoint(
 						resource,
 						lastModified);
+			JournalingService.getInstance().journaler().deleteResource(resource,endpoint);
 			if(LOGGER.isTraceEnabled()) {
 				LOGGER.trace("Deleted "+resource);
 				LOGGER.trace("Deleted "+endpoint);

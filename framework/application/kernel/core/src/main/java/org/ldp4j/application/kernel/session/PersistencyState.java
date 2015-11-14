@@ -60,13 +60,15 @@ abstract class PersistencyState {
 
 	private static final class PersistentResourceReferenceState extends PersistencyState {
 
-		private PersistentResourceReferenceState(ResourceId resourceId, ResourceTemplate template) {
-			super(resourceId,template);
+		private final Resource resource;
+
+		private PersistentResourceReferenceState(Resource resource, ResourceTemplate template) {
+			super(resource.id(),template);
+			this.resource = resource;
 		}
 
 		private PersistencyState resolve(DelegatedResourceSnapshot ctx) {
-			Resource resource=ctx.session().loadResource(resourceId());
-			PersistencyState newPersistencyState=PersistencyState.newPersistentState(resource,template(),ctx.session());
+			PersistencyState newPersistencyState=PersistencyState.newPersistentState(this.resource,template(),ctx.session());
 			ctx.setPersistencyState(newPersistencyState);
 			return newPersistencyState;
 		}
@@ -196,6 +198,7 @@ abstract class PersistencyState {
 			checkState(nameFilterForAttachment(attachmentId).isValid(name),"Resource name '%s' is already in use",name);
 			T newSnapshot= ctx.newChildResource(ResourceId.createId(name,attachedTemplate.template()),snapshotClass);
 			DelegatedAttachmentSnapshot newAttachment = AttachmentSnapshotCollection.newAttachment(attachmentId, newSnapshot);
+			JournalingService.getInstance().journaler().createAttachmentSnapshot(ctx, newAttachment);
 			this.attachments.add(newAttachment);
 			UnitOfWork.getCurrent().registerDirty(ctx);
 			newSnapshot.markNew();
@@ -297,16 +300,24 @@ abstract class PersistencyState {
 
 		private final class ResourceSaver implements ResourceVisitor {
 
+			private DelegatedResourceSnapshot ctx;
+
+			private ResourceSaver(DelegatedResourceSnapshot ctx) {
+				this.ctx = ctx;
+			}
+
 			@Override
 			public void visitResource(Resource resource) {
 				for(DelegatedAttachmentSnapshot deleted:PersistentResourceState.this.deletedAttachments.values()) {
 					Attachment attachment = resource.findAttachment(deleted.resource().resourceId());
 					resource.detach(attachment);
+					JournalingService.getInstance().journaler().deleteAttachment((DelegatedContainerSnapshot)this.ctx,attachment);
 				}
 				for(DelegatedAttachmentSnapshot attachment:PersistentResourceState.this.newAttachments.values()) {
 					DelegatedResourceSnapshot attachedResource = attachment.resource();
 					Resource attach = resource.attach(attachment.id(), attachedResource.resourceId());
 					attachedResource.setDelegate(attach);
+					JournalingService.getInstance().journaler().createAttachment(this.ctx,attachment,resource.findAttachment(attach.id()));
 				}
 			}
 
@@ -316,10 +327,12 @@ abstract class PersistencyState {
 				for(ResourceId id:PersistentResourceState.this.deletedMembers.keySet()) {
 					Member member=resource.findMember(id);
 					resource.removeMember(member);
+					JournalingService.getInstance().journaler().deleteMember((DelegatedContainerSnapshot)this.ctx,member);
 				}
 				for(DelegatedResourceSnapshot member:PersistentResourceState.this.newMembers.values()) {
-					Resource addedResource = resource.addMember(member.resourceId());
-					member.setDelegate(addedResource);
+					Resource newResource = resource.addMember(member.resourceId());
+					member.setDelegate(newResource);
+					JournalingService.getInstance().journaler().createMember((DelegatedContainerSnapshot)this.ctx,member,resource.findMember(newResource.id()));
 				}
 			}
 
@@ -421,7 +434,7 @@ abstract class PersistencyState {
 
 		@Override
 		void saveChanges(final DelegatedResourceSnapshot ctx) {
-			delegate(ctx).accept(new ResourceSaver());
+			delegate(ctx).accept(new ResourceSaver(ctx));
 			this.deletedAttachments.clear();
 			this.newAttachments.clear();
 			this.deletedMembers.clear();
@@ -456,6 +469,7 @@ abstract class PersistencyState {
 					DelegatedResourceSnapshot attachedResource = attachment.resource();
 					Resource attach = resource.attach(attachment.id(), attachedResource.resourceId());
 					attachedResource.setDelegate(attach);
+					JournalingService.getInstance().journaler().createAttachment(this.ctx,attachment,resource.findAttachment(attach.id()));
 				}
 			}
 
@@ -465,6 +479,7 @@ abstract class PersistencyState {
 				for(DelegatedResourceSnapshot member:TransientResourceState.this.members(ctx)) {
 					Resource newResource = resource.addMember(member.resourceId());
 					member.setDelegate(newResource);
+					JournalingService.getInstance().journaler().createMember((DelegatedContainerSnapshot)this.ctx,member,resource.findMember(newResource.id()));
 				}
 			}
 
@@ -625,6 +640,8 @@ abstract class PersistencyState {
 
 	abstract boolean softRemoveMember(DelegatedResourceSnapshot snapshot, DelegatedResourceSnapshot ctx);
 
+	abstract List<DelegatedResourceSnapshot> newMembers(DelegatedResourceSnapshot ctx);
+
 	@Override
 	public final String toString() {
 		ToStringHelper helper=MoreObjects.toStringHelper(getClass());
@@ -639,8 +656,8 @@ abstract class PersistencyState {
 			add("template().handlerClass()",template().handlerClass().getCanonicalName());
 	}
 
-	static PersistencyState newPersistentReferenceState(ResourceId resourceId, ResourceTemplate template) {
-		return new PersistentResourceReferenceState(resourceId, template);
+	static PersistencyState newPersistentReferenceState(Resource resource, ResourceTemplate template) {
+		return new PersistentResourceReferenceState(resource, template);
 	}
 
 	static PersistencyState newPersistentState(Resource resource, ResourceTemplate template, DelegatedWriteSession session) {
@@ -656,7 +673,5 @@ abstract class PersistencyState {
 	static PersistencyState deleted(DelegatedResourceSnapshot snapshot) {
 		return new DeletedResourceState(snapshot.resourceId(),snapshot.template(),snapshot.delegate());
 	}
-
-	abstract List<DelegatedResourceSnapshot> newMembers(DelegatedResourceSnapshot ctx);
 
 }

@@ -29,6 +29,7 @@ package org.ldp4j.application.kernel.engine;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.kernel.session.JournalingService;
 import org.ldp4j.application.kernel.transaction.Transaction;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.SessionTerminationException;
@@ -103,8 +104,14 @@ final class TransactionalWriteSession implements WriteSession {
 		try {
 			this.delegate.close();
 		} finally {
-			if(this.transaction.isActive()) {
-				this.transaction.rollback();
+			try {
+				JournalingService.
+					getInstance().
+						disposeJournal();
+			} finally {
+				if(this.transaction.isActive()) {
+					this.transaction.rollback();
+				}
 			}
 		}
 	}

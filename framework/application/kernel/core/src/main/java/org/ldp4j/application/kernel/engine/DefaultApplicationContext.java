@@ -64,6 +64,7 @@ import org.ldp4j.application.kernel.resource.FeaturePostconditionException;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.application.kernel.resource.ResourceRepository;
+import org.ldp4j.application.kernel.session.JournalingService;
 import org.ldp4j.application.kernel.session.WriteSessionConfiguration;
 import org.ldp4j.application.kernel.spi.RuntimeDelegate;
 import org.ldp4j.application.kernel.template.ResourceTemplate;
@@ -112,9 +113,15 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		@Override
 		public void dispose() {
 			try {
-				getContext().operationController.endTransaction(this.transaction);
+				JournalingService.
+					getInstance().
+						disposeJournal();
 			} finally {
-				getContext().currentOperation.remove();
+				try {
+					getContext().operationController.endTransaction(this.transaction);
+				} finally {
+					getContext().currentOperation.remove();
+				}
 			}
 		}
 
@@ -425,7 +432,6 @@ public final class DefaultApplicationContext implements ApplicationContext {
 				create(resource, report).
 					transform(endpoint);
 	}
-
 
 	Capabilities endpointCapabilities(Endpoint endpoint) {
 		MutableCapabilities result=new MutableCapabilities();
