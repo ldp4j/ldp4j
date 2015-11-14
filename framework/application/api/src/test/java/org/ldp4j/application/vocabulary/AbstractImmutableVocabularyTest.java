@@ -102,7 +102,6 @@ public class AbstractImmutableVocabularyTest {
 			new ImmutableTerm(v, "entity");
 			fail("Should not allow register a term with invalid ordinal (lower)");
 		} catch (IllegalArgumentException e) {
-			System.out.println(e.getMessage());
 			assertThat(e.getMessage(),containsString("Vocabulary 'namespace' ("));
 			assertThat(e.getMessage(),containsString(") initialization failure: Invalid ordinal '-1' for reserved name 'ENTITY'"));
 		}
@@ -121,7 +120,6 @@ public class AbstractImmutableVocabularyTest {
 			new ImmutableTerm(v, "entity");
 			fail("Should not allow register a term with invalid ordinal (upper)");
 		} catch (IllegalArgumentException e) {
-			System.out.println(e.getMessage());
 			assertThat(e.getMessage(),containsString("Vocabulary 'namespace' ("));
 			assertThat(e.getMessage(),containsString(") initialization failure: Invalid ordinal '3' for reserved name 'ENTITY'"));
 		}
@@ -140,7 +138,6 @@ public class AbstractImmutableVocabularyTest {
 			v.initialize();
 			fail("Shot not initialize vocabulary without completing term registration");
 		} catch (IllegalStateException e) {
-			System.out.println(e.getMessage());
 			assertThat(e.getMessage(),containsString("Vocabulary 'namespace' ("));
 			assertThat(e.getMessage(),containsString(") initialization failure: not all reserved names have been registered"));
 		}
