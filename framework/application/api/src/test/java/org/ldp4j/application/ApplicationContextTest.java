@@ -41,7 +41,10 @@ import mockit.Mocked;
 import mockit.Verifications;
 import mockit.integration.junit4.JMockit;
 
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TestName;
+import org.junit.rules.Timeout;
 import org.junit.runner.RunWith;
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Individual;
@@ -58,6 +61,17 @@ import com.google.common.base.Throwables;
 
 @RunWith(JMockit.class)
 public class ApplicationContextTest {
+
+	@Rule
+	public TestName name=new TestName();
+
+	@Rule
+	public Timeout timeout=
+		Timeout.
+			builder().
+				withTimeout(5,TimeUnit.SECONDS).
+				withLookingForStuckThread(true).
+				build();
 
 	@Mocked
 	private RuntimeDelegate delegate;
@@ -290,10 +304,7 @@ public class ApplicationContextTest {
 		WriteSession session = sut.createSession();
 		session.saveChanges();
 		session.close();
-		new Verifications() {{
-			nativeSession.saveChanges();maxTimes=1;minTimes=1;
-			nativeSession.close();maxTimes=1;minTimes=1;
-		}};
+		verifySessionUsage(nativeSession);
 	}
 
 	@Test
@@ -539,10 +550,7 @@ public class ApplicationContextTest {
 		} finally {
 			session.close();
 		}
-		new Verifications() {{
-			nativeSession.saveChanges();maxTimes=1;minTimes=1;
-			nativeSession.close();maxTimes=1;minTimes=1;
-		}};
+		verifySessionUsage(nativeSession);
 	}
 
 	@Test
@@ -570,105 +578,75 @@ public class ApplicationContextTest {
 
 	@Test
 	public void testWriteSession$forceSessionClose$happyPath(@Mocked final WriteSession nativeSession) throws Exception {
-		new Expectations() {{
-			delegate.createSession();result=nativeSession;
-		}};
+		prepareExpectations(nativeSession,null);
 		ApplicationContext sut = createContext();
-		WriteSession session = sut.createSession();
-		System.out.println("Created session "+session);
-		session.saveChanges();
-		System.out.println("Session saved "+session);
-		session=null;
-		System.out.println("Session nulled");
-		int i=0;
-		while(i<10) {
-			i++;
-			System.gc();
-		}
-		System.out.println(sut);
-		TimeUnit.MILLISECONDS.sleep(3000);
-		System.out.println(sut);
-		new Verifications() {{
-			nativeSession.saveChanges();maxTimes=1;minTimes=1;
-			nativeSession.close();maxTimes=1;minTimes=1;
-		}};
+		useSession(sut);
+		forceGarbageCollection(sut);
+		awaitWriteSessionCleaner(sut);
+		verifySessionUsage(nativeSession);
 	}
 
 	@Test
 	public void testWriteSession$forceSessionClose$failurePath(@Mocked final WriteSession nativeSession) throws Exception {
-		new Expectations() {{
-			delegate.createSession();result=nativeSession;
-			nativeSession.close();result=new SessionTerminationException("failure");
-		}};
+		prepareExpectations(nativeSession,new SessionTerminationException("failure"));
 		ApplicationContext sut = createContext();
-		WriteSession session = sut.createSession();
-		System.out.println("Created session "+session);
-		session.saveChanges();
-		System.out.println("Session saved "+session);
-		session=null;
-		System.out.println("Session nulled");
-		int i=0;
-		while(i<10) {
-			i++;
-			System.gc();
-		}
-		System.out.println(sut);
-		TimeUnit.MILLISECONDS.sleep(3000);
-		System.out.println(sut);
-		new Verifications() {{
-			nativeSession.saveChanges();maxTimes=1;minTimes=1;
-			nativeSession.close();maxTimes=1;minTimes=1;
-		}};
+		useSession(sut);
+		forceGarbageCollection(sut);
+		awaitWriteSessionCleaner(sut);
+		verifySessionUsage(nativeSession);
 	}
 
 	@Test
 	public void testWriteSession$forceSessionClose$errorPath(@Mocked final WriteSession nativeSession) throws Exception {
-		new Expectations() {{
-			delegate.createSession();result=nativeSession;
-			nativeSession.close();result=new IllegalStateException("failure");
-		}};
+		prepareExpectations(nativeSession,new IllegalStateException("failure"));
 		ApplicationContext sut = createContext();
-		WriteSession session = sut.createSession();
-		System.out.println("Created session "+session);
-		session.saveChanges();
-		System.out.println("Session saved "+session);
-		session=null;
-		System.out.println("Session nulled");
-		int i=0;
-		while(i<10) {
-			i++;
-			System.gc();
-		}
-		System.out.println(sut);
-		TimeUnit.MILLISECONDS.sleep(3000);
-		System.out.println(sut);
-		new Verifications() {{
-			nativeSession.saveChanges();maxTimes=1;minTimes=1;
-			nativeSession.close();maxTimes=1;minTimes=1;
-		}};
+		useSession(sut);
+		forceGarbageCollection(sut);
+		awaitWriteSessionCleaner(sut);
+		verifySessionUsage(nativeSession);
 	}
 
 	@Test
 	public void testWriteSession$forceSessionClose$interruptionPath(@Mocked final WriteSession nativeSession) throws Exception {
-		new Expectations() {{
-			delegate.createSession();result=nativeSession;
-			nativeSession.close();result=new InterruptedException("failure");
-		}};
+		prepareExpectations(nativeSession, new InterruptedException("failure"));
 		ApplicationContext sut = createContext();
+		useSession(sut);
+		forceGarbageCollection(sut);
+		awaitWriteSessionCleaner(sut);
+		verifySessionUsage(nativeSession);
+	}
+
+	private void useSession(ApplicationContext sut) throws Exception {
 		WriteSession session = sut.createSession();
-		System.out.println("Created session "+session);
+		System.out.printf("%s - Created session %s%n",this.name.getMethodName(),session);
 		session.saveChanges();
-		System.out.println("Session saved "+session);
+		System.out.printf("%s - Saved session %s%n",this.name.getMethodName(),session);
 		session=null;
-		System.out.println("Session nulled");
+		System.out.printf("%s - Session nulled%n",this.name.getMethodName());
+	}
+
+	private void prepareExpectations(final WriteSession nativeSession, final Throwable failure) throws Exception {
+		new Expectations() {{
+			delegate.createSession();this.result=nativeSession;
+			nativeSession.close();this.result=failure;
+		}};
+	}
+
+	private void awaitWriteSessionCleaner(ApplicationContext sut) throws InterruptedException {
+		TimeUnit.MILLISECONDS.sleep(3000);
+		System.out.printf("%s - After waiting for the cleaner (%s)%n",name.getMethodName(),sut);
+	}
+
+	private void forceGarbageCollection(ApplicationContext sut) {
+		System.out.printf("%s - Force garbage collection (%s)%n",name.getMethodName(),sut);
 		int i=0;
 		while(i<10) {
 			i++;
 			System.gc();
 		}
-		System.out.println(sut);
-		TimeUnit.MILLISECONDS.sleep(3000);
-		System.out.println(sut);
+	}
+
+	private void verifySessionUsage(final WriteSession nativeSession) throws Exception {
 		new Verifications() {{
 			nativeSession.saveChanges();maxTimes=1;minTimes=1;
 			nativeSession.close();maxTimes=1;minTimes=1;
