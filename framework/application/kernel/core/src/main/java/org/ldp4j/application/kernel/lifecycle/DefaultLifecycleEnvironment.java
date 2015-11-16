@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.ldp4j.application.ApplicationContext;
+import org.ldp4j.application.engine.ApplicationContextBootstrapException;
 import org.ldp4j.application.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.lifecycle.LifecycleEnvironment;
 import org.ldp4j.application.lifecycle.Managed;
@@ -66,7 +67,7 @@ final class DefaultLifecycleEnvironment implements LifecycleEnvironment {
 		LOGGER.debug("Registered application lifecycle listener {}",listener);
 	}
 
-	void start(ApplicationContext context) {
+	void start(ApplicationContext context) throws ApplicationContextBootstrapException {
 		LOGGER.info("Starting application components...");
 		LOGGER.debug("Starting managed objects...");
 		for(Managed managed:this.managedObjects) {
@@ -75,6 +76,7 @@ final class DefaultLifecycleEnvironment implements LifecycleEnvironment {
 				LOGGER.trace("Started managed object {}.",managed);
 			} catch(Exception e) {
 				LOGGER.warn("Could not start managed object {}",managed,e);
+				throw new ApplicationContextBootstrapException("Could not start managed object "+managed, e);
 			}
 		}
 		LOGGER.debug("Notifying start-up event to application lifecycle listeners...");
@@ -84,6 +86,7 @@ final class DefaultLifecycleEnvironment implements LifecycleEnvironment {
 				LOGGER.trace("Notified start-up to {}.",listener);
 			} catch(Exception e) {
 				LOGGER.warn("Listener {} failed when notifying startup",listener,e);
+				throw new ApplicationContextBootstrapException("Listeners "+listener+" failed when notifying startup", e);
 			}
 		}
 		LOGGER.info("Application components started.");

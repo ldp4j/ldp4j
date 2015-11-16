@@ -26,10 +26,31 @@
  */
 package org.ldp4j.application.lifecycle;
 
+/**
+ * LDP4j Lifecycle Environment
+ */
 public interface LifecycleEnvironment {
 
+	/**
+	 * Adds the given {@link Managed} instance to the set of objects managed by
+	 * the Application's lifecycle. When the Application starts, {@code managed}
+	 * will be started. When the Application stops, {@code managed} will be
+	 * stopped.
+	 *
+	 * @param managed
+	 *            a managed object
+	 */
 	void register(Managed managed);
 
+	/**
+	 * Adds the given {@link ApplicationLifecycleListener} instance to the set
+	 * of objects listening to the Application's lifecycle events. These
+	 * listeners will be notified whenever the Application is started and
+	 * stopped.
+	 *
+	 * @param listener
+	 *            a listener object
+	 */
 	void addApplicationLifecycleListener(ApplicationLifecycleListener listener);
 
 }

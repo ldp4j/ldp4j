@@ -53,6 +53,11 @@ public interface Environment {
 	 */
 	void publishResource(Name<?> resourceName, Class<? extends ResourceHandler> handlerClass, String path);
 
+	/**
+	 * Retrieve the Application's {@link LifecycleEnvironment}.
+	 *
+	 * @return the Application's {@link LifecycleEnvironment}.
+	 */
 	LifecycleEnvironment lifecycle();
 
 }

@@ -26,10 +26,29 @@
  */
 package org.ldp4j.application.lifecycle;
 
+/**
+ * An interface for objects which need to be started and stopped as the
+ * Application is started or stopped.
+ */
 public interface Managed {
 
-	void start() throws Exception;
+	/**
+	 * Starts the object. Called <i>before</i> the Application becomes
+	 * available, after it has been initialized.
+	 *
+	 * @throws Exception
+	 *             if something goes wrong; this will halt the Application
+	 *             startup.
+	 */
+	void start() throws Exception; // NOSONAR
 
-	void stop() throws Exception;
+	/**
+	 * Stops the object. Called <i>after</i> the Application is no longer
+	 * accepting requests.
+	 *
+	 * @throws Exception
+	 *             if something goes wrong;
+	 */
+	void stop() throws Exception; // NOSONAR
 
 }

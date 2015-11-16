@@ -30,10 +30,24 @@ import java.util.EventListener;
 
 import org.ldp4j.application.ApplicationContext;
 
+/**
+ * Specifies the methods that a listener interested in an Application Lifecycle
+ * state changes must implement. Specifically, the listener is interested in the
+ * start and stop events.
+ */
 public interface ApplicationLifecycleListener extends EventListener {
 
+	/**
+	 * Called when the application is started.
+	 *
+	 * @param context
+	 *            the application context of the started application.
+	 */
 	void applicationStarted(ApplicationContext context);
 
+	/**
+	 * Called when the application is stopped.
+	 */
 	void applicationStopped();
 
 }
