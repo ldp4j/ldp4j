@@ -24,40 +24,33 @@
  *   Bundle      : ldp4j-application-api-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.setup;
-
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.ext.ResourceHandler;
-import org.ldp4j.application.lifecycle.LifecycleEnvironment;
+package org.ldp4j.application.lifecycle;
 
 /**
- * Utility interface for initializing the root resources of an LDP4j
- * Application. Using this class the application will be able to define the
- * resources that will be published by default using a predefined path, and
- * which {@code ResourceHandler} will handle the requests sent to the specified
- * endpoint.
+ * LDP4j Lifecycle Environment
  */
-public interface Environment {
+public interface LifecycleEnvironment {
 
 	/**
-	 * Publish a resource managed by a particular handler class at a given path.
+	 * Adds the given {@link Managed} instance to the set of objects managed by
+	 * the Application's lifecycle. When the Application starts, {@code managed}
+	 * will be started. When the Application stops, {@code managed} will be
+	 * stopped.
 	 *
-	 * @param resourceName
-	 *            The name of the resource that is to be published.
-	 * @param handlerClass
-	 *            The class of the handler that will manage the resource
-	 *            behind the endpoint.
-	 * @param path
-	 *            The path used to publish the resource. The path must end with
-	 *            a single '/'.
+	 * @param managed
+	 *            a managed object
 	 */
-	void publishResource(Name<?> resourceName, Class<? extends ResourceHandler> handlerClass, String path);
+	void register(Managed managed);
 
 	/**
-	 * Retrieve the Application's {@link LifecycleEnvironment}.
+	 * Adds the given {@link ApplicationLifecycleListener} instance to the set
+	 * of objects listening to the Application's lifecycle events. These
+	 * listeners will be notified whenever the Application is started and
+	 * stopped.
 	 *
-	 * @return the Application's {@link LifecycleEnvironment}.
+	 * @param listener
+	 *            a listener object
 	 */
-	LifecycleEnvironment lifecycle();
+	void addApplicationLifecycleListener(ApplicationLifecycleListener listener);
 
 }

@@ -24,40 +24,31 @@
  *   Bundle      : ldp4j-application-api-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.setup;
-
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.ext.ResourceHandler;
-import org.ldp4j.application.lifecycle.LifecycleEnvironment;
+package org.ldp4j.application.lifecycle;
 
 /**
- * Utility interface for initializing the root resources of an LDP4j
- * Application. Using this class the application will be able to define the
- * resources that will be published by default using a predefined path, and
- * which {@code ResourceHandler} will handle the requests sent to the specified
- * endpoint.
+ * An interface for objects which need to be started and stopped as the
+ * Application is started or stopped.
  */
-public interface Environment {
+public interface Managed {
 
 	/**
-	 * Publish a resource managed by a particular handler class at a given path.
+	 * Starts the object. Called <i>before</i> the Application becomes
+	 * available, after it has been initialized.
 	 *
-	 * @param resourceName
-	 *            The name of the resource that is to be published.
-	 * @param handlerClass
-	 *            The class of the handler that will manage the resource
-	 *            behind the endpoint.
-	 * @param path
-	 *            The path used to publish the resource. The path must end with
-	 *            a single '/'.
+	 * @throws Exception
+	 *             if something goes wrong; this will halt the Application
+	 *             startup.
 	 */
-	void publishResource(Name<?> resourceName, Class<? extends ResourceHandler> handlerClass, String path);
+	void start() throws Exception; // NOSONAR
 
 	/**
-	 * Retrieve the Application's {@link LifecycleEnvironment}.
+	 * Stops the object. Called <i>after</i> the Application is no longer
+	 * accepting requests.
 	 *
-	 * @return the Application's {@link LifecycleEnvironment}.
+	 * @throws Exception
+	 *             if something goes wrong;
 	 */
-	LifecycleEnvironment lifecycle();
+	void stop() throws Exception; // NOSONAR
 
 }

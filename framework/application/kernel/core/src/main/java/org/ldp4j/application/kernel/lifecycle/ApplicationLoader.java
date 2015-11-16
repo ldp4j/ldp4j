@@ -59,6 +59,8 @@ final class ApplicationLoader<T extends Configuration> {
 
 	private T configuration;
 
+	private DefaultLifecycleEnvironment lifecycleEnvironment;
+
 	private ApplicationLoader(Class<? extends Application<T>> appClass) {
 		this.appClass=appClass;
 
@@ -107,7 +109,7 @@ final class ApplicationLoader<T extends Configuration> {
 
 	Application<T> bootstrap() throws ApplicationContextBootstrapException {
 		Application<T> application=instantiateApplication();
-		this.configuration = instantiateConfiguration(application);
+		this.configuration=instantiateConfiguration(application);
 		setup(application);
 		initialize(application);
 		return application;
@@ -115,6 +117,10 @@ final class ApplicationLoader<T extends Configuration> {
 
 	T configuration() {
 		return this.configuration;
+	}
+
+	DefaultLifecycleEnvironment lifecycleEnvironment() {
+		return this.lifecycleEnvironment;
 	}
 
 	private void initialize(Application<T> application) throws ApplicationConfigurationException {
@@ -163,12 +169,14 @@ final class ApplicationLoader<T extends Configuration> {
 			new BootstrapImpl<T>(
 				this.configuration,
 				templateManagementService());
+		this.lifecycleEnvironment=new DefaultLifecycleEnvironment();
 		EnvironmentImpl environment=
 			new EnvironmentImpl(
 				templateManagementService(),
 				resourceFactory(),
 				RuntimeDelegate.getInstance().getEndpointRepository(),
-				RuntimeDelegate.getInstance().getResourceRepository()
+				RuntimeDelegate.getInstance().getResourceRepository(),
+				lifecycleEnvironment
 			);
 		try {
 			application.setup(environment,bootstrap);

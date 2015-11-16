@@ -236,6 +236,7 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
+		DEBUG.class,
 		LDP.class,
 		HappyPath.class
 	})
@@ -829,7 +830,6 @@ public class ServerFrontendITest {
 
 	@Test
 	@Category({
-		DEBUG.class,
 		HappyPath.class
 	})
 	@OperateOnDeployment(DEPLOYMENT)

@@ -24,40 +24,30 @@
  *   Bundle      : ldp4j-application-api-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.setup;
+package org.ldp4j.application.lifecycle;
 
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.ext.ResourceHandler;
-import org.ldp4j.application.lifecycle.LifecycleEnvironment;
+import java.util.EventListener;
+
+import org.ldp4j.application.ApplicationContext;
 
 /**
- * Utility interface for initializing the root resources of an LDP4j
- * Application. Using this class the application will be able to define the
- * resources that will be published by default using a predefined path, and
- * which {@code ResourceHandler} will handle the requests sent to the specified
- * endpoint.
+ * Specifies the methods that a listener interested in an Application Lifecycle
+ * state changes must implement. Specifically, the listener is interested in the
+ * start and stop events.
  */
-public interface Environment {
+public interface ApplicationLifecycleListener extends EventListener {
 
 	/**
-	 * Publish a resource managed by a particular handler class at a given path.
+	 * Called when the application is started.
 	 *
-	 * @param resourceName
-	 *            The name of the resource that is to be published.
-	 * @param handlerClass
-	 *            The class of the handler that will manage the resource
-	 *            behind the endpoint.
-	 * @param path
-	 *            The path used to publish the resource. The path must end with
-	 *            a single '/'.
+	 * @param context
+	 *            the application context of the started application.
 	 */
-	void publishResource(Name<?> resourceName, Class<? extends ResourceHandler> handlerClass, String path);
+	void applicationStarted(ApplicationContext context);
 
 	/**
-	 * Retrieve the Application's {@link LifecycleEnvironment}.
-	 *
-	 * @return the Application's {@link LifecycleEnvironment}.
+	 * Called when the application is stopped.
 	 */
-	LifecycleEnvironment lifecycle();
+	void applicationStopped();
 
 }
