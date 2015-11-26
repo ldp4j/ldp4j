@@ -58,6 +58,39 @@ import com.google.common.collect.Lists;
 
 public class ObjectUtilTest {
 
+	public static class NotPublicConventionMethod {
+
+		@SuppressWarnings("unused")
+		private static NotPublicConventionMethod valueOf(String string) {
+			throw new IllegalStateException("Should not be invoked");
+		}
+
+	}
+
+	public static class NotStaticConventionMethod {
+
+		public NotStaticConventionMethod valueOf(String string) {
+			throw new IllegalStateException("Should not be invoked");
+		}
+
+	}
+
+	public static class NotPublicNorStaticConventionMethod {
+
+		@SuppressWarnings("unused")
+		private NotPublicNorStaticConventionMethod valueOf(String string) {
+			throw new IllegalStateException("Should not be invoked");
+		}
+
+	}
+
+	public static class IncompatibleReturnConventionMethod {
+
+		public static NotStaticConventionMethod valueOf(String string) {
+			throw new IllegalStateException("Should not be invoked");
+		}
+
+	}
 
 	private Class<?>[] primitiveClasses = {
 		boolean.class,
@@ -162,6 +195,26 @@ public class ObjectUtilTest {
 	}
 
 	@Test
+	public void rejectUnsupportedTypes$conventionMethod$notPublic() {
+		assertThat(ObjectUtil.isSupported(NotPublicConventionMethod.class),equalTo(false));
+	}
+
+	@Test
+	public void rejectUnsupportedTypes$conventionMethod$notStatic() {
+		assertThat(ObjectUtil.isSupported(NotPublicConventionMethod.class),equalTo(false));
+	}
+
+	@Test
+	public void rejectUnsupportedTypes$conventionMethod$notPublicNorStatic() {
+		assertThat(ObjectUtil.isSupported(NotPublicNorStaticConventionMethod.class),equalTo(false));
+	}
+
+	@Test
+	public void rejectUnsupportedTypes$conventionMethod$incompatibleReturnType() {
+		assertThat(ObjectUtil.isSupported(IncompatibleReturnConventionMethod.class),equalTo(false));
+	}
+
+	@Test
 	public void rejectUnsupportedTypes$parseFailure() {
 		try {
 			ObjectUtil.fromString(ObjectUtil.class,"random data");
@@ -243,6 +296,16 @@ public class ObjectUtilTest {
 	@Test
 	public void testRoundtrip$enumObjects() throws Exception {
 		verifyRoundtrip(DefaultEnumType.V1,DefaultEnumType.V2);
+	}
+
+	@Test
+	public void testRoundtrip$valueOfType() throws Exception {
+		verifyRoundtrip(new ValueOfType(CustomType.VALUE1),new ValueOfType(CustomType.VALUE2));
+	}
+
+	@Test
+	public void testRoundtrip$fromStringType() throws Exception {
+		verifyRoundtrip(new FromStringType(CustomType.VALUE1),new FromStringType(CustomType.VALUE2));
 	}
 
 	@Test

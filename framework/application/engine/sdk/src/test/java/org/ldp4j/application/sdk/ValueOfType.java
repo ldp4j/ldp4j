@@ -26,15 +26,38 @@
  */
 package org.ldp4j.application.sdk;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.util.Objects;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	HttpRequestTestSuite.class,
-	QuerySupportTestSuite.class,
-	ObjectUtilTestSuite.class
-})
-public class AllTestSuites {
+final class ValueOfType {
+
+	private CustomType data;
+
+	public ValueOfType(CustomType data) {
+		this.data = data;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(this.data);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		boolean result = false;
+		if(obj instanceof ValueOfType) {
+			ValueOfType that=(ValueOfType)obj;
+			result=Objects.equals(this.data,that.data);
+		}
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return this.data.toString();
+	}
+
+	public static ValueOfType valueOf(String string) {
+		return new ValueOfType(CustomType.valueOf(string));
+	}
+
 }

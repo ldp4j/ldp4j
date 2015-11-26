@@ -24,17 +24,41 @@
  *   Bundle      : ldp4j-application-engine-sdk-0.2.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.application.sdk;
+package org.ldp4j.application.sdk.internal;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.lang.reflect.Method;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	HttpRequestTestSuite.class,
-	QuerySupportTestSuite.class,
-	ObjectUtilTestSuite.class
-})
-public class AllTestSuites {
+import org.ldp4j.application.sdk.spi.ObjectFactory;
+import org.ldp4j.application.sdk.spi.ObjectParseException;
+
+public final class ReflectionObjectFactory<T> implements ObjectFactory<T> {
+
+	private final Class<? extends T> valueClass;
+	private final Method method;
+
+	public ReflectionObjectFactory(Class<? extends T> valueClass, Method method) {
+		this.valueClass = valueClass;
+		this.method = method;
+		this.method.setAccessible(true);
+	}
+
+	@Override
+	public Class<? extends T> targetClass() {
+		return this.valueClass;
+	}
+
+	@Override
+	public T fromString(String rawValue) {
+		try {
+			return targetClass().cast(this.method.invoke(null, rawValue));
+		} catch (Exception e) {
+			throw new ObjectParseException(e,targetClass(),rawValue);
+		}
+	}
+
+	@Override
+	public String toString(T value) {
+		return value.toString();
+	}
+
 }

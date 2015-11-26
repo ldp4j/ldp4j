@@ -29,12 +29,14 @@ package org.ldp4j.application.sdk;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
+import org.ldp4j.application.sdk.internal.PrimitiveObjectFactoryTest;
+import org.ldp4j.application.sdk.internal.ReflectionObjectFactoryTest;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-	HttpRequestTestSuite.class,
-	QuerySupportTestSuite.class,
-	ObjectUtilTestSuite.class
+	PrimitiveObjectFactoryTest.class,
+	ReflectionObjectFactoryTest.class,
+	ObjectUtilTest.class
 })
-public class AllTestSuites {
+public class ObjectUtilTestSuite {
 }

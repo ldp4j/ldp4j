@@ -28,6 +28,8 @@ package org.ldp4j.application.sdk;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -35,15 +37,16 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.Set;
 
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-
 import org.ldp4j.application.ext.ObjectTransformationException;
 import org.ldp4j.application.sdk.internal.EnumObjectFactory;
 import org.ldp4j.application.sdk.internal.PrimitiveObjectFactory;
+import org.ldp4j.application.sdk.internal.ReflectionObjectFactory;
 import org.ldp4j.application.sdk.spi.ObjectFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 
 final class ObjectUtil {
 
@@ -193,15 +196,52 @@ final class ObjectUtil {
 			result=PrimitiveObjectFactory.create(valueClass);
 			debug("No factory found for primitive value class '{}'",valueClass);
 		} else {
-			result=findCompatibleSupertypeObjectFactory(valueClass);
-			if(result==null) {
-				result=new NullObjectFactory<T>(valueClass);
-				warn("No factory found for value class '{}'",valueClass);
-			}
+			result=createConventionObjectFactory(valueClass);
 		}
 		FACTORY_CACHE.put(valueClass,result);
 		trace("Cached default factory '{}' for value class '{}'",result.getClass(),valueClass);
 		return result;
+	}
+
+	private static <T> ObjectFactory<?> createConventionObjectFactory(final Class<? extends T> valueClass) {
+		ObjectFactory<?> result=null;
+		result=createReflectionObjectFactory(valueClass,"valueOf");
+		if(result!=null) {
+			return result;
+		}
+		result=createReflectionObjectFactory(valueClass,"fromString");
+		if(result!=null) {
+			return result;
+		}
+		result=findCompatibleSupertypeObjectFactory(valueClass);
+		if(result!=null) {
+			return result;
+		}
+		warn("No factory found for value class '{}'",valueClass);
+		return new NullObjectFactory<T>(valueClass);
+	}
+
+	private static <T> ObjectFactory<T> createReflectionObjectFactory(final Class<? extends T> valueClass, String methodName) {
+		ObjectFactory<T> result=null;
+		try {
+			final Method method = valueClass.getDeclaredMethod(methodName, String.class);
+			if(isPublicStatic(method) && hasCompatibleReturnType(method, valueClass)) {
+				result=new ReflectionObjectFactory<T>(valueClass, method);
+				debug("Created "+methodName+"(String) compatible object factory for class '{}'",valueClass);
+			}
+		} catch (Exception e) {
+			LOGGER.trace("Could not create {}(String) compatible object factory for class '{}'",methodName,prettyPrint(valueClass),e);
+		}
+		return result;
+	}
+
+	private static <T> boolean hasCompatibleReturnType(final Method method, final Class<? extends T> valueClass) {
+		return valueClass.isAssignableFrom(method.getReturnType());
+	}
+
+	private static boolean isPublicStatic(final Method method) {
+		final int modifiers = method.getModifiers();
+		return Modifier.isStatic(modifiers) && Modifier.isPublic(modifiers);
 	}
 
 	private static <T> ObjectFactory<?> findCompatibleSupertypeObjectFactory(final Class<? extends T> valueClass) {
