@@ -38,6 +38,7 @@ import org.junit.runner.RunWith;
 import org.ldp4j.application.ApplicationContextException;
 import org.ldp4j.application.spi.ResourceSnapshotResolver;
 import org.ldp4j.application.spi.RuntimeDelegate;
+import org.ldp4j.application.spi.ShutdownListener;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.*;
@@ -66,6 +67,11 @@ public class SnapshotResolverTest {
 		public ResourceSnapshotResolver createResourceResolver(URI canonicalBase,ReadSession session) {
 			return this.resolver;
 		}
+
+		@Override
+		public void registerShutdownListener(ShutdownListener listener) {
+		}
+
 	}
 
 	private static final URI CANONICAL_BASE=URI.create("http://www.ldp4j.org/context/");

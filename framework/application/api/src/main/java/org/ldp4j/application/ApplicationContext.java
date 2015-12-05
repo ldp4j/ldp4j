@@ -32,6 +32,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.lang.ref.ReferenceQueue;
 import java.lang.ref.WeakReference;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.ldp4j.application.data.Individual;
@@ -42,6 +43,7 @@ import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.application.spi.RuntimeDelegate;
+import org.ldp4j.application.spi.ShutdownListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -292,6 +294,10 @@ public final class ApplicationContext {
 
 	private static class WriteSessionCleaner extends Thread {
 
+		private static WriteSessionCleaner instance;
+
+		private final AtomicBoolean terminate;
+
 		private WriteSessionCleaner() {
 			setPriority(Thread.MAX_PRIORITY);
 			setName("ApplicationContext-WriteSessionCleaner");
@@ -305,11 +311,12 @@ public final class ApplicationContext {
 					}
 				}
 			);
+			this.terminate=new AtomicBoolean(false);
 		}
 
 		@Override
 		public void run() {
-			while (true) {
+			while (!this.terminate.get()) {
 				try {
 					ContextWriteSessionReference ref=(ContextWriteSessionReference)REFERENCE_QUEUE.remove();
 					ApplicationContext.State session = ref.state();
@@ -322,7 +329,17 @@ public final class ApplicationContext {
 		}
 
 		static void launch() {
-			new WriteSessionCleaner().start();
+			instance=new WriteSessionCleaner();
+			instance.start();
+		}
+
+		static void terminate() {
+			instance.terminate.set(true);
+			instance.interrupt();
+		}
+
+		static boolean isActive() {
+			return instance!=null;
 		}
 
 	}
@@ -343,7 +360,6 @@ public final class ApplicationContext {
 		this.references=Maps.newLinkedHashMap();
 		this.sessionOwner=Maps.newLinkedHashMap();
 		this.threadSession=Maps.newLinkedHashMap();
-		WriteSessionCleaner.launch();
 		LOGGER.info("Initialized Application Context");
 	}
 
@@ -359,7 +375,7 @@ public final class ApplicationContext {
 
 	private synchronized boolean clearSession(State session) {
 		long sessionId=session.id();
-		long ownerId  =this.sessionOwner.get(sessionId);
+		long ownerId=this.sessionOwner.get(sessionId);
 		this.references.remove(sessionId);
 		this.sessionOwner.remove(sessionId);
 		this.threadSession.remove(ownerId);
@@ -382,16 +398,28 @@ public final class ApplicationContext {
 		if(this.delegate.isOffline()) {
 			throw failure(null,"The Application Engine is off-line");
 		}
+		if(!WriteSessionCleaner.isActive()) {
+			WriteSessionCleaner.launch();
+			this.delegate.registerShutdownListener(
+				new ShutdownListener(){
+					@Override
+					public void engineShutdown() {
+						WriteSessionCleaner.terminate();
+					}
+				}
+			);
+		}
+
 		WriteSession nativeSession=this.delegate.createSession();
 		if(nativeSession==null) {
 			throw failure(null,"Could not create native write session");
 		}
-		State safeSession = new State(nativeSession);
-		ContextWriteSession leakedSession = new ContextWriteSession(safeSession);
-		ContextWriteSessionReference reference = new ContextWriteSessionReference(leakedSession,safeSession);
-		this.references.put(safeSession.id(),reference);
-		this.sessionOwner.put(safeSession.id(),Thread.currentThread().getId());
-		this.threadSession.put(Thread.currentThread().getId(),safeSession.id());
+		State state = new State(nativeSession);
+		ContextWriteSession leakedSession = new ContextWriteSession(state);
+		ContextWriteSessionReference reference = new ContextWriteSessionReference(leakedSession,state);
+		this.references.put(state.id(),reference);
+		this.sessionOwner.put(state.id(),Thread.currentThread().getId());
+		this.threadSession.put(Thread.currentThread().getId(),state.id());
 		return leakedSession;
 	}
 

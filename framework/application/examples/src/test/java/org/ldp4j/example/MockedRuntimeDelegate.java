@@ -33,6 +33,7 @@ import org.ldp4j.application.session.ReadSession;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.spi.ResourceSnapshotResolver;
 import org.ldp4j.application.spi.RuntimeDelegate;
+import org.ldp4j.application.spi.ShutdownListener;
 
 final class MockedRuntimeDelegate extends RuntimeDelegate {
 
@@ -68,6 +69,10 @@ final class MockedRuntimeDelegate extends RuntimeDelegate {
 	@Override
 	public ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session) {
 		return resolver;
+	}
+
+	@Override
+	public void registerShutdownListener(ShutdownListener listener) {
 	}
 
 }

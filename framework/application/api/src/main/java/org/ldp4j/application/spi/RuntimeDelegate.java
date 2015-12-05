@@ -313,6 +313,11 @@ public abstract class RuntimeDelegate {
 			return new NullResourceSnapshotResolver();
 		}
 
+		@Override
+		public void registerShutdownListener(ShutdownListener listener) {
+			// Nothing to do
+		}
+
 	}
 
 	/**
@@ -342,5 +347,13 @@ public abstract class RuntimeDelegate {
 	 * @return a resolver.
 	 */
 	public abstract ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session);
+
+	/**
+	 * Register a {@code ShutdownListener}
+	 *
+	 * @param listener
+	 *            the listener to register
+	 */
+	public abstract void registerShutdownListener(ShutdownListener listener);
 
 }

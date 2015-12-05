@@ -27,10 +27,14 @@
 package org.ldp4j.application.kernel.engine;
 
 import java.net.URI;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.ldp4j.application.ApplicationContextException;
 import org.ldp4j.application.engine.ApplicationEngine;
 import org.ldp4j.application.engine.ApplicationEngineException;
+import org.ldp4j.application.engine.lifecycle.ApplicationEngineLifecycleListener;
+import org.ldp4j.application.engine.util.ListenerManager;
+import org.ldp4j.application.engine.util.Notification;
 import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.application.kernel.session.WriteSessionConfiguration;
@@ -43,10 +47,40 @@ import org.ldp4j.application.session.SnapshotResolutionException;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.spi.ResourceSnapshotResolver;
 import org.ldp4j.application.spi.RuntimeDelegate;
+import org.ldp4j.application.spi.ShutdownListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.Lists;
+
 public final class CoreRuntimeDelegate extends RuntimeDelegate {
+
+	private static final class ShutdownListenerManager extends ApplicationEngineLifecycleListener {
+
+		private final CopyOnWriteArrayList<ListenerManager<ShutdownListener>> managers;
+
+		private ShutdownListenerManager() {
+			this.managers=Lists.newCopyOnWriteArrayList();
+		}
+
+		private void registerManagers(ListenerManager<ShutdownListener> manager) {
+			this.managers.add(manager);
+		}
+
+		@Override
+		protected void onApplicationEngineShutdown() {
+			final Notification<ShutdownListener> notification =
+				new Notification<ShutdownListener>() {
+					@Override
+					public void propagate(ShutdownListener listener) {
+						listener.engineShutdown();
+					}
+				};
+			for(ListenerManager<ShutdownListener> manager:managers) {
+				manager.notify(notification);
+			}
+		}
+	}
 
 	final class DefaultSnapshotResolver implements ResourceSnapshotResolver {
 
@@ -120,6 +154,18 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(CoreRuntimeDelegate.class);
+	private static final ShutdownListenerManager MANAGER=new ShutdownListenerManager();
+
+	private final ListenerManager<ShutdownListener> shutdownListeners;
+
+	static {
+		ApplicationEngine.registerLifecycleListener(MANAGER);
+	}
+
+	public CoreRuntimeDelegate() {
+		this.shutdownListeners=ListenerManager.<ShutdownListener>newInstance();
+		MANAGER.registerManagers(this.shutdownListeners);
+	}
 
 	private DefaultApplicationEngine applicationEngine() throws ApplicationEngineException {
 		return
@@ -172,6 +218,11 @@ public final class CoreRuntimeDelegate extends RuntimeDelegate {
 	@Override
 	public ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session) {
 		return new DefaultSnapshotResolver(canonicalBase,session);
+	}
+
+	@Override
+	public void registerShutdownListener(ShutdownListener listener) {
+		this.shutdownListeners.registerListener(listener);
 	}
 
 }

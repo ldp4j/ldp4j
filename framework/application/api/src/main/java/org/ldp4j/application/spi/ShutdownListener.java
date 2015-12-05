@@ -26,32 +26,18 @@
  */
 package org.ldp4j.application.spi;
 
-import java.net.URI;
+import java.util.EventListener;
 
-import org.ldp4j.application.ApplicationContextException;
-import org.ldp4j.application.session.ReadSession;
-import org.ldp4j.application.session.WriteSession;
+/**
+ * Specifies the methods that a listener interested in the Application Engine
+ * Lifecycle state changes must implement. Specifically, the listener is interested
+ * in shutdown event.
+ */
+public interface ShutdownListener extends EventListener {
 
-
-public abstract class AbstractRuntimeDelegate extends RuntimeDelegate {
-
-	@Override
-	public boolean isOffline() {
-		return false;
-	}
-
-	@Override
-	public WriteSession createSession() throws ApplicationContextException {
-		return null;
-	}
-
-	@Override
-	public ResourceSnapshotResolver createResourceResolver(URI canonicalBase, ReadSession session) {
-		return null;
-	}
-
-	@Override
-	public void registerShutdownListener(ShutdownListener listener) {
-	}
+	/**
+	 * Called when the Application Engine is shutdown.
+	 */
+	void engineShutdown();
 
 }
