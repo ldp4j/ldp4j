@@ -37,11 +37,12 @@ import mockit.Mocked;
 import mockit.StrictExpectations;
 import mockit.integration.junit4.JMockit;
 
-import org.apache.commons.codec.binary.Base64;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
+
+import com.google.common.io.BaseEncoding;
 
 @RunWith(JMockit.class)
 public class AbstractEncoderTest {
@@ -90,12 +91,12 @@ public class AbstractEncoderTest {
 	}
 
 	@Test
-	public void testDecode$exception(@Mocked Base64 mock) throws Exception {
+	public void testDecode$exception(@Mocked final BaseEncoding encoding) throws Exception {
 		final String data = "test";
 
 		new StrictExpectations() {{
-			Base64.decodeBase64(data);
-			result=new IOException("Serialization failure");
+			BaseEncoding.base64();result=encoding;
+			encoding.decode(data);result=new IOException("Serialization failure");
 		}};
 
 		TestProxy sut = new TestProxy();

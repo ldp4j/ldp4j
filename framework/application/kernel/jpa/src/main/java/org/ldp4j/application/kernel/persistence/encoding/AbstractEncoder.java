@@ -29,8 +29,9 @@ package org.ldp4j.application.kernel.persistence.encoding;
 import java.io.IOException;
 import java.io.Serializable;
 
-import org.apache.commons.codec.binary.Base64;
 import org.ldp4j.application.data.Name;
+
+import com.google.common.io.BaseEncoding;
 
 
 abstract class AbstractEncoder extends Encoder {
@@ -46,7 +47,7 @@ abstract class AbstractEncoder extends Encoder {
 		try {
 			Serializable target = prepare(name);
 			byte[] serializedData=SerializationUtils.serialize(target);
-			return Base64.encodeBase64String(serializedData);
+			return BaseEncoding.base64().encode(serializedData);
 		} catch (IOException e) {
 			throw new AssertionError("Serialization should not fail",e);
 		}
@@ -61,7 +62,7 @@ abstract class AbstractEncoder extends Encoder {
 			return null;
 		}
 		try {
-			byte[] serializedData=Base64.decodeBase64(data);
+			byte[] serializedData=BaseEncoding.base64().decode(data);
 			Serializable subject=SerializationUtils.deserialize(serializedData, Serializable.class);
 			return assemble(subject);
 		} catch (IOException e) {
