@@ -26,7 +26,7 @@
  */
 package org.ldp4j.application.engine;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.*;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -99,7 +99,7 @@ public abstract class ApplicationEngine {
 	 * {@link java.util.ServiceLoader} mechanism.
 	 *
 	 * The absence of this property or any value but {@value #DISABLE}, despite
-	 * the case, will enable the enable the usage of this mechanism.
+	 * the case, will enable the usage of this mechanism.
 	 */
 	public static final String LDP4J_APPLICATION_ENGINE_FINDER = "org.ldp4j.application.engine.finder";
 
@@ -250,9 +250,7 @@ public abstract class ApplicationEngine {
 			try {
 				unsafeDisposeContext(ctx);
 			} catch (ApplicationContextTerminationException e) {
-				if(LOGGER.isErrorEnabled()) {
-					LOGGER.error("Could not terminate context", e);
-				}
+				LOGGER.error("Could not terminate context {} ({})",ctx.applicationName(),ctx.applicationClassName(),e);
 			}
 		}
 		try {
@@ -267,9 +265,7 @@ public abstract class ApplicationEngine {
 		checkApplicationEngineActive();
 		write.lock();
 		try {
-			if(this.loadedContexts.contains(applicationClassName)) {
-				throw new IllegalStateException("Application class '"+applicationClassName+"' is already been loaded");
-			}
+			checkState(!this.loadedContexts.contains(applicationClassName),"Application class '%s' is already been loaded",applicationClassName);
 			ApplicationContext context=applicationContextManager().createContext(applicationClassName);
 			this.contexts.put(applicationClassName, context);
 			this.loadedContexts.push(applicationClassName);
@@ -377,16 +373,12 @@ public abstract class ApplicationEngine {
 					result=createApplicationEngineForClassName(delegateClassName);
 				}
 				if(delegateClassName==null && LOGGER.isWarnEnabled()) {
-					LOGGER.warn("Configuration file '"+configFile.getAbsolutePath()+"' does not define a delegate class name");
+					LOGGER.warn("Configuration file '{}' does not define a delegate class name",configFile.getAbsolutePath());
 				}
 			} catch(FileNotFoundException e) {
-				if(LOGGER.isDebugEnabled()) {
-					LOGGER.debug("Could not find runtime instance configuration file '"+configFile.getAbsolutePath()+"'",e);
-				}
+				LOGGER.debug("Could not find runtime instance configuration file '{}'",configFile.getAbsolutePath(),e);
 			} catch(IOException e) {
-				if(LOGGER.isWarnEnabled()) {
-					LOGGER.warn("Could not load runtime instance configuration file '"+configFile.getAbsolutePath()+"'",e);
-				}
+				LOGGER.warn("Could not load runtime instance configuration file '{}'",configFile.getAbsolutePath(),e);
 			} finally {
 				closeQuietly(is, "Could not close configuration properties");
 			}
@@ -412,13 +404,11 @@ public abstract class ApplicationEngine {
 	 */
 	private static void closeQuietly(InputStream is, String message) {
 		if(is!=null) {
-		try {
-			is.close();
-		} catch (Exception e) {
-			if(LOGGER.isWarnEnabled()) {
+			try {
+				is.close();
+			} catch (Exception e) {
 				LOGGER.warn(message,e);
 			}
-		}
 		}
 	}
 
@@ -455,7 +445,7 @@ public abstract class ApplicationEngine {
 
 	private static void handleFailure(String delegateClassName, String action, Exception failure) {
 		if(LOGGER.isWarnEnabled()) {
-			LOGGER.warn("Could not "+action+" delegate class "+delegateClassName,failure);
+			LOGGER.warn("Could not {} delegate class {}. Full stacktrace follows:",action,delegateClassName,failure);
 		}
 	}
 
