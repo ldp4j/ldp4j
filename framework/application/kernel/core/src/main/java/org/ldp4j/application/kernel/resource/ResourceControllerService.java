@@ -27,6 +27,7 @@
 package org.ldp4j.application.kernel.resource;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.engine.context.Result;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.kernel.resource.Container;
@@ -71,23 +72,23 @@ public class ResourceControllerService implements Service {
 		return AdapterFactory.newAdapter(resource,delegate,this.writeSessionService,configuration);
 	}
 
-	public DataSet getResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
+	public Result<DataSet,ResourceId> getResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
 		return adapter(resource, configuration).get();
 	}
 
-	public DataSet queryResource(Resource resource, Query query, WriteSessionConfiguration configuration) throws FeatureException {
+	public Result<DataSet,ResourceId> queryResource(Resource resource, Query query, WriteSessionConfiguration configuration) throws FeatureException {
 		return adapter(resource, configuration).query(query);
 	}
 
-	public void updateResource(Resource resource, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
-		adapter(resource, configuration).update(dataSet);
+	public Result<Resource,ResourceId> updateResource(Resource resource, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
+		return adapter(resource, configuration).update(dataSet);
 	}
 
-	public void deleteResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
-		adapter(resource, configuration).delete();
+	public Result<Resource,ResourceId> deleteResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
+		return adapter(resource, configuration).delete();
 	}
 
-	public Resource createResource(Container container, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
+	public Result<Resource,ResourceId> createResource(Container container, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
 		return adapter(container,configuration).create(dataSet);
 	}
 

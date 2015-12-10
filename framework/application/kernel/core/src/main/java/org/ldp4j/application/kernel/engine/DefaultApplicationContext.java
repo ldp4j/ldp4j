@@ -41,6 +41,7 @@ import org.ldp4j.application.engine.context.Capabilities;
 import org.ldp4j.application.engine.context.HttpRequest;
 import org.ldp4j.application.engine.context.InvalidIndirectIdentifierException;
 import org.ldp4j.application.engine.context.PublicResource;
+import org.ldp4j.application.engine.context.Result;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.ext.Application;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
@@ -291,7 +292,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 				DefaultApplicationContextHelper.
 					create(this.engine().templateManagementService()).
 						createConfiguration(resource,lastModified());
-			return this.engine().resourceControllerService().getResource(resource,config);
+			return this.engine().resourceControllerService().getResource(resource,config).get();
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage(RESOURCE_RETRIEVAL_FAILED,endpoint);
 			throw createException(errorMessage,e);
@@ -311,7 +312,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 				DefaultApplicationContextHelper.
 					create(this.engine().templateManagementService()).
 						createConfiguration(resource,lastModified());
-			return this.engine().resourceControllerService().queryResource(resource,query,config);
+			return this.engine().resourceControllerService().queryResource(resource,query,config).get();
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage(RESOURCE_QUERY_FAILED,endpoint);
 			throw createException(errorMessage,e);
@@ -330,7 +331,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return this.endpointRepository.endpointOfResource(id);
 	}
 
-	Resource createResource(Endpoint endpoint, DataSet dataSet, String desiredPath) throws ApplicationExecutionException {
+	Result<Resource,ResourceId> createResource(Endpoint endpoint, DataSet dataSet, String desiredPath) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Container resource = this.resourceRepository.containerOfId(resourceId);
 		if(resource==null) {
@@ -357,7 +358,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 	}
 
-	void deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
+	Result<Resource,ResourceId> deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = loadResource(resourceId);
 		if(resource==null) {
@@ -370,14 +371,14 @@ public final class DefaultApplicationContext implements ApplicationContext {
 				DefaultApplicationContextHelper.
 					create(this.engine().templateManagementService()).
 						createConfiguration(resource,lastModified());
-			this.engine().resourceControllerService().deleteResource(resource,config);
+			return this.engine().resourceControllerService().deleteResource(resource,config);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage(RESOURCE_DELETION_FAILED,endpoint);
 			throw createException(errorMessage,e);
 		}
 	}
 
-	void modifyResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
+	Result<Resource,ResourceId> modifyResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = loadResource(resourceId);
 		if(resource==null) {
@@ -390,7 +391,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 				DefaultApplicationContextHelper.
 					create(this.engine().templateManagementService()).
 						createConfiguration(resource,lastModified());
-			this.engine().resourceControllerService().updateResource(resource,dataSet,config);
+			return this.engine().resourceControllerService().updateResource(resource,dataSet,config);
 		} catch (FeatureExecutionException e) {
 			processConstraintValidationFailure(resource, e);
 			String errorMessage = applicationFailureMessage(RESOURCE_MODIFICATION_FAILED,endpoint);

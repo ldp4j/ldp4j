@@ -30,8 +30,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import java.net.URI;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
+import org.ldp4j.application.engine.context.Change;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.kernel.endpoint.Endpoint;
@@ -46,6 +48,7 @@ import org.ldp4j.application.kernel.service.ServiceBuilder;
 import org.ldp4j.application.kernel.spi.RuntimeDelegate;
 import org.ldp4j.application.kernel.template.TemplateManagementService;
 import org.ldp4j.application.kernel.transaction.TransactionManager;
+import org.ldp4j.application.sdk.ChangeFactory;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
@@ -82,17 +85,20 @@ public final class WriteSessionService implements Service {
 
 		@Override
 		public void visitNew(DelegatedResourceSnapshot obj) {
-			createResource(obj.delegate(),this.lastModified,this.session.getDesiredPath(obj),this.session.getIndirectId(obj));
+			Change<ResourceId> change=createResource(obj.delegate(),this.lastModified,this.session.getDesiredPath(obj),this.session.getIndirectId(obj));
+			this.session.registerChange(change);
 		}
 
 		@Override
 		public void visitDirty(DelegatedResourceSnapshot obj) {
-			modifyResource(obj.delegate(),this.lastModified);
+			Change<ResourceId> change=modifyResource(obj.delegate(),this.lastModified);
+			this.session.registerChange(change);
 		}
 
 		@Override
 		public void visitDeleted(DelegatedResourceSnapshot obj) {
-			deleteResource(obj.delegate(),this.lastModified);
+			Change<ResourceId> change=deleteResource(obj.delegate(),this.lastModified);
+			this.session.registerChange(change);
 		}
 	}
 
@@ -155,6 +161,11 @@ public final class WriteSessionService implements Service {
 		return delegatedSnapshot.delegate();
 	}
 
+	public List<Change<ResourceId>> changes(WriteSession writeSession) {
+		checkArgument(writeSession instanceof DelegatedWriteSession,"Invalid session");
+		return ((DelegatedWriteSession)writeSession).changes();
+	}
+
 	void commitSession(DelegatedWriteSession session) {
 		logLifecycleMessage("Commiting session...");
 		UnitOfWork.getCurrent().accept(new ResourceProcessor(session));
@@ -189,7 +200,7 @@ public final class WriteSessionService implements Service {
 		return EntityTag.createStrong(UUID.randomUUID().toString());
 	}
 
-	private void createResource(Resource resource, Date lastModified, String relativePath, URI indirectId) {
+	private Change<ResourceId> createResource(Resource resource, Date lastModified, String relativePath, URI indirectId) {
 		try {
 			resource.setIndirectId(indirectId);
 			this.resourceRepository.add(resource);
@@ -204,12 +215,19 @@ public final class WriteSessionService implements Service {
 				LOGGER.trace("Created "+resource);
 				LOGGER.trace("Created "+newEndpoint);
 			}
+			return
+				ChangeFactory.
+					createCreation(
+						resource.id(),
+						URI.create(newEndpoint.path()),
+						newEndpoint.lastModified(),
+						newEndpoint.entityTag());
 		} catch (EndpointCreationException e) {
 			throw new IllegalStateException(e);
 		}
 	}
 
-	private void modifyResource(Resource resource, Date lastModified) {
+	private Change<ResourceId> modifyResource(Resource resource, Date lastModified) {
 		try {
 			Endpoint endpoint =
 				this.endpointManagementService.
@@ -221,12 +239,19 @@ public final class WriteSessionService implements Service {
 				LOGGER.trace("Modified "+resource);
 				LOGGER.trace("Modified "+endpoint);
 			}
+			return
+				ChangeFactory.
+					createModification(
+						resource.id(),
+						URI.create(endpoint.path()),
+						endpoint.lastModified(),
+						endpoint.entityTag());
 		} catch (EndpointNotFoundException e) {
 			throw new IllegalStateException(e);
 		}
 	}
 
-	private void deleteResource(Resource resource, Date lastModified) {
+	private Change<ResourceId> deleteResource(Resource resource, Date lastModified) {
 		try {
 			this.resourceRepository.remove(resource);
 			Endpoint endpoint =
@@ -238,6 +263,11 @@ public final class WriteSessionService implements Service {
 				LOGGER.trace("Deleted "+resource);
 				LOGGER.trace("Deleted "+endpoint);
 			}
+			return
+				ChangeFactory.
+					createDeletion(
+						resource.id(),
+						URI.create(endpoint.path()));
 		} catch (EndpointNotFoundException e) {
 			throw new IllegalStateException(e);
 		}

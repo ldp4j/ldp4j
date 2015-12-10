@@ -40,6 +40,7 @@ import java.util.Map.Entry;
 import org.ldp4j.application.data.Individual;
 import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.engine.context.Change;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.kernel.resource.Resource;
@@ -54,6 +55,9 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 
 final class DelegatedWriteSession implements WriteSession {
 
@@ -122,8 +126,8 @@ final class DelegatedWriteSession implements WriteSession {
 
 	private final WriteSessionConfiguration configuration;
 	private final WriteSessionService writeSessionService;
-
 	private final SnapshotFactory snapshotFactory;
+	private final List<Change<ResourceId>> changes;
 
 	private volatile Status status;
 
@@ -136,6 +140,7 @@ final class DelegatedWriteSession implements WriteSession {
 		this.status=Status.ACTIVE;
 		this.resourceCache=new LinkedHashMap<ResourceId,DelegatedResourceSnapshot>();
 		this.snapshotFactory=SnapshotFactory.newInstance(this);
+		this.changes=Lists.newArrayList();
 	}
 
 	private DelegatedResourceSnapshot resolveResource(ResourceId resourceId, ResourceTemplate template) {
@@ -258,6 +263,14 @@ final class DelegatedWriteSession implements WriteSession {
 		checkState(this.resourceCache.put(resourceId, newSnapshot)==null,"Transient resource should be new");
 		newSnapshot.setSession(this);
 		return clazz.cast(newSnapshot);
+	}
+
+	List<Change<ResourceId>> changes() {
+		return ImmutableList.copyOf(this.changes);
+	}
+
+	void registerChange(Change<ResourceId> change) {
+		this.changes.add(change);
 	}
 
 	/**

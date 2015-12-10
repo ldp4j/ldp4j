@@ -229,7 +229,7 @@ abstract class DefaultPublicContainer<T extends ContainerTemplate> extends Defau
 	@Override
 	public DefaultPublicResource createResource(DataSet dataSet, CreationPreferences preferences) throws ApplicationExecutionException {
 		verifyInteractionModel(preferences.getInteractionModel());
-		Resource resource=applicationContext().createResource(endpoint(),dataSet,preferences.getPath());
+		Resource resource=applicationContext().createResource(endpoint(),dataSet,preferences.getPath()).get();
 		return createResource(resource.id());
 	}
 

@@ -223,7 +223,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource)).get();
 					assertThat(data,notNullValue());
 					assertThat(data,sameInstance(initial));
 					return null;
@@ -249,7 +249,7 @@ public class ResourceControllerServiceTest {
 				@Override
 				public Void call() throws Exception {
 					Query query = QueryBuilder.newInstance().withParameter("param1", "value1").build();
-					DataSet data = sut.queryResource(resource,query,getSessionConfiguration(resource));
+					DataSet data = sut.queryResource(resource,query,getSessionConfiguration(resource)).get();
 					assertThat(data,notNullValue());
 					assertThat(data,not(sameInstance(initial)));
 					return null;
@@ -283,7 +283,7 @@ public class ResourceControllerServiceTest {
 				new Callable<Resource>() {
 					@Override
 					public Resource call() throws Exception {
-						Resource result=sut.createResource(resource,initialData,getSessionConfiguration(resource));
+						Resource result=sut.createResource(resource,initialData,getSessionConfiguration(resource)).get();
 						assertThat(result,notNullValue());
 						assertThat((Object)result.id().name(),equalTo((Object)id));
 						assertThat(result.id().templateId(),equalTo(BookHandler.ID));
@@ -297,7 +297,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(newResource,getSessionConfiguration(newResource));
+					DataSet data = sut.getResource(newResource,getSessionConfiguration(newResource)).get();
 					assertThat(data,sameInstance(initialData));
 					return null;
 				}
@@ -324,7 +324,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource)).get();
 					assertThat(data,sameInstance(initial));
 					return null;
 				}
@@ -348,7 +348,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource)).get();
 					assertThat(data,sameInstance(updatedDate));
 					return null;
 				}
@@ -372,7 +372,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource)).get();
 					assertThat(data,sameInstance(initial));
 					return null;
 				}
@@ -409,7 +409,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource)).get();
 					assertThat(data,sameInstance(initial));
 					return null;
 				}
@@ -441,7 +441,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource)).get();
 					assertThat(data,sameInstance(updatedDate));
 					return null;
 				}
@@ -465,7 +465,7 @@ public class ResourceControllerServiceTest {
 			new Callable<Void>() {
 				@Override
 				public Void call() throws Exception {
-					DataSet data = sut.getResource(resource,getSessionConfiguration(resource));
+					DataSet data = sut.getResource(resource,getSessionConfiguration(resource)).get();
 					assertThat(data,sameInstance(initial));
 					return null;
 				}

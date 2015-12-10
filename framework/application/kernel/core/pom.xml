@@ -73,6 +73,10 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.framework</groupId>
+			<artifactId>ldp4j-application-engine-sdk</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-data</artifactId>
 		</dependency>
 		<dependency>
@@ -89,11 +93,6 @@
 			<groupId>org.ldp4j.framework</groupId>
 			<artifactId>ldp4j-application-kernel-mem</artifactId>
 			<type>test-jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.ldp4j.framework</groupId>
-			<artifactId>ldp4j-application-engine-sdk</artifactId>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

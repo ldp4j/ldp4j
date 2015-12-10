@@ -28,6 +28,7 @@ package org.ldp4j.application.kernel.resource;
 
 import org.ldp4j.application.ApplicationApiRuntimeException;
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.engine.context.Result;
 import org.ldp4j.application.ext.ApplicationException;
 import org.ldp4j.application.ext.ContainerHandler;
 import org.ldp4j.application.ext.Deletable;
@@ -63,6 +64,15 @@ final class AdapterFactory {
 
 		protected final WriteSession writeSession() {
 			return this.session;
+		}
+
+		protected final <V> Result<V,ResourceId> createResult(V resource) {
+			return
+				Result.
+					<V,ResourceId>builder().
+						withValue(resource).
+						withChanges(this.service.changes(this.session)).
+						build();
 		}
 
 		protected final <S> S as(Class<? extends S> clazz) throws UnsupportedFeatureException {
@@ -104,11 +114,11 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final DataSet get() throws FeatureException {
+		public final Result<DataSet,ResourceId> get() throws FeatureException {
 			try {
 				DataSet dataSet = this.delegate.get(resource());
 				checkResponseNotNull(dataSet,ResourceHandler.class,"No data set returned");
-				return dataSet;
+				return createResult(dataSet);
 			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,ResourceHandler.class);
 			} finally {
@@ -117,11 +127,11 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final DataSet query(Query query) throws FeatureException {
+		public final Result<DataSet,ResourceId> query(Query query) throws FeatureException {
 			try {
 				DataSet dataSet = as(Queryable.class).query(resource(), query, writeSession());
 				checkResponseNotNull(dataSet,Queryable.class,"No data set returned");
-				return dataSet;
+				return createResult(dataSet);
 			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,Queryable.class);
 			} finally {
@@ -130,9 +140,10 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final void update(DataSet content) throws FeatureException {
+		public final Result<Resource,ResourceId> update(DataSet content) throws FeatureException {
 			try {
 				as(Modifiable.class).update(resource(), content, writeSession());
+				return createResult(null);
 			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,Modifiable.class);
 			} finally {
@@ -141,9 +152,10 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final void delete() throws FeatureException {
+		public final Result<Resource,ResourceId> delete() throws FeatureException {
 			try {
 				as(Deletable.class).delete(resource(),writeSession());
+				return createResult(null);
 			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,Deletable.class);
 			} finally {
@@ -152,7 +164,7 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public Resource create(DataSet content) throws FeatureException {
+		public Result create(DataSet content) throws FeatureException {
 			finalizeSession();
 			throw new UnsupportedFeatureException(resource(),ContainerHandler.class);
 		}
@@ -166,11 +178,12 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public Resource create(DataSet content) throws FeatureException {
+		public Result<Resource,ResourceId> create(DataSet content) throws FeatureException {
 			try {
 				ResourceSnapshot create = as(ContainerHandler.class).create(resource(),content,writeSession());
 				checkResponseNotNull(create, ContainerHandler.class, "No resource created");
-				return detach(create);
+				Resource resource = detach(create);
+				return createResult(resource);
 			} catch (ApplicationException | ApplicationApiRuntimeException e) {
 				throw featureException(e,ContainerHandler.class);
 			} finally {
