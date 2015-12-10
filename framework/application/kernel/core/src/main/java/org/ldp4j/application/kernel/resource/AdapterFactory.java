@@ -38,6 +38,7 @@ import org.ldp4j.application.ext.Queryable;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.kernel.session.WriteSessionConfiguration;
 import org.ldp4j.application.kernel.session.WriteSessionService;
+import org.ldp4j.application.sdk.ImmutableResult;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.SessionTerminationException;
@@ -68,7 +69,7 @@ final class AdapterFactory {
 
 		protected final <V> Result<V,ResourceId> createResult(V resource) {
 			return
-				Result.
+				ImmutableResult.
 					<V,ResourceId>builder().
 						withValue(resource).
 						withChanges(this.service.changes(this.session)).
