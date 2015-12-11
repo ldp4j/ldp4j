@@ -141,7 +141,7 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final Result<Resource,ResourceId> update(DataSet content) throws FeatureException {
+		public final Result<Void,ResourceId> update(DataSet content) throws FeatureException {
 			try {
 				as(Modifiable.class).update(resource(), content, writeSession());
 				return createResult(null);
@@ -153,7 +153,7 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final Result<Resource,ResourceId> delete() throws FeatureException {
+		public final Result<Void,ResourceId> delete() throws FeatureException {
 			try {
 				as(Deletable.class).delete(resource(),writeSession());
 				return createResult(null);
@@ -165,7 +165,7 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public Result create(DataSet content) throws FeatureException {
+		public Result<Resource,ResourceId> create(DataSet content) throws FeatureException {
 			finalizeSession();
 			throw new UnsupportedFeatureException(resource(),ContainerHandler.class);
 		}

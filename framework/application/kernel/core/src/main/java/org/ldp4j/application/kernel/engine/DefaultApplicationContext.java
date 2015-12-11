@@ -358,7 +358,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 	}
 
-	Result<Resource,ResourceId> deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
+	Result<Void,ResourceId> deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = loadResource(resourceId);
 		if(resource==null) {
@@ -378,7 +378,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 	}
 
-	Result<Resource,ResourceId> modifyResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
+	Result<Void,ResourceId> modifyResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = loadResource(resourceId);
 		if(resource==null) {

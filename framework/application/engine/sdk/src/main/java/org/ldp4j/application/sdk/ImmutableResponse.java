@@ -30,52 +30,54 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.engine.context.Change;
+import org.ldp4j.application.engine.context.Response;
 
 import com.google.common.collect.Lists;
 
-public final class ImmutableResult<T,ID> extends AbstractImmutableResult<T,ID> {
+public final class ImmutableResponse<T> extends AbstractImmutableResult<T,ManagedIndividualId> implements Response<T> {
 
-	public static final class Builder<T,ID> {
+	public static final class Builder<T> {
 
-		private List<Change<ID>> changes;
+		private List<Change<ManagedIndividualId>> changes;
 		private T result;
 
 		private Builder() {
 			this.changes=Lists.newArrayList();
 		}
 
-		public Builder<T,ID> withValue(T result) {
+		public Builder<T> withValue(T result) {
 			this.result=result;
 			return this;
 		}
 
-		public <C extends Change<ID>> Builder<T,ID> withChanges(Collection<C> changes) {
+		public <C extends Change<ManagedIndividualId>> Builder<T> withChanges(Collection<C> changes) {
 			this.changes.addAll(changes);
 			return this;
 		}
 
-		public <C extends Change<ID>> Builder<T,ID> withChanges(@SuppressWarnings("unchecked") C... changes) {
+		public <C extends Change<ManagedIndividualId>> Builder<T> withChanges(@SuppressWarnings("unchecked") C... changes) {
 			return withChanges(Arrays.asList(changes));
 		}
 
-		public <C extends Change<ID>> Builder<T,ID> withChange(C change) {
+		public <C extends Change<ManagedIndividualId>> Builder<T> withChange(C change) {
 			this.changes.add(change);
 			return this;
 		}
 
-		public ImmutableResult<T,ID> build() {
-			return new ImmutableResult<T,ID>(this.result,this.changes);
+		public ImmutableResponse<T> build() {
+			return new ImmutableResponse<T>(this.result,this.changes);
 		}
 
 	}
 
-	private ImmutableResult(T result,List<Change<ID>> changes) {
+	private ImmutableResponse(T result,List<Change<ManagedIndividualId>> changes) {
 		super(result,changes);
 	}
 
-	public static <T,ID> Builder<T,ID> builder() {
-		return new Builder<T,ID>();
+	public static <T> Builder<T> builder() {
+		return new Builder<T>();
 	}
 
 }

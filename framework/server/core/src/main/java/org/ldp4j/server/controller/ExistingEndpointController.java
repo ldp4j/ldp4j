@@ -173,10 +173,13 @@ final class ExistingEndpointController implements EndpointController {
 					LOGGER.debug("No preferences specified");
 				}
 			}
-			DataSet entity=
+			org.ldp4j.application.engine.context.Response<DataSet> response=
 				query.isEmpty()?
 					resource.entity(preferences):
 					resource.query(query, preferences);
+
+			DataSet entity=response.get();
+
 
 			LOGGER.trace("Data set to serialize: \n {}",entity);
 
@@ -492,8 +495,12 @@ final class ExistingEndpointController implements EndpointController {
 
 		try {
 			PublicContainer container=context.container();
-			PublicResource newResource =
-				container.createResource(context.dataSet(), context.creationPreferences());
+			org.ldp4j.application.engine.context.Response<PublicResource> response =
+				container.
+					createResource(
+						context.dataSet(),
+						context.creationPreferences());
+			PublicResource newResource=response.get();
 			URI location = context.resolve(newResource);
 			ResponseBuilder builder=
 				Response.

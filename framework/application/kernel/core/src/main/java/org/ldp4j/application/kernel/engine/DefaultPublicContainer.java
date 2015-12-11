@@ -52,6 +52,8 @@ import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.CreationPreferences;
 import org.ldp4j.application.engine.context.PublicContainer;
 import org.ldp4j.application.engine.context.PublicResource;
+import org.ldp4j.application.engine.context.Response;
+import org.ldp4j.application.engine.context.Result;
 import org.ldp4j.application.engine.context.UnsupportedInteractionModelException;
 import org.ldp4j.application.engine.context.ContentPreferences.Preference;
 import org.ldp4j.application.engine.context.CreationPreferences.InteractionModel;
@@ -67,6 +69,7 @@ import org.ldp4j.application.kernel.template.IndirectContainerTemplate;
 import org.ldp4j.application.kernel.template.MembershipAwareContainerTemplate;
 import org.ldp4j.application.kernel.template.ResourceTemplate;
 import org.ldp4j.application.kernel.template.TemplateVisitor;
+import org.ldp4j.application.sdk.ImmutableResponse;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.RDF;
 
@@ -227,10 +230,16 @@ abstract class DefaultPublicContainer<T extends ContainerTemplate> extends Defau
 	 * {@inheritDoc}
 	 */
 	@Override
-	public DefaultPublicResource createResource(DataSet dataSet, CreationPreferences preferences) throws ApplicationExecutionException {
+	public Response<PublicResource> createResource(DataSet dataSet, CreationPreferences preferences) throws ApplicationExecutionException {
 		verifyInteractionModel(preferences.getInteractionModel());
-		Resource resource=applicationContext().createResource(endpoint(),dataSet,preferences.getPath()).get();
-		return createResource(resource.id());
+		Result<Resource,ResourceId> result=applicationContext().createResource(endpoint(),dataSet,preferences.getPath());
+		DefaultPublicResource newResource = createResource(result.get().id());
+		return
+			ImmutableResponse.
+				<PublicResource>builder().
+					withChanges(ChangeUtil.translateIdentifiers(result)).
+					withValue(newResource).
+					build();
 	}
 
 	private void cleanIndividual(Individual<?,?> individual) {

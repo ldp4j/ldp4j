@@ -68,6 +68,7 @@ public final class DefaultApplicationEngine extends ApplicationEngine {
 	private DefaultApplicationContext activeContext;
 
 	public DefaultApplicationEngine() {
+		super();
 	}
 
 	private static <T> T checkNotNull(T object, String message) {

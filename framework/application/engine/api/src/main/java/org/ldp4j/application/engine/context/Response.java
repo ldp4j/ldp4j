@@ -26,32 +26,8 @@
  */
 package org.ldp4j.application.engine.context;
 
-import java.util.Collection;
+import org.ldp4j.application.data.ManagedIndividualId;
 
-import org.ldp4j.application.data.DataSet;
-
-public interface PublicContainer extends PublicRDFSource {
-
-	Collection<PublicResource> members();
-
-	/**
-	 * Create a resource using the specified data set and preferences.
-	 *
-	 * @param dataSet
-	 *            the data for the new resource
-	 * @param preferences
-	 *            the preferences to use for creating the resource
-	 * @return a response including the created public resource together with
-	 *         the changes that also took place.
-	 * @throws ApplicationExecutionException
-	 *             if the application fails to create the resource
-	 * @throws UnsupportedInteractionModelException
-	 *             if the preferred interaction model is not supported
-	 * @throws InvalidIndirectIdentifierException
-	 *             if not valid indirect identifier is specified when trying to
-	 *             create a member in an indirect container
-	 */
-	Response<PublicResource> createResource(DataSet dataSet, CreationPreferences preferences)
-			throws ApplicationExecutionException;
+public interface Response<T> extends Result<T,ManagedIndividualId> {
 
 }

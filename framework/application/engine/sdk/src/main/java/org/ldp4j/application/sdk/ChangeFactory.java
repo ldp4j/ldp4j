@@ -36,6 +36,7 @@ import org.ldp4j.application.engine.context.EntityTag;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
+import static com.google.common.base.Preconditions.*;
 
 public final class ChangeFactory {
 
@@ -148,14 +149,24 @@ public final class ChangeFactory {
 	}
 
 	public static <ID> Change<ID> createDeletion(final ID targetResource, final URI resourceLocation) {
+		checkNotNull(targetResource,"Target resource cannot be null");
+		checkNotNull(resourceLocation,"Resource location cannot be null");
 		return new ImmutableGoneResourceChange<ID>(targetResource, resourceLocation);
 	}
 
 	public static <ID> Change<ID> createCreation(final ID targetResource, final URI resourceLocation, final Date lastModified, final EntityTag etag) {
+		checkNotNull(targetResource,"Target resource cannot be null");
+		checkNotNull(resourceLocation,"Resource location cannot be null");
+		checkNotNull(lastModified,"Last modified date cannot be null");
+		checkNotNull(etag,"Entity tag cannot be null");
 		return new ImmutableActiveResourceChange<ID>(Action.CREATED, targetResource, resourceLocation,lastModified, etag);
 	}
 
 	public static <ID> Change<ID> createModification(final ID targetResource, final URI resourceLocation, final Date lastModified, final EntityTag etag) {
+		checkNotNull(targetResource,"Target resource cannot be null");
+		checkNotNull(resourceLocation,"Resource location cannot be null");
+		checkNotNull(lastModified,"Last modified date cannot be null");
+		checkNotNull(etag,"Entity tag cannot be null");
 		return new ImmutableActiveResourceChange<ID>(Action.MODIFIED, targetResource, resourceLocation,lastModified, etag);
 	}
 

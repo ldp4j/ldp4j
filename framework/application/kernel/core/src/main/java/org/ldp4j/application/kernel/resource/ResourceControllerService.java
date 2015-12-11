@@ -80,11 +80,11 @@ public class ResourceControllerService implements Service {
 		return adapter(resource, configuration).query(query);
 	}
 
-	public Result<Resource,ResourceId> updateResource(Resource resource, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
+	public Result<Void,ResourceId> updateResource(Resource resource, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
 		return adapter(resource, configuration).update(dataSet);
 	}
 
-	public Result<Resource,ResourceId> deleteResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
+	public Result<Void,ResourceId> deleteResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
 		return adapter(resource, configuration).delete();
 	}
 

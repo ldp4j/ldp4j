@@ -26,56 +26,47 @@
  */
 package org.ldp4j.application.sdk;
 
-import java.util.Arrays;
-import java.util.Collection;
+import static com.google.common.base.Preconditions.checkState;
+
+import java.util.Iterator;
 import java.util.List;
 
-import org.ldp4j.application.engine.context.Change;
+final class ArrayCollectionIterator<T> implements Iterator<T> {
 
-import com.google.common.collect.Lists;
+	private final List<T>[] items;
 
-public final class ImmutableResult<T,ID> extends AbstractImmutableResult<T,ID> {
+	private Iterator<T> current;
+	private int i;
 
-	public static final class Builder<T,ID> {
-
-		private List<Change<ID>> changes;
-		private T result;
-
-		private Builder() {
-			this.changes=Lists.newArrayList();
-		}
-
-		public Builder<T,ID> withValue(T result) {
-			this.result=result;
-			return this;
-		}
-
-		public <C extends Change<ID>> Builder<T,ID> withChanges(Collection<C> changes) {
-			this.changes.addAll(changes);
-			return this;
-		}
-
-		public <C extends Change<ID>> Builder<T,ID> withChanges(@SuppressWarnings("unchecked") C... changes) {
-			return withChanges(Arrays.asList(changes));
-		}
-
-		public <C extends Change<ID>> Builder<T,ID> withChange(C change) {
-			this.changes.add(change);
-			return this;
-		}
-
-		public ImmutableResult<T,ID> build() {
-			return new ImmutableResult<T,ID>(this.result,this.changes);
-		}
-
+	ArrayCollectionIterator(List<T>[] items) {
+		this.items=items;
 	}
 
-	private ImmutableResult(T result,List<Change<ID>> changes) {
-		super(result,changes);
+	@Override
+	public boolean hasNext() {
+		if(this.current==null || !this.current.hasNext()) {
+			while(this.i<this.items.length) {
+				this.current=this.items[this.i++].iterator();
+				if(!this.current.hasNext()) {
+					this.current=null;
+				}
+			}
+			if(this.current==null) {
+				return false;
+			}
+		}
+		return this.current.hasNext();
 	}
 
-	public static <T,ID> Builder<T,ID> builder() {
-		return new Builder<T,ID>();
+	@Override
+	public T next() {
+		checkState(this.current!=null);
+		return this.current.next();
+	}
+
+	@Override
+	public void remove() {
+		throw new UnsupportedOperationException("Deletion is not supported");
 	}
 
 }

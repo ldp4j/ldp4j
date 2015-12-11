@@ -38,13 +38,13 @@ public interface PublicResource extends PublicEndpoint {
 
 	Map<String, PublicResource> attachments();
 
-	DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException;
+	Response<DataSet> entity(ContentPreferences contentPreferences) throws ApplicationExecutionException;
 
-	DataSet query(Query query, ContentPreferences contentPreferences) throws ApplicationExecutionException;
+	Response<DataSet> query(Query query, ContentPreferences contentPreferences) throws ApplicationExecutionException;
 
-	void modify(DataSet dataSet) throws ApplicationExecutionException;
+	Response<Void> modify(DataSet dataSet) throws ApplicationExecutionException;
 
-	void delete() throws ApplicationExecutionException;
+	Response<Void> delete() throws ApplicationExecutionException;
 
 	DataSet getConstraintReport(String constraintsId) throws ApplicationExecutionException;
 

@@ -50,6 +50,8 @@ import org.ldp4j.application.engine.context.PublicIndirectContainer;
 import org.ldp4j.application.engine.context.PublicRDFSource;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
+import org.ldp4j.application.engine.context.Response;
+import org.ldp4j.application.engine.context.Result;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.Query;
@@ -58,6 +60,7 @@ import org.ldp4j.application.kernel.resource.Attachment;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.application.kernel.template.AttachedTemplate;
+import org.ldp4j.application.sdk.ImmutableResponse;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.RDF;
 
@@ -171,7 +174,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 	}
 
 	@Override
-	public final DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException {
+	public final Response<DataSet> entity(ContentPreferences contentPreferences) throws ApplicationExecutionException {
 		DataSet dataSet=resourceData(contentPreferences);
 		DataSet representation = DataSets.createDataSet(id().name());
 		DataSets.
@@ -183,21 +186,37 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 			contentPreferences,
 			ctx.newIndividual(individualId()),
 			ctx);
-		return representation;
+		return
+			ImmutableResponse.
+				<DataSet>builder().
+					withValue(representation).
+						build();
 	}
 
 	@Override
-	public final DataSet query(Query query, ContentPreferences contentPreferences) throws ApplicationExecutionException {
-		return applicationContext().query(endpoint(),query);
+	public final Response<DataSet> query(Query query, ContentPreferences contentPreferences) throws ApplicationExecutionException {
+		DataSet representation = applicationContext().query(endpoint(),query);
+		return
+			ImmutableResponse.
+				<DataSet>builder().
+					withValue(representation).
+						build();
 	}
 
 	@Override
-	public final void delete() throws ApplicationExecutionException {
-		applicationContext().deleteResource(endpoint());
+	public final Response<Void> delete() throws ApplicationExecutionException {
+		Result<Void,ResourceId> result=
+			applicationContext().
+				deleteResource(endpoint());
+		return
+			ImmutableResponse.
+				<Void>builder().
+					withChanges(ChangeUtil.translateIdentifiers(result)).
+					build();
 	}
 
 	@Override
-	public final void modify(DataSet dataSet) throws ApplicationExecutionException {
+	public final Response<Void> modify(DataSet dataSet) throws ApplicationExecutionException {
 		DataSet metadata = metadata();
 		try {
 			// First check that the framework/protocol metadata has not been messed
@@ -209,7 +228,14 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 			DataSets.remove(metadata, dataSet);
 
 			// Third, request the modification using the cleansed and validated data
-			applicationContext().modifyResource(endpoint(),dataSet);
+			Result<Void, ResourceId> result =
+				applicationContext().
+					modifyResource(endpoint(),dataSet);
+			return
+				ImmutableResponse.
+					<Void>builder().
+						withChanges(ChangeUtil.translateIdentifiers(result)).
+						build();
 		} catch (InvalidContentException error) {
 			applicationContext().registerContentFailure(endpoint(),error);
 			throw new ApplicationExecutionException("Protocol/framework managed metadata validation failure",error);
