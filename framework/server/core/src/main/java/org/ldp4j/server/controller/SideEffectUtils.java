@@ -40,46 +40,62 @@ import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.engine.context.Change;
 import org.ldp4j.application.engine.context.Result;
 import org.ldp4j.application.vocabulary.RDF;
+import org.ldp4j.rdf.Namespaces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 final class SideEffectUtils {
 
+
 	private static final Logger LOGGER=LoggerFactory.getLogger(SideEffectUtils.class);
+
+	private static final String PREFIX    = "se";
+	private static final String NAMESPACE = "http://www.ldp4j.org/ns/side-effects#";
+
+	private static final String SIDE_EFFECTS_TYPE = "SideEffects";
+	private static final String CHANGE_TYPE       = "Change";
+
+	private static final String LAST_MODIFIED   = "lastModified";
+	private static final String ENTITY_TAG      = "entityTag";
+	private static final String TARGET_RESOURCE = "targetResource";
+	private static final String ACTION          = "action";
+	private static final String HAS_CHANGE      = "hasChange";
 
 	private SideEffectUtils() {
 	}
 
 	static DataSet toDataSet(URI base, Iterable<Change> changes) {
-		Name<String> name = NamingScheme.getDefault().name("sideEffects");
+		Name<String> name = NamingScheme.getDefault().name(PREFIX);
 		DataSet result=DataSets.createDataSet(name);
 		DataSetHelper helper = DataSetUtils.newHelper(result);
 		IndividualHelper sideEffects =
 			helper.
 				localIndividual(name).
 					property(RDF.TYPE).
-						withIndividual(ldp4jTerm("SideEffects"));
+						withIndividual(sideEffects(SIDE_EFFECTS_TYPE));
 
 		int i=0;
 		for(Change change:changes) {
 			Name<Integer> changeName=NamingScheme.getDefault().name(i++);
 			sideEffects.
-				property(ldp4jTerm("hasChange")).
+				property(sideEffects(HAS_CHANGE)).
 					withIndividual(changeName);
 			IndividualHelper changeIndividual =
 				helper.
 					localIndividual(changeName).
 						property(RDF.TYPE).
-							withIndividual(ldp4jTerm("Change"));
+							withIndividual(sideEffects(CHANGE_TYPE)).
+						property(sideEffects(ACTION)).
+							withLiteral(change.action().name());
 			switch(change.action()) {
 				case CREATED:
-					populateCreationChange(change,changeIndividual);
+					populateActiveChange(change,changeIndividual);
 					break;
 				case MODIFIED:
-					populateModificationChange(change,changeIndividual);
+					populateActiveChange(change,changeIndividual);
 					break;
 				case DELETED:
-					populateDeletionChange(change,base,changeIndividual);
+					populateGoneChange(change,base,changeIndividual);
 					break;
 				default:
 					LOGGER.error("Cannot transform change {}",change);
@@ -89,43 +105,25 @@ final class SideEffectUtils {
 		return result;
 	}
 
-	private static URI ldp4jTerm(String term) {
-		return URI.create("http://www.ldp4j.org/ns/side-effects#"+term);
+	private static URI sideEffects(String term) {
+		return URI.create(NAMESPACE+term);
 	}
 
-	private static void populateModificationChange(Change change, IndividualHelper individual) {
+	private static void populateActiveChange(Change change, IndividualHelper individual) {
 		individual.
-			property(ldp4jTerm("action")).
-				withLiteral("MODIFICATION").
-			property(ldp4jTerm("targetResource")).
+			property(sideEffects(TARGET_RESOURCE)).
 				withIndividual(
 					change.targetResource().name(),
 					change.targetResource().managerId()).
-			property(ldp4jTerm("entityTag")).
+			property(sideEffects(ENTITY_TAG)).
 				withLiteral(change.entityTag().get()).
-			property(ldp4jTerm("lastModified")).
+			property(sideEffects(LAST_MODIFIED)).
 				withLiteral(change.lastModified().get());
 	}
 
-	private static void populateCreationChange(Change change, IndividualHelper individual) {
+	private static void populateGoneChange(Change change, URI base, IndividualHelper individual) {
 		individual.
-			property(ldp4jTerm("action")).
-				withLiteral("CREATED").
-			property(ldp4jTerm("targetResource")).
-				withIndividual(
-					change.targetResource().name(),
-					change.targetResource().managerId()).
-			property(ldp4jTerm("entityTag")).
-				withLiteral(change.entityTag().get()).
-			property(ldp4jTerm("lastModified")).
-				withLiteral(change.lastModified().get());
-	}
-
-	private static void populateDeletionChange(Change change, URI base, IndividualHelper individual) {
-		individual.
-			property(ldp4jTerm("action")).
-				withLiteral("DELETED").
-			property(ldp4jTerm("targetResource")).
+			property(sideEffects(TARGET_RESOURCE)).
 				withIndividual(base.resolve(change.resourceLocation()));
 	}
 
@@ -136,8 +134,15 @@ final class SideEffectUtils {
 		return
 			context.serialize(
 				entity,
-				NamespacesHelper.resourceNamespaces(context.applicationNamespaces()),
+				getNamespaces(context),
 				variant.getMediaType());
+	}
+
+	private static Namespaces getNamespaces(OperationContext context) {
+		return
+			NamespacesHelper.
+				resourceNamespaces(context.applicationNamespaces()).
+					addPrefix(PREFIX,NAMESPACE);
 	}
 
 }

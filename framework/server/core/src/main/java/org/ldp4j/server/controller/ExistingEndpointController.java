@@ -26,7 +26,6 @@
  */
 package org.ldp4j.server.controller;
 
-import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -411,17 +410,27 @@ final class ExistingEndpointController implements EndpointController {
 		return builder.build();
 	}
 
-	private <T> ResponseBuilder sideEffectResponseBuilder(OperationContext context, Result<T> result) {
+	private <T> ResponseBuilder sideEffectResponseBuilder(OperationContext context, Result<T> result, Status status) {
 		Variant variant=null;
 		try {
 			variant=context.expectedVariant();
 		} catch(NotAcceptableException e) {
-			variant=VariantUtils.defaultVariants().get(0);
+			variant = getDefaultVariant(e);
 		}
 		String body=
 			SideEffectUtils.
 				serialize(result,context,variant);
-		return Response.ok(body,variant);
+		return
+			Response.
+				status(status).
+				variant(variant).
+				entity(body);
+	}
+
+	private Variant getDefaultVariant(NotAcceptableException e) {
+		Variant variant = VariantUtils.defaultVariants().get(0);
+		LOGGER.info("Discarding unacceptable media types {}. Resorting to default media type {}",e.unsupportedMediaTypes(),variant.getMediaType());
+		return variant;
 	}
 
 	@Override
@@ -450,7 +459,7 @@ final class ExistingEndpointController implements EndpointController {
 			checkPreconditions();
 		try {
 			Result<Void> result = context.resource().delete();
-			return sideEffectResponseBuilder(context,result).build();
+			return sideEffectResponseBuilder(context,result,Status.OK).build();
 		} catch (ApplicationExecutionException e) {
 			return processExecutionException(context, e);
 		} catch (ApplicationContextException e) {
@@ -466,8 +475,8 @@ final class ExistingEndpointController implements EndpointController {
 			checkPreconditions();
 		try {
 			Result<Void> result = context.resource().modify(context.dataSet());
-			ResponseBuilder builder = sideEffectResponseBuilder(context, result);
-			addRequiredHeaders(context, builder);
+			ResponseBuilder builder=sideEffectResponseBuilder(context,result,Status.OK);
+			addRequiredHeaders(context,builder);
 			return builder.build();
 		} catch (ApplicationExecutionException e) {
 			return processExecutionException(context, e);
@@ -504,19 +513,14 @@ final class ExistingEndpointController implements EndpointController {
 
 		try {
 			PublicContainer container=context.container();
-			Result<PublicResource> response =
+			Result<PublicResource> result =
 				container.
 					createResource(
 						context.dataSet(),
 						context.creationPreferences());
-			PublicResource newResource=response.get();
-			URI location = context.resolve(newResource);
-			ResponseBuilder builder=
-				Response.
-					created(location).
-					type(MediaType.TEXT_PLAIN).
-					entity(location.toString());
-			addRequiredHeaders(context, builder);
+			ResponseBuilder builder=sideEffectResponseBuilder(context,result,Status.CREATED);
+			builder.location(context.resolve(result.get()));
+			addRequiredHeaders(context,builder);
 			return builder.build();
 		} catch (ApplicationExecutionException e) {
 			return processExecutionException(context, e);

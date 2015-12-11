@@ -336,7 +336,7 @@ final class OperationContextImpl implements OperationContext {
 		List<Variant> variants=VariantUtils.defaultVariants();
 		Variant variant = request.selectVariant(variants);
 		if(variant==null) {
-			throw new NotAcceptableException(this.resource,this);
+			throw new NotAcceptableException(headers.getAcceptableMediaTypes(),this.resource,this);
 		}
 		return variant;
 	}

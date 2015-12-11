@@ -26,14 +26,32 @@
  */
 package org.ldp4j.server.controller;
 
+import java.util.List;
+
+import javax.ws.rs.core.MediaType;
+
 import org.ldp4j.application.engine.context.PublicResource;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 public class NotAcceptableException extends OperationContextException {
 
 	private static final long serialVersionUID = 6897847237787548607L;
 
-	public NotAcceptableException(PublicResource resource, OperationContext context) {
+	private final List<String> mediaTypes;
+
+	public NotAcceptableException(List<MediaType> mediaTypes, PublicResource resource, OperationContext context) {
 		super(resource,context);
+		Builder<String> builder=ImmutableList.<String>builder();
+		for(MediaType mediaType:mediaTypes) {
+			builder.add(mediaType.toString());
+		}
+		this.mediaTypes = builder.build();
+	}
+
+	public List<String> unsupportedMediaTypes() {
+		return this.mediaTypes;
 	}
 
 }
