@@ -127,7 +127,7 @@ final class DelegatedWriteSession implements WriteSession {
 	private final WriteSessionConfiguration configuration;
 	private final WriteSessionService writeSessionService;
 	private final SnapshotFactory snapshotFactory;
-	private final List<Change<ResourceId>> changes;
+	private final List<Change> changes;
 
 	private volatile Status status;
 
@@ -265,11 +265,11 @@ final class DelegatedWriteSession implements WriteSession {
 		return clazz.cast(newSnapshot);
 	}
 
-	List<Change<ResourceId>> changes() {
+	List<Change> changes() {
 		return ImmutableList.copyOf(this.changes);
 	}
 
-	void registerChange(Change<ResourceId> change) {
+	void registerChange(Change change) {
 		this.changes.add(change);
 	}
 

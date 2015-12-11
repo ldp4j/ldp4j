@@ -33,6 +33,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.engine.context.Change;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.ext.ResourceHandler;
@@ -85,19 +86,19 @@ public final class WriteSessionService implements Service {
 
 		@Override
 		public void visitNew(DelegatedResourceSnapshot obj) {
-			Change<ResourceId> change=createResource(obj.delegate(),this.lastModified,this.session.getDesiredPath(obj),this.session.getIndirectId(obj));
+			Change change=createResource(obj.delegate(),this.lastModified,this.session.getDesiredPath(obj),this.session.getIndirectId(obj));
 			this.session.registerChange(change);
 		}
 
 		@Override
 		public void visitDirty(DelegatedResourceSnapshot obj) {
-			Change<ResourceId> change=modifyResource(obj.delegate(),this.lastModified);
+			Change change=modifyResource(obj.delegate(),this.lastModified);
 			this.session.registerChange(change);
 		}
 
 		@Override
 		public void visitDeleted(DelegatedResourceSnapshot obj) {
-			Change<ResourceId> change=deleteResource(obj.delegate(),this.lastModified);
+			Change change=deleteResource(obj.delegate(),this.lastModified);
 			this.session.registerChange(change);
 		}
 	}
@@ -161,7 +162,7 @@ public final class WriteSessionService implements Service {
 		return delegatedSnapshot.delegate();
 	}
 
-	public List<Change<ResourceId>> changes(WriteSession writeSession) {
+	public List<Change> changes(WriteSession writeSession) {
 		checkArgument(writeSession instanceof DelegatedWriteSession,"Invalid session");
 		return ((DelegatedWriteSession)writeSession).changes();
 	}
@@ -200,7 +201,7 @@ public final class WriteSessionService implements Service {
 		return EntityTag.createStrong(UUID.randomUUID().toString());
 	}
 
-	private Change<ResourceId> createResource(Resource resource, Date lastModified, String relativePath, URI indirectId) {
+	private Change createResource(Resource resource, Date lastModified, String relativePath, URI indirectId) {
 		try {
 			resource.setIndirectId(indirectId);
 			this.resourceRepository.add(resource);
@@ -218,7 +219,7 @@ public final class WriteSessionService implements Service {
 			return
 				ChangeFactory.
 					createCreation(
-						resource.id(),
+						toManagedIndividualId(resource.id()),
 						URI.create(newEndpoint.path()),
 						newEndpoint.lastModified(),
 						newEndpoint.entityTag());
@@ -227,7 +228,11 @@ public final class WriteSessionService implements Service {
 		}
 	}
 
-	private Change<ResourceId> modifyResource(Resource resource, Date lastModified) {
+	private ManagedIndividualId toManagedIndividualId(ResourceId id) {
+		return ManagedIndividualId.createId(id.name(),id.templateId());
+	}
+
+	private Change modifyResource(Resource resource, Date lastModified) {
 		try {
 			Endpoint endpoint =
 				this.endpointManagementService.
@@ -242,7 +247,7 @@ public final class WriteSessionService implements Service {
 			return
 				ChangeFactory.
 					createModification(
-						resource.id(),
+						toManagedIndividualId(resource.id()),
 						URI.create(endpoint.path()),
 						endpoint.lastModified(),
 						endpoint.entityTag());
@@ -251,7 +256,7 @@ public final class WriteSessionService implements Service {
 		}
 	}
 
-	private Change<ResourceId> deleteResource(Resource resource, Date lastModified) {
+	private Change deleteResource(Resource resource, Date lastModified) {
 		try {
 			this.resourceRepository.remove(resource);
 			Endpoint endpoint =
@@ -266,7 +271,7 @@ public final class WriteSessionService implements Service {
 			return
 				ChangeFactory.
 					createDeletion(
-						resource.id(),
+						toManagedIndividualId(resource.id()),
 						URI.create(endpoint.path()));
 		} catch (EndpointNotFoundException e) {
 			throw new IllegalStateException(e);

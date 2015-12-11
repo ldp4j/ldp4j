@@ -29,6 +29,7 @@ package org.ldp4j.application.sdk;
 import java.net.URI;
 import java.util.Date;
 
+import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.engine.context.Change;
 import org.ldp4j.application.engine.context.Change.Action;
 import org.ldp4j.application.engine.context.EntityTag;
@@ -36,15 +37,19 @@ import org.ldp4j.application.engine.context.EntityTag;
 import com.google.common.base.CaseFormat;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Optional;
+
 import static com.google.common.base.Preconditions.*;
 
 public final class ChangeFactory {
 
-	private static final class ImmutableGoneResourceChange<ID> implements Change<ID> {
-		private final ID targetResource;
+	private static final String RESOURCE_LOCATION_CANNOT_BE_NULL = "Resource location cannot be null";
+	private static final String TARGET_RESOURCE_CANNOT_BE_NULL = "Target resource cannot be null";
+
+	private static final class ImmutableGoneResourceChange implements Change {
+		private final ManagedIndividualId targetResource;
 		private final URI resourceLocation;
 
-		private ImmutableGoneResourceChange(ID targetResource,URI resourceLocation) {
+		private ImmutableGoneResourceChange(ManagedIndividualId targetResource,URI resourceLocation) {
 			this.targetResource = targetResource;
 			this.resourceLocation = resourceLocation;
 		}
@@ -55,7 +60,7 @@ public final class ChangeFactory {
 		}
 
 		@Override
-		public ID targetResource() {
+		public ManagedIndividualId targetResource() {
 			return this.targetResource;
 		}
 
@@ -86,15 +91,15 @@ public final class ChangeFactory {
 
 	}
 
-	private static final class ImmutableActiveResourceChange<ID> implements Change<ID> {
+	private static final class ImmutableActiveResourceChange implements Change {
 
 		private final EntityTag etag;
-		private final ID targetResource;
+		private final ManagedIndividualId targetResource;
 		private final Action action;
 		private final URI resourceLocation;
 		private final Date lastModified;
 
-		private ImmutableActiveResourceChange(Action action, ID targetResource,URI resourceLocation, Date lastModified, EntityTag etag) {
+		private ImmutableActiveResourceChange(Action action, ManagedIndividualId targetResource,URI resourceLocation, Date lastModified, EntityTag etag) {
 			this.action = action;
 			this.targetResource = targetResource;
 			this.resourceLocation = resourceLocation;
@@ -108,7 +113,7 @@ public final class ChangeFactory {
 		}
 
 		@Override
-		public ID targetResource() {
+		public ManagedIndividualId targetResource() {
 			return this.targetResource;
 		}
 
@@ -148,26 +153,26 @@ public final class ChangeFactory {
 		return CaseFormat.UPPER_UNDERSCORE.to(CaseFormat.UPPER_CAMEL,action.name());
 	}
 
-	public static <ID> Change<ID> createDeletion(final ID targetResource, final URI resourceLocation) {
-		checkNotNull(targetResource,"Target resource cannot be null");
-		checkNotNull(resourceLocation,"Resource location cannot be null");
-		return new ImmutableGoneResourceChange<ID>(targetResource, resourceLocation);
+	public static Change createDeletion(final ManagedIndividualId targetResource, final URI resourceLocation) {
+		checkNotNull(targetResource,TARGET_RESOURCE_CANNOT_BE_NULL);
+		checkNotNull(resourceLocation,RESOURCE_LOCATION_CANNOT_BE_NULL);
+		return new ImmutableGoneResourceChange(targetResource, resourceLocation);
 	}
 
-	public static <ID> Change<ID> createCreation(final ID targetResource, final URI resourceLocation, final Date lastModified, final EntityTag etag) {
-		checkNotNull(targetResource,"Target resource cannot be null");
-		checkNotNull(resourceLocation,"Resource location cannot be null");
+	public static Change createCreation(final ManagedIndividualId targetResource, final URI resourceLocation, final Date lastModified, final EntityTag etag) {
+		checkNotNull(targetResource,TARGET_RESOURCE_CANNOT_BE_NULL);
+		checkNotNull(resourceLocation,RESOURCE_LOCATION_CANNOT_BE_NULL);
 		checkNotNull(lastModified,"Last modified date cannot be null");
 		checkNotNull(etag,"Entity tag cannot be null");
-		return new ImmutableActiveResourceChange<ID>(Action.CREATED, targetResource, resourceLocation,lastModified, etag);
+		return new ImmutableActiveResourceChange(Action.CREATED, targetResource, resourceLocation,lastModified, etag);
 	}
 
-	public static <ID> Change<ID> createModification(final ID targetResource, final URI resourceLocation, final Date lastModified, final EntityTag etag) {
-		checkNotNull(targetResource,"Target resource cannot be null");
-		checkNotNull(resourceLocation,"Resource location cannot be null");
+	public static Change createModification(final ManagedIndividualId targetResource, final URI resourceLocation, final Date lastModified, final EntityTag etag) {
+		checkNotNull(targetResource,TARGET_RESOURCE_CANNOT_BE_NULL);
+		checkNotNull(resourceLocation,RESOURCE_LOCATION_CANNOT_BE_NULL);
 		checkNotNull(lastModified,"Last modified date cannot be null");
 		checkNotNull(etag,"Entity tag cannot be null");
-		return new ImmutableActiveResourceChange<ID>(Action.MODIFIED, targetResource, resourceLocation,lastModified, etag);
+		return new ImmutableActiveResourceChange(Action.MODIFIED, targetResource, resourceLocation,lastModified, etag);
 	}
 
 }

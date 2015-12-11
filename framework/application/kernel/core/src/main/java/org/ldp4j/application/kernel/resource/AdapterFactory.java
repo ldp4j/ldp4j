@@ -67,10 +67,10 @@ final class AdapterFactory {
 			return this.session;
 		}
 
-		protected final <V> Result<V,ResourceId> createResult(V resource) {
+		protected final <V> Result<V> createResult(V resource) {
 			return
 				ImmutableResult.
-					<V,ResourceId>builder().
+					<V>builder().
 						withValue(resource).
 						withChanges(this.service.changes(this.session)).
 						build();
@@ -115,7 +115,7 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final Result<DataSet,ResourceId> get() throws FeatureException {
+		public final Result<DataSet> get() throws FeatureException {
 			try {
 				DataSet dataSet = this.delegate.get(resource());
 				checkResponseNotNull(dataSet,ResourceHandler.class,"No data set returned");
@@ -128,7 +128,7 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final Result<DataSet,ResourceId> query(Query query) throws FeatureException {
+		public final Result<DataSet> query(Query query) throws FeatureException {
 			try {
 				DataSet dataSet = as(Queryable.class).query(resource(), query, writeSession());
 				checkResponseNotNull(dataSet,Queryable.class,"No data set returned");
@@ -141,7 +141,7 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final Result<Void,ResourceId> update(DataSet content) throws FeatureException {
+		public final Result<Void> update(DataSet content) throws FeatureException {
 			try {
 				as(Modifiable.class).update(resource(), content, writeSession());
 				return createResult(null);
@@ -153,7 +153,7 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public final Result<Void,ResourceId> delete() throws FeatureException {
+		public final Result<Void> delete() throws FeatureException {
 			try {
 				as(Deletable.class).delete(resource(),writeSession());
 				return createResult(null);
@@ -165,7 +165,7 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public Result<Resource,ResourceId> create(DataSet content) throws FeatureException {
+		public Result<Resource> create(DataSet content) throws FeatureException {
 			finalizeSession();
 			throw new UnsupportedFeatureException(resource(),ContainerHandler.class);
 		}
@@ -179,7 +179,7 @@ final class AdapterFactory {
 		}
 
 		@Override
-		public Result<Resource,ResourceId> create(DataSet content) throws FeatureException {
+		public Result<Resource> create(DataSet content) throws FeatureException {
 			try {
 				ResourceSnapshot create = as(ContainerHandler.class).create(resource(),content,writeSession());
 				checkResponseNotNull(create, ContainerHandler.class, "No resource created");

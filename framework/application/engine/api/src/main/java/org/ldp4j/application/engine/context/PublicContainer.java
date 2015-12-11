@@ -41,7 +41,7 @@ public interface PublicContainer extends PublicRDFSource {
 	 *            the data for the new resource
 	 * @param preferences
 	 *            the preferences to use for creating the resource
-	 * @return a response including the created public resource together with
+	 * @return a {@code Result} including the created public resource together with
 	 *         the changes that also took place.
 	 * @throws ApplicationExecutionException
 	 *             if the application fails to create the resource
@@ -51,7 +51,7 @@ public interface PublicContainer extends PublicRDFSource {
 	 *             if not valid indirect identifier is specified when trying to
 	 *             create a member in an indirect container
 	 */
-	Response<PublicResource> createResource(DataSet dataSet, CreationPreferences preferences)
+	Result<PublicResource> createResource(DataSet dataSet, CreationPreferences preferences)
 			throws ApplicationExecutionException;
 
 }

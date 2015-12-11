@@ -279,7 +279,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return this.resourceRepository.resourceById(resourceId,Resource.class);
 	}
 
-	DataSet getResource(Endpoint endpoint) throws ApplicationExecutionException {
+	Result<DataSet> getResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = loadResource(resourceId);
 		if(resource==null) {
@@ -292,14 +292,14 @@ public final class DefaultApplicationContext implements ApplicationContext {
 				DefaultApplicationContextHelper.
 					create(this.engine().templateManagementService()).
 						createConfiguration(resource,lastModified());
-			return this.engine().resourceControllerService().getResource(resource,config).get();
+			return this.engine().resourceControllerService().getResource(resource,config);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage(RESOURCE_RETRIEVAL_FAILED,endpoint);
 			throw createException(errorMessage,e);
 		}
 	}
 
-	DataSet query(Endpoint endpoint, Query query) throws ApplicationExecutionException {
+	Result<DataSet> query(Endpoint endpoint, Query query) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = loadResource(resourceId);
 		if(resource==null) {
@@ -312,7 +312,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 				DefaultApplicationContextHelper.
 					create(this.engine().templateManagementService()).
 						createConfiguration(resource,lastModified());
-			return this.engine().resourceControllerService().queryResource(resource,query,config).get();
+			return this.engine().resourceControllerService().queryResource(resource,query,config);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage(RESOURCE_QUERY_FAILED,endpoint);
 			throw createException(errorMessage,e);
@@ -331,7 +331,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		return this.endpointRepository.endpointOfResource(id);
 	}
 
-	Result<Resource,ResourceId> createResource(Endpoint endpoint, DataSet dataSet, String desiredPath) throws ApplicationExecutionException {
+	Result<Resource> createResource(Endpoint endpoint, DataSet dataSet, String desiredPath) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Container resource = this.resourceRepository.containerOfId(resourceId);
 		if(resource==null) {
@@ -358,7 +358,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 	}
 
-	Result<Void,ResourceId> deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
+	Result<Void> deleteResource(Endpoint endpoint) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = loadResource(resourceId);
 		if(resource==null) {
@@ -378,7 +378,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		}
 	}
 
-	Result<Void,ResourceId> modifyResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
+	Result<Void> modifyResource(Endpoint endpoint, DataSet dataSet) throws ApplicationExecutionException {
 		ResourceId resourceId=endpoint.resourceId();
 		Resource resource = loadResource(resourceId);
 		if(resource==null) {

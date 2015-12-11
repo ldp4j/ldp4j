@@ -51,6 +51,7 @@ import org.ldp4j.application.engine.context.PublicIndirectContainer;
 import org.ldp4j.application.engine.context.PublicRDFSource;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
+import org.ldp4j.application.engine.context.Result;
 import org.ldp4j.application.engine.context.UnsupportedInteractionModelException;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.InconsistentContentException;
@@ -173,7 +174,7 @@ final class ExistingEndpointController implements EndpointController {
 					LOGGER.debug("No preferences specified");
 				}
 			}
-			org.ldp4j.application.engine.context.Response<DataSet> response=
+			Result<DataSet> response=
 				query.isEmpty()?
 					resource.entity(preferences):
 					resource.query(query, preferences);
@@ -495,7 +496,7 @@ final class ExistingEndpointController implements EndpointController {
 
 		try {
 			PublicContainer container=context.container();
-			org.ldp4j.application.engine.context.Response<PublicResource> response =
+			Result<PublicResource> response =
 				container.
 					createResource(
 						context.dataSet(),

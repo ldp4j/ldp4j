@@ -39,40 +39,44 @@ import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import com.google.common.collect.Lists;
 
-abstract class AbstractImmutableResult<T,ID> implements Result<T,ID> {
+abstract class AbstractImmutableResult<T> implements Result<T> {
 
 	private final T result;
-	private final List<Change<ID>>[] changes;
+	private final List<Change>[] changes;
 	private final int size;
 
 	/**
 	 * TODO: We should enforce that there are not clashing changes (i.e., two
 	 * changes for the same action)
 	 */
-	AbstractImmutableResult(T result, List<Change<ID>> changes) {
+	AbstractImmutableResult(T result, List<Change> changes) {
 		this.result = result;
-		this.changes=AbstractImmutableResult.<ID>createArray(Action.values().length);
+		this.changes=AbstractImmutableResult.createArray(Action.values().length);
 		for(Action action:Action.values()) {
 			this.changes[action.ordinal()]=Lists.newArrayList();
 		}
-		for(Change<ID> change:changes) {
+		for(Change change:changes) {
 			this.changes[change.action().ordinal()].add(change);
 		}
 		this.size=changes.size();
 	}
 
+	@Override
 	public final T get() {
 		return this.result;
 	}
 
-	public final List<Change<ID>> sideEffects(Action action) {
+	@Override
+	public final List<Change> sideEffects(Action action) {
 		return this.changes[action.ordinal()];
 	}
 
+	@Override
 	public final int size() {
 		return this.size;
 	}
 
+	@Override
 	public final boolean isEmpty() {
 		return this.size==0;
 	}
@@ -91,13 +95,13 @@ abstract class AbstractImmutableResult<T,ID> implements Result<T,ID> {
 	}
 
 	@Override
-	public final Iterator<Change<ID>> iterator() {
-		return new ArrayCollectionIterator<Change<ID>>(this.changes);
+	public final Iterator<Change> iterator() {
+		return new IterableArrayIterator<Change>(this.changes);
 	}
 
 	@SuppressWarnings("unchecked")
-	static <ID> List<Change<ID>>[] createArray(int length) {
-		return (List<Change<ID>>[])Array.newInstance(List.class,length);
+	static <ID> List<Change>[] createArray(int length) {
+		return (List<Change>[])Array.newInstance(List.class,length);
 	}
 
 }

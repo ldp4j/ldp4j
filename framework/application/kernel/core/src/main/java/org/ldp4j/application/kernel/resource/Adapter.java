@@ -34,14 +34,14 @@ interface Adapter {
 
 	ResourceId resourceId();
 
-	Result<DataSet,ResourceId> get() throws FeatureException;
+	Result<DataSet> get() throws FeatureException;
 
-	Result<DataSet,ResourceId> query(Query query) throws FeatureException;
+	Result<DataSet> query(Query query) throws FeatureException;
 
-	Result<Void,ResourceId> update(DataSet content) throws FeatureException;
+	Result<Void> update(DataSet content) throws FeatureException;
 
-	Result<Void,ResourceId> delete() throws FeatureException;
+	Result<Void> delete() throws FeatureException;
 
-	Result<Resource,ResourceId> create(DataSet content) throws FeatureException;
+	Result<Resource> create(DataSet content) throws FeatureException;
 
 }

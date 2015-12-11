@@ -72,23 +72,23 @@ public class ResourceControllerService implements Service {
 		return AdapterFactory.newAdapter(resource,delegate,this.writeSessionService,configuration);
 	}
 
-	public Result<DataSet,ResourceId> getResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
+	public Result<DataSet> getResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
 		return adapter(resource, configuration).get();
 	}
 
-	public Result<DataSet,ResourceId> queryResource(Resource resource, Query query, WriteSessionConfiguration configuration) throws FeatureException {
+	public Result<DataSet> queryResource(Resource resource, Query query, WriteSessionConfiguration configuration) throws FeatureException {
 		return adapter(resource, configuration).query(query);
 	}
 
-	public Result<Void,ResourceId> updateResource(Resource resource, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
+	public Result<Void> updateResource(Resource resource, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
 		return adapter(resource, configuration).update(dataSet);
 	}
 
-	public Result<Void,ResourceId> deleteResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
+	public Result<Void> deleteResource(Resource resource, WriteSessionConfiguration configuration) throws FeatureException {
 		return adapter(resource, configuration).delete();
 	}
 
-	public Result<Resource,ResourceId> createResource(Container container, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
+	public Result<Resource> createResource(Container container, DataSet dataSet, WriteSessionConfiguration configuration) throws FeatureException {
 		return adapter(container,configuration).create(dataSet);
 	}
 

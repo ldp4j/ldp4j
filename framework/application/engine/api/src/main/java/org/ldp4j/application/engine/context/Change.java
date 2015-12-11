@@ -29,9 +29,11 @@ package org.ldp4j.application.engine.context;
 import java.net.URI;
 import java.util.Date;
 
+import org.ldp4j.application.data.ManagedIndividualId;
+
 import com.google.common.base.Optional;
 
-public interface Change<ID> {
+public interface Change {
 
 	public enum Action {
 		CREATED,
@@ -41,7 +43,7 @@ public interface Change<ID> {
 
 	Action action();
 
-	ID targetResource();
+	ManagedIndividualId targetResource();
 
 	URI resourceLocation();
 

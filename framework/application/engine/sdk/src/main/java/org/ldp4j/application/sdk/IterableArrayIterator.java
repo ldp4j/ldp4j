@@ -26,58 +26,46 @@
  */
 package org.ldp4j.application.sdk;
 
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.List;
+import static com.google.common.base.Preconditions.checkState;
 
-import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.engine.context.Change;
-import org.ldp4j.application.engine.context.Response;
+import java.util.Iterator;
 
-import com.google.common.collect.Lists;
+final class IterableArrayIterator<T> implements Iterator<T> {
 
-public final class ImmutableResponse<T> extends AbstractImmutableResult<T,ManagedIndividualId> implements Response<T> {
+	private final Iterable<T>[] items;
 
-	public static final class Builder<T> {
+	private Iterator<T> current;
+	private int i;
 
-		private List<Change<ManagedIndividualId>> changes;
-		private T result;
-
-		private Builder() {
-			this.changes=Lists.newArrayList();
-		}
-
-		public Builder<T> withValue(T result) {
-			this.result=result;
-			return this;
-		}
-
-		public <C extends Change<ManagedIndividualId>> Builder<T> withChanges(Collection<C> changes) {
-			this.changes.addAll(changes);
-			return this;
-		}
-
-		public <C extends Change<ManagedIndividualId>> Builder<T> withChanges(@SuppressWarnings("unchecked") C... changes) {
-			return withChanges(Arrays.asList(changes));
-		}
-
-		public <C extends Change<ManagedIndividualId>> Builder<T> withChange(C change) {
-			this.changes.add(change);
-			return this;
-		}
-
-		public ImmutableResponse<T> build() {
-			return new ImmutableResponse<T>(this.result,this.changes);
-		}
-
+	IterableArrayIterator(Iterable<T>[] items) {
+		this.items=items;
 	}
 
-	private ImmutableResponse(T result,List<Change<ManagedIndividualId>> changes) {
-		super(result,changes);
+	@Override
+	public boolean hasNext() {
+		if(this.current==null || !this.current.hasNext()) {
+			while(this.i<this.items.length) {
+				this.current=this.items[this.i++].iterator();
+				if(!this.current.hasNext()) {
+					this.current=null;
+				}
+			}
+			if(this.current==null) {
+				return false;
+			}
+		}
+		return this.current.hasNext();
 	}
 
-	public static <T> Builder<T> builder() {
-		return new Builder<T>();
+	@Override
+	public T next() {
+		checkState(this.current!=null);
+		return this.current.next();
+	}
+
+	@Override
+	public void remove() {
+		throw new UnsupportedOperationException("Deletion is not supported");
 	}
 
 }

@@ -50,7 +50,6 @@ import org.ldp4j.application.engine.context.PublicIndirectContainer;
 import org.ldp4j.application.engine.context.PublicRDFSource;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
-import org.ldp4j.application.engine.context.Response;
 import org.ldp4j.application.engine.context.Result;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.InvalidContentException;
@@ -60,7 +59,7 @@ import org.ldp4j.application.kernel.resource.Attachment;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.application.kernel.template.AttachedTemplate;
-import org.ldp4j.application.sdk.ImmutableResponse;
+import org.ldp4j.application.sdk.ImmutableResult;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.RDF;
 
@@ -174,7 +173,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 	}
 
 	@Override
-	public final Response<DataSet> entity(ContentPreferences contentPreferences) throws ApplicationExecutionException {
+	public final Result<DataSet> entity(ContentPreferences contentPreferences) throws ApplicationExecutionException {
 		DataSet dataSet=resourceData(contentPreferences);
 		DataSet representation = DataSets.createDataSet(id().name());
 		DataSets.
@@ -187,36 +186,24 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 			ctx.newIndividual(individualId()),
 			ctx);
 		return
-			ImmutableResponse.
+			ImmutableResult.
 				<DataSet>builder().
 					withValue(representation).
 						build();
 	}
 
 	@Override
-	public final Response<DataSet> query(Query query, ContentPreferences contentPreferences) throws ApplicationExecutionException {
-		DataSet representation = applicationContext().query(endpoint(),query);
-		return
-			ImmutableResponse.
-				<DataSet>builder().
-					withValue(representation).
-						build();
+	public final Result<DataSet> query(Query query, ContentPreferences contentPreferences) throws ApplicationExecutionException {
+		return applicationContext().query(endpoint(),query);
 	}
 
 	@Override
-	public final Response<Void> delete() throws ApplicationExecutionException {
-		Result<Void,ResourceId> result=
-			applicationContext().
-				deleteResource(endpoint());
-		return
-			ImmutableResponse.
-				<Void>builder().
-					withChanges(ChangeUtil.translateIdentifiers(result)).
-					build();
+	public final Result<Void> delete() throws ApplicationExecutionException {
+		return applicationContext().deleteResource(endpoint());
 	}
 
 	@Override
-	public final Response<Void> modify(DataSet dataSet) throws ApplicationExecutionException {
+	public final Result<Void> modify(DataSet dataSet) throws ApplicationExecutionException {
 		DataSet metadata = metadata();
 		try {
 			// First check that the framework/protocol metadata has not been messed
@@ -228,14 +215,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 			DataSets.remove(metadata, dataSet);
 
 			// Third, request the modification using the cleansed and validated data
-			Result<Void, ResourceId> result =
-				applicationContext().
-					modifyResource(endpoint(),dataSet);
-			return
-				ImmutableResponse.
-					<Void>builder().
-						withChanges(ChangeUtil.translateIdentifiers(result)).
-						build();
+			return applicationContext().modifyResource(endpoint(),dataSet);
 		} catch (InvalidContentException error) {
 			applicationContext().registerContentFailure(endpoint(),error);
 			throw new ApplicationExecutionException("Protocol/framework managed metadata validation failure",error);
@@ -265,7 +245,7 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 
 	@Override
 	protected DataSet resourceData(ContentPreferences contentPreferences) throws ApplicationExecutionException {
-		return applicationContext().getResource(endpoint());
+		return applicationContext().getResource(endpoint()).get();
 	}
 
 	@Override

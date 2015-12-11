@@ -28,11 +28,9 @@ package org.ldp4j.application.kernel.engine;
 
 import java.util.List;
 
-import org.ldp4j.application.data.ManagedIndividualId;
 import org.ldp4j.application.engine.context.Change;
-import org.ldp4j.application.kernel.resource.ResourceId;
-import org.ldp4j.application.sdk.ChangeFactory;
 
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 
 final class ChangeUtil {
@@ -40,52 +38,9 @@ final class ChangeUtil {
 	private ChangeUtil() {
 	}
 
-	private static Change<ManagedIndividualId> translateIdentifier(Change<ResourceId> change) {
-		ResourceId resourceId = change.targetResource();
-		ManagedIndividualId individualId=
-			ManagedIndividualId.
-				createId(
-					resourceId.name(),
-					resourceId.templateId());
-		Change<ManagedIndividualId> newChange=null;
-		switch(change.action()) {
-			case CREATED:
-				newChange=
-					ChangeFactory.
-						createCreation(
-							individualId,
-							change.resourceLocation(),
-							change.lastModified().get(),
-							change.entityTag().get());
-				break;
-			case MODIFIED:
-				newChange=
-					ChangeFactory.
-						createModification(
-							individualId,
-							change.resourceLocation(),
-							change.lastModified().get(),
-							change.entityTag().get());
-				break;
-			case DELETED:
-				newChange=
-					ChangeFactory.
-						createDeletion(
-							individualId,
-							change.resourceLocation());
-				break;
-			default:
-				throw new IllegalStateException("Unsupported change action '"+change.action()+"'");
-		}
-		return newChange;
-	}
-
-	static <T> List<Change<ManagedIndividualId>> translateIdentifiers(Iterable<Change<ResourceId>> result) {
-		List<Change<ManagedIndividualId>> changes = Lists.newArrayList();
-		for(Change<ResourceId> change:result) {
-			Change<ManagedIndividualId> newChange = translateIdentifier(change);
-			changes.add(newChange);
-		}
+	static <T> List<Change> copy(Iterable<Change> result) {
+		List<Change> changes = Lists.newArrayList();
+		Iterables.addAll(changes,result);
 		return changes;
 	}
 

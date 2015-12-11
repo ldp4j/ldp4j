@@ -27,12 +27,13 @@
 package org.ldp4j.application.engine.context;
 
 import java.util.List;
+import org.ldp4j.application.engine.context.Change.Action;
 
-public interface Result<T,ID> extends Iterable<Change<ID>> {
+public interface Result<T> extends Iterable<Change> {
 
 	T get();
 
-	List<Change<ID>> sideEffects(Change.Action action);
+	List<Change> sideEffects(Action action);
 
 	int size();
 
