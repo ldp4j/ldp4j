@@ -48,7 +48,7 @@ public final class OperationContextBuilder {
 	// Optional
 	private String entity;
 
-	public OperationContextBuilder() {
+	private OperationContextBuilder() {
 	}
 
 	public OperationContextBuilder withEndpointPath(String path) {
@@ -94,6 +94,10 @@ public final class OperationContextBuilder {
 		checkNotNull(this.request,"Request cannot be null");
 		checkNotNull(this.headers,"Headers cannot be null");
 		return new OperationContextImpl(this.applicationContext,this.endpointPath,this.uriInfo,this.headers,this.request,this.entity,this.method);
+	}
+
+	public static OperationContextBuilder create() {
+		return new OperationContextBuilder();
 	}
 
 }

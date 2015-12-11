@@ -133,9 +133,10 @@ public final class ServerFrontend {
 	private OperationContextBuilder newOperationBuilder(HttpMethod operation) {
 		checkApplicationEngineAvailable();
 		return
-			new OperationContextBuilder().
-				withApplicationContext(currentContext()).
-				withOperation(operation);
+			OperationContextBuilder.
+				create().
+					withApplicationContext(currentContext()).
+					withOperation(operation);
 	}
 
 	/**

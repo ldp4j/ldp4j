@@ -28,24 +28,22 @@ package org.ldp4j.application.engine;
 
 public class ApplicationEngineException extends Exception {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 7277235988477021917L;
-
-	public ApplicationEngineException() {
-	}
-
-	public ApplicationEngineException(String message) {
-		super(message);
-	}
-
-	public ApplicationEngineException(Throwable cause) {
-		super(cause);
-	}
 
 	public ApplicationEngineException(String message, Throwable cause) {
 		super(message, cause);
+	}
+
+	public ApplicationEngineException() {
+		this("Unexpected Application Engine exception");
+	}
+
+	public ApplicationEngineException(String message) {
+		this(message,null);
+	}
+
+	public ApplicationEngineException(Throwable cause) {
+		this("Unexpected Application Engine exception",cause);
 	}
 
 }

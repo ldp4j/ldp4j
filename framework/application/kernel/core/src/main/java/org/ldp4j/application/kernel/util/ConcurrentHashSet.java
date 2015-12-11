@@ -39,6 +39,7 @@ public final class ConcurrentHashSet<E> extends AbstractSet<E> implements Set<E>
 	private Set<E> values = valueMap.keySet();
 
 	public ConcurrentHashSet() {
+		super();
 	}
 
 	/**
