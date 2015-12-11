@@ -131,6 +131,7 @@ final class OperationContextImpl implements OperationContext {
 		LOGGER.trace("Request uri..: {}",this.uriInfo.getRequestUri());
 		LOGGER.trace("Base.........: {}",base());
 		LOGGER.trace("Endpoint.....: {}",endpoint());
+		LOGGER.trace("Action.......: {}",method);
 	}
 
 	private Variant contentVariant() {

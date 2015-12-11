@@ -91,6 +91,7 @@ final class ExistingEndpointController implements EndpointController {
 	private static final Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
 
 	ExistingEndpointController() {
+		super();
 	}
 
 	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {
@@ -410,6 +411,19 @@ final class ExistingEndpointController implements EndpointController {
 		return builder.build();
 	}
 
+	private <T> ResponseBuilder sideEffectResponseBuilder(OperationContext context, Result<T> result) {
+		Variant variant=null;
+		try {
+			variant=context.expectedVariant();
+		} catch(NotAcceptableException e) {
+			variant=VariantUtils.defaultVariants().get(0);
+		}
+		String body=
+			SideEffectUtils.
+				serialize(result,context,variant);
+		return Response.ok(body,variant);
+	}
+
 	@Override
 	public Response options(OperationContext context) {
 		ResponseBuilder builder=
@@ -435,11 +449,8 @@ final class ExistingEndpointController implements EndpointController {
 			checkOperationSupport().
 			checkPreconditions();
 		try {
-			context.resource().delete();
-			// TODO: This could be improved by returning an OK with an
-			// additional description of all the resources that were deleted
-			// as a side effect.
-			return Response.noContent().build();
+			Result<Void> result = context.resource().delete();
+			return sideEffectResponseBuilder(context,result).build();
 		} catch (ApplicationExecutionException e) {
 			return processExecutionException(context, e);
 		} catch (ApplicationContextException e) {
@@ -454,11 +465,8 @@ final class ExistingEndpointController implements EndpointController {
 			checkContents().
 			checkPreconditions();
 		try {
-			context.resource().modify(context.dataSet());
-			// TODO: This could be improved by returning an OK with an
-			// additional description of all the resources that were modified
-			// (updated, created, deleted) as a side effect.
-			ResponseBuilder builder=Response.noContent();
+			Result<Void> result = context.resource().modify(context.dataSet());
+			ResponseBuilder builder = sideEffectResponseBuilder(context, result);
 			addRequiredHeaders(context, builder);
 			return builder.build();
 		} catch (ApplicationExecutionException e) {
