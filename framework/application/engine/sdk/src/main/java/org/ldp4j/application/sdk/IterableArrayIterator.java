@@ -44,7 +44,8 @@ final class IterableArrayIterator<T> implements Iterator<T> {
 	@Override
 	public boolean hasNext() {
 		if(this.current==null || !this.current.hasNext()) {
-			while(this.i<this.items.length) {
+			this.current=null;
+			while(this.current==null && this.i<this.items.length) {
 				this.current=this.items[this.i++].iterator();
 				if(!this.current.hasNext()) {
 					this.current=null;

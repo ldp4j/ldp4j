@@ -42,9 +42,11 @@ import static com.google.common.base.Preconditions.*;
 
 public final class ChangeFactory {
 
-	private static final String RESOURCE_LOCATION_CANNOT_BE_NULL = "Resource location cannot be null";
-	private static final String TARGET_RESOURCE_CANNOT_BE_NULL = "Target resource cannot be null";
-
+	private static final String ENTITY_TAG_CANNOT_BE_NULL         = "Entity tag cannot be null";
+	private static final String LAST_MODIFIED_DATE_CANNOT_BE_NULL = "Last modified date cannot be null";
+	private static final String RESOURCE_LOCATION_CANNOT_BE_NULL  = "Resource location cannot be null";
+	private static final String TARGET_RESOURCE_CANNOT_BE_NULL    = "Target resource cannot be null";
+ 
 	private static final class ImmutableGoneResourceChange implements Change {
 		private final ManagedIndividualId targetResource;
 		private final URI resourceLocation;
@@ -162,16 +164,16 @@ public final class ChangeFactory {
 	public static Change createCreation(final ManagedIndividualId targetResource, final URI resourceLocation, final Date lastModified, final EntityTag etag) {
 		checkNotNull(targetResource,TARGET_RESOURCE_CANNOT_BE_NULL);
 		checkNotNull(resourceLocation,RESOURCE_LOCATION_CANNOT_BE_NULL);
-		checkNotNull(lastModified,"Last modified date cannot be null");
-		checkNotNull(etag,"Entity tag cannot be null");
+		checkNotNull(lastModified,LAST_MODIFIED_DATE_CANNOT_BE_NULL);
+		checkNotNull(etag,ENTITY_TAG_CANNOT_BE_NULL);
 		return new ImmutableActiveResourceChange(Action.CREATED, targetResource, resourceLocation,lastModified, etag);
 	}
 
 	public static Change createModification(final ManagedIndividualId targetResource, final URI resourceLocation, final Date lastModified, final EntityTag etag) {
 		checkNotNull(targetResource,TARGET_RESOURCE_CANNOT_BE_NULL);
 		checkNotNull(resourceLocation,RESOURCE_LOCATION_CANNOT_BE_NULL);
-		checkNotNull(lastModified,"Last modified date cannot be null");
-		checkNotNull(etag,"Entity tag cannot be null");
+		checkNotNull(lastModified,LAST_MODIFIED_DATE_CANNOT_BE_NULL);
+		checkNotNull(etag,ENTITY_TAG_CANNOT_BE_NULL);
 		return new ImmutableActiveResourceChange(Action.MODIFIED, targetResource, resourceLocation,lastModified, etag);
 	}
 

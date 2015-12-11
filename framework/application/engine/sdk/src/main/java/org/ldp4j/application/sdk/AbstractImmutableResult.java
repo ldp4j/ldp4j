@@ -100,7 +100,7 @@ abstract class AbstractImmutableResult<T> implements Result<T> {
 	}
 
 	@SuppressWarnings("unchecked")
-	static <ID> List<Change>[] createArray(int length) {
+	static List<Change>[] createArray(int length) {
 		return (List<Change>[])Array.newInstance(List.class,length);
 	}
 
