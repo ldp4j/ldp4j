@@ -54,7 +54,7 @@ final class ConformanceUtil {
 					create(WebArchive.class,archiveName).
 						addClass(JaCoCoAgentController.class).
 						addAsLibraries(files).
-						addAsResource("log4j.properties").
+						addAsResource("server.log4j.properties","log4j.properties").
 						setWebXML(new File("src/test/resources/web.xml"));
 		} catch (Exception e) {
 			LOGGER.error("Could not create archive",e);
