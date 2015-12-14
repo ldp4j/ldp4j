@@ -39,15 +39,18 @@ import com.google.common.collect.Maps;
 final class AttachmentCollection {
 
 	private final Map<String,JPAAttachment> indexByAttachmentId;
-
 	private final Map<ResourceId,JPAAttachment> indexByResourceId;
-
-	private List<JPAAttachment> collection;
-
 
 	AttachmentCollection() {
 		this.indexByAttachmentId=Maps.newLinkedHashMap();
 		this.indexByResourceId=Maps.newLinkedHashMap();
+	}
+
+	private void checkNotAttached(String attachmentId, ResourceId resourceId) {
+		checkState(!this.indexByResourceId.containsKey(resourceId),"Resource '%s' is already attached",resourceId);
+		JPAAttachment attachment = this.indexByAttachmentId.get(attachmentId);
+		checkState(attachment!=null,"Unknown attachment '%s'",attachmentId);
+		checkState(attachment.resourceId()==null,"A resource is already attached as '%s'",attachmentId);
 	}
 
 	private void indexAttachment(JPAAttachment attachment) {
@@ -58,8 +61,16 @@ final class AttachmentCollection {
 		}
 	}
 
-	void addAttachment(JPAAttachment attachment) {
-		this.collection.add(attachment);
+	void init(List<JPAAttachment> resourceAttachments) {
+		for(JPAAttachment attachment:resourceAttachments) {
+			indexAttachment(attachment);
+		}
+	}
+
+	void addAttachment(String attachmentId, ResourceId resourceId) {
+		checkNotAttached(attachmentId,resourceId);
+		JPAAttachment attachment=attachmentById(attachmentId);
+		attachment.bind(resourceId);
 		indexAttachment(attachment);
 	}
 
@@ -71,27 +82,12 @@ final class AttachmentCollection {
 		return jpaAttachment!=null;
 	}
 
-	JPAAttachment attachmendByResourceId(ResourceId resourceId) {
+	JPAAttachment attachmentByResourceId(ResourceId resourceId) {
 		return this.indexByResourceId.get(resourceId);
 	}
 
 	JPAAttachment attachmentById(String attachmentId) {
 		return this.indexByAttachmentId.get(attachmentId);
 	}
-
-	void checkNotAttached(String attachmentId, ResourceId resourceId) {
-		checkState(!this.indexByResourceId.containsKey(resourceId),"Resource '%s' is already attached",resourceId);
-		JPAAttachment attachment = this.indexByAttachmentId.get(attachmentId);
-		checkState(attachment!=null,"Unknown attachment '%s'",attachmentId);
-		checkState(attachment.resourceId()==null,"A resource is already attached as '%s'",attachmentId);
-	}
-
-	void init(List<JPAAttachment> resourceAttachments) {
-		this.collection=resourceAttachments;
-		for(JPAAttachment attachment:this.collection) {
-			indexAttachment(attachment);
-		}
-	}
-
 
 }

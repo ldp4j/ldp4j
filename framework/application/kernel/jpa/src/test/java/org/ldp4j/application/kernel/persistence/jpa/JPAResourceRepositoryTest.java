@@ -70,12 +70,14 @@ public class JPAResourceRepositoryTest extends AbstractJPARepositoryTest<Resourc
 				@Override
 				public void execute(ResourceRepository sut) {
 					Resource result1 = sut.resourceOfId(resourceId);
-					debug("Retrieving resource {%s}: %s",resourceId,result1);
-					Resource attachment = result1.attach(PersonHandler.ADDRESS_ID,attachmentId);
-					sut.add(attachment);
-					debug("Created attachment: %s",attachment);
+					debug("Retrieved resource {%s}: %s",resourceId,result1);
+					Resource attachedResource = result1.attach(PersonHandler.ADDRESS_ID,attachmentId);
+					sut.add(attachedResource);
+					debug("Created attached resource: %s",attachedResource);
+					Attachment attachment = result1.findAttachment(attachedResource.id());
+					debug("Created attachment {%s}: %s",attachedResource.id(),attachment);
 					Container result2 = sut.containerOfId(containerId);
-					debug("Retrieving container {%s}: %s",containerId,result2);
+					debug("Retrieved container {%s}: %s",containerId,result2);
 					Slug slug1=result2.addSlug("test");
 					debug("Created slug: %s",slug1);
 					Slug slug2=result2.addSlug("anotherTest");
@@ -92,17 +94,17 @@ public class JPAResourceRepositoryTest extends AbstractJPARepositoryTest<Resourc
 				@Override
 				public void execute(ResourceRepository sut) {
 					Resource result1 = sut.resourceOfId(resourceId);
-					debug("Retrieving resource {%s}: %s",resourceId,result1);
+					debug("Retrieved resource {%s}: %s",resourceId,result1);
 					Container result2 = sut.containerOfId(containerId);
-					debug("Retrieving container {%s}: %s",containerId,result2);
+					debug("Retrieved container {%s}: %s",containerId,result2);
 					Resource result3 = sut.resourceById(memberId,Resource.class);
-					debug("Retrieving member resource {%s}: %s",memberId,result3);
+					debug("Retrieved member resource {%s}: %s",memberId,result3);
 					sut.remove(result2);
 					debug("Deleted resource {%s}",result2.id());
 					Resource result4 = sut.resourceById(attachmentId,Resource.class);
-					debug("Retrieving attached resource {%s}: %s",attachmentId,result4);
+					debug("Retrieved attached resource {%s}: %s",attachmentId,result4);
 					Attachment attachment = result1.findAttachment(result4.id());
-					debug("Retrieving attachment {%s}: %s",result4.id(),attachment);
+					debug("Retrieved attachment {%s}: %s",result4.id(),attachment);
 					result1.detach(attachment);
 					debug("Detached resource {%s}",attachment.id());
 					sut.remove(result4);
@@ -116,13 +118,13 @@ public class JPAResourceRepositoryTest extends AbstractJPARepositoryTest<Resourc
 				@Override
 				public void execute(ResourceRepository sut) {
 					Resource result1 = sut.resourceOfId(resourceId);
-					debug("Retrieving resource {%s}: %s",resourceId,result1);
+					debug("Retrieved resource {%s}: %s",resourceId,result1);
 					Container result2 = sut.containerOfId(containerId);
-					debug("Retrieving container {%s}: %s",containerId,result2);
+					debug("Retrieved container {%s}: %s",containerId,result2);
 					Resource result3 = sut.resourceById(memberId,Resource.class);
-					debug("Retrieving member resource {%s}: %s",memberId,result3);
+					debug("Retrieved member resource {%s}: %s",memberId,result3);
 					Resource result4 = sut.resourceById(attachmentId,Resource.class);
-					debug("Retrieving attached resource {%s}: %s",attachmentId,result4);
+					debug("Retrieved attached resource {%s}: %s",attachmentId,result4);
 					ConstraintReport report = result1.addConstraintReport(null,new Date(),httpRequest());
 					debug("Created report {%s}",report.id());
 				}
@@ -134,11 +136,11 @@ public class JPAResourceRepositoryTest extends AbstractJPARepositoryTest<Resourc
 				@Override
 				public void execute(ResourceRepository sut) {
 					Resource result1 = sut.resourceOfId(resourceId);
-					debug("Retrieving resource {%s}: %s",resourceId,result1);
+					debug("Retrieved resource {%s}: %s",resourceId,result1);
 					Container result2 = sut.containerOfId(containerId);
-					debug("Retrieving container {%s}: %s",containerId,result2);
+					debug("Retrieved container {%s}: %s",containerId,result2);
 					Resource result3 = sut.resourceById(memberId,Resource.class);
-					debug("Retrieving member resource {%s}: %s",memberId,result3);
+					debug("Retrieved member resource {%s}: %s",memberId,result3);
 				}
 			}
 		);

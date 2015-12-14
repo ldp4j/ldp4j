@@ -181,7 +181,7 @@ class JPAResource extends AbstractJPAResource implements Resource {
 	@Override
 	public Attachment findAttachment(ResourceId resourceId) {
 		checkNotNull(resourceId,"Attached resource identifier cannot be null");
-		return this.attachmentCollection.attachmendByResourceId(resourceId);
+		return this.attachmentCollection.attachmentByResourceId(resourceId);
 	}
 
 	/**
@@ -200,12 +200,10 @@ class JPAResource extends AbstractJPAResource implements Resource {
 		checkNotNull(attachmentId,"Attachment identifier cannot be null");
 		checkNotNull(resourceId,"Attached resource identifier cannot be null");
 		checkNotNull(clazz,"Attached resource class cannot be null");
-		this.attachmentCollection.checkNotAttached(attachmentId,resourceId);
 		ResourceTemplate attachmentTemplate=super.getTemplate(resourceId);
 		checkState(Resources.areCompatible(clazz,attachmentTemplate),"Attachment '%s' is not of type '%s' (%s)",attachmentId,clazz.getCanonicalName(),attachmentTemplate.getClass().getCanonicalName());
 		JPAResource newResource=createChild(resourceId,attachmentTemplate);
-		JPAAttachment newAttachment=this.attachmentCollection.attachmentById(attachmentId);
-		newAttachment.bind(resourceId);
+		this.attachmentCollection.addAttachment(attachmentId,resourceId);
 		return clazz.cast(newResource);
 	}
 

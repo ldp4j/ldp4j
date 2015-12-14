@@ -134,18 +134,6 @@ public abstract class AbstractJPARepositoryTest<T> { // NOSONAR
 		assertThat(this.delegate,notNullValue());
 	}
 
-	protected final Container rootContainer(Name<?> name, String templateId) {
-		return (Container)this.delegate.getModelFactory().createResource(ServiceRegistry.getInstance().getService(TemplateManagementService.class).templateOfId(templateId), name);
-	}
-
-	protected final Resource rootResource(Name<?> name, String templateId) {
-		return this.delegate.getModelFactory().createResource(ServiceRegistry.getInstance().getService(TemplateManagementService.class).templateOfId(templateId), name);
-	}
-
-	protected final Endpoint endpoint(String path, Resource resource) {
-		return this.delegate.getModelFactory().createEndpoint(path, resource, new Date(),EntityTag.createStrong("tag"));
-	}
-
 	protected final Logger logger() {
 		return this.logger;
 	}
@@ -186,9 +174,32 @@ public abstract class AbstractJPARepositoryTest<T> { // NOSONAR
 		}
 	}
 
-	protected abstract T getSubjectUnderTest(JPARuntimeDelegate delegate);
+	protected final Container rootContainer(Name<?> name, String templateId) {
+		return (Container)this.delegate.getModelFactory().createResource(ServiceRegistry.getInstance().getService(TemplateManagementService.class).templateOfId(templateId), name);
+	}
 
-	protected Constraints constraints() {
+	protected final Resource rootResource(Name<?> name, String templateId) {
+		return this.delegate.getModelFactory().createResource(ServiceRegistry.getInstance().getService(TemplateManagementService.class).templateOfId(templateId), name);
+	}
+
+	protected final Endpoint endpoint(String path, Resource resource) {
+		return this.delegate.getModelFactory().createEndpoint(path, resource, new Date(),EntityTag.createStrong("tag"));
+	}
+
+	protected final HttpRequest httpRequest() {
+		return
+			HttpRequestBuilder.
+				newInstance().
+					withMethod(HttpMethod.POST).
+					withHost("www.example.org").
+					withAbsolutePath("service/resource/").
+					withBody("body").
+					withHeader("accept","text/turtle").
+					withHeader("if-none-match",EntityTag.createWeak("asdjkkl").toString()).
+					build();
+	}
+
+	protected final Constraints constraints() {
 		DataSet dataSet=DataSets.createDataSet(name("dataSet"));
 		PropertyConstraint pc=
 			Constraints.
@@ -242,6 +253,12 @@ public abstract class AbstractJPARepositoryTest<T> { // NOSONAR
 					withTypeShape(uri("constrainedType"), typeShape);
 	}
 
+	protected abstract T getSubjectUnderTest(JPARuntimeDelegate delegate);
+
+	protected static Name<String> name(String name) {
+		return NamingScheme.getDefault().name(name);
+	}
+
 	private static ManagedIndividual managedIndividual(DataSet dataSet, String name,String managerId) {
 		return dataSet.individual(managedIndividualId(name, managerId), ManagedIndividual.class);
 	}
@@ -267,25 +284,8 @@ public abstract class AbstractJPARepositoryTest<T> { // NOSONAR
 		return ManagedIndividualId.createId(name(name),managerId);
 	}
 
-	protected static Name<String> name(String name) {
-		return NamingScheme.getDefault().name(name);
-	}
-
 	private static URI uri(String string) {
 		return URI.create("http://www.example.org/#"+string);
-	}
-
-	protected HttpRequest httpRequest() {
-		return
-			HttpRequestBuilder.
-				newInstance().
-					withMethod(HttpMethod.POST).
-					withHost("www.example.org").
-					withAbsolutePath("service/resource/").
-					withBody("body").
-					withHeader("accept","text/turtle").
-					withHeader("if-none-match",EntityTag.createWeak("asdjkkl").toString()).
-					build();
 	}
 
 }
