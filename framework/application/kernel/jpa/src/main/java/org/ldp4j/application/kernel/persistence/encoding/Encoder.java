@@ -37,7 +37,7 @@ public abstract class Encoder {
 
 	public abstract String encode(Name<?> name);
 
-	public abstract <T extends Serializable> Name<T> decode(String data);
+	public abstract <T extends Serializable> Name<T> decode(String typeName, String data);
 
 	public static Encoder nameEncoder() {
 		return Encoder.NAME_ENCODER;

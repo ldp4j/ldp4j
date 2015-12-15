@@ -139,11 +139,12 @@ public class KeyTest {
 		setField(sut, "nameType", "bad type");
 		setField(sut, "nameValue", key.nameValue());
 
-		ResourceId id=sut.resourceId();
-
-		assertThat(id,equalTo(key.resourceId()));
-		assertThat(sut,equalTo(key));
-		assertThat(sut.nameType(),equalTo(key.nameType()));
+		try {
+			sut.resourceId();
+		} catch (AssertionError e) {
+			assertThat(e.getCause(),nullValue());
+			assertThat(e.getMessage(),equalTo("Could not decode '"+key.nameValue()+"' as bad type (decoded a java.lang.String)"));
+		}
 	}
 
 	@Test
@@ -168,10 +169,12 @@ public class KeyTest {
 		setField(sut, "templateId", key.templateId());
 		setField(sut, "nameValue", key.nameValue());
 
-		ResourceId id=sut.resourceId();
-
-		assertThat(id,notNullValue());
-		assertThat(sut.resourceId(),equalTo(key.resourceId()));
+		try {
+			sut.resourceId();
+		} catch (NullPointerException e) {
+			assertThat(e.getCause(),nullValue());
+			assertThat(e.getMessage(),equalTo("Type name cannot be null"));
+		}
 	}
 
 	@Test

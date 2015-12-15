@@ -27,6 +27,7 @@
 package org.ldp4j.application.kernel.persistence.encoding;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.nullValue;
 
@@ -53,9 +54,10 @@ public class AbstractEncoderTest {
 			return name;
 		}
 
+		@SuppressWarnings("unchecked")
 		@Override
 		protected <T extends Serializable> Name<T> assemble(Serializable subject) throws IOException {
-			throw new IOException("Assemble failure");
+			return (Name<T>)NamingScheme.getDefault().name(subject);
 		}
 	}
 
@@ -83,15 +85,21 @@ public class AbstractEncoderTest {
 		}
 	}
 
-	@Test
-	public void testDecode$null() throws Exception {
+	@Test(expected=NullPointerException.class)
+	public void testDecode$nullType() throws Exception {
 		TestProxy sut = new TestProxy();
-		Name<?> result = sut.decode(null);
+		sut.decode(null,null);
+	}
+
+	@Test
+	public void testDecode$nullData() throws Exception {
+		TestProxy sut = new TestProxy();
+		Name<?> result = sut.decode("typeName",null);
 		assertThat(result,nullValue());
 	}
 
 	@Test
-	public void testDecode$exception(@Mocked final BaseEncoding encoding) throws Exception {
+	public void testDecode$base64exception(@Mocked final BaseEncoding encoding) throws Exception {
 		final String data = "test";
 
 		new StrictExpectations() {{
@@ -101,9 +109,27 @@ public class AbstractEncoderTest {
 
 		TestProxy sut = new TestProxy();
 		try {
-			sut.decode(data);
+			sut.decode(String.class.getCanonicalName(),data);
 		} catch (AssertionError e) {
 			assertThat(e.getCause(),instanceOf(IOException.class));
+		}
+	}
+
+	@Test
+	public void testDecode$incompatibleTypeException(@Mocked final BaseEncoding encoding) throws Exception {
+		final String data = "test";
+
+		new StrictExpectations() {{
+			BaseEncoding.base64();result=encoding;
+			encoding.decode(data);result=SerializationUtils.serialize(data);
+		}};
+
+		TestProxy sut = new TestProxy();
+		try {
+			sut.decode(Integer.class.getCanonicalName(),data);
+		} catch (AssertionError e) {
+			assertThat(e.getCause(),nullValue());
+			assertThat(e.getMessage(),equalTo("Could not decode 'test' as java.lang.Integer (decoded a java.lang.String)"));
 		}
 	}
 

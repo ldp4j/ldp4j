@@ -72,7 +72,7 @@ final class Key implements Serializable {
 		this.cachedId=
 			ResourceId.
 				createId(
-					Key.fromBase64(this.nameValue),
+					Key.fromBase64(this.nameType,this.nameValue),
 					this.templateId);
 		// Self healing...
 		this.nameType=nameTypeOf(this.cachedId.name());
@@ -161,8 +161,8 @@ final class Key implements Serializable {
 		return Encoder.valueEncoder().encode(name);
 	}
 
-	static <T extends Serializable> Name<T> fromBase64(String data) {
-		return Encoder.valueEncoder().decode(data);
+	static <T extends Serializable> Name<T> fromBase64(String typeName, String data) {
+		return Encoder.valueEncoder().decode(typeName,data);
 	}
 
 }

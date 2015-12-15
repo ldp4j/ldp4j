@@ -31,6 +31,7 @@ import java.io.Serializable;
 
 import org.ldp4j.application.data.Name;
 
+import static com.google.common.base.Preconditions.*;
 import com.google.common.io.BaseEncoding;
 
 
@@ -57,14 +58,19 @@ abstract class AbstractEncoder extends Encoder {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public final <T extends Serializable> Name<T> decode(String data) {
+	public final <T extends Serializable> Name<T> decode(String typeName, String data) {
+		checkNotNull(typeName,"Type name cannot be null");
 		if(data==null) {
 			return null;
 		}
 		try {
 			byte[] serializedData=BaseEncoding.base64().decode(data);
 			Serializable subject=SerializationUtils.deserialize(serializedData, Serializable.class);
-			return assemble(subject);
+			Name<T> assemble = assemble(subject);
+			if(!typeName.equals(assemble.id().getClass().getCanonicalName())) {
+				throw new AssertionError("Could not decode '"+data+"' as "+typeName+" (decoded a "+assemble.id().getClass().getCanonicalName()+")");
+			}
+			return assemble;
 		} catch (IOException e) {
 			throw new AssertionError("Deserialization should not fail",e);
 		}
