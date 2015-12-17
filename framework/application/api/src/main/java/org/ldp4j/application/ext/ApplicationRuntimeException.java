@@ -20,29 +20,51 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.1.0
- *   Bundle      : ldp4j-application-api-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
+ *   Bundle      : ldp4j-application-api-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.ext;
 
-public class ApplicationRuntimeException extends ApplicationException {
+import org.ldp4j.application.ApplicationApiRuntimeException;
+
+/**
+ * Base unchecked exception for the LDP4j Application exceptions.
+ */
+public class ApplicationRuntimeException extends ApplicationApiRuntimeException {
+
+	private static final long serialVersionUID = -8352522362783716805L;
 
 	/**
+	 * Create a new instance with a message and a cause.
 	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param cause
+	 *            the underlying cause of the failure.
 	 */
-	private static final long serialVersionUID = -8352522362783716804L;
-
-	public ApplicationRuntimeException(String message) {
-		super(message);
-	}
-
-	public ApplicationRuntimeException(Throwable cause) {
-		super(cause);
-	}
-
 	public ApplicationRuntimeException(String message, Throwable cause) {
 		super(message, cause);
+	}
+
+	/**
+	 * Create a new instance with a message.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 */
+	public ApplicationRuntimeException(String message) {
+		this(message,null);
+	}
+
+	/**
+	 * Create a new instance with a cause and a default message.
+	 *
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
+	public ApplicationRuntimeException(Throwable cause) {
+		this("Unexpected application runtime exception",cause);
 	}
 
 }

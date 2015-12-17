@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.engine;
@@ -43,11 +43,14 @@ import org.ldp4j.application.engine.context.InvalidIndirectIdentifierException;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
 import org.ldp4j.application.ext.Application;
+import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.Configuration;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.Modifiable;
 import org.ldp4j.application.ext.Namespaces;
+import org.ldp4j.application.ext.Query;
+import org.ldp4j.application.ext.Queryable;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.kernel.constraints.ConstraintReport;
 import org.ldp4j.application.kernel.constraints.ConstraintReportId;
@@ -57,6 +60,7 @@ import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.endpoint.EndpointRepository;
 import org.ldp4j.application.kernel.resource.Container;
 import org.ldp4j.application.kernel.resource.FeatureExecutionException;
+import org.ldp4j.application.kernel.resource.FeaturePostconditionException;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.application.kernel.resource.ResourceRepository;
@@ -151,6 +155,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	private static final String COULD_NOT_FIND_CONTAINER_FOR_ENDPOINT         = "Could not find container for endpoint '%s'";
 	private static final String COULD_NOT_FIND_RESOURCE_FOR_ENDPOINT          = "Could not find resource for endpoint '%s'";
 	private static final String RESOURCE_RETRIEVAL_FAILED                     = "Resource '%s' retrieval failed ";
+	private static final String RESOURCE_QUERY_FAILED                         = "Resource '%s' query failed ";
 	private static final String RESOURCE_CREATION_FAILED                      = "Resource creation failed at '%s'";
 	private static final String RESOURCE_DELETION_FAILED                      = "Resource deletion failed at '%s'";
 	private static final String RESOURCE_MODIFICATION_FAILED                  = "Resource modification failed at '%s'";
@@ -203,6 +208,8 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		LOGGER.error(errorMessage,e);
 		if(e instanceof FeatureExecutionException) {
 			return new ApplicationExecutionException(errorMessage,e.getCause());
+		} else if(e instanceof FeaturePostconditionException) {
+			return new ApplicationExecutionException(errorMessage,new ApplicationRuntimeException(e.getMessage()));
 		}
 		throw new ApplicationContextException(errorMessage,e);
 	}
@@ -214,15 +221,15 @@ public final class DefaultApplicationContext implements ApplicationContext {
 	private PublicResource resolveResource(final String path) {
 		checkNotNull(path,"Endpoint path cannot be null");
 		Endpoint endpoint=
-				engine().
-					endpointManagementService().
-						resolveEndpoint(path);
+			engine().
+				endpointManagementService().
+					resolveEndpoint(path);
 		return this.factory.createResource(endpoint);
 	}
 
 	private PublicResource resolveResource(ManagedIndividualId id) {
 		checkNotNull(id,"Individual identifier cannot be null");
-		return this.factory.createResource(ResourceId.createId(id.name(), id.managerId()));
+		return this.factory.createResource(resolveResource(ResourceId.createId(id.name(), id.managerId())));
 	}
 
 	private void processConstraintValidationFailure(Resource resource, Throwable failure) {
@@ -287,6 +294,26 @@ public final class DefaultApplicationContext implements ApplicationContext {
 			return this.engine().resourceControllerService().getResource(resource,config);
 		} catch (Exception e) {
 			String errorMessage = applicationFailureMessage(RESOURCE_RETRIEVAL_FAILED,endpoint);
+			throw createException(errorMessage,e);
+		}
+	}
+
+	DataSet query(Endpoint endpoint, Query query) throws ApplicationExecutionException {
+		ResourceId resourceId=endpoint.resourceId();
+		Resource resource = loadResource(resourceId);
+		if(resource==null) {
+			String errorMessage = applicationFailureMessage(COULD_NOT_FIND_RESOURCE_FOR_ENDPOINT,endpoint);
+			LOGGER.error(errorMessage);
+			throw new ApplicationExecutionException(errorMessage);
+		}
+		try {
+			WriteSessionConfiguration config=
+				DefaultApplicationContextHelper.
+					create(this.engine().templateManagementService()).
+						createConfiguration(resource,lastModified());
+			return this.engine().resourceControllerService().queryResource(resource,query,config);
+		} catch (Exception e) {
+			String errorMessage = applicationFailureMessage(RESOURCE_QUERY_FAILED,endpoint);
 			throw createException(errorMessage,e);
 		}
 	}
@@ -405,6 +432,7 @@ public final class DefaultApplicationContext implements ApplicationContext {
 		Resource resource = resolveResource(endpoint);
 		ResourceTemplate template=resourceTemplate(resource);
 		Class<? extends ResourceHandler> handlerClass = template.handlerClass();
+		result.setQueryable(Queryable.class.isAssignableFrom(handlerClass));
 		result.setModifiable(Modifiable.class.isAssignableFrom(handlerClass));
 		result.setDeletable(Deletable.class.isAssignableFrom(handlerClass) && !resource.isRoot());
 		// TODO: Analyze how to provide patch support

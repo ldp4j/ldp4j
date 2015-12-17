@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.1.0
- *   Bundle      : ldp4j-application-api-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
+ *   Bundle      : ldp4j-application-api-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.vocabulary;
@@ -306,14 +306,14 @@ public final class RDF extends AbstractImmutableVocabulary<ImmutableTerm> {
 	}
 
 	/**
-	 * Find the term that matches the specified URI.
+	 * Find the term that matches the specified name.
 	 *
 	 * @param term
-	 *            A {@code String}-based representation of the term's URI.
-	 * @return The {@code Term} that matches the specified URI.
+	 *            A {@code String}-based representation of the term's name.
+	 * @return The {@code Term} that matches the specified name.
 	 */
 	public static Term valueOf(String term) {
-		return getInstance().fromValue(term);
+		return getInstance().fromName(term);
 	}
 
 	/**

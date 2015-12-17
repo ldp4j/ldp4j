@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.engine;
@@ -52,6 +52,7 @@ import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.PublicResourceVisitor;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.InvalidContentException;
+import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.resource.Attachment;
 import org.ldp4j.application.kernel.resource.Resource;
@@ -183,6 +184,11 @@ abstract class DefaultExistingPublicResource extends DefaultPublicResource {
 			ctx.newIndividual(individualId()),
 			ctx);
 		return representation;
+	}
+
+	@Override
+	public final DataSet query(Query query, ContentPreferences contentPreferences) throws ApplicationExecutionException {
+		return applicationContext().query(endpoint(),query);
 	}
 
 	@Override

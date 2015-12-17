@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.1.0
- *   Bundle      : ldp4j-server-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
+ *   Bundle      : ldp4j-server-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.controller;
@@ -36,7 +36,7 @@ final class NamespacesHelper {
 	private NamespacesHelper() {
 	}
 
-	private static Namespaces resourceNamespaces() {
+	private static Namespaces defaultResourceNamespaces() {
 		return
 			new Namespaces().
 				addPrefix("rdf", RDF.NAMESPACE).
@@ -46,9 +46,9 @@ final class NamespacesHelper {
 				addPrefix("ldp4j", "http://www.ldp4j.org/ns/application#");
 	}
 
-	private static Namespaces constraintReportNamespaces() {
+	private static Namespaces defaultConstraintReportNamespaces() {
 		return
-			resourceNamespaces().
+			defaultResourceNamespaces().
 				addPrefix("cnts", "http://www.ldp4j.org/ns/constraints#").
 				addPrefix("dct", "http://purl.org/dc/terms/").
 				addPrefix("http", "http://www.w3.org/2011/http#").
@@ -76,11 +76,11 @@ final class NamespacesHelper {
 	}
 
 	static Namespaces resourceNamespaces(Namespaces applicationNamespaces) {
-		return merge(resourceNamespaces(),applicationNamespaces);
+		return merge(defaultResourceNamespaces(),applicationNamespaces);
 	}
 
 	static Namespaces constraintReportNamespaces(Namespaces applicationNamespaces) {
-		return merge(constraintReportNamespaces(),applicationNamespaces);
+		return merge(defaultConstraintReportNamespaces(),applicationNamespaces);
 	}
 
 }

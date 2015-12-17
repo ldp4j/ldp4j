@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-api:0.1.0
- *   Bundle      : ldp4j-application-engine-api-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-api:0.2.0
+ *   Bundle      : ldp4j-application-engine-api-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.engine;
@@ -135,6 +135,8 @@ public abstract class ApplicationEngine {
 
 	private ApplicationEngineState state;
 
+	private Deployment deployment;
+
 	protected abstract static class ApplicationContextManager<T extends ApplicationContext> {
 
 		private final Class<? extends T> managedClass;
@@ -169,6 +171,7 @@ public abstract class ApplicationEngine {
 		this.currentContext=new AtomicReference<ApplicationContext>();
 		this.state=ApplicationEngineState.UNAVAILABLE;
 		this.loadedContexts=new LinkedList<String>();
+		this.deployment=Deployment.newInstance();
 	}
 
 	private void refreshCurrentContext() {
@@ -193,8 +196,32 @@ public abstract class ApplicationEngine {
 
 	private synchronized void checkApplicationEngineActive() {
 		if(!ApplicationEngineState.STARTED.equals(this.state)) {
+			throw new ApplicationEngineRuntimeException("Application engine is not active ("+this.state+")");
+		}
+	}
+
+	public synchronized ApplicationEngine withContextPath(String contextPath) {
+		if(!ApplicationEngineState.AVAILABLE.equals(this.state)) {
 			throw new ApplicationEngineRuntimeException("Application engine is not available ("+this.state+")");
 		}
+		this.deployment.withContextPath(contextPath);
+		return this;
+	}
+
+	public synchronized ApplicationEngine withTemporalDirectory(File temporalDirectory) {
+		if(!ApplicationEngineState.AVAILABLE.equals(this.state)) {
+			throw new ApplicationEngineRuntimeException("Application engine is not available ("+this.state+")");
+		}
+		this.deployment.withTemporalDirectory(temporalDirectory);
+		return this;
+	}
+
+	public synchronized String contextPath() {
+		return this.deployment.contextPath();
+	}
+
+	public synchronized File temporalDirectory() {
+		return this.deployment.temporalDirectory();
 	}
 
 	public synchronized ApplicationEngineState state() {

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.1.0
- *   Bundle      : ldp4j-application-api-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
+ *   Bundle      : ldp4j-application-api-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.ext.annotations;
@@ -52,13 +52,24 @@ public enum MembershipRelation {
 
 	private MembershipRelation(Term term) {
 		this.term = term;
-
 	}
 
+	/**
+	 * Return the {@code Term} from the LDP vocabulary that represents the
+	 * membership relation.
+	 *
+	 * @return the {@code Term} from the LDP vocabulary that represents the
+	 *         membership relation.
+	 */
 	public Term term() {
 		return term;
 	}
 
+	/**
+	 * Return the {@code URI} that represents the membership relation.
+	 *
+	 * @return the {@code URI} that represents the membership relation.
+	 */
 	public URI toURI() {
 		return term.as(URI.class);
 	}

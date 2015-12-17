@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons:ldp4j-commons-core:0.1.0
- *   Bundle      : ldp4j-commons-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.commons:ldp4j-commons-core:0.2.0
+ *   Bundle      : ldp4j-commons-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.commons.net;
@@ -37,46 +37,41 @@ final class URLStreamHandlerFactory {
 
 	public static final class ClassInstantiationException extends Exception {
 
-		/**
-		 * 
-		 */
 		private static final long serialVersionUID = 2720228808686747756L;
 
 		private final String className;
 
 		public ClassInstantiationException(String className,Throwable cause) {
-			super(String.format("Could not instantiate class '"+className+"'"),cause);
+			super(String.format("Could not instantiate class '%s'",className),cause);
 			this.className = className;
 		}
 
 		public String getClassName() {
 			return className;
 		}
-		
-		
 
 	}
 
 	interface ClassInstantiator {
-		
+
 		<T> T instantiateAs(String clsName, Class<? extends T> clazz) throws ClassInstantiationException;
-	
+
 		String getDescription();
-	
+
 	}
 
 	private static final class HandlerCreator {
-	
+
 		private static final Logger LOGGER=LoggerFactory.getLogger(HandlerCreator.class);
-	
+
 		private final URLStreamHandlerFactory.ClassInstantiator loader;
 		private final boolean logFailure;
-	
+
 		HandlerCreator(ClassInstantiator instantiator, boolean logFailure) {
 			this.loader=instantiator;
 			this.logFailure=logFailure;
 		}
-	
+
 		URLStreamHandler createHandler(String scheme, String provider) {
 			String clsName = provider + "." + scheme + ".Handler";
 			try {
@@ -89,27 +84,25 @@ final class URLStreamHandlerFactory {
 		private URLStreamHandler handleFailure(String scheme, String provider, ClassInstantiationException e) {
 			URLStreamHandler result=null;
 			if(logFailure && LOGGER.isDebugEnabled()) {
-				String message = 
-					String.format(
-						"Could not instantiate provider '%s' handler class for protocol '%s' using %s : %s",
-						provider, 
-						scheme, 
-						loader.getDescription(),
-						e.getMessage());
-				LOGGER.debug(message);
+				LOGGER.debug(
+					"Could not instantiate provider '{}' handler class for protocol '{}' using {} : {}",
+					provider,
+					scheme,
+					loader.getDescription(),
+					e.getMessage());
 			}
 			return result;
 		}
-	
+
 	}
 
 	private static final class DefaultInstantiator implements ClassInstantiator {
-	
+
 		@Override
 		public String getDescription() {
 			return "current classloader";
 		}
-	
+
 		@Override
 		public <T> T instantiateAs(String clsName, Class<? extends T> clazz) throws ClassInstantiationException {
 			try {
@@ -118,7 +111,7 @@ final class URLStreamHandlerFactory {
 				throw new ClassInstantiationException(clsName,e);
 			}
 		}
-		
+
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(URLStreamHandlerFactory.class);
@@ -137,7 +130,7 @@ final class URLStreamHandlerFactory {
 	URLStreamHandlerFactory(boolean debug, boolean trace) {
 		this(debug,trace,new DefaultInstantiator());
 	}
-	
+
 	URLStreamHandlerFactory(ClassInstantiator instantiator) {
 		this(true,true,instantiator);
 	}
@@ -145,10 +138,10 @@ final class URLStreamHandlerFactory {
 	URLStreamHandler createForScheme(String scheme, String... providers) {
 		return createForScheme(scheme,Arrays.asList(providers));
 	}
-	
+
 	URLStreamHandler createForScheme(String scheme, List<String> providers) {
 		if(logCreation && LOGGER.isDebugEnabled()) {
-			LOGGER.debug("Creating handler for protocol '"+scheme+"'...");
+			LOGGER.debug("Creating handler for protocol '{}'...",scheme);
 		}
 		for(String provider:providers) {
 			URLStreamHandler handler = creator.createHandler(scheme, provider);
@@ -158,7 +151,7 @@ final class URLStreamHandlerFactory {
 			}
 		}
 		if(logSupport && LOGGER.isDebugEnabled()) {
-			LOGGER.debug(String.format("Protocol '%s' is not supported.",scheme));
+			LOGGER.debug("Protocol '{}' is not supported.",scheme);
 		}
 		return null;
 	}
@@ -167,15 +160,15 @@ final class URLStreamHandlerFactory {
 		if(LOGGER.isDebugEnabled()) {
 			if(handler!=null) {
 				if(logSupport) {
-					LOGGER.debug(String.format("Provider '%s' supports protocol '%s'.",provider,scheme));
+					LOGGER.debug("Provider '{}' supports protocol '{}'.",provider,scheme);
 				}
 				if(logCreation) {
-					LOGGER.debug(String.format("Created handler '%s' from provider '%s'.",handler.getClass().getCanonicalName(),provider));
+					LOGGER.debug("Created handler '{}' from provider '{}'.",handler.getClass().getCanonicalName(),provider);
 				}
 			} else if(logSupport) {
-				LOGGER.debug(String.format("Provider '%s' does not support protocol '%s'.",provider,scheme));
+				LOGGER.debug("Provider '{}' does not support protocol '{}'.",provider,scheme);
 			}
 		}
 	}
-	
+
 }

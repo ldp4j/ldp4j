@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.engine;
@@ -69,7 +69,7 @@ abstract class DefaultPublicEndpoint implements PublicEndpoint {
 	}
 
 	protected final DefaultPublicResource createResource(ResourceId resourceId) {
-		return this.factory.createResource(resourceId);
+		return this.factory.createResource(this.applicationContext.resolveResource(resourceId));
 	}
 
 	protected final ResourceTemplate template() {

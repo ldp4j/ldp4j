@@ -20,11 +20,13 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.1.0
- *   Bundle      : ldp4j-server-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
+ *   Bundle      : ldp4j-server-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.data.impl;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Iterator;
 import java.util.Set;
@@ -32,8 +34,6 @@ import java.util.Set;
 import javax.ws.rs.core.MediaType;
 
 import org.ldp4j.server.data.spi.MediaTypeProvider;
-
-import static com.google.common.base.Preconditions.*;
 
 import com.google.common.collect.ImmutableSet;
 

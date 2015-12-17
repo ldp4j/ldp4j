@@ -20,48 +20,81 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.1.0
- *   Bundle      : ldp4j-application-examples-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.2.0
+ *   Bundle      : ldp4j-application-examples-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.example;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
+import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.annotations.IndirectContainer;
 import org.ldp4j.application.ext.annotations.MembershipRelation;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
-import org.ldp4j.application.session.WriteSessionException;
 
+/**
+ * Example indirect container template handler.
+ */
 @IndirectContainer(
-	id = BookContainerHandler.ID, 
+	id = BookContainerHandler.ID,
 	memberHandler = BookHandler.class,
 	membershipRelation=MembershipRelation.HAS_MEMBER,
 	membershipPredicate="http://www.ldp4j.org/vocabularies/example#hasBook",
-	insertedContentRelation = "http://www.ldp4j.org/vocabularies/example#bookshelf"
+	insertedContentRelation = BookContainerHandler.INSERTED_CONTENT_RELATION
 )
 public class BookContainerHandler extends InMemoryContainerHandler {
-	
+
+	/**
+	 * The inserted content relation of the template defined by the handler.
+	 */
+	public static final String INSERTED_CONTENT_RELATION = "http://www.ldp4j.org/vocabularies/example#bookshelf";
+
+	/**
+	 * The template identifier of the handler.
+	 */
 	public static final String ID="bookContainerTemplate";
+
 	private BookHandler handler;
 
+	/**
+	 * Create a new instance.
+	 */
 	public BookContainerHandler() {
 		super("BookContainer");
 	}
 
+	/**
+	 * Set the book handler associated to this handler.
+	 *
+	 * @param handler
+	 *            the book handler.
+	 */
 	public void setBookHandler(BookHandler handler) {
 		this.handler = handler;
 	}
-	
+
+	/**
+	 * Return the book handler associated to this handler.
+	 *
+	 * @return the book handler associated to this handler.
+	 * @throws IllegalStateException
+	 *             if no associated book handler has been defined.
+	 */
 	public BookHandler bookHandler() {
 		if(this.handler==null) {
 			throw new IllegalStateException("Handler not initialized yet");
 		}
 		return this.handler;
 	}
-	
+
+	/**
+	 * {@inheritDoc}<br/>
+	 *
+	 * Create a new book resource.
+	 */
 	@Override
 	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
 		NameProvider nameProvider = nameProvider(container.name());
@@ -71,10 +104,10 @@ public class BookContainerHandler extends InMemoryContainerHandler {
 			ResourceSnapshot newMember = container.addMember(nextName);
 			session.saveChanges();
 			return newMember;
-		} catch (WriteSessionException e) {
+		} catch (Exception e) {
 			bookHandler().remove(nextName);
-			throw new IllegalStateException("Could not create member",e);
+			throw new ApplicationRuntimeException("Could not create member",e);
 		}
 	}
-	
+
 }

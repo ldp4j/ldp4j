@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.session;
@@ -60,14 +60,13 @@ abstract class PersistencyState {
 
 	private static final class PersistentResourceReferenceState extends PersistencyState {
 
-
 		private PersistentResourceReferenceState(ResourceId resourceId, ResourceTemplate template) {
 			super(resourceId,template);
 		}
 
 		private PersistencyState resolve(DelegatedResourceSnapshot ctx) {
 			Resource resource=ctx.session().loadResource(resourceId());
-			PersistencyState newPersistencyState=PersistencyState.newPersistent(resource,template(),ctx.session());
+			PersistencyState newPersistencyState=PersistencyState.newPersistentState(resource,template(),ctx.session());
 			ctx.setPersistencyState(newPersistencyState);
 			return newPersistencyState;
 		}
@@ -640,11 +639,11 @@ abstract class PersistencyState {
 			add("template().handlerClass()",template().handlerClass().getCanonicalName());
 	}
 
-	static PersistencyState newPersistentState(ResourceId resourceId, ResourceTemplate template) {
+	static PersistencyState newPersistentReferenceState(ResourceId resourceId, ResourceTemplate template) {
 		return new PersistentResourceReferenceState(resourceId, template);
 	}
 
-	static PersistencyState newPersistent(Resource resource, ResourceTemplate template, DelegatedWriteSession session) {
+	static PersistencyState newPersistentState(Resource resource, ResourceTemplate template, DelegatedWriteSession session) {
 		AttachmentSnapshotCollection attachments = AttachmentSnapshotCollection.createFromResource(resource, session);
 		MemberCollection members=MemberCollection.createFromResource(resource, session);
 		return new PersistentResourceState(resource,template,attachments,members);

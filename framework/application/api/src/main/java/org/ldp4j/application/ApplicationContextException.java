@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.1.0
- *   Bundle      : ldp4j-application-api-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
+ *   Bundle      : ldp4j-application-api-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application;
@@ -32,18 +32,38 @@ package org.ldp4j.application;
  * This exception may be thrown by the Application Context to signal Application
  * Engine failures or significant precondition failures.
  */
-public class ApplicationContextException extends Exception {
+public class ApplicationContextException extends ApplicationApiException {
 
 	private static final long serialVersionUID = 5632915619813563619L;
 
+	/**
+	 * Create a new instance with a message.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 */
 	public ApplicationContextException(String message) {
 		super(message);
 	}
 
+	/**
+	 * Create a new instance with a cause.
+	 *
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationContextException(Throwable cause) {
 		super(cause);
 	}
 
+	/**
+	 * Create a new instance with a message and a cause.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationContextException(String message, Throwable cause) {
 		super(message, cause);
 	}

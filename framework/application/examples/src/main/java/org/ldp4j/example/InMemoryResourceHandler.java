@@ -20,85 +20,122 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.1.0
- *   Bundle      : ldp4j-application-examples-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.2.0
+ *   Bundle      : ldp4j-application-examples-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.example;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.session.ResourceSnapshot;
 
-import com.google.common.collect.LinkedListMultimap;
-import com.google.common.collect.Multimap;
+/**
+ * An example in-memory resource handler.
+ */
+public abstract class InMemoryResourceHandler implements ResourceHandler {
 
-public class InMemoryResourceHandler implements ResourceHandler {
-
-	private static final Multimap<String,ResourceHandler> loadedHandlers=LinkedListMultimap.<String, ResourceHandler>create();
 	private final String handlerName;
 	private final Map<Name<?>, DataSet> resources;
-	
+
 	protected InMemoryResourceHandler(String handlerName) {
 		this.handlerName=handlerName;
 		this.resources=new LinkedHashMap<Name<?>,DataSet>();
 	}
 
+	protected final String getHandlerName() {
+		return handlerName;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 * @throws UnknownResourceException if the resource is not known.
+	 */
 	@Override
-	public DataSet get(ResourceSnapshot resource) {
+	public DataSet get(ResourceSnapshot resource) throws UnknownResourceException {
 		DataSet dataSet = this.resources.get(resource.name());
 		if(dataSet==null) {
-			throw new IllegalStateException("Unknown resource '"+resource.name()+"'");
+			throw new UnknownResourceException("Unknown resource '"+resource.name()+"'");
 		}
 		return dataSet;
 	}
-	
-	public void add(Name<?> name, DataSet data) {
+
+	/**
+	 * Create a new resource to the collection of resource managed by the
+	 * handler. If the name is already in use, the representation will be
+	 * updated.
+	 *
+	 * @param name
+	 *            the name of the new resource.
+	 * @param data
+	 *            the default representation for the resource.
+	 */
+	public final void add(Name<?> name, DataSet data) {
 		this.resources.put(name,data);
 	}
 
-	public void update(Name<?> name, DataSet data) {
+	/**
+	 * Update the representation of a resource managed by the handler.
+	 *
+	 * @param name
+	 *            the name of the resource.
+	 * @param data
+	 *            the new representation.
+	 */
+	public final void update(Name<?> name, DataSet data) {
 		remove(name);
 		add(name,data);
 	}
-	
-	public void clear() {
+
+	/**
+	 * Remove all the resources managed by the handler.
+	 */
+	public final void clear() {
 		this.resources.clear();
 	}
-	
-	public int size() {
+
+	/**
+	 * Return the number or resources managed by the handler.
+	 *
+	 * @return the number of resources managed by the handler.
+	 */
+	public final int size() {
 		return this.resources.size();
 	}
-	
-	public void remove(Name<?> name) {
+
+	/**
+	 * Remove a resource managed by the handler.
+	 *
+	 * @param name
+	 *            the name of the resource to be removed.
+	 */
+	public final void remove(Name<?> name) {
 		this.resources.remove(name);
 	}
-	
-	public boolean hasResource(Name<?> resourceName) {
+
+	/**
+	 * Return {@code true} if the handler manages a given resource,
+	 * {@code false} otherwise.
+	 *
+	 * @param resourceName
+	 *            the name of the resource
+	 * @return whether or not the handler manages the specified resource.
+	 */
+	public final boolean hasResource(Name<?> resourceName) {
 		return this.resources.containsKey(resourceName);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public String toString() {
 		return getHandlerName();
 	}
 
-	protected String getHandlerName() {
-		return handlerName;
-	}
-
-	public static <T extends ResourceHandler> List<T> getInstances(Class<? extends T> handlerClass) {
-		List<T> result = new ArrayList<T>();
-		for(ResourceHandler handler:loadedHandlers.get(handlerClass.getCanonicalName())) {
-			result.add(handlerClass.cast(handler));
-		}
-		return result;
-	}
-	
 }

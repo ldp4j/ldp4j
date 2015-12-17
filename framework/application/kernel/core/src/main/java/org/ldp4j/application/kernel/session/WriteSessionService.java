@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.session;
@@ -119,9 +119,7 @@ public final class WriteSessionService implements Service {
 		return new DelegatedWriteSession(configuration,this);
 	}
 
-	public void terminateSession(WriteSession writeSession) {
-		checkArgument(writeSession instanceof DelegatedWriteSession);
-		DelegatedWriteSession session=(DelegatedWriteSession)writeSession;
+	void terminateSession(DelegatedWriteSession session) {
 		try {
 			switch(session.status()) {
 				case ACTIVE:

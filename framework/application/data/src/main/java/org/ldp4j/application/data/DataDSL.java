@@ -20,12 +20,13 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.1.0
- *   Bundle      : ldp4j-application-data-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.2.0
+ *   Bundle      : ldp4j-application-data-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
+import java.io.Serializable;
 import java.net.URI;
 
 public final class DataDSL {
@@ -53,8 +54,8 @@ public final class DataDSL {
 
 	public interface ObjectPropertyBuilder {
 
-		IndividualBuilder toIndividual(IndividualReference<?,?> reference);
-		RecursiveObjectPropertyBuilder referringTo(IndividualReference<?,?> reference);
+		<T extends Serializable, S extends Individual<T,S>> IndividualBuilder toIndividual(IndividualReference<T,S> reference);
+		<T extends Serializable, S extends Individual<T,S>> RecursiveObjectPropertyBuilder referringTo(IndividualReference<T,S> reference);
 
 	}
 
@@ -73,7 +74,7 @@ public final class DataDSL {
 
 	public interface DataSetBuilder {
 
-		IndividualBuilder individual(IndividualReference<?,?> reference);
+		<T extends Serializable, S extends Individual<T,S>> IndividualBuilder individual(IndividualReference<T,S> reference);
 
 	}
 
@@ -90,16 +91,46 @@ public final class DataDSL {
 		}
 
 		@Override
-		public final ObjectPropertyBuilder hasLink(String id) {
-			return new ObjectPropertyBuilderImpl(this,getIndividualReference(), id);
+		public final ObjectPropertyBuilder hasLink(final String id) {
+			class CustomInjector implements Injector {
+
+				private ObjectPropertyBuilder builder=null;
+
+				@Override
+				public <T extends Serializable, S extends Individual<T, S>> void injectReference(IndividualReference<T, S> reference) {
+					this.builder=new ObjectPropertyBuilderImpl<T,S>(AbstractIndividualBuilder.this,reference, id);
+				}
+
+			}
+			CustomInjector injector=new CustomInjector();
+			accept(injector);
+			return injector.builder;
 		}
 
 		@Override
-		public final DatatypePropertyBuilder hasProperty(String id) {
-			return new DatatypePropertyBuilderImpl(this,getIndividualReference(),id);
+		public final DatatypePropertyBuilder hasProperty(final String id) {
+			class CustomInjector implements Injector {
+
+				private DatatypePropertyBuilder builder=null;
+
+				@Override
+				public <T extends Serializable, S extends Individual<T, S>> void injectReference(IndividualReference<T, S> reference) {
+					this.builder=new DatatypePropertyBuilderImpl<T,S>(AbstractIndividualBuilder.this,reference, id);
+				}
+
+			}
+			CustomInjector injector=new CustomInjector();
+			accept(injector);
+			return injector.builder;
 		}
 
-		protected abstract IndividualReference<?,?> getIndividualReference();
+		protected abstract void accept(Injector injector);
+
+		protected interface Injector {
+
+			<T extends Serializable, S extends Individual<T,S>> void injectReference(IndividualReference<T,S> reference);
+
+		}
 
 	}
 
@@ -112,8 +143,8 @@ public final class DataDSL {
 		}
 
 		@Override
-		public final IndividualBuilder individual(IndividualReference<?,?> individualReference) {
-			return new IndividualBuilderImpl(this, individualReference);
+		public final <T extends Serializable, S extends Individual<T,S>> IndividualBuilder individual(IndividualReference<T,S> individualReference) {
+			return new IndividualBuilderImpl<T,S>(this, individualReference);
 		}
 
 		@Override
@@ -123,7 +154,7 @@ public final class DataDSL {
 
 	}
 
-	private static final class ObjectPropertyBuilderImpl extends Configurable implements ObjectPropertyBuilder {
+	private static final class ObjectPropertyBuilderImpl<T extends Serializable, S extends Individual<T,S>> extends Configurable implements ObjectPropertyBuilder {
 
 		private final class InnerObjectPropertyBuilder
 			extends AbstractRecursiveIndividualBuilder
@@ -134,52 +165,52 @@ public final class DataDSL {
 			}
 
 			@Override
-			public RecursiveObjectPropertyBuilder referringTo(IndividualReference<?,?> id) {
+			public <K extends Serializable, V extends Individual<K,V>> RecursiveObjectPropertyBuilder referringTo(IndividualReference<K,V> id) {
 				return ObjectPropertyBuilderImpl.this.referringTo(id);
 			}
 
 			@Override
-			public IndividualBuilder toIndividual(IndividualReference<?,?> id) {
+			public <K extends Serializable, V extends Individual<K,V>> IndividualBuilder toIndividual(IndividualReference<K,V> id) {
 				return ObjectPropertyBuilderImpl.this.toIndividual(id);
 			}
 
 			@Override
-			protected IndividualReference<?,?> getIndividualReference() {
-				return individualId;
+			protected void accept(Injector injector) {
+				injector.injectReference(individualId);
 			}
 
 		}
 
-		private final IndividualReference<?,?> individualId;
+		private final IndividualReference<T,S> individualId;
 		private final String propertyId;
 		private final InnerObjectPropertyBuilder recursive;
 
-		private ObjectPropertyBuilderImpl(Configurable ctx, IndividualReference<?,?> individualId, String propertyId) {
+		private ObjectPropertyBuilderImpl(Configurable ctx, IndividualReference<T,S> individualId, String propertyId) {
 			super(ctx);
 			this.individualId = individualId;
 			this.propertyId = propertyId;
 			this.recursive = new InnerObjectPropertyBuilder();
 		}
 
-		private void addLinkToStore(IndividualReference<?,?> reference) {
+		private <K extends Serializable, V extends Individual<K,V>> void addLinkToStore(IndividualReference<K,V> reference) {
 			getStore().addLink(individualId, URI.create(propertyId), reference);
 		}
 
 		@Override
-		public RecursiveObjectPropertyBuilder referringTo(IndividualReference<?,?> targetReference) {
+		public <K extends Serializable, V extends Individual<K,V>> RecursiveObjectPropertyBuilder referringTo(IndividualReference<K,V> targetReference) {
 			addLinkToStore(targetReference);
 			return recursive;
 		}
 
 		@Override
-		public IndividualBuilder toIndividual(IndividualReference<?,?> targetReference) {
+		public <K extends Serializable, V extends Individual<K,V>> IndividualBuilder toIndividual(IndividualReference<K,V> targetReference) {
 			addLinkToStore(targetReference);
-			return new IndividualBuilderImpl(this,targetReference);
+			return new IndividualBuilderImpl<K,V>(this,targetReference);
 		}
 
 	}
 
-	private static final class DatatypePropertyBuilderImpl extends Configurable implements DatatypePropertyBuilder {
+	private static final class DatatypePropertyBuilderImpl<T extends Serializable, S extends Individual<T,S>> extends Configurable implements DatatypePropertyBuilder {
 
 		private final class InnerDatatypePropertyBuilder
 			extends AbstractRecursiveIndividualBuilder
@@ -195,43 +226,43 @@ public final class DataDSL {
 			}
 
 			@Override
-			protected IndividualReference<?,?> getIndividualReference() {
-				return individualReference;
+			protected void accept(Injector injector) {
+				injector.injectReference(individualId);
 			}
 
 		}
 
 		private final String propertyId;
-		private final IndividualReference<?,?> individualReference;
+		private final IndividualReference<T,S> individualId;
 		private final InnerDatatypePropertyBuilder recursive;
 
-		private DatatypePropertyBuilderImpl(Configurable ctx, IndividualReference<?,?> individualId, String propertyId) {
+		private DatatypePropertyBuilderImpl(Configurable ctx, IndividualReference<T,S> individualId, String propertyId) {
 			super(ctx);
-			this.individualReference = individualId;
+			this.individualId = individualId;
 			this.propertyId = propertyId;
 			this.recursive = new InnerDatatypePropertyBuilder();
 		}
 
 		@Override
 		public RecursiveDatatypePropertyBuilder withValue(Object value) {
-			getStore().addValue(this.individualReference, URI.create(this.propertyId), value);
+			getStore().addValue(this.individualId, URI.create(this.propertyId), value);
 			return recursive;
 		}
 
 	}
 
-	private static final class IndividualBuilderImpl extends AbstractIndividualBuilder {
+	private static final class IndividualBuilderImpl<T extends Serializable, S extends Individual<T,S>> extends AbstractIndividualBuilder {
 
-		private final IndividualReference<?,?> individualReference;
+		private final IndividualReference<T,S> individualId;
 
-		private IndividualBuilderImpl(Configurable configurable, IndividualReference<?,?> individualReference) {
+		private IndividualBuilderImpl(Configurable configurable, IndividualReference<T,S> individualReference) {
 			super(configurable);
-			this.individualReference = individualReference;
+			this.individualId = individualReference;
 		}
 
 		@Override
-		protected IndividualReference<?,?> getIndividualReference() {
-			return individualReference;
+		protected void accept(Injector injector) {
+			injector.injectReference(this.individualId);
 		}
 
 	}
@@ -243,8 +274,8 @@ public final class DataDSL {
 		}
 
 		@Override
-		public IndividualBuilder individual(IndividualReference<?,?> reference) {
-			return new IndividualBuilderImpl(this,reference);
+		public <T extends Serializable, S extends Individual<T,S>> IndividualBuilder individual(IndividualReference<T,S> reference) {
+			return new IndividualBuilderImpl<T,S>(this,reference);
 		}
 	}
 
@@ -273,7 +304,7 @@ public final class DataDSL {
 		return dataSet(null);
 	}
 
-	public static DataSetBuilder dataSet(Name<?> name) {
+	public static <T extends Serializable> DataSetBuilder dataSet(Name<T> name) {
 		return new DataSetBuilderImpl(new InMemStore(name));
 	}
 

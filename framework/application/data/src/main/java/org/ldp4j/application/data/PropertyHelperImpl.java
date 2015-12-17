@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.1.0
- *   Bundle      : ldp4j-application-data-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.2.0
+ *   Bundle      : ldp4j-application-data-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -54,8 +54,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 		if(property==null) {
 			return null;
 		}
-		LiteralValueExtractor<T> extractor =
-			new LiteralValueExtractor<T>(new LiteralAdapter<T>(aClazz));
+		LiteralValueExtractor<T> extractor =LiteralValueExtractor.newInstance(aClazz);
 		for(Value value:property) {
 			value.accept(extractor);
 			if(extractor.isAvailable()) {
@@ -91,7 +90,7 @@ final class PropertyHelperImpl implements PropertyHelper {
 		if(property==null) {
 			return null;
 		}
-		IndividualExtractor<T,S> extractor=new IndividualExtractor<T,S>(clazz);
+		IndividualExtractor<T,S> extractor=IndividualExtractor.newInstance(clazz);
 		for(Value value:property) {
 			value.accept(extractor);
 			if(extractor.isAvailable()) {
@@ -179,7 +178,12 @@ final class PropertyHelperImpl implements PropertyHelper {
 	@Override
 	public IndividualPropertyHelper withIndividual(URI id) {
 		if(id!=null) {
-			Individual<?,?> srcIndividual=this.individual.dataSet().individual(id, ExternalIndividual.class);
+			Individual<?,?> srcIndividual=null;
+			if(id.isAbsolute()) {
+				srcIndividual=this.individual.dataSet().individual(id, ExternalIndividual.class);
+			} else {
+				srcIndividual=this.individual.dataSet().individual(id, NewIndividual.class);
+			}
 			this.individual.addValue(this.propertyId,srcIndividual);
 		}
 		return new IndividualPropertyHelperImpl(new IndividualHelperImpl(this.individual),this);

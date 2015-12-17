@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.1.0
- *   Bundle      : ldp4j-server-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
+ *   Bundle      : ldp4j-server-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.frontend;
@@ -144,11 +144,11 @@ public final class ServerFrontend {
 	 * <b>discards</b> request entity-bodies and does not return a response
 	 * body.
 	 *
-	 * @param uriInfo
-	 * @param path
-	 * @param headers
-	 * @param request
-	 * @return
+	 * @param uriInfo the full URL details of the resource
+	 * @param path the path of the resource
+	 * @param headers the headers included in the request
+	 * @param request the request itself
+	 * @return an LDP compliant response to the OPTIONS request
 	 */
 	@OPTIONS
 	@Path(ENDPOINT_PATH)
@@ -173,11 +173,11 @@ public final class ServerFrontend {
 
 	/**
 	 * LDP 1.0 - 4.2.6.1 LDP servers must support the HTTP HEAD method.
-	 * @param uriInfo
-	 * @param path
-	 * @param headers
-	 * @param request
-	 * @return
+	 * @param uriInfo the full URL details of the resource
+	 * @param path the path of the resource
+	 * @param headers the headers included in the request
+	 * @param request the request itself
+	 * @return an LDP compliant response to the HEAD request
 	 */
 	@HEAD
 	@Path(ENDPOINT_PATH)

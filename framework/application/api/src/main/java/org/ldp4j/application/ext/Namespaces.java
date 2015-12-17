@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.1.0
- *   Bundle      : ldp4j-application-api-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
+ *   Bundle      : ldp4j-application-api-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.ext;
@@ -60,8 +60,6 @@ public interface Namespaces {
 	 * @param prefix
 	 *            prefix to look up
 	 * @return Namespace URI bound to prefix
-	 * @throws NullPointerException
-	 *             when the prefix is {@code null}
 	 */
 	String getNamespaceURI(String prefix);
 
@@ -71,8 +69,6 @@ public interface Namespaces {
 	 * @param namespaceURI
 	 *            URI of the Namespace to look up
 	 * @return Prefix bound to the Namespace URI
-	 * @throws NullPointerException
-	 *             when the prefix is {@code null}
 	 */
 	String getPrefix(String namespaceURI);
 
@@ -82,8 +78,6 @@ public interface Namespaces {
 	 * @param namespaceURI
 	 *            URI of the Namespace to look up
 	 * @return All the prefixes bound to the Namespace URI
-	 * @throws NullPointerException
-	 *             when the prefix is {@code null}
 	 */
 	List<String> getPrefixes(String namespaceURI);
 

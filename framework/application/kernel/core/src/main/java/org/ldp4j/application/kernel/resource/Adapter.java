@@ -20,13 +20,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.resource;
 
 import org.ldp4j.application.data.DataSet;
+import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.kernel.resource.ResourceId;
 
@@ -35,6 +36,8 @@ interface Adapter {
 	ResourceId resourceId();
 
 	DataSet get() throws FeatureException;
+
+	DataSet query(Query query) throws FeatureException;
 
 	void update(DataSet content) throws FeatureException;
 

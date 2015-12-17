@@ -20,17 +20,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.1.0
- *   Bundle      : ldp4j-application-data-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.2.0
+ *   Bundle      : ldp4j-application-data-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
 
 public class DataSetModificationException extends Exception {
 
-	/**
-	 *
-	 */
 	private static final long serialVersionUID = 5214622641554473538L;
 
 	public DataSetModificationException(String message, Throwable cause) {
@@ -38,7 +35,7 @@ public class DataSetModificationException extends Exception {
 	}
 
 	public DataSetModificationException(String message) {
-		super(message);
+		this(message,null);
 	}
 
 }

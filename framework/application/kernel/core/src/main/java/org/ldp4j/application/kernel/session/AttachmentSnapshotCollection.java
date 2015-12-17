@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.session;
@@ -201,6 +201,7 @@ final class AttachmentSnapshotCollection {
 		AttachmentSnapshotCollection repository=new AttachmentSnapshotCollection();
 		for(Attachment attachment:resource.attachments()) {
 			DelegatedResourceSnapshot snapshot = session.resolveResource(attachment.resourceId());
+			checkState(snapshot!=null,"Could not resolve attached resource of attachment %s of resource %s",attachment,resource.id());
 			DelegatedAttachmentSnapshot newAttachment=new DelegatedAttachmentSnapshot(attachment.id(),snapshot);
 			repository.safeAttach(newAttachment);
 		}

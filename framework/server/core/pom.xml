@@ -21,8 +21,8 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-server-core:0.1.0
-      Bundle      : ldp4j-server-core-0.1.0.jar
+      Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
+      Bundle      : ldp4j-server-core-0.2.0.jar
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
@@ -37,7 +37,7 @@
 	<parent>
 		<groupId>org.ldp4j.framework</groupId>
 		<artifactId>ldp4j-server</artifactId>
-		<version>0.1.0</version>
+		<version>0.2.0</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -56,6 +56,7 @@
 
 	<properties>
 		<sesame.version>2.7.9</sesame.version>
+		<jena.version>2.13.0</jena.version>
 
 		<arquillian.version>1.0.3.Final</arquillian.version>
 		<shrinkwrap.descriptors.version>2.0.0-alpha-4</shrinkwrap.descriptors.version>
@@ -361,6 +362,26 @@
 			<scope>test</scope>
 		</dependency>
 
+		<!-- Testing utils -->
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>jul-to-slf4j</artifactId>
+			<version>${slf4j.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.apache.jena</groupId>
+			<artifactId>jena-arq</artifactId>
+			<version>${jena.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>com.jayway.restassured</groupId>
+			<artifactId>rest-assured</artifactId>
+			<version>2.4.1</version>
+			<scope>test</scope>
+		</dependency>
+
 	</dependencies>
 
 	<build>
@@ -451,6 +472,8 @@
 				<artifactId>maven-failsafe-plugin</artifactId>
 				<configuration>
 					<systemPropertyVariables>
+						<java.util.logging.config.file>src/test/resources/logging.properties</java.util.logging.config.file>
+						<java.util.logging.manager>org.apache.juli.ClassLoaderLogManager</java.util.logging.manager>
 						<!-- org.ldp4j.testing.logging.setup>true</org.ldp4j.testing.logging.setup -->
 						<!-- org.ldp4j.testing.logging.archive>true</org.ldp4j.testing.logging.archive -->
 						<!-- org.ops4j.pax.url.mvn.localRepository>${settings.localRepository}</org.ops4j.pax.url.mvn.localRepository -->

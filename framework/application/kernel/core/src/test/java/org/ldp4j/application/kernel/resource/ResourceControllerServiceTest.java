@@ -20,14 +20,15 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.resource;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
@@ -47,24 +48,23 @@ import org.ldp4j.application.data.IndividualReference;
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.engine.context.EntityTag;
+import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.endpoint.EndpointRepository;
 import org.ldp4j.application.kernel.impl.InMemoryRuntimeDelegate;
-import org.ldp4j.application.kernel.resource.Container;
-import org.ldp4j.application.kernel.resource.FeatureException;
-import org.ldp4j.application.kernel.resource.Resource;
-import org.ldp4j.application.kernel.resource.ResourceControllerService;
 import org.ldp4j.application.kernel.service.ServiceRegistry;
 import org.ldp4j.application.kernel.session.WriteSessionConfiguration;
 import org.ldp4j.application.kernel.spi.ModelFactory;
 import org.ldp4j.application.kernel.spi.RuntimeDelegate;
 import org.ldp4j.application.kernel.template.TemplateManagementService;
 import org.ldp4j.application.kernel.transaction.Transaction;
+import org.ldp4j.application.sdk.QueryBuilder;
 import org.ldp4j.example.BookContainerHandler;
 import org.ldp4j.example.BookHandler;
-import org.ldp4j.example.InMemoryContainerHandler.NameProvider;
+import org.ldp4j.example.NameProvider;
 import org.ldp4j.example.PersonHandler;
+import org.ldp4j.example.QueryableResourceHandler;
 
 import com.google.common.collect.Lists;
 
@@ -105,7 +105,7 @@ public class ResourceControllerServiceTest {
 		return initial;
 	}
 
-	private Name<?> name(String id) {
+	private Name<String> name(String id) {
 		return NamingScheme.getDefault().name(id);
 	}
 
@@ -159,12 +159,13 @@ public class ResourceControllerServiceTest {
 		ServiceRegistry.setInstance(null);
 		RuntimeDelegate.setInstance(new InMemoryRuntimeDelegate());
 		PersonHandler personHandler = new PersonHandler();
+		QueryableResourceHandler queryHandler=new QueryableResourceHandler();
 		ServiceRegistry.
 			getInstance().
 				getService(TemplateManagementService.class).
 					configure(
 						Lists.<Class<?>>newArrayList(),
-						Arrays.<ResourceHandler>asList(personHandler));
+						Arrays.<ResourceHandler>asList(personHandler,queryHandler));
 	}
 
 	@AfterClass
@@ -213,7 +214,7 @@ public class ResourceControllerServiceTest {
 		final DataSet initial = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
 
 		// BEGIN initialization
-		final Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
+		final Resource resource = publishResource(Resource.class,PersonHandler.ID, resourceName, resourcePath);
 		PersonHandler handler = getHandler(PersonHandler.class);
 		handler.add(resourceName, initial);
 		// END Initialization
@@ -232,9 +233,35 @@ public class ResourceControllerServiceTest {
 	}
 
 	@Test
+	public void testQueryResource() throws Exception {
+		String resourcePath = "querySuccess";
+		final Name<?> resourceName = name(resourcePath);
+		final DataSet initial = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
+
+		// BEGIN initialization
+		final Resource resource = publishResource(Resource.class,QueryableResourceHandler.ID, resourceName, resourcePath);
+		QueryableResourceHandler handler = getHandler(QueryableResourceHandler.class);
+		handler.add(resourceName, initial);
+		// END Initialization
+
+		transactional(
+			new Callable<Void>() {
+				@Override
+				public Void call() throws Exception {
+					Query query = QueryBuilder.newInstance().withParameter("param1", "value1").build();
+					DataSet data = sut.queryResource(resource,query,getSessionConfiguration(resource));
+					assertThat(data,notNullValue());
+					assertThat(data,not(sameInstance(initial)));
+					return null;
+				}
+			}
+		);
+	}
+
+	@Test
 	public void testCreateResource() throws Exception {
 		String resourcePath = "post";
-		final Name<?> resourceName = name(resourcePath);
+		final Name<String> resourceName = name(resourcePath);
 		final DataSet initialData = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
 
 		// BEGIN initialization
@@ -288,7 +315,7 @@ public class ResourceControllerServiceTest {
 		System.out.println(initial);
 
 		// BEGIN initialization
-		final Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
+		final Resource resource = publishResource(Resource.class,PersonHandler.ID, resourceName, resourcePath);
 		PersonHandler handler = getHandler(PersonHandler.class);
 		handler.add(resourceName, initial);
 		// END Initialization
@@ -336,7 +363,7 @@ public class ResourceControllerServiceTest {
 		final DataSet initial = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
 
 		// BEGIN initialization
-		final Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
+		final Resource resource = publishResource(Resource.class,PersonHandler.ID, resourceName, resourcePath);
 		final PersonHandler handler = getHandler(PersonHandler.class);
 		handler.add(resourceName, initial);
 		// END Initialization
@@ -373,7 +400,7 @@ public class ResourceControllerServiceTest {
 		System.out.println(initial);
 
 		// BEGIN initialization
-		final Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
+		final Resource resource = publishResource(Resource.class,PersonHandler.ID,resourceName, resourcePath);
 		PersonHandler handler = getHandler(PersonHandler.class);
 		handler.add(resourceName, initial);
 		// END Initialization
@@ -429,7 +456,7 @@ public class ResourceControllerServiceTest {
 		final DataSet initial = getInitialData(newReference().toLocalIndividual().named("Miguel"), new Date());
 
 		// BEGIN initialization
-		final Resource resource = publishResource(Resource.class,"personTemplate", resourceName, resourcePath);
+		final Resource resource = publishResource(Resource.class,PersonHandler.ID, resourceName, resourcePath);
 		final PersonHandler handler = getHandler(PersonHandler.class);
 		handler.add(resourceName, initial);
 		// END Initialization

@@ -20,17 +20,16 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.engine;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkState;
 
 import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.resource.Resource;
-import org.ldp4j.application.kernel.resource.ResourceId;
 import org.ldp4j.application.kernel.template.ResourceTemplate;
 import org.ldp4j.application.kernel.template.TemplateIntrospector;
 
@@ -48,12 +47,6 @@ final class DefaultPublicResourceFactory {
 		ResourceTemplate template = this.applicationContext.resourceTemplate(resource);
 		checkState(template!=null,"Could not find template for resource %s",resource.id());
 		return template;
-	}
-
-	DefaultPublicResource createResource(ResourceId resourceId) {
-		Endpoint endpoint=this.applicationContext.resolveResource(resourceId);
-		checkState(endpoint!=null,"Could not resolve resource %s",resourceId);
-		return createResource(endpoint);
 	}
 
 	DefaultPublicResource createResource(Endpoint endpoint) {

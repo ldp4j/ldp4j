@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.1.0
- *   Bundle      : ldp4j-application-data-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.2.0
+ *   Bundle      : ldp4j-application-data-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -145,12 +145,17 @@ public abstract class IndividualReference<T extends Serializable, S extends Indi
 		return dataSet.hasIndividual(ref());
 	}
 
+	/**
+	 * Find the individual of the data set with the same identifier
+	 *
+	 * @param dataSet
+	 *            the data set
+	 * @return the individual with the same identifier, or {@code null} if no
+	 *         individual has the same identifier.
+	 */
+	@SuppressWarnings("unchecked")
 	public Individual<T,S> resolve(DataSet dataSet) {
-		Individual<T, ?> resolvedIndividual = dataSet.individualOfId(ref());
-		if(!clazz.isInstance(resolvedIndividual)) {
-			throw new IllegalStateException("Unexpected type referred individual");
-		}
-		return clazz.cast(resolvedIndividual);
+		return (Individual<T,S>) dataSet.individualOfId(ref());
 	}
 
 	public Individual<T,S> realize(DataSet dataSet) {

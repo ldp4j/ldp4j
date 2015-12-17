@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.1.0
- *   Bundle      : ldp4j-application-data-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.2.0
+ *   Bundle      : ldp4j-application-data-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -57,6 +57,8 @@ public abstract class DataSetHelper {
 	public abstract <T extends Individual<URI,T>> T self();
 
 	public abstract <T extends Individual<URI,T>> T relative(URI path);
+
+	public abstract IndividualHelper externalIndividual(URI uri);
 
 	public abstract IndividualHelper managedIndividual(Name<?> name, String managerId);
 

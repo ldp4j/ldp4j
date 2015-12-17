@@ -20,81 +20,33 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.1.0
- *   Bundle      : ldp4j-application-examples-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.2.0
+ *   Bundle      : ldp4j-application-examples-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.example;
 
-import java.net.URI;
-import java.util.Date;
-import java.util.concurrent.atomic.AtomicInteger;
-
-import org.ldp4j.application.data.DataSet;
-import org.ldp4j.application.data.DataSetHelper;
-import org.ldp4j.application.data.DataSetUtils;
-import org.ldp4j.application.data.Literals;
-import org.ldp4j.application.data.ManagedIndividual;
-import org.ldp4j.application.data.ManagedIndividualId;
-import org.ldp4j.application.data.Name;
-import org.ldp4j.application.data.NamingScheme;
 import org.ldp4j.application.ext.annotations.BasicContainer;
-import org.ldp4j.application.session.ContainerSnapshot;
-import org.ldp4j.application.session.ResourceSnapshot;
-import org.ldp4j.application.session.WriteSession;
-import org.ldp4j.application.session.WriteSessionException;
 
+/**
+ * Example basic container template handler.
+ */
 @BasicContainer(
 	id = PersonContainerHandler.ID,
 	memberHandler = PersonHandler.class
 )
-public class PersonContainerHandler extends InMemoryContainerHandler {
+public class PersonContainerHandler extends AbstractPersonContainerHandler {
 
+	/**
+	 * The identifier of the template defined by the handler.
+	 */
 	public static final String ID="personContainerTemplate";
 
-	private PersonHandler handler;
-
-	private AtomicInteger id;
-
+	/**
+	 * Create a new instance.
+	 */
 	public PersonContainerHandler() {
 		super("PersonContainer");
-		this.id=new AtomicInteger();
-	}
-
-	public void setHandler(PersonHandler handler) {
-		this.handler = handler;
-	}
-
-	@Override
-	public ResourceSnapshot create(ContainerSnapshot container, DataSet representation, WriteSession session) {
-		Name<?> name=
-			NamingScheme.
-				getDefault().
-					name(id.incrementAndGet());
-
-		DataSetHelper helper=
-					DataSetUtils.newHelper(representation);
-
-		ManagedIndividual individual =
-			helper.
-				replace(
-					DataSetHelper.SELF,
-					ManagedIndividualId.createId(name,PersonHandler.ID),
-					ManagedIndividual.class);
-
-		individual.
-			addValue(
-				URI.create("http://www.example.org/vocab#creationDate"),
-				Literals.of(new Date()).dateTime());
-		try {
-			this.handler.add(name, representation);
-			ResourceSnapshot member = container.addMember(name);
-			session.saveChanges();
-			return member;
-		} catch (WriteSessionException e) {
-			this.handler.remove(name);
-			throw new IllegalStateException("Could not create member",e);
-		}
 	}
 
 }

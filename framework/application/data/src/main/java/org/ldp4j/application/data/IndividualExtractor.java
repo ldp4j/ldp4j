@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.1.0
- *   Bundle      : ldp4j-application-data-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.2.0
+ *   Bundle      : ldp4j-application-data-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -38,7 +38,7 @@ final class IndividualExtractor<T extends Serializable, S extends Individual<T,S
 
 	private S value=null;
 
-	IndividualExtractor(final Class<? extends S> clazz) {
+	private IndividualExtractor(final Class<? extends S> clazz) {
 		this.clazz=clazz;
 	}
 
@@ -49,17 +49,21 @@ final class IndividualExtractor<T extends Serializable, S extends Individual<T,S
 
 	@Override
 	public void visitIndividual(Individual<?, ?> value) {
-		if(clazz.isInstance(value)) {
+		if(this.clazz.isInstance(value)) {
 			this.value = clazz.cast(value);
 		}
 	}
 
-	public S getValue() {
+	S getValue() {
 		return this.value;
 	}
 
-	public boolean isAvailable() {
+	boolean isAvailable() {
 		return this.value!=null;
+	}
+
+	static <T extends Serializable, S extends Individual<T,S>> IndividualExtractor<T,S> newInstance(Class<? extends S> clazz) {
+		return new IndividualExtractor<T,S>(clazz);
 	}
 
 }

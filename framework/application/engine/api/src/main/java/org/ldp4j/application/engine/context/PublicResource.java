@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-api:0.1.0
- *   Bundle      : ldp4j-application-engine-api-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-api:0.2.0
+ *   Bundle      : ldp4j-application-engine-api-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.engine.context;
@@ -30,6 +30,7 @@ import java.util.Map;
 
 import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.data.ManagedIndividualId;
+import org.ldp4j.application.ext.Query;
 
 public interface PublicResource extends PublicEndpoint {
 
@@ -38,6 +39,8 @@ public interface PublicResource extends PublicEndpoint {
 	Map<String, PublicResource> attachments();
 
 	DataSet entity(ContentPreferences contentPreferences) throws ApplicationExecutionException;
+
+	DataSet query(Query query, ContentPreferences contentPreferences) throws ApplicationExecutionException;
 
 	void modify(DataSet dataSet) throws ApplicationExecutionException;
 

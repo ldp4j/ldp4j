@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.session;
@@ -83,14 +83,14 @@ final class SnapshotFactory {
 				public void visitResource(Resource resource) {
 					DelegatedResourceSnapshot snapshot=new DelegatedResourceSnapshot(resource.id(),template.handlerClass());
 					snapshot.setParentState(ParentState.parentOf(resource));
-					snapshot.setPersistencyState(PersistencyState.newPersistent(resource,template,session));
+					snapshot.setPersistencyState(PersistencyState.newPersistentReferenceState(resource.id(),template));
 					result.set(snapshot);
 				}
 				@Override
 				public void visitContainer(Container resource) {
 					DelegatedContainerSnapshot snapshot=new DelegatedContainerSnapshot(resource.id(),handlerClass(template,ContainerHandler.class));
 					snapshot.setParentState(ParentState.parentOf(resource));
-					snapshot.setPersistencyState(PersistencyState.newPersistent(resource,template,session));
+					snapshot.setPersistencyState(PersistencyState.newPersistentReferenceState(resource.id(),template));
 					result.set(snapshot);
 				}
 			}

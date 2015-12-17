@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.session;
@@ -63,8 +63,9 @@ abstract class ParentState {
 
 		@Override
 		DelegatedResourceSnapshot parent(DelegatedResourceSnapshot ctx) {
-			checkState(!isRoot(ctx),"Resource %s does not have parent",ctx.name());
+			checkState(!isRoot(ctx),"Resource %s does not have parent",ctx.resourceId());
 			DelegatedResourceSnapshot parent=ctx.session().resolveResource(this.child.parentId());
+			checkState(parent!=null,"Could not resolve parent resource %s for resource",this.child.parentId(),ctx.resourceId());
 			ctx.setParentState(ParentState.childOf(parent));
 			return parent;
 		}

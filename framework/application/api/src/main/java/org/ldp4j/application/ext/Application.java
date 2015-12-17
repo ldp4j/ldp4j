@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.1.0
- *   Bundle      : ldp4j-application-api-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
+ *   Bundle      : ldp4j-application-api-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.ext;
@@ -48,7 +48,7 @@ public abstract class Application<T extends Configuration> {
 	}
 
 	/**
-	 * Returns the name of the application.
+	 * Return the name of the application.
 	 *
 	 * @return the application's name
 	 */
@@ -56,10 +56,48 @@ public abstract class Application<T extends Configuration> {
 		return getClass().getSimpleName();
 	}
 
+	/**
+	 * Setup the application. <br/>
+	 *
+	 * The implementation class will have to register the resource handler
+	 * instances and classes in the {@code Bootstrap} instance, and publish
+	 * the root resources for the application in the {@code Environment} instance.
+	 *
+	 * @param environment
+	 *            the environment for publishing root resources.
+	 * @param bootstrap
+	 *            the bootstrap for registering resource handler instances and
+	 *            classes.
+	 * @throws ApplicationSetupException
+	 *             if any failure prevented setting up the application.
+	 */
 	public abstract void setup(Environment environment, Bootstrap<T> bootstrap) throws ApplicationSetupException;
 
+	/**
+	 * Initialize the application. <br/>
+	 *
+	 * The implementation class may synchronize its internal state with the
+	 * state of the resources already managed by the LDP4j framework.
+	 *
+	 * @param session
+	 *            the session to use for controlling the lifecycle of the
+	 *            resources managed by the framework.
+	 * @throws ApplicationInitializationException
+	 *             if any failure prevented the initialization of the
+	 *             application.
+	 */
 	public abstract void initialize(WriteSession session) throws ApplicationInitializationException;
 
+	/**
+	 * Shutdown the application. <br/>
+	 *
+	 * The implementation class should carry out any termination activity
+	 * required before shutting down the application.
+	 *
+	 * @throws ApplicationShutdownException
+	 *             if any failure prevented the graceful termination of the
+	 *             application.
+	 */
 	public abstract void shutdown() throws ApplicationShutdownException;
 
 }

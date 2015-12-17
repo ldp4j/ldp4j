@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons:ldp4j-commons-core:0.1.0
- *   Bundle      : ldp4j-commons-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.commons:ldp4j-commons-core:0.2.0
+ *   Bundle      : ldp4j-commons-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.net;
@@ -380,7 +380,7 @@ public final class URI {
 		}
 		out.printf("\t- Fragment............: %s%n",uri.getFragment());
 		out.printf("\t- Flags...............: %s%n",uriFlags(uri));
-		out.printf("}");
+		out.print("}");
 		out.flush();
 		writer.flush();
 		return writer.toString();

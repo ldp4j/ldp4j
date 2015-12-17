@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.lifecycle;
@@ -40,10 +40,15 @@ import org.ldp4j.application.kernel.spi.RuntimeDelegate;
 import org.ldp4j.application.kernel.template.TemplateManagementService;
 import org.ldp4j.application.kernel.transaction.Transaction;
 import org.ldp4j.application.kernel.transaction.TransactionManager;
+import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 
 final class ApplicationLoader<T extends Configuration> {
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(ApplicationLoader.class);
 
 	private final Class<? extends Application<T>> appClass;
 	private final TransactionManager transactionManager;
@@ -53,6 +58,8 @@ final class ApplicationLoader<T extends Configuration> {
 	private ModelFactory modelFactory;
 
 	private T configuration;
+
+	private DefaultLifecycleEnvironment lifecycleEnvironment;
 
 	private ApplicationLoader(Class<? extends Application<T>> appClass) {
 		this.appClass=appClass;
@@ -102,7 +109,7 @@ final class ApplicationLoader<T extends Configuration> {
 
 	Application<T> bootstrap() throws ApplicationContextBootstrapException {
 		Application<T> application=instantiateApplication();
-		this.configuration = instantiateConfiguration(application);
+		this.configuration=instantiateConfiguration(application);
 		setup(application);
 		initialize(application);
 		return application;
@@ -110,6 +117,10 @@ final class ApplicationLoader<T extends Configuration> {
 
 	T configuration() {
 		return this.configuration;
+	}
+
+	DefaultLifecycleEnvironment lifecycleEnvironment() {
+		return this.lifecycleEnvironment;
 	}
 
 	private void initialize(Application<T> application) throws ApplicationConfigurationException {
@@ -122,12 +133,16 @@ final class ApplicationLoader<T extends Configuration> {
 						WriteSessionConfiguration.
 							builder().
 								build());
+			Throwable failure=null;
 			try {
 				application.initialize(session);
 			} catch (ApplicationInitializationException e) {
-				throw new ApplicationConfigurationException(e);
+				failure=e;
 			} finally {
-				writeSessionService().terminateSession(session);
+				failure=closeQuietly(session, failure);
+			}
+			if(failure!=null) {
+				throw new ApplicationConfigurationException(failure);
 			}
 		} finally {
 			if(transaction.isActive()) {
@@ -136,17 +151,32 @@ final class ApplicationLoader<T extends Configuration> {
 		}
 	}
 
+	private Throwable closeQuietly(WriteSession session, Throwable failure) {
+		Throwable result=failure;
+		try {
+			session.close();
+		} catch (SessionTerminationException e) {
+			LOGGER.error("Could not terminate session",e);
+			if(result==null) {
+				result=e;
+			}
+		}
+		return result;
+	}
+
 	private void setup(Application<T> application) throws ApplicationConfigurationException {
 		BootstrapImpl<T> bootstrap=
 			new BootstrapImpl<T>(
 				this.configuration,
 				templateManagementService());
+		this.lifecycleEnvironment=new DefaultLifecycleEnvironment();
 		EnvironmentImpl environment=
 			new EnvironmentImpl(
 				templateManagementService(),
 				resourceFactory(),
 				RuntimeDelegate.getInstance().getEndpointRepository(),
-				RuntimeDelegate.getInstance().getResourceRepository()
+				RuntimeDelegate.getInstance().getResourceRepository(),
+				lifecycleEnvironment
 			);
 		try {
 			application.setup(environment,bootstrap);

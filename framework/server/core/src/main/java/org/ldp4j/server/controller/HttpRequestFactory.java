@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.1.0
- *   Bundle      : ldp4j-server-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
+ *   Bundle      : ldp4j-server-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.controller;
@@ -42,7 +42,7 @@ final class HttpRequestFactory {
 	private HttpRequestFactory() {
 	}
 
-	static final HttpRequest create(HttpMethod method, UriInfo uriInfo, HttpHeaders headers, String entity) {
+	static HttpRequest create(HttpMethod method, UriInfo uriInfo, HttpHeaders headers, String entity) {
 		HttpRequestBuilder builder=
 			HttpRequestBuilder.
 				newInstance().

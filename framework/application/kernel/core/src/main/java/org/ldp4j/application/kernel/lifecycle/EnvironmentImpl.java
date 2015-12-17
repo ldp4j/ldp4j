@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.lifecycle;
@@ -41,6 +41,7 @@ import org.ldp4j.application.kernel.resource.ResourceRepository;
 import org.ldp4j.application.kernel.spi.ModelFactory;
 import org.ldp4j.application.kernel.template.ResourceTemplate;
 import org.ldp4j.application.kernel.template.TemplateManagementService;
+import org.ldp4j.application.lifecycle.LifecycleEnvironment;
 import org.ldp4j.application.setup.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -133,18 +134,26 @@ final class EnvironmentImpl implements Environment {
 	private final ResourceRepository resourceRepository;
 	private final EndpointRepository endpointRepository;
 
-	EnvironmentImpl(TemplateManagementService templateManagementService, ModelFactory persistencyManager, EndpointRepository endpointRepository, ResourceRepository resourceRepository) {
+	private final LifecycleEnvironment lifecycleEnvironment;
+
+	EnvironmentImpl(TemplateManagementService templateManagementService, ModelFactory persistencyManager, EndpointRepository endpointRepository, ResourceRepository resourceRepository, LifecycleEnvironment lifecycleEnvironment) {
 		this.templateManagementService = templateManagementService;
 		this.resourceRepository = resourceRepository;
 		this.endpointRepository = endpointRepository;
 		this.modelFactory = persistencyManager;
 		this.candidates=Lists.newArrayList();
+		this.lifecycleEnvironment=lifecycleEnvironment;
 	}
 
 	@Override
 	public void publishResource(Name<?> resourceName, Class<? extends ResourceHandler> handlerClass, String path) {
 		RootResource rootResource = new RootResource(resourceName,handlerClass,path);
 		this.candidates.add(rootResource);
+	}
+
+	@Override
+	public LifecycleEnvironment lifecycle() {
+		return this.lifecycleEnvironment;
 	}
 
 	/**

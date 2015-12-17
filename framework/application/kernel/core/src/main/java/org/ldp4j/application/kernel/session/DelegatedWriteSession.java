@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.session;
@@ -49,6 +49,7 @@ import org.ldp4j.application.kernel.template.ResourceTemplate;
 import org.ldp4j.application.kernel.template.TemplateIntrospector;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
+import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.session.WriteSessionException;
 import org.slf4j.Logger;
@@ -259,6 +260,9 @@ final class DelegatedWriteSession implements WriteSession {
 		return clazz.cast(newSnapshot);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <S extends ResourceSnapshot> S find(
 			Class<? extends S> snapshotClass,
@@ -277,6 +281,9 @@ final class DelegatedWriteSession implements WriteSession {
 		return snapshotClass.cast(resource);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public <S extends ResourceSnapshot> S resolve(
 			final Class<? extends S> snapshotClass,
@@ -292,6 +299,9 @@ final class DelegatedWriteSession implements WriteSession {
 		return result;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void modify(ResourceSnapshot resource) {
 		checkNotNull(resource,RESOURCE_CANNOT_BE_NULL);
@@ -301,6 +311,9 @@ final class DelegatedWriteSession implements WriteSession {
 		delegatedResource.modify();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void delete(ResourceSnapshot resource) {
 		checkNotNull(resource,RESOURCE_CANNOT_BE_NULL);
@@ -310,6 +323,9 @@ final class DelegatedWriteSession implements WriteSession {
 		delegatedResource.delete();
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void saveChanges() throws WriteSessionException {
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,this.status);
@@ -321,11 +337,22 @@ final class DelegatedWriteSession implements WriteSession {
 		this.writeSessionService.commitSession(this);
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void discardChanges() throws WriteSessionException {
 		checkState(this.status.equals(Status.ACTIVE),WRITE_SESSION_NOT_ACTIVE,this.status);
 		this.status=Status.ABORTED;
 		this.writeSessionService.rollbackSession(this);
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	@Override
+	public void close() throws SessionTerminationException {
+		this.writeSessionService.terminateSession(this);
 	}
 
 }

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.template;
@@ -44,18 +44,6 @@ final class HandlerId {
 		this.className = className;
 		this.systemHashCode = systemHashCode;
 		this.container = container;
-	}
-
-	public String className() {
-		return className;
-	}
-
-	public int systemHashCode() {
-		return systemHashCode;
-	}
-
-	public boolean isContainer() {
-		return container;
 	}
 
 	@Override
@@ -90,7 +78,7 @@ final class HandlerId {
 					toString();
 	}
 
-	public static HandlerId createId(Class<? extends ResourceHandler> handlerClass) {
+	static HandlerId createId(Class<? extends ResourceHandler> handlerClass) {
 		checkNotNull(handlerClass,"Resource handler class cannot be null");
 		return
 			new HandlerId(

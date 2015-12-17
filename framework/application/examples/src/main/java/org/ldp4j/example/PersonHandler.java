@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.1.0
- *   Bundle      : ldp4j-application-examples-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.2.0
+ *   Bundle      : ldp4j-application-examples-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.example;
@@ -37,9 +37,11 @@ import org.ldp4j.application.data.validation.ValidationConstraint;
 import org.ldp4j.application.data.validation.ValidationConstraintFactory;
 import org.ldp4j.application.data.validation.ValidationReport;
 import org.ldp4j.application.data.validation.Validator;
+import org.ldp4j.application.ext.ApplicationRuntimeException;
 import org.ldp4j.application.ext.Deletable;
 import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.Modifiable;
+import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.annotations.Attachment;
 import org.ldp4j.application.ext.annotations.Resource;
 import org.ldp4j.application.session.ResourceSnapshot;
@@ -48,6 +50,9 @@ import org.ldp4j.application.session.WriteSessionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/**
+ * Example resource handler with multiple attachments.
+ */
 @Resource(
 	id=PersonHandler.ID,
 	attachments={
@@ -70,22 +75,50 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(PersonHandler.class);
 
+	/**
+	 * The identifier of the template defined by the handler.
+	 */
 	public static final String ID="personTemplate";
 
+	/**
+	 * The identifier of the relative attachment of the template defined by the handler.
+	 */
 	public static final String RELATIVES_ID   = "personRelatives";
+
+	/**
+	 * The path of the relative attachment of the template defined by the handler.
+	 */
 	public static final String RELATIVES_PATH = "relatives";
 
+	/**
+	 * The identifier of the address attachment of the template defined by the handler.
+	 */
 	public static final String ADDRESS_ID="address";
+
+	/**
+	 * The path of the address attachment of the template defined by the handler.
+	 */
 	public static final String ADDRESS_PATH="address";
 
+	/**
+	 * Read-only-property validate by the business logic.
+	 */
 	public static final URI READ_ONLY_PROPERTY = URI.create("http://www.example.org/vocab#creationDate");
 
+	/**
+	 * Create a new instance.
+	 */
 	public PersonHandler() {
 		super("Person");
 	}
 
+	/**
+	 * {@inheritDoc}<br/>
+	 *
+	 * Delete a person resource.
+	 */
 	@Override
-	public void delete(ResourceSnapshot resource, WriteSession session) {
+	public void delete(ResourceSnapshot resource, WriteSession session) throws UnknownResourceException {
 		DataSet dataSet = get(resource);
 		try {
 			logDebug(resource,"Deleting state:%n%s",dataSet);
@@ -95,12 +128,17 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 		} catch (WriteSessionException e) {
 			// Recover if failed
 			add(resource.name(),dataSet);
-			throw new IllegalStateException("Deletion failed",e);
+			throw new ApplicationRuntimeException("Deletion failed",e);
 		}
 	}
 
+	/**
+	 * {@inheritDoc} <br/>
+	 *
+	 * Update a person resource.
+	 */
 	@Override
-	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InconsistentContentException {
+	public void update(ResourceSnapshot resource, DataSet content, WriteSession session) throws InconsistentContentException, UnknownResourceException {
 		DataSet dataSet = get(resource);
 		logDebug(resource, "Enforcing consistency...");
 		enforceConsistency(resource,content,dataSet);
@@ -109,24 +147,20 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 			add(resource.name(),content);
 			session.modify(resource);
 			session.saveChanges();
-		} catch (WriteSessionException e) {
+		} catch (Exception e) {
 			// Recover if failed
 			add(resource.name(),dataSet);
 			logError(resource,e,"Something went wrong",e);
-			throw new IllegalStateException("Update failed",e);
+			throw new ApplicationRuntimeException("Update failed",e);
 		}
 	}
 
 	protected void logDebug(ResourceSnapshot resource, String message, Object... args) {
-		if(LOGGER.isDebugEnabled()) {
-			LOGGER.debug("["+resource.name()+"] "+String.format(message,args));
-		}
+		LOGGER.debug("[{}] {}",resource.name(),String.format(message,args));
 	}
 
 	protected void logError(ResourceSnapshot resource, Throwable t, String message, Object... args) {
-		if(LOGGER.isErrorEnabled()) {
-			LOGGER.error("["+resource.name()+"] "+String.format(message,args),t);
-		}
+		LOGGER.error("[{}] {}",resource.name(),String.format(message,args),t);
 	}
 
 	protected void enforceConsistency(ResourceSnapshot resource, DataSet content, DataSet dataSet) throws InconsistentContentException {
@@ -145,11 +179,12 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 		} else {
 			constraint=ValidationConstraintFactory.readOnlyProperty(id,PersonHandler.READ_ONLY_PROPERTY);
 		}
+
 		Validator helper =
-				Validator.
-					builder().
-						withPropertyConstraint(constraint).
-						build();
+			Validator.
+				builder().
+					withPropertyConstraint(constraint).
+					build();
 
 		ValidationReport report = helper.validate(content);
 		if(!report.isValid()) {

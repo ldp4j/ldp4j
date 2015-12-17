@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-sdk:0.1.0
- *   Bundle      : ldp4j-application-engine-sdk-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-sdk:0.2.0
+ *   Bundle      : ldp4j-application-engine-sdk-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.sdk;
@@ -34,7 +34,7 @@ import org.ldp4j.application.engine.context.HttpRequest.Header;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 
-final class ImmutableHeader implements Header {
+public final class ImmutableHeader implements Header {
 
 	private static final long serialVersionUID = 7192427783850618802L;
 

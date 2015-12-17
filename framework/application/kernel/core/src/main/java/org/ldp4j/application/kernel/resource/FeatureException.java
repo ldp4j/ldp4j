@@ -20,48 +20,50 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.resource;
 
+import org.ldp4j.application.session.ResourceSnapshot;
+
 public class FeatureException extends Exception {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -3427958905010583776L;
 
 	private final String templateId;
 	private final String handlerClassName;
 	private final String featureClassName;
 
-	public FeatureException(String templateId, String handlerClassName, String featureClassName, String message) {
-		super(message);
+	private FeatureException(String templateId, String handlerClassName, String featureClassName, String message, Throwable cause) {
+		super(message,cause);
 		this.templateId = templateId;
 		this.handlerClassName = handlerClassName;
 		this.featureClassName = featureClassName;
 	}
 
-	public FeatureException(String templateId, String handlerClassName, String featureClassName, String message, Throwable t) {
-		super(message,t);
-		this.templateId = templateId;
-		this.handlerClassName = handlerClassName;
-		this.featureClassName = featureClassName;
+	public FeatureException(ResourceSnapshot resource, Class<?> feature, String message, Throwable cause) {
+		this(resource.templateId(),resource.handlerClass().getName(),feature.getName(),message,cause);
 	}
 
+	public FeatureException(ResourceSnapshot resource, Class<?> feature, Throwable cause) {
+		this(resource.templateId(),resource.handlerClass().getName(),feature.getName(),"Unexpected feature exception",cause);
+	}
+	public FeatureException(ResourceSnapshot resource, Class<?> feature, String message) {
+		this(resource.templateId(),resource.handlerClass().getName(),feature.getName(),message,null);
+	}
 
 	public final String getTemplateId() {
-		return templateId;
+		return this.templateId;
 	}
 
 	public final String getHandlerClassName() {
-		return handlerClassName;
+		return this.handlerClassName;
 	}
 
 	public final String getFeatureClassName() {
-		return featureClassName;
+		return this.featureClassName;
 	}
 
 }

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.1.0
- *   Bundle      : ldp4j-application-data-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-data:0.2.0
+ *   Bundle      : ldp4j-application-data-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -33,34 +33,51 @@ import org.ldp4j.application.data.TypedLiteral;
 
 final class LiteralAdapter<T> implements LiteralVisitor {
 
-	T value=null;
+	private T value=null;
 	private final Class<? extends T> clazz;
 
-	LiteralAdapter(Class<? extends T> aClazz) {
+	private LiteralAdapter(Class<? extends T> aClazz) {
 		this.clazz=aClazz;
 	}
 
-	private T cast(Object object) {
+	private void adaptValue(Object object) {
 		// Extension for supporting conversions
+		this.value=null;
 		if(this.clazz.isInstance(object)) {
-			return this.clazz.cast(object);
+			this.value=this.clazz.cast(object);
 		}
-		return null;
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void visitLiteral(Literal<?> literal) {
-		this.value=cast(literal.get());
+		adaptValue(literal.get());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void visitTypedLiteral(TypedLiteral<?> literal) {
-		this.value=cast(literal.get());
+		adaptValue(literal.get());
 	}
 
+	/**
+	 * {@inheritDoc}
+	 */
 	@Override
 	public void visitLanguageLiteral(LanguageLiteral literal) {
-		this.value=cast(literal.get());
+		adaptValue(literal.get());
+	}
+
+	T adaptedValue() {
+		return this.value;
+	}
+
+	static <T> LiteralAdapter<T> newInstance(Class<? extends T> clazz) {
+		return new LiteralAdapter<T>(clazz);
 	}
 
 }

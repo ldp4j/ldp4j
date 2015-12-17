@@ -20,16 +20,24 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-api:0.1.0
- *   Bundle      : ldp4j-application-kernel-api-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-api:0.2.0
+ *   Bundle      : ldp4j-application-kernel-api-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.resource;
 
 public interface Attachment {
 
+	/**
+	 * Retrieve the identifier of the attachment
+	 * @return The identifier of the attachment
+	 */
 	String id();
 
+	/**
+	 * Retrieve the identifier of the attached resource
+	 * @return The identifier of the attached resource
+	 */
 	ResourceId resourceId();
 
 	/**

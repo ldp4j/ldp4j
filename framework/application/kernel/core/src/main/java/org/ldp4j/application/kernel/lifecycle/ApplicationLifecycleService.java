@@ -20,14 +20,15 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.lifecycle;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import org.ldp4j.application.ApplicationContext;
 import org.ldp4j.application.engine.ApplicationContextBootstrapException;
 import org.ldp4j.application.engine.ApplicationContextCreationException;
 import org.ldp4j.application.engine.lifecycle.ApplicationLifecycleListener;
@@ -46,8 +47,8 @@ public final class ApplicationLifecycleService implements Service {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ApplicationLifecycleService.class);
 
-	private final class ApplicationStateChangeNotification implements
-			Notification<ApplicationLifecycleListener> {
+	private final class ApplicationStateChangeNotification implements Notification<ApplicationLifecycleListener> {
+
 		private final ApplicationState state;
 
 		private ApplicationStateChangeNotification(ApplicationState state) {
@@ -58,6 +59,7 @@ public final class ApplicationLifecycleService implements Service {
 		public void propagate(ApplicationLifecycleListener listener) {
 			listener.applicationStateChanged(state);
 		}
+
 	}
 
 	private static class ApplicationFrontendServiceBuilder extends ServiceBuilder<ApplicationLifecycleService> {
@@ -79,6 +81,7 @@ public final class ApplicationLifecycleService implements Service {
 	private ListenerManager<ApplicationLifecycleListener> listenerManager;
 
 	private Configuration configuration;
+	private DefaultLifecycleEnvironment lifecycleEnvironment;
 
 	private ApplicationLifecycleService() {
 		this.listenerManager=ListenerManager.<ApplicationLifecycleListener>newInstance();
@@ -123,9 +126,12 @@ public final class ApplicationLifecycleService implements Service {
 			ApplicationLoader<T> helper = ApplicationLoader.newInstance(this.<T>loadApplicationClass(className));
 			Application<T> createdApplication = helper.bootstrap();
 			newState=ApplicationState.AVAILABLE;
-			this.application = createdApplication;
-			this.configuration =helper.configuration();
+			this.application=createdApplication;
+			this.configuration=helper.configuration();
+			this.lifecycleEnvironment=helper.lifecycleEnvironment();
 			LOGGER.info("Application '{}' ({}) initialized.",this.application.getName(),this.application.getClass().getCanonicalName());
+			this.lifecycleEnvironment.start(ApplicationContext.getInstance());
+			LOGGER.info("Application '{}' ({}) started.",this.application.getName(),this.application.getClass().getCanonicalName());
 			return createdApplication;
 		} catch (ApplicationContextBootstrapException e) {
 			throw e;
@@ -143,6 +149,8 @@ public final class ApplicationLifecycleService implements Service {
 
 	public void shutdown() throws ApplicationShutdownException {
 		if(!this.state.isShutdown()) {
+			this.lifecycleEnvironment.stop();
+			LOGGER.info("Application '{}' ({}) stopped.",this.application.getName(),this.application.getClass().getCanonicalName());
 			if(this.application!=null) {
 				this.application.shutdown();
 				LOGGER.info("Application '{}' ({}) shutdown.",this.application.getName(),this.application.getClass().getCanonicalName());

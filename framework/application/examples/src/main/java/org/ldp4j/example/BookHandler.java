@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.1.0
- *   Bundle      : ldp4j-application-examples-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.2.0
+ *   Bundle      : ldp4j-application-examples-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.example;
@@ -29,6 +29,9 @@ package org.ldp4j.example;
 import org.ldp4j.application.ext.annotations.Attachment;
 import org.ldp4j.application.ext.annotations.Resource;
 
+/**
+ * An example resource handler with a single attachment.
+ */
 @Resource(
 	id=BookHandler.ID,
 	attachments={
@@ -40,11 +43,17 @@ import org.ldp4j.application.ext.annotations.Resource;
 	}
 )
 public class BookHandler extends InMemoryResourceHandler {
-	
+
+	/**
+	 * The identifier of the template defined by the handler.
+	 */
 	public static final String ID="bookTemplate";
 
+	/**
+	 * Create a new instance.
+	 */
 	public BookHandler() {
 		super("Book");
 	}
-	
+
 }

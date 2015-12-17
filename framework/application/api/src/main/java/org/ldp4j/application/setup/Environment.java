@@ -20,14 +20,15 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.1.0
- *   Bundle      : ldp4j-application-api-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
+ *   Bundle      : ldp4j-application-api-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.setup;
 
 import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
+import org.ldp4j.application.lifecycle.LifecycleEnvironment;
 
 /**
  * Utility interface for initializing the root resources of an LDP4j
@@ -51,5 +52,12 @@ public interface Environment {
 	 *            a single '/'.
 	 */
 	void publishResource(Name<?> resourceName, Class<? extends ResourceHandler> handlerClass, String path);
+
+	/**
+	 * Retrieve the Application's {@link LifecycleEnvironment}.
+	 *
+	 * @return the Application's {@link LifecycleEnvironment}.
+	 */
+	LifecycleEnvironment lifecycle();
 
 }

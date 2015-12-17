@@ -20,15 +20,18 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.1.0
- *   Bundle      : ldp4j-server-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
+ *   Bundle      : ldp4j-server-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.controller;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.ws.rs.core.MediaType;
@@ -42,9 +45,12 @@ import org.ldp4j.application.engine.context.PublicDirectContainer;
 import org.ldp4j.application.engine.context.PublicIndirectContainer;
 import org.ldp4j.application.engine.context.PublicRDFSource;
 import org.ldp4j.application.engine.context.PublicResource;
+import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.server.data.DataTransformator;
+
+import com.google.common.collect.Lists;
 
 public final class EndpointControllerUtils {
 
@@ -144,6 +150,33 @@ public final class EndpointControllerUtils {
 
 	public static String createLink(Object uriRef, Object rel) {
 		return String.format("<%s>; rel=\"%s\"",uriRef,rel);
+	}
+
+	public static String createQueryOfLink(Object uriRef, Query query) {
+		String strQuery = toString(query);
+		try {
+			return createLink(uriRef, "queryOf")+"; parameters=\""+URLEncoder.encode(strQuery,"UTF-8")+"\"";
+		} catch (UnsupportedEncodingException e) {
+			throw new AssertionError("UTF-8 encoding should always be supported",e);
+		}
+	}
+
+	private static String toString(Query query) {
+		List<String> parameters=Lists.newArrayList();
+		for(String paramName:query.parameterNames()) {
+			for(String rawValue:query.getParameter(paramName).rawValues()) {
+				parameters.add(paramName+"="+rawValue);
+			}
+		}
+		StringBuilder builder=new StringBuilder();
+		Iterator<String> iterator=parameters.iterator();
+		while(iterator.hasNext()) {
+			builder.append(iterator.next());
+			if(iterator.hasNext()) {
+				builder.append("&");
+			}
+		}
+		return builder.toString();
 	}
 
 }

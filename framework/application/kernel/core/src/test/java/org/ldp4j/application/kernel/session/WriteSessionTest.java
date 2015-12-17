@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.session;
@@ -47,11 +47,6 @@ import org.ldp4j.application.kernel.endpoint.Endpoint;
 import org.ldp4j.application.kernel.impl.InMemoryRuntimeDelegate;
 import org.ldp4j.application.kernel.resource.Resource;
 import org.ldp4j.application.kernel.service.ServiceRegistry;
-import org.ldp4j.application.kernel.session.DelegatedContainerSnapshot;
-import org.ldp4j.application.kernel.session.DelegatedResourceSnapshot;
-import org.ldp4j.application.kernel.session.UnitOfWork;
-import org.ldp4j.application.kernel.session.WriteSessionConfiguration;
-import org.ldp4j.application.kernel.session.WriteSessionService;
 import org.ldp4j.application.kernel.session.UnitOfWork.Visitor;
 import org.ldp4j.application.kernel.spi.ModelFactory;
 import org.ldp4j.application.kernel.spi.RuntimeDelegate;
@@ -60,7 +55,6 @@ import org.ldp4j.application.kernel.transaction.Transaction;
 import org.ldp4j.application.session.ContainerSnapshot;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
-import org.ldp4j.application.session.WriteSessionException;
 import org.ldp4j.example.AddressHandler;
 import org.ldp4j.example.BookContainerHandler;
 import org.ldp4j.example.BookHandler;
@@ -153,7 +147,7 @@ public class WriteSessionTest {
 	}
 
 	@Test
-	public void testSession() throws WriteSessionException {
+	public void testSession() throws Exception {
 		Resource rootResource = initialize();
 
 		// BEGIN First interaction
@@ -320,11 +314,11 @@ public class WriteSessionTest {
 		logAction(Stage.HANDLING,action,resource);
 	}
 
-	private void terminateSession(Action action, ResourceSnapshot resource) throws WriteSessionException {
+	private void terminateSession(Action action, ResourceSnapshot resource) throws Exception {
 		logAction(Stage.TERMINATION,action,resource);
 		this.uow.accept(new UnitOfWorkInspector());
 		this.sut.saveChanges();
-		this.writeSessionService.terminateSession(this.sut);
+		this.sut.close();
 		assertThat(transaction.isActive(),equalTo(false));
 	}
 

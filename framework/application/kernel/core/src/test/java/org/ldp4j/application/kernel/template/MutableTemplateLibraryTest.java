@@ -20,23 +20,28 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.template;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.fail;
 
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
-import org.ldp4j.application.kernel.template.Fixture;
+import org.ldp4j.example.BookContainerHandler;
+import org.ldp4j.example.PersonContainerHandler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class MutableTemplateLibraryTest {
+public class MutableTemplateLibraryTest extends TemplateLibraryTest {
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(MutableTemplateLibraryTest.class);
 
@@ -366,6 +371,71 @@ public class MutableTemplateLibraryTest {
 		} catch (Exception e) {
 			logFailure(e);
 		}
+	}
+
+	@Test
+	public void testFindsTemplatesByHandler() {
+		final TemplateLibrary library=getLibrary();
+		library.accept(
+			new TemplateConsumer() {
+				@Override
+				protected void processTemplate(ResourceTemplate template) {
+					ResourceTemplate other = library.findByHandler(template.handlerClass());
+					assertThat(other,equalTo(template));
+				}
+			}
+		);
+	}
+
+	@Test
+	public void testFindsTemplatesById() {
+		final TemplateLibrary library=getLibrary();
+		library.accept(
+			new TemplateConsumer() {
+				@Override
+				protected void processTemplate(ResourceTemplate template) {
+					ResourceTemplate other = library.findById(template.id());
+					assertThat(other,equalTo(template));
+				}
+			}
+		);
+	}
+
+	@Test
+	public void testEqualsDifferent() {
+		final TemplateLibrary library=getLibrary();
+		library.accept(
+			new TemplateConsumer() {
+				@Override
+				protected void processTemplate(final ResourceTemplate template) {
+					library.accept(
+						new TemplateConsumer() {
+							@Override
+							protected void processTemplate(final ResourceTemplate other) {
+								if(template!=other) {
+									assertThat(other,not(equalTo(template)));
+								}
+							}
+						}
+					);
+				}
+			}
+		);
+	}
+
+	@Test
+	public void testIndirectContainerTemplate() {
+		final TemplateLibrary library=getLibrary();
+		ResourceTemplate template = library.findByHandler(BookContainerHandler.class);
+		assertThat(template,instanceOf(IndirectContainerTemplate.class));
+		assertThat(((IndirectContainerTemplate)template).insertedContentRelation().toString(),equalTo(BookContainerHandler.INSERTED_CONTENT_RELATION));
+	}
+
+	@Override
+	protected TemplateLibrary getLibrary() {
+		MutableTemplateLibrary library=new MutableTemplateLibrary();
+		library.registerHandler(PersonContainerHandler.class);
+		return library;
 	}
 
 

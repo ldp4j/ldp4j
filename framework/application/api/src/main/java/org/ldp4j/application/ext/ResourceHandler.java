@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.1.0
- *   Bundle      : ldp4j-application-api-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
+ *   Bundle      : ldp4j-application-api-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.ext;
@@ -51,7 +51,6 @@ public interface ResourceHandler {
 	 *             if an internal exception prevents the retrieval of the
 	 *             representation.
 	 */
-	DataSet get(ResourceSnapshot resource)
-			throws UnknownResourceException, ApplicationRuntimeException;
+	DataSet get(ResourceSnapshot resource) throws UnknownResourceException;
 
 }

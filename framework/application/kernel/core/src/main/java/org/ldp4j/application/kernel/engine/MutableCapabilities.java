@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.1.0
- *   Bundle      : ldp4j-application-kernel-core-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.0
+ *   Bundle      : ldp4j-application-kernel-core-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.engine;
@@ -31,10 +31,16 @@ import org.ldp4j.application.engine.context.Capabilities;
 
 final class MutableCapabilities implements Capabilities {
 
+	private boolean queryable;
 	private boolean modifiable;
 	private boolean deletable;
 	private boolean patchable;
 	private boolean factory;
+
+	@Override
+	public boolean isQueryable() {
+		return this.queryable;
+	}
 
 	@Override
 	public boolean isModifiable() {
@@ -54,6 +60,10 @@ final class MutableCapabilities implements Capabilities {
 	@Override
 	public boolean isFactory() {
 		return factory;
+	}
+
+	void setQueryable(boolean queryable) {
+		this.queryable = queryable;
 	}
 
 	void setModifiable(boolean modifiable) {

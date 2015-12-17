@@ -20,29 +20,50 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.1.0
- *   Bundle      : ldp4j-application-api-0.1.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
+ *   Bundle      : ldp4j-application-api-0.2.0.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.ext;
 
+/**
+ * This exception may be thrown by an LDP4j Application if any failure prevents
+ * the setup of the application.
+ */
 public class ApplicationSetupException extends ApplicationLifecycleException {
 
-	/**
-	 *
-	 */
-	private static final long serialVersionUID = 5632366867818332062L;
+	private static final long serialVersionUID = 5632366867818332065L;
 
+	/**
+	 * Create a new instance with a message and a cause.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationSetupException(String message, Throwable cause) {
 		super(message, cause);
 	}
 
+	/**
+	 * Create a new instance with a message.
+	 *
+	 * @param message
+	 *            the description of the failure.
+	 */
 	public ApplicationSetupException(String message) {
-		super(message);
+		this(message,null);
 	}
 
+	/**
+	 * Create a new instance with a cause and a default message.
+	 *
+	 * @param cause
+	 *            the underlying cause of the failure.
+	 */
 	public ApplicationSetupException(Throwable cause) {
-		super(cause);
+		this("Unexpected application setup exception",cause);
 	}
 
 }
