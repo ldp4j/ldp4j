@@ -22,8 +22,8 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.commons.rmf:rmf-query:0.2.0
-      Bundle      : rmf-query-0.2.0.jar
+      Artifact    : org.ldp4j.commons.rmf:rmf-query:0.3.0-SNAPSHOT
+      Bundle      : rmf-query-0.3.0-SNAPSHOT.jar
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
@@ -38,7 +38,7 @@
 	<parent>
 		<groupId>org.ldp4j.commons.rmf</groupId>
 		<artifactId>rmf-parent</artifactId>
-		<version>0.2.0</version>
+		<version>0.3.0-SNAPSHOT</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
