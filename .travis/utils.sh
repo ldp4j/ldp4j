@@ -26,7 +26,7 @@ function fail() {
 action=$1
 mode=$2
 
-case "${TRAVIS_BRANCH}" in
+case "$action" in
   backup-maven-repo)   backupMavenRepo "$mode";;
   restore-maven-repo)  restoreMavenRepo "$mode";;
   *)                   fail "$action";;
