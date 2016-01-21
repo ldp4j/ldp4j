@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 function analyzeBranch() {
   if [ "$2" != "porcelain" ];

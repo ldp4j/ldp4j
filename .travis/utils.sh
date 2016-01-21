@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 function backupMavenRepo() {
   if [ "$1" != "porcelain" ];
@@ -20,14 +21,48 @@ function restoreMavenRepo() {
 }
 
 function fail() {
-  echo "Unknown command ${1}"
+  echo "ERROR: Unknown command '${1}'."
+  exit 1
 }
 
-action=$1
-mode=$2
+function prepareBuild() {
+  if [ "$#" != "2" ];
+  then
+    echo "ERROR: No encryption password specified."
+    exit 2
+  fi
+
+  if [ "$1" != "porcelain" ];
+  then
+    echo "Preparing Build's bill-of-materials..."
+    echo "- Decrypting private key..."
+    openssl aes-256-cbc -pass pass:"$2" -in config/src/main/resources/ci/secring.gpg.enc -out local.secring.gpg -d
+    echo "- Decrypting public key..."
+    openssl aes-256-cbc -pass pass:"$2" -in config/src/main/resources/ci/pubring.gpg.enc -out local.pubring.gpg -d
+    if [[ -a .git/shallow ]];
+    then
+      echo "- Unshallowing Git repository..."
+      git fetch --unshallow
+    fi
+  else
+    echo "Skipped preparation of the Build's bill-of-materials"
+  fi
+}
+
+mode=$1
+shift
+if [ "$mode" = "porcelain" ];
+then
+  action=$1
+  shift
+else
+  action=$mode
+  mode=execute
+fi
 
 case "$action" in
-  backup-maven-repo)   backupMavenRepo "$mode";;
-  restore-maven-repo)  restoreMavenRepo "$mode";;
-  *)                   fail "$action";;
+  backup-maven-repo ) backupMavenRepo "$mode" "$@";;
+  restore-maven-repo) restoreMavenRepo "$mode" "$@";;
+  prepare-build-bom ) prepareBuild "$mode" "$@";;
+  *                 ) fail "$action";;
 esac
