@@ -1,16 +1,16 @@
 #!/bin/bash
 
 function analyzeBranch() {
-  if [ "$1" != "porcelain" ];
+  if [ "$2" != "porcelain" ];
   then
     echo "Checking SonarQube Server..."
-    curl --head http://analysis.ldp4j1.org/sonar/ > /dev/null 2>&1
+    curl --head "$1" > /dev/null 2>&1
     if [ "$?" = "0" ];
     then
       echo "Executing SonarQube analysis (${TRAVIS_BRANCH})..."
       mvn sonar:sonar -B -Dsonar.branch=$TRAVIS_BRANCH -Dcoverage.reports.dir=$(pwd)/target/all --settings config/src/main/resources/ci/settings.xml
     else
-      echo "Skipped SonarQube analysis (${TRAVIS_BRANCH}): Cannot connect to SonarQube Server (http://analysis.ldp4j1.org/sonar/)"
+      echo "Skipped SonarQube analysis (${TRAVIS_BRANCH}): Cannot connect to SonarQube Server ($1)"
     fi
   else
     echo "Skipped SonarQube analysis (${TRAVIS_BRANCH}): Porcelain"
@@ -26,14 +26,14 @@ function skipPullRequestAnalysis() {
 }
 
 mode=$1
+server=http://analysis.ldp4j.org/sonar/
 
 if [ "${TRAVIS_PULL_REQUEST}" = "false" ];
 then
   case "${TRAVIS_BRANCH}" in
-    master)   analyzeBranch "$mode";;
-    develop)  analyzeBranch "$mode";;
-    feature*) skipBranchAnalysis ;;
-    *)        skipBranchAnalysis ;;
+    master | develop ) analyzeBranch "$server" "$mode";;
+    feature\/*       ) analyzeBranch "$server" "$mode";;
+    *                ) skipBranchAnalysis ;;
   esac
 else
   skipPullRequestAnalysis

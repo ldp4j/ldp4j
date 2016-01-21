@@ -25,10 +25,9 @@ mode=$1
 if [ "${TRAVIS_PULL_REQUEST}" = "false" ];
 then
   case "${TRAVIS_BRANCH}" in
-    master)   deploy "$mode";;
-    develop)  deploy "$mode";;
-    feature*) install "$mode";;
-    *)        install "$mode";;
+    master | develop ) deploy "$mode";;
+    feature\/*       ) install "$mode";;
+    *                ) install "$mode";;
   esac
 else
   install "$mode"
