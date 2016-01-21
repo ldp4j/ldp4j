@@ -120,7 +120,7 @@
 		<maven.surefire.plugin.version>2.18.1</maven.surefire.plugin.version>
 		<maven.war.plugin.version>2.6</maven.war.plugin.version>
 		<nexus.staging.maven.plugin.version>1.6.3</nexus.staging.maven.plugin.version>
-		<sonar.maven.plugin.version>2.5</sonar.maven.plugin.version>
+		<sonar.maven.plugin.version>2.7.1</sonar.maven.plugin.version>
 		<taglist.maven.plugin.version>2.4</taglist.maven.plugin.version>
 		<truezip.maven.plugin.version>1.2</truezip.maven.plugin.version>
 		<jgitflow.maven.plugin.version>1.0-m5.1</jgitflow.maven.plugin.version>
@@ -277,6 +277,13 @@
 					<version>${maven.assembly.plugin.version}</version>
 				</plugin>
 
+			<!-- sonar.host.url not working with version 2.7, blocking happening on
+			version 3.0.1 -->
+				<plugin>
+					<groupId>org.codehaus.mojo</groupId>
+					<artifactId>sonar-maven-plugin</artifactId>
+					<version>${sonar.maven.plugin.version}</version>
+				</plugin>
 				<!-- ===================== -->
 				<!-- Other utility plugins -->
 				<!-- ===================== -->
