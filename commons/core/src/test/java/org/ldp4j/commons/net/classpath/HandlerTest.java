@@ -28,7 +28,9 @@ package org.ldp4j.commons.net.classpath;
 
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.endsWith;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -36,10 +38,11 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import org.apache.commons.io.IOUtils;
 import org.junit.Before;
 import org.junit.Test;
-import org.ldp4j.commons.net.classpath.Handler;
+
+import com.google.common.base.Charsets;
+import com.google.common.io.Resources;
 
 public class HandlerTest {
 
@@ -69,22 +72,21 @@ public class HandlerTest {
 			}
 			return super.getResourceAsStream(name);
 		}
-		
+
 		public String toString() {
 			return EXISTENT_RESOURCE;
 		}
 	}
-	
+
 	@Before
 	public void setUp() throws Exception {
 		System.setProperty("java.protocol.handler.pkgs", "org.ldp4j.commons.net");
 	}
-	
+
 	@Test
 	public void testIntegration$manual$existent() throws IOException {
 		URL url = new URL(null,EXISTENT_RESOURCE,new Handler());
-		InputStream is = url.openStream();
-		assertThat(IOUtils.toString(is),endsWith(RESOURCE));
+		assertThat(Resources.toString(url,Charsets.UTF_8),endsWith(RESOURCE));
 	}
 
 	@Test
@@ -125,8 +127,7 @@ public class HandlerTest {
 	@Test
 	public void testIntegration$protocol$existent() throws IOException {
 		URL url = new URL(EXISTENT_RESOURCE);
-		InputStream is = url.openStream();
-		assertThat(IOUtils.toString(is),endsWith(RESOURCE));
+		assertThat(Resources.toString(url,Charsets.UTF_8),endsWith(RESOURCE));
 	}
 
 	@Test

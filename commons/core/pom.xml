@@ -51,7 +51,7 @@
 
 	<name>LDP4j :: Commons :: Core </name>
 
-	<description>Common utility libraries for the MEG @ Work projects</description>
+	<description>Common utility libraries for the LDP4j project</description>
 
 	<!-- =================================================================== -->
 	<!--   BUILD SETTINGS                                                    -->
@@ -63,8 +63,8 @@
 			<artifactId>slf4j-api</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>commons-io</groupId>
-			<artifactId>commons-io</artifactId>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
@@ -77,74 +77,11 @@
 			<artifactId>hamcrest-integration</artifactId>
 			<scope>test</scope>
 		</dependency>
-			<dependency>
-				<groupId>org.mockito</groupId>
-				<artifactId>mockito-core</artifactId>
-				<scope>test</scope>
-				<exclusions>
-					<exclusion>
-						<artifactId>hamcrest-core</artifactId>
-						<groupId>org.hamcrest</groupId>
-					</exclusion>
-				</exclusions>
-			</dependency>
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<scope>test</scope>
-			<exclusions>
-				<exclusion>
-					<artifactId>hamcrest-core</artifactId>
-					<groupId>org.hamcrest</groupId>
-				</exclusion>
-			</exclusions>
 		</dependency>
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-surefire-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>default-test</id>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<configuration>
-				<executions>
-					<execution>
-						<id>default-test</id>
-						<goals>
-							<goal>test</goal>
-						</goals>
-						<configuration>
-							<includes>
-								<include>**/*Test.java</include>
-							</includes>
-						</configuration>
-					</execution>
-				</executions>
-							<argLine>${surefire.arg.line} ${jacoco.agent.ut.arg}</argLine>
-							<properties>
-								<property>
-									<name>listener</name>
-									<value>org.sonar.java.jacoco.JUnitListener</value>
-								</property>
-							</properties>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-failsafe-plugin</artifactId>
-				<configuration>
-					<skipITs>true</skipITs>
-				</configuration>
-			</plugin>
-		</plugins>
-	</build>
 
 </project>
