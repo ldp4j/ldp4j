@@ -62,7 +62,7 @@ public class ApplicationApiRuntimeException extends RuntimeException {
 	 *            the underlying cause of the failure.
 	 */
 	public ApplicationApiRuntimeException(Throwable cause) {
-		super("Unexpected Application API runtime exception",cause);
+		this("Unexpected Application API runtime exception",cause);
 	}
 
 }

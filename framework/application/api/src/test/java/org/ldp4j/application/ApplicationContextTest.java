@@ -29,6 +29,7 @@ package org.ldp4j.application;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
@@ -97,6 +98,14 @@ public class ApplicationContextTest {
 	public void verifyIsUtilityClass() throws ClassNotFoundException {
 		Class<?> innerClass = Thread.currentThread().getContextClassLoader().loadClass(ApplicationContext.class.getCanonicalName()+"$ApplicationEngineSingleton");
 		assertThat(Utils.isUtilityClass(innerClass),equalTo(true));
+	}
+
+	@Test
+	public void testToString() throws Exception {
+		ApplicationContext sut = createContext();
+		assertThat(
+			sut.toString(),
+			not(equalTo(Utils.defaultToString(sut))));
 	}
 
 	@Test
@@ -574,76 +583,6 @@ public class ApplicationContextTest {
 			nativeSession.saveChanges();maxTimes=1;minTimes=1;
 			nativeSession.close();maxTimes=1;minTimes=1;
 		}};
-	}
-
-	@Test
-	public void testWriteSession$forceSessionClose$happyPath(@Mocked final WriteSession nativeSession) throws Exception {
-		prepareExpectations(nativeSession,null);
-		ApplicationContext sut = createContext();
-		useSession(sut);
-		forceGarbageCollection(sut);
-		awaitWriteSessionCleaner(sut);
-		verifySessionUsage(nativeSession);
-	}
-
-	@Test
-	public void testWriteSession$forceSessionClose$failurePath(@Mocked final WriteSession nativeSession) throws Exception {
-		prepareExpectations(nativeSession,new SessionTerminationException("failure"));
-		ApplicationContext sut = createContext();
-		useSession(sut);
-		forceGarbageCollection(sut);
-		awaitWriteSessionCleaner(sut);
-		verifySessionUsage(nativeSession);
-	}
-
-	@Test
-	public void testWriteSession$forceSessionClose$errorPath(@Mocked final WriteSession nativeSession) throws Exception {
-		prepareExpectations(nativeSession,new IllegalStateException("failure"));
-		ApplicationContext sut = createContext();
-		useSession(sut);
-		forceGarbageCollection(sut);
-		awaitWriteSessionCleaner(sut);
-		verifySessionUsage(nativeSession);
-	}
-
-	@Test
-	public void testWriteSession$forceSessionClose$interruptionPath(@Mocked final WriteSession nativeSession) throws Exception {
-		prepareExpectations(nativeSession, new InterruptedException("failure"));
-		ApplicationContext sut = createContext();
-		useSession(sut);
-		forceGarbageCollection(sut);
-		awaitWriteSessionCleaner(sut);
-		verifySessionUsage(nativeSession);
-	}
-
-	private void useSession(ApplicationContext sut) throws Exception {
-		WriteSession session = sut.createSession();
-		System.out.printf("%s - Created session %s%n",this.name.getMethodName(),session);
-		session.saveChanges();
-		System.out.printf("%s - Saved session %s%n",this.name.getMethodName(),session);
-		session=null;
-		System.out.printf("%s - Session nulled%n",this.name.getMethodName());
-	}
-
-	private void prepareExpectations(final WriteSession nativeSession, final Throwable failure) throws Exception {
-		new Expectations() {{
-			delegate.createSession();this.result=nativeSession;
-			nativeSession.close();this.result=failure;
-		}};
-	}
-
-	private void awaitWriteSessionCleaner(ApplicationContext sut) throws InterruptedException {
-		TimeUnit.MILLISECONDS.sleep(3000);
-		System.out.printf("%s - After waiting for the cleaner (%s)%n",name.getMethodName(),sut);
-	}
-
-	private void forceGarbageCollection(ApplicationContext sut) {
-		System.out.printf("%s - Force garbage collection (%s)%n",name.getMethodName(),sut);
-		int i=0;
-		while(i<10) {
-			i++;
-			System.gc();
-		}
 	}
 
 	private void verifySessionUsage(final WriteSession nativeSession) throws Exception {

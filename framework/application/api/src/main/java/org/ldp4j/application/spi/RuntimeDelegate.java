@@ -39,6 +39,7 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.ldp4j.application.ApplicationApiRuntimeException;
 import org.ldp4j.application.ApplicationContextException;
 import org.ldp4j.application.session.ReadSession;
 import org.ldp4j.application.session.ResourceSnapshot;
@@ -315,7 +316,7 @@ public abstract class RuntimeDelegate {
 
 		@Override
 		public void registerShutdownListener(ShutdownListener listener) {
-			// Nothing to do
+			throw new ApplicationApiRuntimeException("No runtime delegate found");
 		}
 
 	}

@@ -26,46 +26,33 @@
  */
 package org.ldp4j.application;
 
-/**
- * Checked exception for the Application Context.
- *
- * This exception may be thrown by the Application Context to signal Application
- * Engine failures or significant precondition failures.
- */
-public class ApplicationContextException extends ApplicationApiException {
+import java.lang.ref.ReferenceQueue;
+import java.lang.ref.WeakReference;
 
-	private static final long serialVersionUID = 5632915619813563619L;
+import com.google.common.base.MoreObjects;
 
-	/**
-	 * Create a new instance with a message.
-	 *
-	 * @param message
-	 *            the description of the failure.
-	 */
-	public ApplicationContextException(String message) {
-		this(message,null);
+final class ContextWriteSessionReference extends WeakReference<ContextWriteSession> {
+
+	private final ContextWriteSessionState state;
+
+	ContextWriteSessionReference(ContextWriteSession referent, ContextWriteSessionState state, ReferenceQueue<ContextWriteSession> referenceQueue) {
+		super(referent,referenceQueue);
+		this.state = state;
 	}
 
-	/**
-	 * Create a new instance with a cause.
-	 *
-	 * @param cause
-	 *            the underlying cause of the failure.
-	 */
-	public ApplicationContextException(Throwable cause) {
-		this("Unexpected application context exception",cause);
+	ContextWriteSessionState state() {
+		return this.state;
 	}
 
-	/**
-	 * Create a new instance with a message and a cause.
-	 *
-	 * @param message
-	 *            the description of the failure.
-	 * @param cause
-	 *            the underlying cause of the failure.
-	 */
-	public ApplicationContextException(String message, Throwable cause) {
-		super(message, cause);
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					omitNullValues().
+						add("enqueued",super.isEnqueued()).
+						add("state",this.state).
+						toString();
 	}
 
 }

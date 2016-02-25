@@ -26,46 +26,44 @@
  */
 package org.ldp4j.application;
 
-/**
- * Checked exception for the Application Context.
- *
- * This exception may be thrown by the Application Context to signal Application
- * Engine failures or significant precondition failures.
- */
-public class ApplicationContextException extends ApplicationApiException {
+import mockit.Expectations;
+import mockit.Injectable;
+import mockit.Tested;
+import mockit.integration.junit4.JMockit;
 
-	private static final long serialVersionUID = 5632915619813563619L;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.ldp4j.application.session.SessionTerminationException;
+import org.ldp4j.application.session.WriteSession;
 
-	/**
-	 * Create a new instance with a message.
-	 *
-	 * @param message
-	 *            the description of the failure.
-	 */
-	public ApplicationContextException(String message) {
-		this(message,null);
+@RunWith(JMockit.class)
+public class ContextWriteSessionStateTest {
+
+	@Injectable
+	private WriteSession delegate;
+
+	@Injectable
+	private ContextWriteSessionStateListener listener;
+
+	@Tested
+	private ContextWriteSessionState sut;
+
+	@Test
+	public void testDispose$happyPath() throws Exception {
+		new Expectations() {{
+			delegate.close();times=1;
+			listener.onDispose(sut);times=1;
+		}};
+		this.sut.dispose();
 	}
 
-	/**
-	 * Create a new instance with a cause.
-	 *
-	 * @param cause
-	 *            the underlying cause of the failure.
-	 */
-	public ApplicationContextException(Throwable cause) {
-		this("Unexpected application context exception",cause);
-	}
-
-	/**
-	 * Create a new instance with a message and a cause.
-	 *
-	 * @param message
-	 *            the description of the failure.
-	 * @param cause
-	 *            the underlying cause of the failure.
-	 */
-	public ApplicationContextException(String message, Throwable cause) {
-		super(message, cause);
+	@Test
+	public void testDispose$failurePath() throws Exception {
+		new Expectations() {{
+			listener.onDispose(sut);times=1;
+			delegate.close();result=new SessionTerminationException("Failure");
+		}};
+		this.sut.dispose();
 	}
 
 }

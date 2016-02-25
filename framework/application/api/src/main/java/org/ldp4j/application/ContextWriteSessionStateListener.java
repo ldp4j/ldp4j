@@ -26,46 +26,7 @@
  */
 package org.ldp4j.application;
 
-/**
- * Checked exception for the Application Context.
- *
- * This exception may be thrown by the Application Context to signal Application
- * Engine failures or significant precondition failures.
- */
-public class ApplicationContextException extends ApplicationApiException {
 
-	private static final long serialVersionUID = 5632915619813563619L;
-
-	/**
-	 * Create a new instance with a message.
-	 *
-	 * @param message
-	 *            the description of the failure.
-	 */
-	public ApplicationContextException(String message) {
-		this(message,null);
-	}
-
-	/**
-	 * Create a new instance with a cause.
-	 *
-	 * @param cause
-	 *            the underlying cause of the failure.
-	 */
-	public ApplicationContextException(Throwable cause) {
-		this("Unexpected application context exception",cause);
-	}
-
-	/**
-	 * Create a new instance with a message and a cause.
-	 *
-	 * @param message
-	 *            the description of the failure.
-	 * @param cause
-	 *            the underlying cause of the failure.
-	 */
-	public ApplicationContextException(String message, Throwable cause) {
-		super(message, cause);
-	}
-
+interface ContextWriteSessionStateListener {
+	void onDispose(ContextWriteSessionState state);
 }

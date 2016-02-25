@@ -26,46 +26,48 @@
  */
 package org.ldp4j.application;
 
-/**
- * Checked exception for the Application Context.
- *
- * This exception may be thrown by the Application Context to signal Application
- * Engine failures or significant precondition failures.
- */
-public class ApplicationContextException extends ApplicationApiException {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.sameInstance;
 
-	private static final long serialVersionUID = 5632915619813563619L;
+import java.lang.ref.ReferenceQueue;
 
-	/**
-	 * Create a new instance with a message.
-	 *
-	 * @param message
-	 *            the description of the failure.
-	 */
-	public ApplicationContextException(String message) {
-		this(message,null);
+import mockit.Injectable;
+import mockit.Tested;
+import mockit.integration.junit4.JMockit;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.ldp4j.commons.testing.Utils;
+
+@RunWith(JMockit.class)
+public class ContextWriteSessionReferenceTest {
+
+	@Injectable
+	private ReferenceQueue<ContextWriteSession> referenceQueue;
+
+	@Injectable
+	private ContextWriteSession referent;
+
+	@Injectable
+	private ContextWriteSessionState state;
+
+	@Tested
+	private ContextWriteSessionReference sut;
+
+	@Test
+	public void testToString() throws Exception {
+		assertThat(
+			this.sut.toString(),
+			not(equalTo(Utils.defaultToString(sut))));
 	}
 
-	/**
-	 * Create a new instance with a cause.
-	 *
-	 * @param cause
-	 *            the underlying cause of the failure.
-	 */
-	public ApplicationContextException(Throwable cause) {
-		this("Unexpected application context exception",cause);
-	}
-
-	/**
-	 * Create a new instance with a message and a cause.
-	 *
-	 * @param message
-	 *            the description of the failure.
-	 * @param cause
-	 *            the underlying cause of the failure.
-	 */
-	public ApplicationContextException(String message, Throwable cause) {
-		super(message, cause);
+	@Test
+	public void testState() throws Exception {
+		assertThat(
+			this.sut.state(),
+			sameInstance(state));
 	}
 
 }

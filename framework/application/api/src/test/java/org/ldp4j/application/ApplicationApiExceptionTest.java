@@ -26,46 +26,31 @@
  */
 package org.ldp4j.application;
 
-/**
- * Checked exception for the Application Context.
- *
- * This exception may be thrown by the Application Context to signal Application
- * Engine failures or significant precondition failures.
- */
-public class ApplicationContextException extends ApplicationApiException {
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
-	private static final long serialVersionUID = 5632915619813563619L;
+import org.junit.Test;
 
-	/**
-	 * Create a new instance with a message.
-	 *
-	 * @param message
-	 *            the description of the failure.
-	 */
-	public ApplicationContextException(String message) {
-		this(message,null);
+
+public class ApplicationApiExceptionTest {
+
+	@Test
+	public void testGeneratesDefaultMessage() throws Exception {
+		assertThat(
+			new ApplicationApiException((Throwable)null){
+				private static final long serialVersionUID = -1369206844229035913L;
+			}.getMessage(),
+			equalTo("Unexpected Application API exception"));
 	}
 
-	/**
-	 * Create a new instance with a cause.
-	 *
-	 * @param cause
-	 *            the underlying cause of the failure.
-	 */
-	public ApplicationContextException(Throwable cause) {
-		this("Unexpected application context exception",cause);
-	}
-
-	/**
-	 * Create a new instance with a message and a cause.
-	 *
-	 * @param message
-	 *            the description of the failure.
-	 * @param cause
-	 *            the underlying cause of the failure.
-	 */
-	public ApplicationContextException(String message, Throwable cause) {
-		super(message, cause);
+	@Test
+	public void testDoesNotRequireCause() throws Exception {
+		assertThat(
+			new ApplicationApiException("message"){
+				private static final long serialVersionUID = -1369206844229035913L;
+			}.getCause(),
+			nullValue());
 	}
 
 }

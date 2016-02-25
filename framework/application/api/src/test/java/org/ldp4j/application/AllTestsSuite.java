@@ -37,8 +37,16 @@ import org.ldp4j.application.vocabulary.VocabularyTestsSuite;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-	VocabularyTestsSuite.class,
+	ApplicationApiExceptionTest.class,
+	ApplicationApiRuntimeExceptionTest.class,
+	ApplicationContextExceptionTest.class,
+	ContextWriteSessionTest.class,
+	ContextWriteSessionReferenceTest.class,
+	ContextWriteSessionStateTest.class,
+	WriteSessionCleanerTest.class,
 	ApplicationContextTest.class,
+	ApplicationContextExtendedTest.class,
+	VocabularyTestsSuite.class,
 	LiteralsTest.class,
 	MembershipRelationTest.class,
 	SnapshotResolverTest.class,

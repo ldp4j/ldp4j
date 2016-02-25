@@ -56,6 +56,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.ldp4j.application.ApplicationApiRuntimeException;
 import org.ldp4j.application.ApplicationContextException;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
@@ -431,6 +432,16 @@ public class RuntimeDelegateTest {
 	public void testDefaultResourceSnapshotResolver$resolveURI() throws Exception {
 		ResourceSnapshotResolver resolver = sut().createResourceResolver(canonicalBase,session);
 		assertThat(resolver.resolve(endpoint),nullValue());
+	}
+
+	@Test
+	public void testDefaultResourceSnapshotResolver$registerShutdownListener(@Mocked final ShutdownListener listener) throws Exception {
+		try {
+			sut().registerShutdownListener(listener);
+			fail("Operation should fail");
+		} catch (ApplicationApiRuntimeException e) {
+			assertThat(e.getMessage(),equalTo("No runtime delegate found"));
+		}
 	}
 
 }
