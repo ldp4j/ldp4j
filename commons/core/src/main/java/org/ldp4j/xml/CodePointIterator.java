@@ -27,9 +27,14 @@
 package org.ldp4j.xml;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 import org.ldp4j.util.CharSequences;
 
+/**
+ * An iterator over a {@code CharSequence} that allows receiving the sequence of
+ * Unicode code points that make up the {@code CharSequence}.
+ */
 final class CodePointIterator implements Iterator<Integer> {
 
 	private final CharSequence s;
@@ -48,25 +53,49 @@ final class CodePointIterator implements Iterator<Integer> {
 		}
 	}
 
+	/**
+	 * Returns {@code true} if the iteration has more code points. (In other
+	 * words, returns {@code true} if {@link #next} would return a code point
+	 * rather than throwing an exception.)
+	 *
+	 * @return {@code true} if the iteration has more code points
+	 */
 	@Override
 	public boolean hasNext() {
 		return this.next < this.length;
 	}
 
+	/**
+	 * Returns the next code point in the iteration.
+	 *
+	 * @return the next code point in the iteration
+	 * @throws NoSuchElementException
+	 *             if the iteration has no more code points
+	 */
 	@Override
 	public Integer next() {
+		if(!hasNext()) {
+			throw new NoSuchElementException("No more codepoints available in the CharSequence");
+		}
 		this.index=this.next;
 		final Integer codePoint = Character.codePointAt(this.s, this.next);
 		this.next+=Character.charCount(codePoint);
 		return codePoint;
 	}
 
+	/**
+	 * The operation is not supported by the iterator.
+	 *
+	 * @throws UnsupportedOperationException
+	 *             always, as the {@code remove} operation is not supported by
+	 *             this iterator
+	 */
 	@Override
 	public void remove() {
 		throw new UnsupportedOperationException();
 	}
 
-	public int index() {
+	int index() {
 		return this.index;
 	}
 

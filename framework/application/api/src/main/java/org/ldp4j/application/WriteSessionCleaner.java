@@ -101,24 +101,24 @@ final class WriteSessionCleaner {
 		}
 	}
 
-	synchronized private boolean isRunning() {
+	private synchronized boolean isRunning() {
 		return this.thread!=null;
 	}
 
-	synchronized static void launch(ReferenceQueue<ContextWriteSession> referenceQueue) {
+	static synchronized void launch(ReferenceQueue<ContextWriteSession> referenceQueue) {
 		if(!isActive()) {
 			instance=new WriteSessionCleaner(referenceQueue);
 			instance.start();
 		}
 	}
 
-	synchronized static void terminate() {
+	static synchronized void terminate() {
 		if(isActive()) {
 			instance.shutdown();
 		}
 	}
 
-	synchronized static boolean isActive() {
+	static synchronized boolean isActive() {
 		if(instance==null) {
 			return false;
 		}

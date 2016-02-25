@@ -50,10 +50,10 @@ final class Validators {
 			if (!this.first.isValid(firstCodePoint)) {
 				return false;
 			}
-			for (int i = Character.charCount(firstCodePoint); i < s
-					.length();) {
+			int i = Character.charCount(firstCodePoint);
+			while(i < s.length()) {
 				final int codePoint = Character.codePointAt(s, i);
-				if (!this.rest.isValid(codePoint)) {
+				if(!this.rest.isValid(codePoint)) {
 					return false;
 				}
 				i += Character.charCount(codePoint);
