@@ -71,30 +71,33 @@ public final class EndpointControllerUtils {
 
 	/**
 	 * Get a text/plain representation that indicates the acceptable media types
-	 * for the specified resource. The current implementation <b>only</b> takes
-	 * care of the media type, nor language, nor encodings are taken into
-	 * consideration for generating the acceptable content.
+	 * and charsets for the specified resource. The current implementation
+	 * <b>only</b> takes care of the media type, nor language, nor encodings are
+	 * taken into consideration for generating the acceptable content.
 	 *
 	 * @param variants
 	 *            The acceptable variants
 	 * @param resourceLocation
 	 *            The location of the resource
-	 * @return A content instance that outlines the acceptable media types and
-	 *         the locations from where the resource contents for those media
-	 *         types can be retrieved.
+	 * @param supportedCharsets
+	 *            The supported charsets
+	 * @return A content instance that outlines the acceptable media types
+	 *         together with the locations from where the resource contents for
+	 *         those media types can be retrieved, and the charsets supported.
 	 */
 	public static String getAcceptableContent(
 			List<Variant> variants,
-			URI resourceLocation) {
+			URI resourceLocation,
+			List<String> supportedCharsets) {
 		StringBuilder builder = new StringBuilder();
 		for (Variant variant : variants) {
-			builder.append(variant.getMediaType()).append(" : %1$s%n");
+			MediaType mediaType = variant.getMediaType();
+			builder.append(mediaType).append(" : %1$s%n");
+			for(String supportedCharset:supportedCharsets) {
+				builder.append(mediaType.withCharset(supportedCharset)).append(" : %1$s%n");
+			}
 		}
-		return
-			String.format(
-				builder.toString(),
-				resourceLocation
-			);
+		return String.format(builder.toString(),resourceLocation);
 	}
 
 	public static void populateAllowedHeaders(ResponseBuilder builder, Capabilities capabilities) {

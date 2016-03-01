@@ -26,7 +26,9 @@
  */
 package org.ldp4j.server.controller;
 
+import java.io.ByteArrayInputStream;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -62,10 +64,12 @@ import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.ext.UnsupportedContentException;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.rdf.Namespaces;
+import org.ldp4j.server.config.Configuration;
 import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 
 final class ExistingEndpointController implements EndpointController {
@@ -206,12 +210,8 @@ final class ExistingEndpointController implements EndpointController {
 			builder.header(ContentPreferencesUtils.PREFERENCE_APPLIED_HEADER,ContentPreferencesUtils.asPreferenceAppliedHeader(preferences));
 		}
 		addOptionsMandatoryHeaders(context, builder);
-		builder.
-			status(Status.OK.getStatusCode()).
-			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, entity.length());
-		if(includeEntity) {
-			builder.entity(entity);
-		}
+		builder.status(Status.OK.getStatusCode());
+		addResponseEntity(builder,entity,variant,includeEntity);
 		if(!query.isEmpty()) {
 			builder.
 				header(
@@ -222,6 +222,37 @@ final class ExistingEndpointController implements EndpointController {
 							query));
 		}
 		return builder.build();
+	}
+
+	private void addResponseEntity(ResponseBuilder builder, String entity, Variant variant, boolean includeEntity) {
+		MediaType mediaType = variant.getMediaType();
+
+		String charsetName=mediaType.getParameters().get(MediaType.CHARSET_PARAMETER);
+		Charset charset=Charsets.UTF_8;
+		if(charsetName!=null && !charsetName.isEmpty() && Charset.isSupported(charsetName)) {
+			charset=Charset.forName(charsetName);
+		} else {
+			LOGGER.error("Missing of invalid charset information {}",mediaType);
+			charsetName=charset.name();
+		}
+
+		MediaType target=
+			Configuration.includeCharsetInformation()?
+				mediaType.withCharset(charsetName):
+				new MediaType(mediaType.getType(),mediaType.getSubtype());
+
+		byte[] bytes = entity.getBytes(charset);
+		builder.
+			type(target).
+			header(ExistingEndpointController.CONTENT_LENGTH_HEADER,bytes.length);
+
+		if(variant.getLanguage()!=null) {
+			builder.language(variant.getLanguage());
+		}
+
+		if(includeEntity) {
+			builder.entity(new ByteArrayInputStream(bytes));
+		}
 	}
 
 	private String serialize(OperationContext context, Variant variant, DataSet entity, Namespaces namespaces) {
@@ -304,21 +335,26 @@ final class ExistingEndpointController implements EndpointController {
 			LOGGER.trace("Constraints to serialize: \n {}",report);
 
 			String body=serialize(context, variant, report, NamespacesHelper.constraintReportNamespaces(context.applicationNamespaces()));
-
 			ResponseBuilder builder=Response.serverError();
-			builder.variant(variant);
 			builder.
-				status(Status.OK.getStatusCode()).
-				header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length());
-			if(includeEntity) {
-				builder.entity(body);
-			}
+				status(Status.OK.getStatusCode());
+			addResponseEntity(builder, body, variant, includeEntity);
 			return builder.build();
 		} catch (ApplicationExecutionException e) {
 			return processExecutionException(context, e);
 		} catch (ApplicationContextException e) {
 			return processRuntimeException(context, e);
 		}
+	}
+
+	private Variant errorResponseVariant() {
+		return
+			Variant.
+				languages(Locale.ENGLISH).
+				mediaTypes(MediaType.TEXT_PLAIN_TYPE.withCharset(Charsets.UTF_8.displayName())).
+				add().
+				build().
+				get(0);
 	}
 
 	private Response processRuntimeException(OperationContext context, ApplicationContextException exception) {
@@ -374,11 +410,7 @@ final class ExistingEndpointController implements EndpointController {
 			statusCode=Status.INTERNAL_SERVER_ERROR.getStatusCode();
 			body=Throwables.getStackTraceAsString(exception);
 		}
-		builder.
-			type(MediaType.TEXT_PLAIN).
-			language(Locale.ENGLISH).
-			header(ExistingEndpointController.CONTENT_LENGTH_HEADER, body.length()).
-			entity(body);
+		addResponseEntity(builder, body, errorResponseVariant(), true);
 		addRequiredHeaders(context, builder);
 		builder.status(statusCode);
 		return builder.build();

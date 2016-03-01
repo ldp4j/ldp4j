@@ -113,11 +113,11 @@ public class OperationContextException extends RuntimeException {
 	}
 
 	public Class<? extends PublicResource> resourceClass() {
-		return clazz;
+		return this.clazz;
 	}
 
 	public final URI resourceLocation() {
-		return location;
+		return this.location;
 	}
 
 	public final Capabilities resourceCapabilities() {

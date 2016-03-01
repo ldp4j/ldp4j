@@ -24,37 +24,30 @@
  *   Bundle      : ldp4j-server-core-0.3.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller;
+package org.ldp4j.server.config;
 
-import java.nio.charset.Charset;
-import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.ldp4j.application.engine.context.PublicResource;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
+public final class Configuration {
 
-public class NotAcceptableException extends OperationContextException {
+	private static final Logger LOGGER=LoggerFactory.getLogger(Configuration.class);
 
-	private static final long serialVersionUID = 6897847237787548607L;
+	public static final String OMMIT_CONTENT_TYPE_CHARSET = "org.ldp4j.server.response.contentType.ommitCharset";
 
-	private final List<String> supportedCharsets;
+	private static final AtomicBoolean INCLUDE_CHARSET_LOGGED=new AtomicBoolean();
 
-	public NotAcceptableException(PublicResource resource, OperationContext context) {
-		super(resource,context);
-		this.supportedCharsets=getNames(context.supportedCharsets());
+	private Configuration() {
 	}
 
-	public List<String> supportedCharsets() {
-		return this.supportedCharsets;
-	}
-
-	private static List<String> getNames(List<Charset> supportedCharsets2) {
-		Builder<String> builder=ImmutableList.<String>builder();
-		for(Charset supportedCharset:supportedCharsets2) {
-			builder.add(supportedCharset.name());
+	public static boolean includeCharsetInformation() {
+		boolean result=!Boolean.parseBoolean(System.getProperty(OMMIT_CONTENT_TYPE_CHARSET));
+		if(INCLUDE_CHARSET_LOGGED.compareAndSet(false,true)) {
+			LOGGER.info("Inclusion of charset parameter in response Content-Type header is {}",result?"enabled":"disabled");
 		}
-		return builder.build();
+		return result;
 	}
 
 }

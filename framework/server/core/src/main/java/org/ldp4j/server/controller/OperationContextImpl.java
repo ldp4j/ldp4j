@@ -30,6 +30,7 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -61,12 +62,15 @@ import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.server.data.DataTransformator;
 import org.ldp4j.server.data.ResourceResolver;
 import org.ldp4j.server.data.UnsupportedMediaTypeException;
+import org.ldp4j.server.utils.CharsetSelector;
 import org.ldp4j.server.utils.VariantHelper;
 import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 
 final class OperationContextImpl implements OperationContext {
 
@@ -100,6 +104,7 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(OperationContextImpl.class);
+
 	private final ApplicationContext applicationContext;
 	private final String             endpointPath;
 	private final HttpMethod         method;
@@ -111,6 +116,8 @@ final class OperationContextImpl implements OperationContext {
 	private ApplicationContextOperation applicationContextOperation;
 	private PublicResource              resource;
 	private DataSet                     dataSet;
+
+	private CharsetSelector charsetSelector;
 
 	OperationContextImpl(
 		ApplicationContext applicationContext,
@@ -139,8 +146,7 @@ final class OperationContextImpl implements OperationContext {
 				getRequestHeader(HttpHeaders.CONTENT_ENCODING);
 
 		List<Variant> variants=
-			Variant.VariantListBuilder.
-				newInstance().
+			Variant.
 				mediaTypes(headers().getMediaType()).
 				encodings(requestHeader.toArray(new String[requestHeader.size()])).
 				languages(headers().getLanguage()).
@@ -212,6 +218,20 @@ final class OperationContextImpl implements OperationContext {
 				allowed=false;
 		}
 		return allowed;
+	}
+
+	private CharsetSelector charsetSelector() {
+		if(this.charsetSelector==null) {
+			final List<Variant> variants=VariantUtils.defaultVariants();
+			final Variant variant = this.request.selectVariant(variants);
+			this.charsetSelector=
+				CharsetSelector.
+					newInstance().
+						mediaType(variant==null?null:variant.getMediaType()).
+						acceptableCharsets(this.headers.getRequestHeader(HttpHeaders.ACCEPT_CHARSET)).
+						supportedCharsets(supportedCharsets());
+		}
+		return this.charsetSelector;
 	}
 
 	UriInfo uriInfo() {
@@ -333,11 +353,46 @@ final class OperationContextImpl implements OperationContext {
 	@Override
 	public Variant expectedVariant() {
 		List<Variant> variants=VariantUtils.defaultVariants();
-		Variant variant = request.selectVariant(variants);
+		Variant variant=this.request.selectVariant(variants);
 		if(variant==null) {
 			throw new NotAcceptableException(this.resource,this);
 		}
-		return variant;
+		String acceptableCharset=acceptedCharset();
+		if(acceptableCharset==null) {
+			throw new NotAcceptableException(this.resource,this);
+		}
+		return
+			Variant.
+				encodings(variant.getEncoding()).
+				languages(variant.getLanguage()).
+				mediaTypes(variant.getMediaType().withCharset(acceptableCharset)).
+				add().
+				build().
+				get(0);
+	}
+
+	@Override
+	public boolean expectsCharset() {
+		return charsetSelector().requiresCharset();
+	}
+
+	@Override
+	public String acceptedCharset() {
+		return charsetSelector().select();
+	}
+
+	/**
+	 * TODO: Add extension point to enable configuring the list of supported
+	 * charsets
+	 */
+	@Override
+	public List<Charset> supportedCharsets() {
+		return
+			ImmutableList.
+				<Charset>builder().
+					add(Charsets.UTF_8).
+					add(Charsets.ISO_8859_1).
+					build();
 	}
 
 	@Override

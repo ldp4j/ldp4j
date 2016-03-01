@@ -27,6 +27,8 @@
 package org.ldp4j.server.controller;
 
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.util.List;
 
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Variant;
@@ -76,6 +78,12 @@ public interface OperationContext {
 	void completeOperation();
 
 	Namespaces applicationNamespaces();
+
+	List<Charset> supportedCharsets();
+
+	boolean expectsCharset();
+
+	String acceptedCharset();
 
 
 }

@@ -29,6 +29,7 @@ package org.ldp4j.server.controller.providers;
 import java.util.List;
 import java.util.Locale;
 
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
@@ -47,7 +48,12 @@ public class NotAcceptableExceptionMapper implements ExceptionMapper<NotAcceptab
 	@Override
 	public Response toResponse(NotAcceptableException throwable) {
 		List<Variant> variants = VariantUtils.defaultVariants();
-		String message = EndpointControllerUtils.getAcceptableContent(variants, throwable.resourceLocation());
+		String message=
+			EndpointControllerUtils.
+				getAcceptableContent(
+					variants,
+					throwable.resourceLocation(),
+					throwable.supportedCharsets());
 		ResponseBuilder builder=
 			Response.
 				status(Status.NOT_ACCEPTABLE).
@@ -55,9 +61,17 @@ public class NotAcceptableExceptionMapper implements ExceptionMapper<NotAcceptab
 				language(Locale.ENGLISH).
 				type(MediaType.TEXT_PLAIN).
 				entity(message);
+		addAcceptedCharsetVariants(builder,throwable.supportedCharsets());
 		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
 		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.resourceClass());
 		return builder.build();
+	}
+
+	private void addAcceptedCharsetVariants(ResponseBuilder builder, Iterable<String> supportedCharsets) {
+		builder.header(HttpHeaders.VARY,HttpHeaders.ACCEPT_CHARSET);
+		for(String supportedCharset:supportedCharsets) {
+			builder.header(HttpHeaders.ACCEPT_CHARSET,supportedCharset);
+		}
 	}
 
 }

@@ -34,6 +34,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.startsWith;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -44,6 +45,7 @@ import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 import javax.ws.rs.core.Link;
+import javax.ws.rs.core.Response.Status;
 
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
@@ -93,6 +95,7 @@ import org.ldp4j.server.testing.fixture.TestingApplication;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Charsets;
 import com.google.common.base.Stopwatch;
 import com.jayway.restassured.response.Response;
 
@@ -443,7 +446,7 @@ public class ServerFrontendITest {
 		Metadata patchResponse=HELPER.httpRequest(patch);
 		assertThat(patchResponse.status,equalTo(HttpStatus.SC_METHOD_NOT_ALLOWED));
 		assertThat(patchResponse.body,notNullValue());
-		assertThat(patchResponse.contentType,equalTo("text/plain"));
+		assertThat(patchResponse.contentType,startsWith("text/plain"));
 		assertThat(patchResponse.language,equalTo(Locale.ENGLISH));
 	}
 
@@ -461,7 +464,7 @@ public class ServerFrontendITest {
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_FORBIDDEN));
 		assertThat(getResponse.body,notNullValue());
-		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.contentType,startsWith("text/plain"));
 		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
 	}
 
@@ -479,7 +482,7 @@ public class ServerFrontendITest {
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
 		assertThat(getResponse.body,equalTo("Mixed queries not allowed"));
-		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.contentType,startsWith("text/plain"));
 		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
 	}
 
@@ -497,7 +500,7 @@ public class ServerFrontendITest {
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
 		assertThat(getResponse.body,equalTo("Only one constraint report identifier is allowed"));
-		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.contentType,startsWith("text/plain"));
 		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
 	}
 
@@ -515,7 +518,7 @@ public class ServerFrontendITest {
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_NOT_FOUND));
 		assertThat(getResponse.body,equalTo("Unknown constraint report '12312312321'"));
-		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.contentType,startsWith("text/plain"));
 		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
 	}
 
@@ -533,7 +536,7 @@ public class ServerFrontendITest {
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
 		assertThat(getResponse.body,notNullValue());
-		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.contentType,startsWith("text/plain"));
 		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
 	}
 
@@ -551,7 +554,7 @@ public class ServerFrontendITest {
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
 		assertThat(getResponse.body,notNullValue());
-		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.contentType,startsWith("text/plain"));
 		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
 	}
 
@@ -583,13 +586,13 @@ public class ServerFrontendITest {
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_OK));
 		assertThat(getResponse.body,notNullValue());
-		assertThat(getResponse.contentType,equalTo("text/turtle"));
+		assertThat(getResponse.contentType,startsWith("text/turtle"));
 
 		HttpGet get2 = HELPER.newRequest(MyApplication.ROOT_QUERYABLE_RESOURCE_PATH+"?param1=value1&param2=value2&param2=value3&param3",HttpGet.class);
 		Metadata getResponse2=HELPER.httpRequest(get2);
 		assertThat(getResponse2.status,equalTo(HttpStatus.SC_OK));
 		assertThat(getResponse2.body,notNullValue());
-		assertThat(getResponse2.contentType,equalTo("text/turtle"));
+		assertThat(getResponse2.contentType,startsWith("text/turtle"));
 
 		LOGGER.info("Completed {}",testName.getMethodName());
 	}
@@ -758,7 +761,7 @@ public class ServerFrontendITest {
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(OK));
 		assertThat(getResponse.body,notNullValue());
-		assertThat(getResponse.contentType,equalTo(TEXT_TURTLE));
+		assertThat(getResponse.contentType,startsWith(TEXT_TURTLE));
 
 		DynamicResponseHelper helper = new DynamicResponseHelper(url,MyApplication.ROOT_DYNAMIC_RESOURCE_PATH,getResponse.body);
 		assertThat(helper.getUpdates(),not(hasSize(0)));
@@ -780,7 +783,7 @@ public class ServerFrontendITest {
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_INTERNAL_SERVER_ERROR));
 		assertThat(getResponse.body,notNullValue());
-		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.contentType,startsWith("text/plain"));
 		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
 
 	}
@@ -799,7 +802,7 @@ public class ServerFrontendITest {
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_INTERNAL_SERVER_ERROR));
 		assertThat(getResponse.body,notNullValue());
-		assertThat(getResponse.contentType,equalTo("text/plain"));
+		assertThat(getResponse.contentType,startsWith("text/plain"));
 		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
 
 	}
@@ -823,7 +826,7 @@ public class ServerFrontendITest {
 		Metadata response=HELPER.httpRequest(post);
 		assertThat(response.status,equalTo(HttpStatus.SC_INTERNAL_SERVER_ERROR));
 		assertThat(response.body,notNullValue());
-		assertThat(response.contentType,equalTo("text/plain"));
+		assertThat(response.contentType,startsWith("text/plain"));
 		assertThat(response.language,equalTo(Locale.ENGLISH));
 
 	}
@@ -842,11 +845,52 @@ public class ServerFrontendITest {
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(OK));
 		assertThat(getResponse.body,notNullValue());
-		assertThat(getResponse.contentType,equalTo(TEXT_TURTLE));
+		assertThat(getResponse.contentType,startsWith(TEXT_TURTLE));
 
 		BadDataResponseHelper helper = new BadDataResponseHelper(url,MyApplication.ROOT_BAD_DATA_RESOURCE_PATH,getResponse.body);
 		assertThat(helper.getProperties(),hasItems(BadDataResourceHandler.CREATED_ON,BadDataResourceHandler.HAS_WIFE));
 		assertThat(helper.getProperties(),not(hasItems(BadDataResourceHandler.filteredProperties())));
+	}
+
+	@Test
+	@Category({
+		LDP.class,
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testGetWithCharset(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+		HttpGet newRequest = HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpGet.class);
+		newRequest.setHeader("Accept","text/turtle");
+		newRequest.setHeader("Accept-Charset",Charsets.ISO_8859_1.displayName());
+		Metadata response = HELPER.httpRequest(newRequest);
+		assertThat(response.contentType,startsWith("text/turtle"));
+		assertThat(response.contentType,containsString("charset="+Charsets.ISO_8859_1.displayName()));
+		LOGGER.info("Completed {}",testName.getMethodName());
+	}
+
+	@Test
+	@Category({
+		LDP.class,
+		HappyPath.class
+	})
+	@OperateOnDeployment(DEPLOYMENT)
+	public void testNotAcceptable(@ArquillianResource final URL url) throws Exception {
+		LOGGER.info("Started {}",testName.getMethodName());
+		HELPER.base(url);
+		HELPER.setLegacy(false);
+		HttpGet newRequest = HELPER.newRequest(MyApplication.ROOT_PERSON_RESOURCE_PATH,HttpGet.class);
+		newRequest.setHeader("Accept","application/xml");
+		newRequest.setHeader("Accept-Charset",Charsets.ISO_8859_1.displayName());
+		Metadata response = HELPER.httpRequest(newRequest);
+		assertThat(response.status,equalTo(Status.NOT_ACCEPTABLE.getStatusCode()));
+		assertThat(response.contentType,startsWith("text/plain"));
+		/**
+		 * TODO: We should check that the vary, accepted-charsets, and accepted headers match.
+		 */
+		LOGGER.info("Completed {}",testName.getMethodName());
 	}
 
 	private static final String TEXT_TURTLE = "text/turtle";
