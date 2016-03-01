@@ -34,9 +34,10 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
 
+import java.nio.charset.StandardCharsets;
+
 import org.junit.Test;
 
-import com.google.common.base.Charsets;
 
 public class CharsetPreferenceTest {
 
@@ -92,7 +93,7 @@ public class CharsetPreferenceTest {
 
 	@Test
 	public void testRound$happyPath() throws Exception {
-		assertThat(CharsetPreference.round(0.5001D),equalTo(0.500D));
+		assertThat(CharsetPreference.round(0.5001D),equalTo(500));
 	}
 
 	@Test
@@ -117,17 +118,17 @@ public class CharsetPreferenceTest {
 
 	@Test
 	public void testCreateCharsetDouble() throws Exception {
-		CharsetPreference sut=CharsetPreference.create(Charsets.UTF_8,(double)1/3);
+		CharsetPreference sut=CharsetPreference.create(StandardCharsets.UTF_8,(double)1/3);
 		assertThat(sut,notNullValue());
-		assertThat(sut.charset(),equalTo(Charsets.UTF_8.displayName()));
+		assertThat(sut.charset(),equalTo(StandardCharsets.UTF_8.displayName()));
 		assertThat(sut.weight(),equalTo(0.333D));
 	}
 
 	@Test
 	public void testCreateCharset() throws Exception {
-		CharsetPreference sut=CharsetPreference.create(Charsets.UTF_8);
+		CharsetPreference sut=CharsetPreference.create(StandardCharsets.UTF_8);
 		assertThat(sut,notNullValue());
-		assertThat(sut.charset(),equalTo(Charsets.UTF_8.displayName()));
+		assertThat(sut.charset(),equalTo(StandardCharsets.UTF_8.displayName()));
 		assertThat(sut.weight(),equalTo(1D));
 	}
 
@@ -177,7 +178,7 @@ public class CharsetPreferenceTest {
 	@Test
 	public void testEquals$differentCharset() {
 		CharsetPreference one=CharsetPreference.wildcard();
-		CharsetPreference other=CharsetPreference.create(Charsets.UTF_8);
+		CharsetPreference other=CharsetPreference.create(StandardCharsets.UTF_8);
 		assertThat(one,not(equalTo(other)));
 	}
 
@@ -198,7 +199,7 @@ public class CharsetPreferenceTest {
 	@Test
 	public void testHashCode$differentCharset() {
 		CharsetPreference one=CharsetPreference.wildcard();
-		CharsetPreference other=CharsetPreference.create(Charsets.UTF_8);
+		CharsetPreference other=CharsetPreference.create(StandardCharsets.UTF_8);
 		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
 	}
 

@@ -31,6 +31,7 @@ import static com.google.common.base.Preconditions.checkState;
 import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -68,7 +69,6 @@ import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 
@@ -390,8 +390,12 @@ final class OperationContextImpl implements OperationContext {
 		return
 			ImmutableList.
 				<Charset>builder().
-					add(Charsets.UTF_8).
-					add(Charsets.ISO_8859_1).
+					add(StandardCharsets.UTF_8).
+					add(StandardCharsets.ISO_8859_1).
+					add(StandardCharsets.US_ASCII).
+					add(StandardCharsets.UTF_16).
+					add(StandardCharsets.UTF_16LE).
+					add(StandardCharsets.UTF_16BE).
 					build();
 	}
 

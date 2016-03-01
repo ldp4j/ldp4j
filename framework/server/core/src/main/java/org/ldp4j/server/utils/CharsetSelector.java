@@ -27,13 +27,13 @@
 package org.ldp4j.server.utils;
 
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.List;
 import java.util.SortedSet;
 
 import javax.ws.rs.core.MediaType;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Iterables;
@@ -55,7 +55,7 @@ public final class CharsetSelector {
 			if(!this.preferences.isEmpty()) {
 				acceptableCharset=Iterables.getLast(this.preferences).charset();
 			} else if(this.failed.isEmpty()) {
-				acceptableCharset=Charsets.UTF_8.name();
+				acceptableCharset=StandardCharsets.UTF_8.name();
 			}
 			this.selection=acceptableCharset;
 		}

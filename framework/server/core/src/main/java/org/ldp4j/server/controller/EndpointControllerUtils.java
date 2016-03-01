@@ -30,6 +30,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -38,7 +39,9 @@ import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Variant;
 
+import org.ldp4j.application.data.DataSet;
 import org.ldp4j.application.engine.context.Capabilities;
+import org.ldp4j.application.engine.context.ContentPreferences;
 import org.ldp4j.application.engine.context.EntityTag;
 import org.ldp4j.application.engine.context.PublicBasicContainer;
 import org.ldp4j.application.engine.context.PublicDirectContainer;
@@ -49,6 +52,7 @@ import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.server.data.DataTransformator;
+import org.ldp4j.server.utils.VariantUtils;
 
 import com.google.common.collect.Lists;
 
@@ -59,6 +63,8 @@ public final class EndpointControllerUtils {
 	private static final String LINK_HEADER           = "Link";
 	private static final String ACCEPT_POST_HEADER    = "Accept-Post";
 	private static final String ALLOW_HEADER          = "Allow";
+	private static final String NL                    = System.lineSeparator();
+
 
 	private EndpointControllerUtils() {
 	}
@@ -180,6 +186,38 @@ public final class EndpointControllerUtils {
 			}
 		}
 		return builder.toString();
+	}
+
+	static List<Variant> getAcceptPostVariants(PublicResource resource) {
+		return
+			PublicRDFSource.class.isInstance(resource)?
+				Collections.<Variant>emptyList():
+				VariantUtils.defaultVariants();
+	}
+
+	static String retrievalLog(OperationContext context) {
+		StringBuilder builder=new StringBuilder();
+		Query query=context.getQuery();
+		if(query.isEmpty()) {
+			builder.append("Executing resource retrieval:").append(NL);
+		} else {
+			builder.append("Executing resource query:").append(NL);
+			builder.append("  - Parameters:").append(NL);
+			for(String parameter:query.parameterNames()) {
+			  builder.append("    + ").append(parameter).append(" : ").append(query.getParameter(parameter).rawValues());
+			}
+		}
+		ContentPreferences preferences=context.contentPreferences();
+		if(preferences!=null) {
+			builder.append("  - Using preferences: ").append(preferences).append(NL);
+		} else {
+			builder.append("  - Using default preferences: ").append(ContentPreferences.defaultPreferences()).append(NL);
+		}
+		return builder.toString();
+	}
+
+	static String retrievalResultLog(DataSet entity) {
+		return String.format("  - Data set to serialize:%n%s",entity);
 	}
 
 }

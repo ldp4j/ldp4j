@@ -26,15 +26,24 @@
  */
 package org.ldp4j.server.utils;
 
+import java.math.RoundingMode;
 import java.nio.charset.Charset;
+import java.text.DecimalFormat;
+import java.text.DecimalFormatSymbols;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Preconditions;
+import com.google.common.base.Strings;
+import com.google.common.math.DoubleMath;
 
 public final class CharsetPreference implements Comparable<CharsetPreference> {
+
+	private static final int    MAX_WEIGHT        = 1000;
+	private static final double MAX_WEIGHT_DOUBLE = 1000D;
 
 	private static final char[] CTRL = {
 		 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,
@@ -57,13 +66,20 @@ public final class CharsetPreference implements Comparable<CharsetPreference> {
 				and(CharMatcher.noneOf(new String(SEPARATORS)));
 
 	private static final Pattern QUALITY_PATTERN = Pattern.compile("(q|Q)=((1\\.0{0,3})|(0\\.\\d{0,3}))");
+	private static final DecimalFormat FORMAT;
+
+	static {
+		DecimalFormat format = new DecimalFormat("0",new DecimalFormatSymbols(Locale.ENGLISH));
+		format.setMaximumFractionDigits(3);
+		FORMAT=format;
+	}
 
 	private final String charset;
-	private final double weight;
+	private final int weight;
 
-	public CharsetPreference(String charset, double quality) {
+	public CharsetPreference(String charset, int weight) {
 		this.charset = charset;
-		this.weight = quality;
+		this.weight = weight;
 	}
 
 	public String charset() {
@@ -71,7 +87,7 @@ public final class CharsetPreference implements Comparable<CharsetPreference> {
 	}
 
 	public double weight() {
-		return this.weight;
+		return this.weight/MAX_WEIGHT_DOUBLE;
 	}
 
 	public boolean isWildcard() {
@@ -106,7 +122,11 @@ public final class CharsetPreference implements Comparable<CharsetPreference> {
 	 */
 	@Override
 	public String toString() {
-		return this.charset+(this.weight==1D?"":" ; q="+weight());
+		return
+			this.charset+
+			(this.weight==MAX_WEIGHT?
+				"":
+				" ; q="+FORMAT.format((float)this.weight/(float)MAX_WEIGHT));
 	}
 
 	/**
@@ -114,7 +134,7 @@ public final class CharsetPreference implements Comparable<CharsetPreference> {
 	 */
 	@Override
 	public int compareTo(CharsetPreference o) {
-		return (int)((this.weight-o.weight)*1000);
+		return this.weight-o.weight;
 	}
 
 	/** Create a charset preference that matches the following grammar:
@@ -141,23 +161,25 @@ public final class CharsetPreference implements Comparable<CharsetPreference> {
 		if(parts.length<=2) {
 			String charsetName =parts[0].trim();
 			if("*".equals(charsetName) || TOKEN_MATCHER.matchesAllOf(charsetName)) {
-				double quality=1D;
+				int weight=MAX_WEIGHT;
 				if(parts.length==2) {
-					String qualityValue=parts[1].trim();
-					Matcher matcher = QUALITY_PATTERN.matcher(qualityValue);
+					String weightValue=parts[1].trim();
+					Matcher matcher = QUALITY_PATTERN.matcher(weightValue);
 					if(!matcher.matches()) {
 						return null;
 					}
-					quality=Double.parseDouble(qualityValue.substring(2));
+					if(weightValue.charAt(2)=='0') {
+						weight=Integer.parseInt(Strings.padEnd(weightValue.substring(4),3,'0'));
+					}
 				}
-				return new CharsetPreference(charsetName,quality);
+				return new CharsetPreference(charsetName,weight);
 			}
 		}
 		return null;
 	}
 
 	public static CharsetPreference wildcard() {
-		return new CharsetPreference("*",1D);
+		return new CharsetPreference("*",MAX_WEIGHT);
 	}
 
 	public static CharsetPreference wildcard(double weight) {
@@ -166,7 +188,7 @@ public final class CharsetPreference implements Comparable<CharsetPreference> {
 
 	public static CharsetPreference create(Charset charset) {
 		Objects.requireNonNull(charset,"Charset cannot be null");
-		return new CharsetPreference(charset.name(),1D);
+		return new CharsetPreference(charset.name(),MAX_WEIGHT);
 	}
 
 	public static CharsetPreference create(Charset charset, double weight) {
@@ -174,10 +196,10 @@ public final class CharsetPreference implements Comparable<CharsetPreference> {
 		return new CharsetPreference(charset.name(),round(weight));
 	}
 
-	static double round(double weight) {
+	static int round(double weight) {
 		Preconditions.checkArgument(weight>=0D,"Weight must be greater than or equal to 0 (%s)",weight);
 		Preconditions.checkArgument(weight<=1D,"Weight must be lower than or equal to 1 (%s)",weight);
-		return (double)Math.round(weight*1000)/(double)1000;
+		return DoubleMath.roundToInt(weight*MAX_WEIGHT_DOUBLE,RoundingMode.DOWN);
 	}
 
 }
