@@ -31,19 +31,18 @@ import java.util.List;
 
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.server.utils.VariantUtils;
 
 public class ContentProcessingException extends OperationContextException {
 
 	private static final long serialVersionUID = -7271633668400276805L;
 
-	public ContentProcessingException(String message, PublicResource resource, OperationContext context) {
-		this(message,null,resource,context);
+	public ContentProcessingException(String message, OperationContext context) {
+		this(message,null,context);
 	}
 
-	public ContentProcessingException(String message, Throwable cause, PublicResource resource, OperationContext context) {
-		super(message,cause,resource,context);
+	public ContentProcessingException(String message, Throwable cause, OperationContext context) {
+		super(message,cause,context);
 	}
 
 	public final List<Variant> getSupportedVariants() {

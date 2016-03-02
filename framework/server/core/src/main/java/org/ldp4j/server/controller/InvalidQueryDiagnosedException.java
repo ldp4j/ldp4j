@@ -24,29 +24,25 @@
  *   Bundle      : ldp4j-server-core-0.3.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller.providers;
+package org.ldp4j.server.controller;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import javax.ws.rs.core.Response.Status;
 
-import org.ldp4j.server.controller.EndpointControllerUtils;
-import org.ldp4j.server.controller.MoreHttp;
-import org.ldp4j.server.controller.PreconditionRequiredException;
+import org.ldp4j.application.ext.InvalidQueryException;
 
-import com.google.common.net.HttpHeaders;
+public class InvalidQueryDiagnosedException extends DiagnosedException {
 
-@Provider
-public class PreconditionRequiredExceptionMapper implements ExceptionMapper<PreconditionRequiredException> {
+	private static final long serialVersionUID = -1386777654118410926L;
 
-	@Override
-	public Response toResponse(PreconditionRequiredException throwable) {
-		return
-			EndpointControllerUtils.
-				prepareErrorResponse(
-					throwable,
-					String.format("No %s header specified.",HttpHeaders.IF_MATCH),
-					MoreHttp.PRECONDITION_REQUIRED_STATUS_CODE);
+	public InvalidQueryDiagnosedException(OperationContext context, InvalidQueryException cause) {
+		super(
+			context,
+			cause,
+			Diagnosis.
+				create().
+					statusCode(Status.BAD_REQUEST).
+					diagnostic("Invalid query: %s",cause.getMessage()).
+					mandatory(true));
 	}
 
 }

@@ -27,26 +27,46 @@
 package org.ldp4j.server.controller.providers;
 
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 import org.ldp4j.server.controller.EndpointControllerUtils;
-import org.ldp4j.server.controller.MoreHttp;
-import org.ldp4j.server.controller.PreconditionRequiredException;
+import org.ldp4j.server.controller.InternalServerException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.common.net.HttpHeaders;
+import com.google.common.base.Throwables;
 
 @Provider
-public class PreconditionRequiredExceptionMapper implements ExceptionMapper<PreconditionRequiredException> {
+public class InternalServerExceptionMapper implements ExceptionMapper<InternalServerException> {
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(InternalServerExceptionMapper.class);
 
 	@Override
-	public Response toResponse(PreconditionRequiredException throwable) {
+	public Response toResponse(InternalServerException throwable) {
+		final String body = toString(throwable);
+		LOGGER.error(body);
 		return
 			EndpointControllerUtils.
 				prepareErrorResponse(
 					throwable,
-					String.format("No %s header specified.",HttpHeaders.IF_MATCH),
-					MoreHttp.PRECONDITION_REQUIRED_STATUS_CODE);
+					body,
+					Status.INTERNAL_SERVER_ERROR.getStatusCode());
+	}
+
+	private String toString(InternalServerException throwable) {
+		StringBuilder builder=new StringBuilder();
+		if(throwable.getMessage()!=null) {
+			builder.append(throwable.getMessage());
+		}
+		if(throwable.getCause()!=null) {
+			if(builder.length()==0) {
+				builder.append(System.lineSeparator());
+			}
+			builder.append(Throwables.getStackTraceAsString(throwable.getCause()));
+		}
+		return builder.toString();
 	}
 
 }

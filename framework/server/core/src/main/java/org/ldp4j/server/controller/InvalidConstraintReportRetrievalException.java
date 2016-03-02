@@ -24,29 +24,28 @@
  *   Bundle      : ldp4j-server-core-0.3.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller.providers;
+package org.ldp4j.server.controller;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import java.util.List;
 
-import org.ldp4j.server.controller.EndpointControllerUtils;
-import org.ldp4j.server.controller.MoreHttp;
-import org.ldp4j.server.controller.PreconditionRequiredException;
+import javax.ws.rs.core.Response.Status;
 
-import com.google.common.net.HttpHeaders;
+import com.google.common.base.Joiner;
 
-@Provider
-public class PreconditionRequiredExceptionMapper implements ExceptionMapper<PreconditionRequiredException> {
+public class InvalidConstraintReportRetrievalException extends DiagnosedException {
 
-	@Override
-	public Response toResponse(PreconditionRequiredException throwable) {
-		return
-			EndpointControllerUtils.
-				prepareErrorResponse(
-					throwable,
-					String.format("No %s header specified.",HttpHeaders.IF_MATCH),
-					MoreHttp.PRECONDITION_REQUIRED_STATUS_CODE);
+	private static final long serialVersionUID = 8495479662608219451L;
+
+	public InvalidConstraintReportRetrievalException(OperationContext context, List<String> values, boolean mandatory) {
+		super(
+			context,
+			null,
+			Diagnosis.
+				create().
+					statusCode(Status.BAD_REQUEST).
+					diagnostic("Only one constraint report identifier is allowed (%s)", Joiner.on(", ").join(values)).
+					mandatory(mandatory)
+		);
 	}
 
 }

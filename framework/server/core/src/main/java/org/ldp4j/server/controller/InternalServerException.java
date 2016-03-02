@@ -24,29 +24,19 @@
  *   Bundle      : ldp4j-server-core-0.3.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller.providers;
+package org.ldp4j.server.controller;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
 
-import org.ldp4j.server.controller.EndpointControllerUtils;
-import org.ldp4j.server.controller.MoreHttp;
-import org.ldp4j.server.controller.PreconditionRequiredException;
+public class InternalServerException extends OperationContextException {
 
-import com.google.common.net.HttpHeaders;
+	private static final long serialVersionUID = -7935564305394686915L;
 
-@Provider
-public class PreconditionRequiredExceptionMapper implements ExceptionMapper<PreconditionRequiredException> {
+	public InternalServerException(OperationContext context, Throwable cause) {
+		this(context,null,cause);
+	}
 
-	@Override
-	public Response toResponse(PreconditionRequiredException throwable) {
-		return
-			EndpointControllerUtils.
-				prepareErrorResponse(
-					throwable,
-					String.format("No %s header specified.",HttpHeaders.IF_MATCH),
-					MoreHttp.PRECONDITION_REQUIRED_STATUS_CODE);
+	public InternalServerException(OperationContext context, String message, Throwable cause) {
+		super(message,cause,context);
 	}
 
 }

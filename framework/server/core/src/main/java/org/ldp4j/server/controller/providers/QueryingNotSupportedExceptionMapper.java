@@ -31,22 +31,14 @@ import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 import org.ldp4j.server.controller.EndpointControllerUtils;
-import org.ldp4j.server.controller.MoreHttp;
-import org.ldp4j.server.controller.PreconditionRequiredException;
-
-import com.google.common.net.HttpHeaders;
+import org.ldp4j.server.controller.QueryingNotSupportedException;
 
 @Provider
-public class PreconditionRequiredExceptionMapper implements ExceptionMapper<PreconditionRequiredException> {
+public class QueryingNotSupportedExceptionMapper implements ExceptionMapper<QueryingNotSupportedException> {
 
 	@Override
-	public Response toResponse(PreconditionRequiredException throwable) {
-		return
-			EndpointControllerUtils.
-				prepareErrorResponse(
-					throwable,
-					String.format("No %s header specified.",HttpHeaders.IF_MATCH),
-					MoreHttp.PRECONDITION_REQUIRED_STATUS_CODE);
+	public Response toResponse(QueryingNotSupportedException throwable) {
+		return EndpointControllerUtils.prepareErrorResponse(throwable);
 	}
 
 }

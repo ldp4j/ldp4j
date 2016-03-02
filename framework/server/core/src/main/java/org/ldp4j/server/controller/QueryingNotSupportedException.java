@@ -24,29 +24,16 @@
  *   Bundle      : ldp4j-server-core-0.3.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller.providers;
+package org.ldp4j.server.controller;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import javax.ws.rs.core.Response.Status;
 
-import org.ldp4j.server.controller.EndpointControllerUtils;
-import org.ldp4j.server.controller.MoreHttp;
-import org.ldp4j.server.controller.PreconditionRequiredException;
+public class QueryingNotSupportedException extends DiagnosedException {
 
-import com.google.common.net.HttpHeaders;
+	private static final long serialVersionUID = 2679595580318890639L;
 
-@Provider
-public class PreconditionRequiredExceptionMapper implements ExceptionMapper<PreconditionRequiredException> {
-
-	@Override
-	public Response toResponse(PreconditionRequiredException throwable) {
-		return
-			EndpointControllerUtils.
-				prepareErrorResponse(
-					throwable,
-					String.format("No %s header specified.",HttpHeaders.IF_MATCH),
-					MoreHttp.PRECONDITION_REQUIRED_STATUS_CODE);
+	public QueryingNotSupportedException(OperationContext context, boolean mandatory) {
+		super(context,null,Diagnosis.create().statusCode(Status.FORBIDDEN).diagnostic("Resource cannot be queried").mandatory(mandatory));
 	}
 
 }

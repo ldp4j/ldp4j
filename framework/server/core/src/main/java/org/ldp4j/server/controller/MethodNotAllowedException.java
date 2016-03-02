@@ -27,7 +27,6 @@
 package org.ldp4j.server.controller;
 
 import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
-import org.ldp4j.application.engine.context.PublicResource;
 
 public class MethodNotAllowedException extends OperationContextException {
 
@@ -35,8 +34,8 @@ public class MethodNotAllowedException extends OperationContextException {
 
 	private final HttpMethod operation;
 
-	public MethodNotAllowedException(OperationContext operationContext, PublicResource resource, HttpMethod method) {
-		super(resource,operationContext);
+	public MethodNotAllowedException(OperationContext operationContext, HttpMethod method) {
+		super(operationContext);
 		this.operation = method;
 	}
 

@@ -481,7 +481,7 @@ public class ServerFrontendITest {
 		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH+"?ldp:constrainedBy=12312312321&param1=value1&param2=value2&param2=value3&param3",HttpGet.class);
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
-		assertThat(getResponse.body,equalTo("Mixed queries not allowed"));
+		assertThat(getResponse.body,equalTo("Mixed queries not allowed (ldp:constrainedBy=12312312321&param1=value1&param2=value2&param2=value3&param3=)"));
 		assertThat(getResponse.contentType,startsWith("text/plain"));
 		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
 	}
@@ -499,7 +499,7 @@ public class ServerFrontendITest {
 		HttpGet get = HELPER.newRequest(MyApplication.ROOT_PERSON_CONTAINER_PATH+"?ldp:constrainedBy=12312312321&ldp:constrainedBy=asdasdasd",HttpGet.class);
 		Metadata getResponse=HELPER.httpRequest(get);
 		assertThat(getResponse.status,equalTo(HttpStatus.SC_BAD_REQUEST));
-		assertThat(getResponse.body,equalTo("Only one constraint report identifier is allowed"));
+		assertThat(getResponse.body,equalTo("Only one constraint report identifier is allowed (12312312321, asdasdasd)"));
 		assertThat(getResponse.contentType,startsWith("text/plain"));
 		assertThat(getResponse.language,equalTo(Locale.ENGLISH));
 	}

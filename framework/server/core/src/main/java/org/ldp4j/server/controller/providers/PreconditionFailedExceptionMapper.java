@@ -26,11 +26,7 @@
  */
 package org.ldp4j.server.controller.providers;
 
-import java.util.Locale;
-
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
@@ -42,15 +38,12 @@ public class PreconditionFailedExceptionMapper implements ExceptionMapper<Precon
 
 	@Override
 	public Response toResponse(PreconditionFailedException throwable) {
-		ResponseBuilder builder=
-			Response.
-				status(throwable.getStatusCode()).
-				language(Locale.ENGLISH).
-				type(MediaType.TEXT_PLAIN).
-				entity(String.format("Precondition failed: %s",throwable.getMessage()));
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.resourceClass());
-		return builder.build();
+		return
+			EndpointControllerUtils.
+				prepareErrorResponse(
+					throwable,
+					String.format("Precondition failed: %s",throwable.getMessage()),
+					throwable.getStatusCode());
 	}
 
 }

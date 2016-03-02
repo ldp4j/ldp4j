@@ -24,29 +24,32 @@
  *   Bundle      : ldp4j-server-core-0.3.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller.providers;
+package org.ldp4j.server.controller;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+public final class MoreHttp {
 
-import org.ldp4j.server.controller.EndpointControllerUtils;
-import org.ldp4j.server.controller.MoreHttp;
-import org.ldp4j.server.controller.PreconditionRequiredException;
+	/**
+	 * The status code to signal that the content could not be understood by the
+	 * application.
+	 *
+	 * @see <a href="http://tools.ietf.org/html/rfc4918#section-11.2">RFC 4918:
+	 *      HTTP Extensions for Web Distributed Authoring and Versioning
+	 *      (WebDAV)</a>
+	 */
+	public static final int UNPROCESSABLE_ENTITY_STATUS_CODE = 422;
+	public static final String ACCEPT_POST_HEADER = "Accept-Post";
+	public static final String ENTITY_TAG_HEADER     = "ETag";
+	public static final String LAST_MODIFIED_HEADER  = "Last-Modified";
+	public static final String LINK_HEADER           = "Link";
+	public static final String ALLOW_HEADER          = "Allow";
+	public static final String CONTENT_LENGTH_HEADER = "Content-Length";
+	public static final int PRECONDITION_REQUIRED_STATUS_CODE = 428;
 
-import com.google.common.net.HttpHeaders;
+	private MoreHttp(){
+	}
 
-@Provider
-public class PreconditionRequiredExceptionMapper implements ExceptionMapper<PreconditionRequiredException> {
-
-	@Override
-	public Response toResponse(PreconditionRequiredException throwable) {
-		return
-			EndpointControllerUtils.
-				prepareErrorResponse(
-					throwable,
-					String.format("No %s header specified.",HttpHeaders.IF_MATCH),
-					MoreHttp.PRECONDITION_REQUIRED_STATUS_CODE);
+	public static String createLink(Object uriRef, Object rel) {
+		return String.format("<%s>; rel=\"%s\"",uriRef,rel);
 	}
 
 }

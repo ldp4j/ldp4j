@@ -91,8 +91,9 @@ public class OperationContextException extends RuntimeException {
 	private final Class<? extends PublicResource> clazz;
 	private final SerializableCapabilities capabilities;
 
-	public OperationContextException(String message, Throwable cause, PublicResource resource, OperationContext context) {
+	public OperationContextException(String message, Throwable cause, OperationContext context) {
 		super(message, cause);
+		PublicResource resource=context.resource();
 		this.capabilities=new SerializableCapabilities(resource.capabilities());
 		this.location = context.base().resolve(resource.path());
 		this.lastModified=resource.lastModified();
@@ -100,19 +101,19 @@ public class OperationContextException extends RuntimeException {
 		this.clazz=resource.getClass();
 	}
 
-	public OperationContextException(PublicResource resource, OperationContext context) {
-		this(DEFAULT_ERROR_MESSAGE,resource,context);
+	public OperationContextException(OperationContext context) {
+		this(DEFAULT_ERROR_MESSAGE,context);
 	}
 
-	public OperationContextException(String message, PublicResource resource, OperationContext context) {
-		this(message,null,resource,context);
+	public OperationContextException(String message, OperationContext context) {
+		this(message,null,context);
 	}
 
-	public OperationContextException(Throwable cause, PublicResource resource, OperationContext context) {
-		this(DEFAULT_ERROR_MESSAGE,cause,resource,context);
+	public OperationContextException(Throwable cause, OperationContext context) {
+		this(DEFAULT_ERROR_MESSAGE,cause,context);
 	}
 
-	public Class<? extends PublicResource> resourceClass() {
+	public final Class<? extends PublicResource> resourceClass() {
 		return this.clazz;
 	}
 

@@ -26,18 +26,17 @@
  */
 package org.ldp4j.server.controller;
 
-import org.ldp4j.application.engine.context.PublicResource;
 
 public class InvalidRequestContentException extends ContentProcessingException {
 
 	private static final long serialVersionUID = -4256791645702385728L;
 
-	public InvalidRequestContentException(String message, PublicResource resource, OperationContext context) {
-		this(message,null,resource,context);
+	public InvalidRequestContentException(String message,OperationContext context) {
+		this(message,null,context);
 	}
 
-	public InvalidRequestContentException(String message, Throwable cause, PublicResource resource, OperationContext context) {
-		super(message,cause,resource,context);
+	public InvalidRequestContentException(String message, Throwable cause, OperationContext context) {
+		super(message,cause,context);
 	}
 
 }

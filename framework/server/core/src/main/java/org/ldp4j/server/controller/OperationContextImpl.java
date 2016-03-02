@@ -282,15 +282,15 @@ final class OperationContextImpl implements OperationContext {
 	public OperationContext checkContents() {
 		List<Variant> supportedVariants=VariantUtils.defaultVariants();
 		if(entity()==null || entity().isEmpty()) {
-			throw new MissingContentException(this.resource,this);
+			throw new MissingContentException(this);
 		}
 		if(headers().getMediaType()==null) {
-			throw new MissingContentTypeException(this.resource,this);
+			throw new MissingContentTypeException(this);
 		}
 		if(!VariantHelper.
 				forVariants(supportedVariants).
 					isSupported(contentVariant())) {
-			throw new UnsupportedContentException(this.resource,this,contentVariant());
+			throw new UnsupportedContentException(this,contentVariant());
 		}
 		return this;
 	}
@@ -302,7 +302,7 @@ final class OperationContextImpl implements OperationContext {
 		if(HttpMethod.PUT.equals(this.method)) {
 			List<String> requestHeader = this.headers.getRequestHeader(HttpHeaders.IF_MATCH);
 			if(requestHeader==null || requestHeader.isEmpty()) {
-				throw new PreconditionRequiredException(this.resource);
+				throw new PreconditionRequiredException(this);
 			}
 		}
 		ResponseBuilder builder =
@@ -312,7 +312,7 @@ final class OperationContextImpl implements OperationContext {
 					new javax.ws.rs.core.EntityTag(entityTag.getValue()));
 		if(builder!=null) {
 			Response response = builder.build();
-			throw new PreconditionFailedException(this.resource,this,response.getStatus());
+			throw new PreconditionFailedException(this,response.getStatus());
 		}
 		return this;
 	}
@@ -320,7 +320,7 @@ final class OperationContextImpl implements OperationContext {
 	@Override
 	public OperationContext checkOperationSupport() {
 		if(!isMethodAllowed()) {
-			throw new MethodNotAllowedException(this,this.resource,this.method);
+			throw new MethodNotAllowedException(this,this.method);
 		}
 		return this;
 	}
@@ -342,9 +342,9 @@ final class OperationContextImpl implements OperationContext {
 				}
 				this.dataSet=transformator.unmarshall(this.entity);
 			} catch(UnsupportedMediaTypeException e) {
-				throw new UnsupportedContentException(this.resource,this,contentVariant(),e);
+				throw new UnsupportedContentException(this,contentVariant(),e);
 			} catch(IOException e) {
-				throw new InvalidRequestContentException("Entity cannot be parsed as '"+mediaType+"' ("+Throwables.getRootCause(e).getMessage()+")",e,this.resource,this);
+				throw new InvalidRequestContentException("Entity cannot be parsed as '"+mediaType+"' ("+Throwables.getRootCause(e).getMessage()+")",e,this);
 			}
 		}
 		return this.dataSet;
@@ -355,11 +355,11 @@ final class OperationContextImpl implements OperationContext {
 		List<Variant> variants=VariantUtils.defaultVariants();
 		Variant variant=this.request.selectVariant(variants);
 		if(variant==null) {
-			throw new NotAcceptableException(this.resource,this);
+			throw new NotAcceptableException(this);
 		}
 		String acceptableCharset=acceptedCharset();
 		if(acceptableCharset==null) {
-			throw new NotAcceptableException(this.resource,this);
+			throw new NotAcceptableException(this);
 		}
 		return
 			Variant.
@@ -426,9 +426,9 @@ final class OperationContextImpl implements OperationContext {
 					permanentEndpoint(endpoint());
 			return transformator.marshall(representation);
 		} catch(UnsupportedMediaTypeException e) {
-			throw new UnsupportedContentException(this.resource,this,contentVariant(),e);
+			throw new UnsupportedContentException(this,contentVariant(),e);
 		} catch(IOException e) {
-			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",e,this.resource,this);
+			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",e,this);
 		}
 	}
 

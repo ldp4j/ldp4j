@@ -35,7 +35,7 @@ public class OperationPrecondititionException extends ApplicationContextExceptio
 	}
 
 	public OperationPrecondititionException(String message) {
-		super(message);
+		this(message,null);
 	}
 
 }

@@ -27,9 +27,7 @@
 package org.ldp4j.server.controller.providers;
 
 import java.util.List;
-import java.util.Locale;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
@@ -38,6 +36,7 @@ import javax.ws.rs.ext.Provider;
 
 import org.ldp4j.application.engine.context.Capabilities;
 import org.ldp4j.server.controller.EndpointControllerUtils;
+import org.ldp4j.server.controller.EndpointControllerUtils.ResponseEnricher;
 import org.ldp4j.server.controller.MethodNotAllowedException;
 
 import com.google.common.base.Joiner;
@@ -47,18 +46,27 @@ import com.google.common.collect.Lists;
 public class MethodNotAllowedExceptionMapper implements ExceptionMapper<MethodNotAllowedException> {
 
 	@Override
-	public Response toResponse(MethodNotAllowedException throwable) {
-		String message = String.format("Endpoint '%s' does not support %s. It only supports: %s",throwable.resourceLocation(),throwable.getMethod(),toHttpMethods(throwable.resourceCapabilities()));
-		ResponseBuilder builder=
-			Response.
-				status(Status.METHOD_NOT_ALLOWED).
-				language(Locale.ENGLISH).
-				type(MediaType.TEXT_PLAIN).
-				entity(message);
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.resourceClass());
-		EndpointControllerUtils.populateAllowedHeaders(builder,throwable.resourceCapabilities());
-		return builder.build();
+	public Response toResponse(final MethodNotAllowedException throwable) {
+		String body =
+			String.format(
+				"Endpoint '%s' does not support %s. It only supports: %s",
+				throwable.resourceLocation(),
+				throwable.getMethod(),
+				toHttpMethods(throwable.resourceCapabilities()));
+
+		return
+			EndpointControllerUtils.
+				prepareErrorResponse(
+					throwable,
+					body,
+					Status.METHOD_NOT_ALLOWED.getStatusCode(),
+					new ResponseEnricher() {
+						@Override
+						protected void enrich(ResponseBuilder builder) {
+							EndpointControllerUtils.populateAllowedHeaders(builder,throwable.resourceCapabilities());
+						}
+					}
+				);
 	}
 
 	private String toHttpMethods(Capabilities capabilities) {

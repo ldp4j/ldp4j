@@ -24,29 +24,26 @@
  *   Bundle      : ldp4j-server-core-0.3.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller.providers;
+package org.ldp4j.server.controller;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+public abstract class DiagnosedException extends OperationContextException {
 
-import org.ldp4j.server.controller.EndpointControllerUtils;
-import org.ldp4j.server.controller.MoreHttp;
-import org.ldp4j.server.controller.PreconditionRequiredException;
+	private static final long serialVersionUID = -3891626555696814109L;
 
-import com.google.common.net.HttpHeaders;
+	private final Diagnosis diagnosis;
 
-@Provider
-public class PreconditionRequiredExceptionMapper implements ExceptionMapper<PreconditionRequiredException> {
+	public DiagnosedException(OperationContext context, Throwable cause, Diagnosis diagnosis) {
+		super(diagnosis.diagnostic(),cause,context);
+		this.diagnosis = diagnosis;
+	}
 
-	@Override
-	public Response toResponse(PreconditionRequiredException throwable) {
-		return
-			EndpointControllerUtils.
-				prepareErrorResponse(
-					throwable,
-					String.format("No %s header specified.",HttpHeaders.IF_MATCH),
-					MoreHttp.PRECONDITION_REQUIRED_STATUS_CODE);
+	public final Diagnosis getDiagnosis() {
+		return this.diagnosis;
+	}
+
+	@Deprecated
+	public final int getStatusCode() {
+		return this.diagnosis.statusCode();
 	}
 
 }

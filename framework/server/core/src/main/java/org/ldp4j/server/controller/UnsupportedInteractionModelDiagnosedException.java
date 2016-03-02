@@ -24,29 +24,29 @@
  *   Bundle      : ldp4j-server-core-0.3.0-SNAPSHOT.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
-package org.ldp4j.server.controller.providers;
+package org.ldp4j.server.controller;
 
-import javax.ws.rs.core.Response;
-import javax.ws.rs.ext.ExceptionMapper;
-import javax.ws.rs.ext.Provider;
+import javax.ws.rs.core.Response.Status;
 
-import org.ldp4j.server.controller.EndpointControllerUtils;
-import org.ldp4j.server.controller.MoreHttp;
-import org.ldp4j.server.controller.PreconditionRequiredException;
+import org.ldp4j.application.engine.context.UnsupportedInteractionModelException;
 
-import com.google.common.net.HttpHeaders;
+/**
+ * TODO: Check the semantics of the LDP spec. Does it make sense to return a
+ * FORBIDDEN instead of a BAD_REQUEST?
+ */
+public class UnsupportedInteractionModelDiagnosedException extends DiagnosedException {
 
-@Provider
-public class PreconditionRequiredExceptionMapper implements ExceptionMapper<PreconditionRequiredException> {
+	private static final long serialVersionUID = -2989547588179065603L;
 
-	@Override
-	public Response toResponse(PreconditionRequiredException throwable) {
-		return
-			EndpointControllerUtils.
-				prepareErrorResponse(
-					throwable,
-					String.format("No %s header specified.",HttpHeaders.IF_MATCH),
-					MoreHttp.PRECONDITION_REQUIRED_STATUS_CODE);
+	public UnsupportedInteractionModelDiagnosedException(OperationContext context, UnsupportedInteractionModelException cause) {
+		super(
+			context,
+			cause,
+			Diagnosis.
+				create().
+				statusCode(Status.FORBIDDEN).
+				diagnostic(cause.getMessage()).
+				mandatory(true));
 	}
 
 }

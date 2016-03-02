@@ -26,27 +26,40 @@
  */
 package org.ldp4j.server.controller.providers;
 
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.ldp4j.application.vocabulary.LDP;
+import org.ldp4j.server.controller.InvalidContentDiagnosedException;
 import org.ldp4j.server.controller.EndpointControllerUtils;
+import org.ldp4j.server.controller.EndpointControllerUtils.ResponseEnricher;
 import org.ldp4j.server.controller.MoreHttp;
-import org.ldp4j.server.controller.PreconditionRequiredException;
-
-import com.google.common.net.HttpHeaders;
 
 @Provider
-public class PreconditionRequiredExceptionMapper implements ExceptionMapper<PreconditionRequiredException> {
+public class InvalidContentDiagnosedExceptionMapper implements ExceptionMapper<InvalidContentDiagnosedException> {
 
 	@Override
-	public Response toResponse(PreconditionRequiredException throwable) {
+	public Response toResponse(final InvalidContentDiagnosedException throwable) {
 		return
 			EndpointControllerUtils.
 				prepareErrorResponse(
 					throwable,
-					String.format("No %s header specified.",HttpHeaders.IF_MATCH),
-					MoreHttp.PRECONDITION_REQUIRED_STATUS_CODE);
+					new ResponseEnricher() {
+						@Override
+						protected void enrich(ResponseBuilder builder) {
+							builder.header(
+								HttpHeaders.LINK,
+								MoreHttp.
+									createLink(
+										throwable.getConstraintReportLink(),
+										LDP.CONSTRAINED_BY.qualifiedEntityName()));
+						}
+					}
+				);
+
 	}
 
 }

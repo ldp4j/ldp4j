@@ -82,14 +82,24 @@
 			<ref bean="logOutInterceptor" />
 		</jaxrs:outInterceptors>
 		<jaxrs:providers>
-			<bean id="pfeMapper"  class="org.ldp4j.server.controller.providers.PreconditionFailedExceptionMapper"/>
-			<bean id="naeMapper"  class="org.ldp4j.server.controller.providers.NotAcceptableExceptionMapper"/>
-			<bean id="uceMapper"  class="org.ldp4j.server.controller.providers.UnsupportedContentExceptionMapper"/>
-			<bean id="mceMapper"  class="org.ldp4j.server.controller.providers.MissingContentExceptionMapper"/>
-			<bean id="mcteMapper" class="org.ldp4j.server.controller.providers.MissingContentTypeExceptionMapper"/>
-			<bean id="mnaMapper"  class="org.ldp4j.server.controller.providers.MethodNotAllowedExceptionMapper"/>
-			<bean id="preMapper"  class="org.ldp4j.server.controller.providers.PreconditionRequiredExceptionMapper"/>
-			<bean id="iceMapper"  class="org.ldp4j.server.controller.providers.InvalidRequestContentExceptionMapper"/>
+			<bean id="pfeMapper"   class="org.ldp4j.server.controller.providers.PreconditionFailedExceptionMapper"/>
+			<bean id="naeMapper"   class="org.ldp4j.server.controller.providers.NotAcceptableExceptionMapper"/>
+			<bean id="uceMapper"   class="org.ldp4j.server.controller.providers.UnsupportedContentExceptionMapper"/>
+			<bean id="mceMapper"   class="org.ldp4j.server.controller.providers.MissingContentExceptionMapper"/>
+			<bean id="mcteMapper"  class="org.ldp4j.server.controller.providers.MissingContentTypeExceptionMapper"/>
+			<bean id="mnaMapper"   class="org.ldp4j.server.controller.providers.MethodNotAllowedExceptionMapper"/>
+			<bean id="preMapper"   class="org.ldp4j.server.controller.providers.PreconditionRequiredExceptionMapper"/>
+			<bean id="iceMapper"   class="org.ldp4j.server.controller.providers.InvalidRequestContentExceptionMapper"/>
+			<bean id="iseMapper"   class="org.ldp4j.server.controller.providers.InternalServerExceptionMapper"/>
+			<bean id="icdeMapper"  class="org.ldp4j.server.controller.providers.InvalidContentDiagnosedExceptionMapper"/>
+			<bean id="ucreMapper"  class="org.ldp4j.server.controller.providers.UnknownConstraintReportExceptionMapper"/>
+			<bean id="mqnaeMapper" class="org.ldp4j.server.controller.providers.MixedQueryNotAllowedExceptionMapper"/>
+			<bean id="qnseMapper"  class="org.ldp4j.server.controller.providers.QueryingNotSupportedExceptionMapper"/>
+			<bean id="icrreMapper" class="org.ldp4j.server.controller.providers.InvalidConstraintReportRetrievalExceptionMapper"/>
+			<bean id="iqdeMapper"  class="org.ldp4j.server.controller.providers.InvalidQueryDiagnosedExceptionMapper"/>
+			<bean id="nireMapper"  class="org.ldp4j.server.controller.providers.NotImplementedExceptionMapper"/>
+			<bean id="uimdeMapper" class="org.ldp4j.server.controller.providers.UnsupportedInteractionModelDiagnosedExceptionMapper"/>
+			<bean id="opmdeMapper" class="org.ldp4j.server.controller.providers.OperationPrecondititionModelDiagnosedExceptionMapper"/>
 		</jaxrs:providers>
 	</jaxrs:server>
 

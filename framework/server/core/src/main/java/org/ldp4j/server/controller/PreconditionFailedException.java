@@ -26,8 +26,6 @@
  */
 package org.ldp4j.server.controller;
 
-import org.ldp4j.application.engine.context.PublicResource;
-
 
 public class PreconditionFailedException extends OperationContextException {
 
@@ -35,8 +33,8 @@ public class PreconditionFailedException extends OperationContextException {
 
 	private final int statusCode;
 
-	public PreconditionFailedException(PublicResource resource, OperationContext context, int statusCode) {
-		super("",resource,context);
+	public PreconditionFailedException(OperationContext context, int statusCode) {
+		super("",context);
 		this.statusCode = statusCode;
 	}
 

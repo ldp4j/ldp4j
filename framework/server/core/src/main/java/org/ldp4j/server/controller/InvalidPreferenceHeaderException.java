@@ -28,9 +28,6 @@ package org.ldp4j.server.controller;
 
 public class InvalidPreferenceHeaderException extends RuntimeException {
 
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = -2179796197876469324L;
 
 	public InvalidPreferenceHeaderException() {

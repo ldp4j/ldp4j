@@ -26,35 +26,13 @@
  */
 package org.ldp4j.server.controller;
 
-import java.util.Date;
 
-import org.ldp4j.application.engine.context.EntityTag;
-import org.ldp4j.application.engine.context.PublicResource;
-
-public class PreconditionRequiredException extends RuntimeException {
+public class PreconditionRequiredException extends OperationContextException {
 
 	private static final long serialVersionUID = 8286288208444290507L;
 
-	private final Class<? extends PublicResource> clazz;
-	private final Date lastModified;
-	private final EntityTag entityTag;
-
-	public PreconditionRequiredException(PublicResource resource) {
-		this.clazz = resource.getClass();
-		this.lastModified=resource.lastModified();
-		this.entityTag=resource.entityTag();
-	}
-
-	public Class<? extends PublicResource> resourceClass() {
-		return this.clazz;
-	}
-
-	public Date resourceLastModified() {
-		return this.lastModified;
-	}
-
-	public EntityTag resourceEntityTag() {
-		return this.entityTag;
+	public PreconditionRequiredException(OperationContext context) {
+		super(context);
 	}
 
 }

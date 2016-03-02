@@ -26,14 +26,10 @@
  */
 package org.ldp4j.server.controller;
 
-import java.io.ByteArrayInputStream;
 import java.net.URI;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
-import java.util.Locale;
 
+import javax.ws.rs.WebApplicationException;
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
@@ -48,38 +44,18 @@ import org.ldp4j.application.engine.context.PublicContainer;
 import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.engine.context.UnsupportedInteractionModelException;
 import org.ldp4j.application.ext.ApplicationRuntimeException;
-import org.ldp4j.application.ext.InconsistentContentException;
 import org.ldp4j.application.ext.InvalidContentException;
 import org.ldp4j.application.ext.InvalidQueryException;
 import org.ldp4j.application.ext.Parameter;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.ext.UnknownResourceException;
-import org.ldp4j.application.ext.UnsupportedContentException;
-import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.rdf.Namespaces;
-import org.ldp4j.server.config.Configuration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Throwables;
 
 final class ExistingEndpointController implements EndpointController {
 
 	private static final String NO_CONSTRAINT_REPORT_ID_DEFINED_ERROR = "No constraint report identifier defined. Full stacktrace follows";
-
-	private static final String ACCEPT_POST_HEADER = "Accept-Post";
-
-	/**
-	 * The status code to signal that the content could not be understood by the
-	 * application.
-	 *
-	 * @see <a href="http://tools.ietf.org/html/rfc4918#section-11.2">RFC 4918:
-	 *      HTTP Extensions for Web Distributed Authoring and Versioning
-	 *      (WebDAV)</a>
-	 */
-	private static final int UNPROCESSABLE_ENTITY_STATUS_CODE = 422;
-
-	private static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(ExistingEndpointController.class);
 
@@ -88,20 +64,6 @@ final class ExistingEndpointController implements EndpointController {
 
 	private String serialize(OperationContext context, Variant variant, DataSet entity, Namespaces namespaces) {
 		return context.serialize(entity,namespaces,variant.getMediaType());
-	}
-
-	private Variant textResponseVariant() {
-		return
-			Variant.
-				languages(Locale.ENGLISH).
-				mediaTypes(MediaType.TEXT_PLAIN_TYPE.withCharset(StandardCharsets.UTF_8.name())).
-				add().
-				build().
-					get(0);
-	}
-
-	private Variant errorResponseVariant() {
-		return textResponseVariant();
 	}
 
 	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {
@@ -125,50 +87,8 @@ final class ExistingEndpointController implements EndpointController {
 		 * 5.2.3.14
 		 */
 		for(Variant variant:EndpointControllerUtils.getAcceptPostVariants(context.resource())) {
-			builder.header(ACCEPT_POST_HEADER,variant.getMediaType());
+			builder.header(MoreHttp.ACCEPT_POST_HEADER,variant.getMediaType());
 		}
-	}
-
-	private void addResponseEntity(ResponseBuilder builder, String entity, Variant variant, boolean includeEntity) {
-		MediaType mediaType = variant.getMediaType();
-
-		String charsetName=mediaType.getParameters().get(MediaType.CHARSET_PARAMETER);
-		Charset charset=StandardCharsets.UTF_8;
-		if(charsetName!=null && !charsetName.isEmpty() && Charset.isSupported(charsetName)) {
-			charset=Charset.forName(charsetName);
-		} else {
-			LOGGER.error("Missing of invalid charset information {}",mediaType);
-			charsetName=charset.name();
-		}
-
-		MediaType target=
-			Configuration.includeCharsetInformation()?
-				mediaType.withCharset(charsetName):
-				new MediaType(mediaType.getType(),mediaType.getSubtype());
-
-		byte[] bytes = entity.getBytes(charset);
-		builder.
-			type(target).
-			header(ExistingEndpointController.CONTENT_LENGTH_HEADER,bytes.length);
-
-		if(variant.getLanguage()!=null) {
-			builder.language(variant.getLanguage());
-		}
-
-		if(includeEntity) {
-			builder.entity(new ByteArrayInputStream(bytes));
-		}
-	}
-
-	private Response prepareErrorResponse(OperationContext context, Status statusCode, String message, boolean includeEntity) {
-		return prepareErrorResponse(context, statusCode.getStatusCode(), message, includeEntity);
-	}
-
-	private Response prepareErrorResponse(OperationContext context, int statusCode, String message, boolean includeEntity) {
-		ResponseBuilder builder=Response.status(statusCode);
-		addResponseEntity(builder, message, errorResponseVariant(), includeEntity);
-		addRequiredHeaders(context, builder);
-		return builder.build();
 	}
 
 	private Response prepareRetrievalResponse(
@@ -186,7 +106,7 @@ final class ExistingEndpointController implements EndpointController {
 		}
 		addOptionsMandatoryHeaders(context, builder);
 		builder.status(Status.OK.getStatusCode());
-		addResponseEntity(builder,entity,variant,includeEntity);
+		EndpointControllerUtils.populateResponseBody(builder,entity,variant,includeEntity);
 		if(!query.isEmpty()) {
 			builder.
 				header(
@@ -206,18 +126,18 @@ final class ExistingEndpointController implements EndpointController {
 
 			DataSet report=resource.getConstraintReport(constraintReportId);
 			if(report==null) {
-				return prepareErrorResponse(context, Status.NOT_FOUND, "Unknown constraint report '"+constraintReportId+"'", includeEntity);
+				throw new UnknownConstraintReportException(context,constraintReportId,includeEntity);
 			}
 
 			LOGGER.trace("Constraint report to serialize:\n{}",report);
 			String body=serialize(context,variant,report,NamespacesHelper.constraintReportNamespaces(context.applicationNamespaces()));
 			ResponseBuilder builder=Response.ok();
-			addResponseEntity(builder, body, variant, includeEntity);
+			EndpointControllerUtils.populateResponseBody(builder,body,variant,includeEntity);
 			return builder.build();
 		} catch (ApplicationExecutionException e) {
-			return processExecutionException(context, e);
+			throw diagnoseApplicationExecutionException(context, e);
 		} catch (ApplicationContextException e) {
-			return processRuntimeException(context, e);
+			throw new InternalServerException(context,e);
 		}
 	}
 
@@ -229,9 +149,9 @@ final class ExistingEndpointController implements EndpointController {
 
 		switch(RetrievalScenario.forContext(context)) {
 			case MIXED_QUERY:
-				return prepareErrorResponse(context,Status.BAD_REQUEST,"Mixed queries not allowed",includeEntity);
+				throw new MixedQueryNotAllowedException(context,includeEntity);
 			case QUERY_NOT_SUPPORTED:
-				return prepareErrorResponse(context,Status.FORBIDDEN,"Resource cannot be queried",includeEntity);
+				throw new QueryingNotSupportedException(context,includeEntity);
 			case CONSTRAINT_REPORT_RETRIEVAL:
 				return handleConstraintReportRetrieval(context,includeEntity,variant);
 			default:
@@ -270,79 +190,40 @@ final class ExistingEndpointController implements EndpointController {
 
 			return prepareRetrievalResponse(context,variant,hasPreferences,preferences,includeEntity,body,query);
 		} catch (ApplicationExecutionException e) {
-			return processExecutionException(context, e);
+			throw diagnoseApplicationExecutionException(context, e);
 		} catch (ApplicationContextException e) {
-			return processRuntimeException(context, e);
+			throw new InternalServerException(context,e);
 		}
 	}
 
 	private Response handleConstraintReportRetrieval(OperationContext context, boolean includeEntity, Variant variant) {
 		Parameter parameter=RetrievalScenario.constraintReportId(context);
-		if(parameter.cardinality()==1) {
-			return prepareConstraintReportRetrievalResponse(context,includeEntity,variant,parameter.rawValue());
-		} else {
-			return prepareErrorResponse(context,Status.BAD_REQUEST,"Only one constraint report identifier is allowed",includeEntity);
+		if(parameter.cardinality()!=1) {
+			throw new InvalidConstraintReportRetrievalException(context,parameter.rawValues(),includeEntity);
 		}
+		return prepareConstraintReportRetrievalResponse(context,includeEntity,variant,parameter.rawValue());
 	}
 
-	private Response processInvalidContentException(OperationContext context, InvalidContentException rootCause) {
-		ResponseBuilder builder=Response.serverError();
-		String body=null;
-		if(rootCause instanceof InconsistentContentException) {
-			builder.status(Status.CONFLICT);
-			body="Specified values for application-managed properties are not consistent with the actual resource state: "+rootCause.getMessage();
-		} else if(rootCause instanceof UnsupportedContentException) {
-			builder.status(UNPROCESSABLE_ENTITY_STATUS_CODE);
-			body="Could not understand content: "+rootCause.getMessage();
-		} else {
-			builder.status(Status.BAD_REQUEST.getStatusCode());
-			body=Throwables.getStackTraceAsString(rootCause);
-		}
-		builder.header(
-			HttpHeaders.LINK,
-			EndpointControllerUtils.
-				createLink(
-					RetrievalScenario.constraintReportLink(context,rootCause.getConstraintsId()),
-					LDP.CONSTRAINED_BY.qualifiedEntityName()));
-		addResponseEntity(builder,body,errorResponseVariant(),true);
-		addRequiredHeaders(context,builder);
-		return builder.build();
-	}
-
-	private Response processExecutionException(OperationContext context, ApplicationExecutionException exception) {
-		final Throwable rootCause = exception.getCause();
+	private OperationContextException diagnoseApplicationExecutionException(OperationContext context, ApplicationExecutionException exception) {
+		OperationContextException result = null;
+		final Throwable rootCause=exception.getCause();
 		if(rootCause instanceof InvalidContentException) {
-			final InvalidContentException ice=(InvalidContentException)exception.getCause();
+			final InvalidContentException ice = (InvalidContentException)exception.getCause();
 			if(ice.getConstraintsId()==null) {
-				LOGGER.error(NO_CONSTRAINT_REPORT_ID_DEFINED_ERROR,exception);
-				return prepareErrorResponse(
-						context,
-						Status.INTERNAL_SERVER_ERROR,
-						NO_CONSTRAINT_REPORT_ID_DEFINED_ERROR+"\n"+Throwables.getStackTraceAsString(exception),
-						true);
+				result=new InternalServerException(context,NO_CONSTRAINT_REPORT_ID_DEFINED_ERROR,ice);
+			} else {
+				result=new InvalidContentDiagnosedException(context,ice);
 			}
-			return processInvalidContentException(context,ice);
 		} else if (rootCause instanceof UnknownResourceException) {
-			return prepareErrorResponse(context,Status.NO_CONTENT,"Resource not found",true);
+			throw new WebApplicationException(Status.NOT_FOUND);
 		} else if (rootCause instanceof InvalidQueryException) {
-			return prepareErrorResponse(context,Status.BAD_REQUEST,"Invalid query: "+rootCause.getMessage(),true);
+			result=new InvalidQueryDiagnosedException(context, (InvalidQueryException)rootCause);
 		} else if (rootCause instanceof ApplicationRuntimeException) {
-			return prepareErrorResponse(context,Status.INTERNAL_SERVER_ERROR,Throwables.getStackTraceAsString(rootCause),true);
+			result=new InternalServerException(context,rootCause);
 		} else {
-			return prepareErrorResponse(context,Status.INTERNAL_SERVER_ERROR,Throwables.getStackTraceAsString(exception),true);
+			result=new InternalServerException(context,exception);
 		}
-	}
-
-	private Response processRuntimeException(OperationContext context, ApplicationContextException exception) {
-		return prepareErrorResponse(context,Status.INTERNAL_SERVER_ERROR,Throwables.getStackTraceAsString(exception),true);
-	}
-
-	private Response processUnsupportedInteractionModelException(OperationContext context, UnsupportedInteractionModelException e) {
-		return prepareErrorResponse(context,Status.FORBIDDEN,e.getMessage(),true);
-	}
-
-	private Response processOperationPreconditionException(OperationContext context, OperationPrecondititionException e) {
-		return prepareErrorResponse(context,UNPROCESSABLE_ENTITY_STATUS_CODE,e.getMessage(),true);
+		return result;
 	}
 
 	@Override
@@ -375,9 +256,9 @@ final class ExistingEndpointController implements EndpointController {
 			context.resource().delete();
 			return Response.noContent().build();
 		} catch (ApplicationExecutionException e) {
-			return processExecutionException(context, e);
+			throw diagnoseApplicationExecutionException(context, e);
 		} catch (ApplicationContextException e) {
-			return processRuntimeException(context, e);
+			throw new InternalServerException(context,e);
 		}
 	}
 
@@ -398,9 +279,9 @@ final class ExistingEndpointController implements EndpointController {
 			addRequiredHeaders(context, builder);
 			return builder.build();
 		} catch (ApplicationExecutionException e) {
-			return processExecutionException(context, e);
+			throw diagnoseApplicationExecutionException(context, e);
 		} catch (ApplicationContextException e) {
-			return processRuntimeException(context, e);
+			throw new InternalServerException(context,e);
 		}
 	}
 
@@ -411,9 +292,8 @@ final class ExistingEndpointController implements EndpointController {
 			checkOperationSupport().
 			checkContents().
 			checkPreconditions();
-
-		// Fail as we do not support PATCH yet
-		return prepareErrorResponse(context, Status.METHOD_NOT_ALLOWED,"Patch is not supported",true);
+		// Fail as we do not support PATCH
+		throw new NotImplementedException(context);
 	}
 
 	@Override
@@ -422,25 +302,23 @@ final class ExistingEndpointController implements EndpointController {
 			checkOperationSupport().
 			checkContents().
 			checkPreconditions();
-
 		try {
 			PublicContainer container=context.container();
 			PublicResource newResource =
 				container.createResource(context.dataSet(),context.creationPreferences());
 			URI location = context.resolve(newResource);
 			ResponseBuilder builder=Response.created(location);
-			addResponseEntity(builder, location.toString(), textResponseVariant(), true);
+			EndpointControllerUtils.populateResponseBody(builder,location.toString(),EndpointControllerUtils.textResponseVariant(),true);
 			addRequiredHeaders(context, builder);
 			return builder.build();
 		} catch (ApplicationExecutionException e) {
-			return processExecutionException(context, e);
+			throw diagnoseApplicationExecutionException(context, e);
 		} catch (UnsupportedInteractionModelException e) {
-			return processUnsupportedInteractionModelException(context, e);
+			throw new UnsupportedInteractionModelDiagnosedException(context, e);
 		} catch (OperationPrecondititionException e) {
-			return processOperationPreconditionException(context,e);
+			throw new OperationPrecondititionModelDiagnosedException(context, e);
 		} catch (ApplicationContextException e) {
-			return processRuntimeException(context, e);
+			throw new InternalServerException(context,e);
 		}
-
 	}
 }

@@ -29,8 +29,6 @@ package org.ldp4j.server.controller;
 import java.nio.charset.Charset;
 import java.util.List;
 
-import org.ldp4j.application.engine.context.PublicResource;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
@@ -40,8 +38,8 @@ public class NotAcceptableException extends OperationContextException {
 
 	private final List<String> supportedCharsets;
 
-	public NotAcceptableException(PublicResource resource, OperationContext context) {
-		super(resource,context);
+	public NotAcceptableException(OperationContext context) {
+		super(context);
 		this.supportedCharsets=getNames(context.supportedCharsets());
 	}
 

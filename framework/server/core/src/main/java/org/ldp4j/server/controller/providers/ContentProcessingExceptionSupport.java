@@ -27,11 +27,8 @@
 package org.ldp4j.server.controller.providers;
 
 import java.util.List;
-import java.util.Locale;
 
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
-import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 
@@ -57,18 +54,12 @@ final class ContentProcessingExceptionSupport {
 			Status status,
 			String message,
 			T throwable) {
-		ResponseBuilder builder=
-			Response.
-				status(status).
-				language(Locale.ENGLISH).
-				type(MediaType.TEXT_PLAIN).
-				entity(
-					getFailureMessage(
-						message,
-						throwable.getSupportedVariants()));
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.resourceClass());
-		return builder.build();
+		return
+			EndpointControllerUtils.
+				prepareErrorResponse(
+					throwable,
+					getFailureMessage(message,throwable.getSupportedVariants()),
+					status.getStatusCode());
 	}
 
 }

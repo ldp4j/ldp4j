@@ -26,15 +26,13 @@
  */
 package org.ldp4j.server.controller;
 
-import org.ldp4j.application.engine.context.PublicResource;
-
 
 public class MissingContentException extends ContentProcessingException {
 
 	private static final long serialVersionUID = -7886132039003970353L;
 
-	public MissingContentException(PublicResource resource, OperationContext context) {
-		super("No content was found in the request",resource,context);
+	public MissingContentException(OperationContext context) {
+		super("No content was found in the request",context);
 	}
 
 }

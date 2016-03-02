@@ -26,16 +26,21 @@
  */
 package org.ldp4j.server.controller;
 
+import java.io.ByteArrayInputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Variant;
 
@@ -51,28 +56,154 @@ import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.Term;
+import org.ldp4j.server.config.Configuration;
 import org.ldp4j.server.data.DataTransformator;
 import org.ldp4j.server.utils.VariantUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Lists;
 
 public final class EndpointControllerUtils {
 
-	private static final String ENTITY_TAG_HEADER     = "ETag";
-	private static final String LAST_MODIFIED_HEADER  = "Last-Modified";
-	private static final String LINK_HEADER           = "Link";
-	private static final String ACCEPT_POST_HEADER    = "Accept-Post";
-	private static final String ALLOW_HEADER          = "Allow";
-	private static final String NL                    = System.lineSeparator();
+	public static abstract class ResponseEnricher implements Function<ResponseBuilder,ResponseBuilder> {
+		public final ResponseBuilder apply(ResponseBuilder builder) {
+			enrich(builder);
+			return builder;
+		}
 
+		protected abstract void enrich(ResponseBuilder builder);
+	}
+
+	private static final Logger LOGGER=LoggerFactory.getLogger(EndpointControllerUtils.class);
+
+	private static final String NL=System.lineSeparator();
 
 	private EndpointControllerUtils() {
 	}
 
 	private static void addAllowedMethodHeader(ResponseBuilder builder, String method, boolean flag) {
 		if(flag) {
-			builder.header(EndpointControllerUtils.ALLOW_HEADER,method);
+			builder.header(MoreHttp.ALLOW_HEADER,method);
 		}
+	}
+
+	static Variant textResponseVariant() {
+		return
+			Variant.
+				languages(Locale.ENGLISH).
+				mediaTypes(MediaType.TEXT_PLAIN_TYPE.withCharset(StandardCharsets.UTF_8.name())).
+				add().
+				build().
+					get(0);
+	}
+
+	static Variant errorResponseVariant() {
+		return textResponseVariant();
+	}
+
+	static List<Variant> getAcceptPostVariants(PublicResource resource) {
+		return
+			PublicRDFSource.class.isInstance(resource)?
+				Collections.<Variant>emptyList():
+				VariantUtils.defaultVariants();
+	}
+
+	static String retrievalLog(OperationContext context) {
+		StringBuilder builder=new StringBuilder();
+		Query query=context.getQuery();
+		if(query.isEmpty()) {
+			builder.append("Executing resource retrieval:").append(NL);
+		} else {
+			builder.append("Executing resource query:").append(NL);
+			builder.append("  - Parameters:").append(NL);
+			for(String parameter:query.parameterNames()) {
+			  builder.append("    + ").append(parameter).append(" : ").append(query.getParameter(parameter).rawValues());
+			}
+		}
+		ContentPreferences preferences=context.contentPreferences();
+		if(preferences!=null) {
+			builder.append("  - Using preferences: ").append(preferences).append(NL);
+		} else {
+			builder.append("  - Using default preferences: ").append(ContentPreferences.defaultPreferences()).append(NL);
+		}
+		return builder.toString();
+	}
+
+	static String retrievalResultLog(DataSet entity) {
+		return String.format("  - Data set to serialize:%n%s",entity);
+	}
+
+	static void populateProtocolEndorsedHeaders(ResponseBuilder builder, Date lastModified, EntityTag entityTag) {
+		builder.header(MoreHttp.LAST_MODIFIED_HEADER,lastModified);
+		builder.header(MoreHttp.ENTITY_TAG_HEADER,entityTag);
+	}
+
+	// LDP 1.0 - 5.2.1.4 : "LDP servers exposing LDPCs must advertise
+	// their LDP support by exposing a HTTP Link header with a target
+	// URI matching the type of container (see below) the server
+	// supports, and a link relation type of type (that is, rel='type')
+	// in all responses to requests made to the LDPC's HTTP Request-URI"
+	// LDP 1.0 - 5.2.1.4 : "LDP servers may provide additional HTTP
+	// Link: rel='type' headers"
+	static void populateProtocolSpecificHeaders(ResponseBuilder builder, Class<? extends PublicResource> clazz) {
+		List<Term> types=new ArrayList<Term>();
+		if(PublicRDFSource.class.isAssignableFrom(clazz)) {
+			types.add(LDP.RESOURCE);
+		}
+		if(PublicBasicContainer.class.isAssignableFrom(clazz)) {
+			types.add(LDP.BASIC_CONTAINER);
+		} else if(PublicDirectContainer.class.isAssignableFrom(clazz)) {
+			types.add(LDP.DIRECT_CONTAINER);
+		} else if(PublicIndirectContainer.class.isAssignableFrom(clazz)) {
+			types.add(LDP.INDIRECT_CONTAINER);
+		}
+		for(Term type:types) {
+			builder.header(MoreHttp.LINK_HEADER,MoreHttp.createLink(type, "type"));
+		}
+	}
+
+	static void populateResponseBody(ResponseBuilder builder, String entity, Variant variant, boolean includeEntity) {
+		MediaType mediaType = variant.getMediaType();
+
+		String charsetName=mediaType.getParameters().get(MediaType.CHARSET_PARAMETER);
+		Charset charset=StandardCharsets.UTF_8;
+		if(charsetName!=null && !charsetName.isEmpty() && Charset.isSupported(charsetName)) {
+			charset=Charset.forName(charsetName);
+		} else {
+			LOGGER.error("Missing of invalid charset information {}",mediaType);
+			charsetName=charset.name();
+		}
+
+		MediaType target=
+			Configuration.includeCharsetInformation()?
+				mediaType.withCharset(charsetName):
+				new MediaType(mediaType.getType(),mediaType.getSubtype());
+
+		byte[] bytes = entity.getBytes(charset);
+		builder.
+			type(target).
+			header(MoreHttp.CONTENT_LENGTH_HEADER,bytes.length);
+
+		if(variant.getLanguage()!=null) {
+			builder.language(variant.getLanguage());
+		}
+
+		if(includeEntity) {
+			builder.entity(new ByteArrayInputStream(bytes));
+		}
+	}
+
+	public static Response prepareErrorResponse(OperationContextException throwable, String body, int statusCode, ResponseEnricher... enrichers) {
+		ResponseBuilder builder=Response.status(statusCode);
+		populateResponseBody(builder,body, errorResponseVariant(), true);
+		populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
+		populateProtocolSpecificHeaders(builder,throwable.resourceClass());
+		for(Function<ResponseBuilder, ResponseBuilder> enricher:enrichers) {
+			builder=enricher.apply(builder);
+		}
+		return builder.build();
 	}
 
 	/**
@@ -123,54 +254,21 @@ public final class EndpointControllerUtils {
 			// in the OPTIONS response for any resource that supports the
 			// use of the POST method."
 			for(MediaType mediaType:DataTransformator.supportedMediaTypes()) {
-				builder.header(EndpointControllerUtils.ACCEPT_POST_HEADER,mediaType.toString());
+				builder.header(MoreHttp.ACCEPT_POST_HEADER,mediaType.toString());
 			}
 		}
-	}
-
-	public static void populateProtocolEndorsedHeaders(ResponseBuilder builder, Date lastModified, EntityTag entityTag) {
-		builder.header(EndpointControllerUtils.LAST_MODIFIED_HEADER,lastModified);
-		builder.header(EndpointControllerUtils.ENTITY_TAG_HEADER,entityTag);
-	}
-
-	// LDP 1.0 - 5.2.1.4 : "LDP servers exposing LDPCs must advertise
-	// their LDP support by exposing a HTTP Link header with a target
-	// URI matching the type of container (see below) the server
-	// supports, and a link relation type of type (that is, rel='type')
-	// in all responses to requests made to the LDPC's HTTP Request-URI"
-	// LDP 1.0 - 5.2.1.4 : "LDP servers may provide additional HTTP
-	// Link: rel='type' headers"
-	public static void populateProtocolSpecificHeaders(ResponseBuilder builder, Class<? extends PublicResource> clazz) {
-		List<Term> types=new ArrayList<Term>();
-		if(PublicRDFSource.class.isAssignableFrom(clazz)) {
-			types.add(LDP.RESOURCE);
-		}
-		if(PublicBasicContainer.class.isAssignableFrom(clazz)) {
-			types.add(LDP.BASIC_CONTAINER);
-		} else if(PublicDirectContainer.class.isAssignableFrom(clazz)) {
-			types.add(LDP.DIRECT_CONTAINER);
-		} else if(PublicIndirectContainer.class.isAssignableFrom(clazz)) {
-			types.add(LDP.INDIRECT_CONTAINER);
-		}
-		for(Term type:types) {
-			builder.header(EndpointControllerUtils.LINK_HEADER,createLink(type, "type"));
-		}
-	}
-
-	public static String createLink(Object uriRef, Object rel) {
-		return String.format("<%s>; rel=\"%s\"",uriRef,rel);
 	}
 
 	public static String createQueryOfLink(Object uriRef, Query query) {
 		String strQuery = toString(query);
 		try {
-			return createLink(uriRef, "queryOf")+"; parameters=\""+URLEncoder.encode(strQuery,"UTF-8")+"\"";
+			return MoreHttp.createLink(uriRef, "queryOf")+"; parameters=\""+URLEncoder.encode(strQuery,"UTF-8")+"\"";
 		} catch (UnsupportedEncodingException e) {
 			throw new AssertionError("UTF-8 encoding should always be supported",e);
 		}
 	}
 
-	private static String toString(Query query) {
+	static String toString(Query query) {
 		List<String> parameters=Lists.newArrayList();
 		for(String paramName:query.parameterNames()) {
 			for(String rawValue:query.getParameter(paramName).rawValues()) {
@@ -188,36 +286,16 @@ public final class EndpointControllerUtils {
 		return builder.toString();
 	}
 
-	static List<Variant> getAcceptPostVariants(PublicResource resource) {
-		return
-			PublicRDFSource.class.isInstance(resource)?
-				Collections.<Variant>emptyList():
-				VariantUtils.defaultVariants();
-	}
-
-	static String retrievalLog(OperationContext context) {
-		StringBuilder builder=new StringBuilder();
-		Query query=context.getQuery();
-		if(query.isEmpty()) {
-			builder.append("Executing resource retrieval:").append(NL);
-		} else {
-			builder.append("Executing resource query:").append(NL);
-			builder.append("  - Parameters:").append(NL);
-			for(String parameter:query.parameterNames()) {
-			  builder.append("    + ").append(parameter).append(" : ").append(query.getParameter(parameter).rawValues());
-			}
+	public static Response prepareErrorResponse(DiagnosedException throwable, ResponseEnricher... enrichers) {
+		Diagnosis diagnosis = throwable.getDiagnosis();
+		ResponseBuilder builder=Response.status(diagnosis.statusCode());
+		populateResponseBody(builder,diagnosis.diagnostic(), errorResponseVariant(), diagnosis.mandatory());
+		populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
+		populateProtocolSpecificHeaders(builder,throwable.resourceClass());
+		for(Function<ResponseBuilder, ResponseBuilder> enricher:enrichers) {
+			builder=enricher.apply(builder);
 		}
-		ContentPreferences preferences=context.contentPreferences();
-		if(preferences!=null) {
-			builder.append("  - Using preferences: ").append(preferences).append(NL);
-		} else {
-			builder.append("  - Using default preferences: ").append(ContentPreferences.defaultPreferences()).append(NL);
-		}
-		return builder.toString();
-	}
-
-	static String retrievalResultLog(DataSet entity) {
-		return String.format("  - Data set to serialize:%n%s",entity);
+		return builder.build();
 	}
 
 }

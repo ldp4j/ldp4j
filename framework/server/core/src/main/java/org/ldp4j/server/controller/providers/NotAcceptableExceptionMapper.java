@@ -26,19 +26,15 @@
  */
 package org.ldp4j.server.controller.providers;
 
-import java.util.List;
-import java.util.Locale;
-
 import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
 import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 import org.ldp4j.server.controller.EndpointControllerUtils;
+import org.ldp4j.server.controller.EndpointControllerUtils.ResponseEnricher;
 import org.ldp4j.server.controller.NotAcceptableException;
 import org.ldp4j.server.utils.VariantUtils;
 
@@ -46,32 +42,29 @@ import org.ldp4j.server.utils.VariantUtils;
 public class NotAcceptableExceptionMapper implements ExceptionMapper<NotAcceptableException> {
 
 	@Override
-	public Response toResponse(NotAcceptableException throwable) {
-		List<Variant> variants = VariantUtils.defaultVariants();
-		String message=
+	public Response toResponse(final NotAcceptableException throwable) {
+		String body=
 			EndpointControllerUtils.
 				getAcceptableContent(
-					variants,
+					VariantUtils.defaultVariants(),
 					throwable.resourceLocation(),
 					throwable.supportedCharsets());
-		ResponseBuilder builder=
-			Response.
-				status(Status.NOT_ACCEPTABLE).
-				variants(variants).
-				language(Locale.ENGLISH).
-				type(MediaType.TEXT_PLAIN).
-				entity(message);
-		addAcceptedCharsetVariants(builder,throwable.supportedCharsets());
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.resourceClass());
-		return builder.build();
-	}
-
-	private void addAcceptedCharsetVariants(ResponseBuilder builder, Iterable<String> supportedCharsets) {
-		builder.header(HttpHeaders.VARY,HttpHeaders.ACCEPT_CHARSET);
-		for(String supportedCharset:supportedCharsets) {
-			builder.header(HttpHeaders.ACCEPT_CHARSET,supportedCharset);
-		}
+		return
+			EndpointControllerUtils.
+				prepareErrorResponse(
+					throwable,
+					body,
+					Status.NOT_ACCEPTABLE.getStatusCode(),
+					new ResponseEnricher() {
+						@Override
+						protected void enrich(ResponseBuilder builder) {
+							builder.header(HttpHeaders.VARY,HttpHeaders.ACCEPT_CHARSET);
+							for(String supportedCharset:throwable.supportedCharsets()) {
+								builder.header(HttpHeaders.ACCEPT_CHARSET,supportedCharset);
+							}
+						}
+					}
+				);
 	}
 
 }
