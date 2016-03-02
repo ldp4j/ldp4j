@@ -26,6 +26,9 @@
  */
 package org.ldp4j.application;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.fail;
 import mockit.Expectations;
 import mockit.Injectable;
 import mockit.Tested;
@@ -49,6 +52,16 @@ public class ContextWriteSessionStateTest {
 	private ContextWriteSessionState sut;
 
 	@Test
+	public void testClose$circuitBreak() throws Exception {
+		new Expectations() {{
+			delegate.close();times=1;
+			listener.onDispose(sut);times=1;
+		}};
+		this.sut.close();
+		this.sut.close();
+	}
+
+	@Test
 	public void testDispose$happyPath() throws Exception {
 		new Expectations() {{
 			delegate.close();times=1;
@@ -64,6 +77,46 @@ public class ContextWriteSessionStateTest {
 			delegate.close();result=new SessionTerminationException("Failure");
 		}};
 		this.sut.dispose();
+	}
+
+	@Test
+	public void testVerifyExecutability$breakIfCompleted() throws Exception {
+		new Expectations() {{
+			delegate.saveChanges();times=1;
+		}};
+		this.sut.saveChanges();
+		try {
+			this.sut.saveChanges();
+			fail("Should break circuit if already completed");
+		} catch (IllegalStateException e) {
+			assertThat(e.getMessage(),equalTo("Session has already been completed"));
+		}
+	}
+
+	@Test
+	public void testVerifyExecutability$breakIfDisposed() throws Exception {
+		new Expectations() {{
+			listener.onDispose(sut);times=1;
+			delegate.close();times=1;
+		}};
+		this.sut.close();
+		try {
+			this.sut.saveChanges();
+			fail("Should break circuit if already disposed");
+		} catch (IllegalStateException e) {
+			assertThat(e.getMessage(),equalTo("Session has already been disposed"));
+		}
+	}
+
+	@Test
+	public void testVerifyExecutability$allowDisposalAfterCompletion() throws Exception {
+		new Expectations() {{
+			delegate.saveChanges();times=1;
+			listener.onDispose(sut);times=1;
+			delegate.close();times=1;
+		}};
+		this.sut.saveChanges();
+		this.sut.close();
 	}
 
 }

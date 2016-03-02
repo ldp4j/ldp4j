@@ -53,7 +53,6 @@ import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.session.ResourceSnapshot;
-import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.spi.RuntimeDelegate;
 import org.ldp4j.commons.testing.Utils;
@@ -164,80 +163,6 @@ public class ApplicationContextTest {
 		new Verifications() {{
 			nativeSession.close();maxTimes=1;minTimes=1;
 		}};
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test
-	public void testDisposeSession(@Mocked final WriteSession nativeSession) throws Exception {
-		new Expectations() {{
-			delegate.createSession();result=nativeSession;
-		}};
-		ApplicationContext sut = createContext();
-		WriteSession session = sut.createSession();
-		sut.disposeSession(session);
-		session.close();
-		new Verifications() {{
-			nativeSession.close();maxTimes=1;minTimes=1;
-		}};
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test
-	public void testDisposeSession$terminationFailure(@Mocked final WriteSession nativeSession) throws Exception {
-		new Expectations() {{
-			delegate.createSession();result=nativeSession;
-			nativeSession.close();result=new SessionTerminationException("FAILURE");
-		}};
-		ApplicationContext sut = createContext();
-		WriteSession session = sut.createSession();
-		try {
-			sut.disposeSession(session);
-			fail("Should propagate close failure");
-		} catch (Exception e) {
-			assertThat(Throwables.getRootCause(e),instanceOf(SessionTerminationException.class));
-		} finally {
-			session.close();
-		}
-		new Verifications() {{
-			nativeSession.close();maxTimes=1;minTimes=1;
-		}};
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test(expected=NullPointerException.class)
-	public void testDisposeSession$null() throws Exception {
-		ApplicationContext sut = createContext();
-		sut.disposeSession(null);
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test
-	public void testDisposeSession$unknownSession$withSession(@Mocked final WriteSession nativeSession, @Mocked final WriteSession other) throws Exception {
-		new Expectations() {{
-			delegate.createSession();result=nativeSession;
-		}};
-		ApplicationContext sut = createContext();
-		WriteSession session = sut.createSession();
-		try {
-			sut.disposeSession(other);
-			fail("Should not allow dipossing unknown sessions");
-		} catch(ApplicationContextException e) {
-			assertThat(e.getMessage(),notNullValue());
-		} finally {
-			session.close();
-		}
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test
-	public void testDisposeSession$unknownSession$noSession(@Mocked final WriteSession nativeSession, @Mocked final WriteSession other) throws Exception {
-		ApplicationContext sut = createContext();
-		try {
-			sut.disposeSession(other);
-			fail("Should not allow dipossing unknown sessions");
-		} catch(ApplicationContextException e) {
-			assertThat(e.getMessage(),notNullValue());
-		}
 	}
 
 	@Test

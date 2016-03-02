@@ -47,9 +47,9 @@ final class WriteSessionCleaner {
 	private final class Worker implements Runnable {
 		@Override
 		public void run() {
-			while (!terminate) {
+			while (!WriteSessionCleaner.this.terminate) {
 				try {
-					ContextWriteSessionReference ref=(ContextWriteSessionReference)referenceQueue.remove();
+					ContextWriteSessionReference ref=(ContextWriteSessionReference)WriteSessionCleaner.this.referenceQueue.remove();
 					ContextWriteSessionState state = ref.state();
 					LOGGER.trace("Session {} is now weakly reachable...",state);
 					state.dispose();

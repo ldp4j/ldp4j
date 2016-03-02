@@ -26,12 +26,9 @@
  */
 package org.ldp4j.application;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.lang.ref.ReferenceQueue;
 import java.util.Map;
 
-import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.spi.RuntimeDelegate;
 import org.ldp4j.application.spi.ShutdownListener;
@@ -81,14 +78,10 @@ public final class ApplicationContext {
 		LOGGER.info("Initialized Application Context");
 	}
 
-	private ApplicationContextException failure(Throwable cause, String fmt, Object... args) {
+	private ApplicationContextException failure(String fmt, Object... args) {
 		String message=String.format(fmt,args);
-		if(cause!=null) {
-			LOGGER.error(message+". Full stacktrace follows",cause);
-		} else {
-			LOGGER.error(message);
-		}
-		return new ApplicationContextException(message,cause);
+		LOGGER.error(message);
+		return new ApplicationContextException(message);
 	}
 
 	private void setUpWriteSessionCleaner() {
@@ -139,16 +132,16 @@ public final class ApplicationContext {
 	 */
 	public synchronized WriteSession createSession() throws ApplicationContextException {
 		if(this.threadSession.containsKey(Thread.currentThread().getId())) {
-			throw failure(null,"Thread already has an active session");
+			throw failure("Thread already has an active session");
 		}
 
 		if(this.delegate.isOffline()) {
-			throw failure(null,"The Application Engine is off-line");
+			throw failure("The Application Engine is off-line");
 		}
 
 		WriteSession nativeSession=this.delegate.createSession();
 		if(nativeSession==null) {
-			throw failure(null,"Could not create native write session");
+			throw failure("Could not create native write session");
 		}
 
 		setUpWriteSessionCleaner();
@@ -158,32 +151,6 @@ public final class ApplicationContext {
 				new ContextWriteSessionState(
 					nativeSession,
 					new CleanerContextWriteSessionStateListener()));
-	}
-
-	/**
-	 * Dispose a {@code WriteSession}. Once the session has been disposed it
-	 * will not be active (usable) any longer.
-	 *
-	 * @param session
-	 *            the session to be disposed
-	 * @throws NullPointerException
-	 *             if the session is null.
-	 * @throws ApplicationContextException
-	 *             if the session cannot be disposed, e.g., the session is not
-	 *             owned by the current thread.
-	 * @deprecated Use the {@link WriteSession#close()} method instead.
-	 */
-	@Deprecated
-	public void disposeSession(WriteSession session) throws ApplicationContextException {
-		checkNotNull(session,"Session cannot be null");
-		if(!ContextWriteSession.class.isInstance(session)) {
-			throw failure(null,"Unknown session %s",session);
-		}
-		try {
-			session.close();
-		} catch (SessionTerminationException e) {
-			throw failure(e,"Could not close session '%X'",session.hashCode());
-		}
 	}
 
 	/**
