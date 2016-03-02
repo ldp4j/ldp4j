@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 import org.ldp4j.application.data.LiteralsTest;
+import org.ldp4j.application.data.MutableDataSetTest;
 import org.ldp4j.application.ext.annotations.MembershipRelationTest;
 import org.ldp4j.application.session.SnapshotResolverTest;
 import org.ldp4j.application.spi.RuntimeDelegateTest;
@@ -48,6 +49,7 @@ import org.ldp4j.application.vocabulary.VocabularyTestsSuite;
 	ApplicationContextExtendedTest.class,
 	VocabularyTestsSuite.class,
 	LiteralsTest.class,
+	MutableDataSetTest.class,
 	MembershipRelationTest.class,
 	SnapshotResolverTest.class,
 	RuntimeDelegateTest.class

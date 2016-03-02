@@ -131,12 +131,12 @@ final class MutableDataSet implements DataSet {
 	public boolean isEmpty() {
 		for(Individual<?,?> individual:this) {
 			for(Property property:individual) {
-				if(property.numberOfValues()>0) {
-					return true;
+				if(property.hasValues()) {
+					return false;
 				}
 			}
 		}
-		return false;
+		return true;
 	}
 
 	@Override
