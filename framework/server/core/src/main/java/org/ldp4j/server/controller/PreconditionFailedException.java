@@ -27,19 +27,19 @@
 package org.ldp4j.server.controller;
 
 
-public class PreconditionFailedException extends OperationContextException {
+public class PreconditionFailedException extends DiagnosedException {
 
 	private static final long serialVersionUID = 2525728579639037053L;
 
-	private final int statusCode;
-
 	public PreconditionFailedException(OperationContext context, int statusCode) {
-		super("",context);
-		this.statusCode = statusCode;
-	}
-
-	public int getStatusCode() {
-		return statusCode;
+		super(
+			context,
+			null,
+			Diagnosis.
+				create().
+					statusCode(statusCode).
+					diagnostic("Precondition failed").
+					mandatory(true));
 	}
 
 }

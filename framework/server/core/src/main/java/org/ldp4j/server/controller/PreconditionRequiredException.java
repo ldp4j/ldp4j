@@ -26,13 +26,22 @@
  */
 package org.ldp4j.server.controller;
 
+import com.google.common.net.HttpHeaders;
 
-public class PreconditionRequiredException extends OperationContextException {
+
+public class PreconditionRequiredException extends DiagnosedException {
 
 	private static final long serialVersionUID = 8286288208444290507L;
 
 	public PreconditionRequiredException(OperationContext context) {
-		super(context);
+		super(
+			context,
+			null,
+			Diagnosis.
+				create().
+					statusCode(MoreHttp.PRECONDITION_REQUIRED_STATUS_CODE).
+					diagnostic("No %s header specified.",HttpHeaders.IF_MATCH).
+					mandatory(true));
 	}
 
 }
