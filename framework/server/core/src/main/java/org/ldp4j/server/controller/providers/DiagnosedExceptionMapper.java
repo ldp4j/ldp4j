@@ -30,14 +30,14 @@ import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
+import org.ldp4j.server.controller.DiagnosedException;
 import org.ldp4j.server.controller.EndpointControllerUtils;
-import org.ldp4j.server.controller.InvalidConstraintReportRetrievalException;
 
 @Provider
-public class InvalidConstraintReportRetrievalExceptionMapper implements ExceptionMapper<InvalidConstraintReportRetrievalException> {
+public class DiagnosedExceptionMapper implements ExceptionMapper<DiagnosedException> {
 
 	@Override
-	public Response toResponse(InvalidConstraintReportRetrievalException throwable) {
+	public Response toResponse(DiagnosedException throwable) {
 		return EndpointControllerUtils.prepareErrorResponse(throwable);
 	}
 

@@ -42,9 +42,6 @@
 	<import resource="classpath:META-INF/cxf/cxf.xml" />
 	<import resource="classpath:META-INF/cxf/cxf-servlet.xml" />
 
-<!--
-	<bean class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
- -->
 	<bean class="org.ldp4j.server.utils.spring.MonitorizedPropertyPlaceholderConfigurer">
 		<property name="moduleName" value="ldp4j-server-frontend"/>
 		<property name="ignoreResourceNotFound" value="true"/>
@@ -92,14 +89,7 @@
 			<bean id="iceMapper"   class="org.ldp4j.server.controller.providers.InvalidRequestContentExceptionMapper"/>
 			<bean id="iseMapper"   class="org.ldp4j.server.controller.providers.InternalServerExceptionMapper"/>
 			<bean id="icdeMapper"  class="org.ldp4j.server.controller.providers.InvalidContentDiagnosedExceptionMapper"/>
-			<bean id="ucreMapper"  class="org.ldp4j.server.controller.providers.UnknownConstraintReportExceptionMapper"/>
-			<bean id="mqnaeMapper" class="org.ldp4j.server.controller.providers.MixedQueryNotAllowedExceptionMapper"/>
-			<bean id="qnseMapper"  class="org.ldp4j.server.controller.providers.QueryingNotSupportedExceptionMapper"/>
-			<bean id="icrreMapper" class="org.ldp4j.server.controller.providers.InvalidConstraintReportRetrievalExceptionMapper"/>
-			<bean id="iqdeMapper"  class="org.ldp4j.server.controller.providers.InvalidQueryDiagnosedExceptionMapper"/>
-			<bean id="nireMapper"  class="org.ldp4j.server.controller.providers.NotImplementedExceptionMapper"/>
-			<bean id="uimdeMapper" class="org.ldp4j.server.controller.providers.UnsupportedInteractionModelDiagnosedExceptionMapper"/>
-			<bean id="opmdeMapper" class="org.ldp4j.server.controller.providers.OperationPrecondititionModelDiagnosedExceptionMapper"/>
+			<bean id="deMapper"    class="org.ldp4j.server.controller.providers.DiagnosedExceptionMapper"/>
 		</jaxrs:providers>
 	</jaxrs:server>
 
