@@ -41,9 +41,4 @@ public abstract class DiagnosedException extends OperationContextException {
 		return this.diagnosis;
 	}
 
-	@Deprecated
-	public final int getStatusCode() {
-		return this.diagnosis.statusCode();
-	}
-
 }

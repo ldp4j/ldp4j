@@ -85,7 +85,6 @@
 			<bean id="mcteMapper"  class="org.ldp4j.server.controller.providers.MissingContentTypeExceptionMapper"/>
 			<bean id="mnaMapper"   class="org.ldp4j.server.controller.providers.MethodNotAllowedExceptionMapper"/>
 			<bean id="iceMapper"   class="org.ldp4j.server.controller.providers.InvalidRequestContentExceptionMapper"/>
-			<bean id="iseMapper"   class="org.ldp4j.server.controller.providers.InternalServerExceptionMapper"/>
 			<bean id="icdeMapper"  class="org.ldp4j.server.controller.providers.InvalidContentDiagnosedExceptionMapper"/>
 			<bean id="deMapper"    class="org.ldp4j.server.controller.providers.DiagnosedExceptionMapper"/>
 		</jaxrs:providers>

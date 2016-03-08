@@ -26,8 +26,12 @@
  */
 package org.ldp4j.server.controller;
 
+import javax.ws.rs.core.Response.Status;
 
-public class InternalServerException extends OperationContextException {
+import com.google.common.base.Throwables;
+
+
+public class InternalServerException extends DiagnosedException {
 
 	private static final long serialVersionUID = -7935564305394686915L;
 
@@ -36,7 +40,29 @@ public class InternalServerException extends OperationContextException {
 	}
 
 	public InternalServerException(OperationContext context, String message, Throwable cause) {
-		super(message,cause,context);
+		super(
+			context,
+			cause,
+			Diagnosis.
+				create().
+				statusCode(Status.INTERNAL_SERVER_ERROR).
+				diagnostic(toString(message,cause)).
+				mandatory(true)
+		);
+	}
+
+	private static String toString(String message, Throwable cause) {
+		StringBuilder builder=new StringBuilder();
+		if(message!=null) {
+			builder.append(message);
+		}
+		if(cause!=null) {
+			if(builder.length()==0) {
+				builder.append(System.lineSeparator());
+			}
+			builder.append(Throwables.getStackTraceAsString(cause));
+		}
+		return builder.toString();
 	}
 
 }
