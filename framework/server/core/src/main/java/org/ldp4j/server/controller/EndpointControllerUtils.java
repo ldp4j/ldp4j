@@ -33,7 +33,6 @@ import java.net.URLEncoder;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -57,7 +56,6 @@ import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.vocabulary.LDP;
 import org.ldp4j.application.vocabulary.Term;
 import org.ldp4j.server.config.Configuration;
-import org.ldp4j.server.data.DataTransformator;
 import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -92,6 +90,35 @@ public final class EndpointControllerUtils {
 		}
 	}
 
+	private static void addProtocolEndorsedHeaders(ResponseBuilder builder, Date lastModified, EntityTag entityTag) {
+		builder.header(MoreHttp.LAST_MODIFIED_HEADER,lastModified);
+		builder.header(MoreHttp.ENTITY_TAG_HEADER,entityTag);
+	}
+
+	// LDP 1.0 - 5.2.1.4 : "LDP servers exposing LDPCs must advertise
+	// their LDP support by exposing a HTTP Link header with a target
+	// URI matching the type of container (see below) the server
+	// supports, and a link relation type of type (that is, rel='type')
+	// in all responses to requests made to the LDPC's HTTP Request-URI"
+	// LDP 1.0 - 5.2.1.4 : "LDP servers may provide additional HTTP
+	// Link: rel='type' headers"
+	private static void addProtocolSpecificHeaders(ResponseBuilder builder, Class<? extends PublicResource> clazz) {
+		List<Term> types=new ArrayList<Term>();
+		if(PublicRDFSource.class.isAssignableFrom(clazz)) {
+			types.add(LDP.RESOURCE);
+		}
+		if(PublicBasicContainer.class.isAssignableFrom(clazz)) {
+			types.add(LDP.BASIC_CONTAINER);
+		} else if(PublicDirectContainer.class.isAssignableFrom(clazz)) {
+			types.add(LDP.DIRECT_CONTAINER);
+		} else if(PublicIndirectContainer.class.isAssignableFrom(clazz)) {
+			types.add(LDP.INDIRECT_CONTAINER);
+		}
+		for(Term type:types) {
+			builder.header(MoreHttp.LINK_HEADER,MoreHttp.createLink(type, "type"));
+		}
+	}
+
 	static Variant textResponseVariant() {
 		return
 			Variant.
@@ -104,13 +131,6 @@ public final class EndpointControllerUtils {
 
 	static Variant errorResponseVariant() {
 		return textResponseVariant();
-	}
-
-	static List<Variant> getAcceptPostVariants(PublicResource resource) {
-		return
-			PublicRDFSource.class.isInstance(resource)?
-				Collections.<Variant>emptyList():
-				VariantUtils.defaultVariants();
 	}
 
 	/**
@@ -169,33 +189,11 @@ public final class EndpointControllerUtils {
 		return String.format("  - Data set to serialize:%n%s",entity);
 	}
 
-	static void populateProtocolEndorsedHeaders(ResponseBuilder builder, Date lastModified, EntityTag entityTag) {
-		builder.header(MoreHttp.LAST_MODIFIED_HEADER,lastModified);
-		builder.header(MoreHttp.ENTITY_TAG_HEADER,entityTag);
-	}
+	static void populateRequiredHeaders(ResponseBuilder builder, OperationContext context) {
+		PublicResource resource = context.resource();
+		addProtocolEndorsedHeaders(builder,resource.lastModified(),resource.entityTag());
+		addProtocolSpecificHeaders(builder,resource.getClass());
 
-	// LDP 1.0 - 5.2.1.4 : "LDP servers exposing LDPCs must advertise
-	// their LDP support by exposing a HTTP Link header with a target
-	// URI matching the type of container (see below) the server
-	// supports, and a link relation type of type (that is, rel='type')
-	// in all responses to requests made to the LDPC's HTTP Request-URI"
-	// LDP 1.0 - 5.2.1.4 : "LDP servers may provide additional HTTP
-	// Link: rel='type' headers"
-	static void populateProtocolSpecificHeaders(ResponseBuilder builder, Class<? extends PublicResource> clazz) {
-		List<Term> types=new ArrayList<Term>();
-		if(PublicRDFSource.class.isAssignableFrom(clazz)) {
-			types.add(LDP.RESOURCE);
-		}
-		if(PublicBasicContainer.class.isAssignableFrom(clazz)) {
-			types.add(LDP.BASIC_CONTAINER);
-		} else if(PublicDirectContainer.class.isAssignableFrom(clazz)) {
-			types.add(LDP.DIRECT_CONTAINER);
-		} else if(PublicIndirectContainer.class.isAssignableFrom(clazz)) {
-			types.add(LDP.INDIRECT_CONTAINER);
-		}
-		for(Term type:types) {
-			builder.header(MoreHttp.LINK_HEADER,MoreHttp.createLink(type, "type"));
-		}
 	}
 
 	static void populateResponseBody(ResponseBuilder builder, String entity, Variant variant, boolean includeEntity) {
@@ -257,10 +255,11 @@ public final class EndpointControllerUtils {
 	}
 
 	public static void populateAllowedHeaders(ResponseBuilder builder, Capabilities capabilities) {
-		// LDP 1.0 - 4.2.8.2 : "LDP servers must indicate their support for HTTP
-		// Methods by responding to a HTTP OPTIONS request on the
-		// LDPR’s URL with the HTTP Method tokens in the HTTP
-		// response header Allow."
+		/**
+		 * LDP 1.0 - 4.2.8.2 : "LDP servers must indicate their support for HTTP
+		 * Methods by responding to a HTTP OPTIONS request on the LDPR’s URL
+		 * with the HTTP Method tokens in the HTTP response header Allow."
+		 */
 		addAllowedMethodHeader(builder,"OPTIONS",true);
 		addAllowedMethodHeader(builder,"HEAD",true);
 		addAllowedMethodHeader(builder,"GET",true);
@@ -269,11 +268,17 @@ public final class EndpointControllerUtils {
 		addAllowedMethodHeader(builder,"DELETE",capabilities.isDeletable());
 		addAllowedMethodHeader(builder,"POST",capabilities.isFactory());
 		if(capabilities.isFactory()) {
-			// LDP 1.0 - 7.1.2 : "The Accept-Post HTTP header should appear
-			// in the OPTIONS response for any resource that supports the
-			// use of the POST method."
-			for(MediaType mediaType:DataTransformator.supportedMediaTypes()) {
-				builder.header(MoreHttp.ACCEPT_POST_HEADER,mediaType.toString());
+			/**
+			 * LDP 1.0 - 5.2.3.13: "LDP servers that support POST must include
+			 * an Accept-Post response header on HTTP OPTIONS responses, listing
+			 * POST request media type(s) supported by the server.
+			 *
+			 * LDP 1.0 - 7.1.2 : "The Accept-Post HTTP header should appear in
+			 * the OPTIONS response for any resource that supports the use of
+			 * the POST method."
+			 */
+			for(Variant variant:VariantUtils.defaultVariants()) {
+				builder.header(MoreHttp.ACCEPT_POST_HEADER,variant.getMediaType());
 			}
 		}
 	}
@@ -282,8 +287,8 @@ public final class EndpointControllerUtils {
 		Diagnosis diagnosis = throwable.getDiagnosis();
 		ResponseBuilder builder=Response.status(diagnosis.statusCode());
 		populateResponseBody(builder,diagnosis.diagnostic(), errorResponseVariant(), diagnosis.mandatory());
-		populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
-		populateProtocolSpecificHeaders(builder,throwable.resourceClass());
+		addProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
+		addProtocolSpecificHeaders(builder,throwable.resourceClass());
 		for(Function<ResponseBuilder, ResponseBuilder> enricher:enrichers) {
 			builder=enricher.apply(builder);
 		}

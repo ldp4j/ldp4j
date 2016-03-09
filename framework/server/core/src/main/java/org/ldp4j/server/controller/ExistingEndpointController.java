@@ -49,11 +49,20 @@ import org.ldp4j.application.ext.InvalidQueryException;
 import org.ldp4j.application.ext.Parameter;
 import org.ldp4j.application.ext.Query;
 import org.ldp4j.application.ext.UnknownResourceException;
-import org.ldp4j.rdf.Namespaces;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
+import com.google.common.base.Supplier;
+
 final class ExistingEndpointController implements EndpointController {
+
+	private static final class DefaultContentPreferencesSupplier implements Supplier<ContentPreferences> {
+		@Override
+		public ContentPreferences get() {
+			return ContentPreferences.defaultPreferences();
+		}
+	}
 
 	private static final String NO_CONSTRAINT_REPORT_ID_DEFINED_ERROR = "No constraint report identifier defined. Full stacktrace follows";
 
@@ -62,51 +71,50 @@ final class ExistingEndpointController implements EndpointController {
 	ExistingEndpointController() {
 	}
 
-	private String serialize(OperationContext context, Variant variant, DataSet entity, Namespaces namespaces) {
-		return context.serialize(entity,namespaces,variant.getMediaType());
-	}
-
-	private void addRequiredHeaders(OperationContext context, ResponseBuilder builder) {
-		PublicResource resource = context.resource();
-		EndpointControllerUtils.
-			populateProtocolEndorsedHeaders(builder,resource.lastModified(),resource.entityTag());
-		EndpointControllerUtils.
-			populateProtocolSpecificHeaders(builder,resource.getClass());
-	}
-
 	private void addOptionsMandatoryHeaders(OperationContext context, ResponseBuilder builder) {
-		addRequiredHeaders(context,builder);
-		EndpointControllerUtils.
-			populateAllowedHeaders(builder, context.resource().capabilities());
-		addAcceptPostHeaders(context, builder);
+		EndpointControllerUtils.populateRequiredHeaders(builder, context);
+		EndpointControllerUtils.populateAllowedHeaders(builder, context.resource().capabilities());
 	}
 
-
-	private void addAcceptPostHeaders(OperationContext context, ResponseBuilder builder) {
-		/**
-		 * 5.2.3.14
-		 */
-		for(Variant variant:EndpointControllerUtils.getAcceptPostVariants(context.resource())) {
-			builder.header(MoreHttp.ACCEPT_POST_HEADER,variant.getMediaType());
-		}
-	}
-
-	private Response prepareRetrievalResponse(
+	private ResponseBuilder prepareRetrievalResponse(
 			OperationContext context,
 			Variant variant,
-			boolean hasPreferences,
-			ContentPreferences preferences,
-			boolean includeEntity,
-			String entity,
-			Query query) {
-		ResponseBuilder builder=Response.serverError();
-		builder.variant(variant);
-		if(hasPreferences) {
-			builder.header(ContentPreferencesUtils.PREFERENCE_APPLIED_HEADER,ContentPreferencesUtils.asPreferenceAppliedHeader(preferences));
-		}
+			DataSet entity,
+			boolean includeEntity) {
+		String body=
+			context.serialize(
+				entity,
+				NamespacesHelper.
+					constraintReportNamespaces(
+						context.applicationNamespaces()),
+				variant.getMediaType());
+		ResponseBuilder builder=Response.ok();
+		EndpointControllerUtils.
+			populateResponseBody(
+				builder,
+				body,
+				variant,
+				includeEntity);
+		return builder;
+	}
+
+	private Response prepareResourceRetrievalResponse(
+			OperationContext context,
+			Variant variant,
+			DataSet entity,
+			boolean includeEntity) {
+		ResponseBuilder builder=prepareRetrievalResponse(context, variant, entity, includeEntity);
 		addOptionsMandatoryHeaders(context, builder);
-		builder.status(Status.OK.getStatusCode());
-		EndpointControllerUtils.populateResponseBody(builder,entity,variant,includeEntity);
+
+		ContentPreferences preferences = context.contentPreferences();
+		if(preferences!=null) {
+			builder.
+				header(
+					ContentPreferencesUtils.PREFERENCE_APPLIED_HEADER,
+					ContentPreferencesUtils.asPreferenceAppliedHeader(preferences));
+		}
+
+		Query query=context.getQuery();
 		if(!query.isEmpty()) {
 			builder.
 				header(
@@ -119,26 +127,14 @@ final class ExistingEndpointController implements EndpointController {
 		return builder.build();
 	}
 
-	private Response prepareConstraintReportRetrievalResponse(OperationContext context, boolean includeEntity, Variant variant, String constraintReportId) {
-		try {
-			PublicResource resource=context.resource();
-			LOGGER.debug("Retrieving constraint report: {}",constraintReportId);
-
-			DataSet report=resource.getConstraintReport(constraintReportId);
-			if(report==null) {
-				throw new UnknownConstraintReportException(context,constraintReportId,includeEntity);
-			}
-
-			LOGGER.trace("Constraint report to serialize:\n{}",report);
-			String body=serialize(context,variant,report,NamespacesHelper.constraintReportNamespaces(context.applicationNamespaces()));
-			ResponseBuilder builder=Response.ok();
-			EndpointControllerUtils.populateResponseBody(builder,body,variant,includeEntity);
-			return builder.build();
-		} catch (ApplicationExecutionException e) {
-			throw diagnoseApplicationExecutionException(context, e);
-		} catch (ApplicationContextException e) {
-			throw new InternalServerException(context,e);
-		}
+	private Response prepareConstraintReportRetrievalResponse(
+			OperationContext context,
+			Variant variant,
+			DataSet report,
+			boolean includeEntity) {
+		return
+			prepareRetrievalResponse(context,variant,report,includeEntity).
+				build();
 	}
 
 	private Response handleRetrieval(OperationContext context, boolean includeEntity) {
@@ -146,7 +142,6 @@ final class ExistingEndpointController implements EndpointController {
 		context.
 			checkOperationSupport().
 			checkPreconditions();
-
 		switch(RetrievalScenario.forContext(context)) {
 			case MIXED_QUERY:
 				throw new MixedQueryNotAllowedException(context,includeEntity);
@@ -166,29 +161,18 @@ final class ExistingEndpointController implements EndpointController {
 			}
 			PublicResource resource=context.resource();
 			Query query=context.getQuery();
-			ContentPreferences preferences = context.contentPreferences();
-			boolean hasPreferences = preferences==null;
-			if(hasPreferences) {
-				preferences=ContentPreferences.defaultPreferences();
-			}
+			ContentPreferences preferences =
+				Optional.
+					fromNullable(context.contentPreferences()).
+					or(new DefaultContentPreferencesSupplier());
 			DataSet entity=
 				query.isEmpty()?
 					resource.entity(preferences):
 					resource.query(query,preferences);
-
 			if(LOGGER.isTraceEnabled()) {
 				LOGGER.trace(EndpointControllerUtils.retrievalResultLog(entity));
 			}
-
-			String body=
-				serialize(
-					context,
-					variant,
-					entity,
-					NamespacesHelper.
-						resourceNamespaces(context.applicationNamespaces()));
-
-			return prepareRetrievalResponse(context,variant,hasPreferences,preferences,includeEntity,body,query);
+			return prepareResourceRetrievalResponse(context,variant,entity,includeEntity);
 		} catch (ApplicationExecutionException e) {
 			throw diagnoseApplicationExecutionException(context, e);
 		} catch (ApplicationContextException e) {
@@ -201,7 +185,23 @@ final class ExistingEndpointController implements EndpointController {
 		if(parameter.cardinality()!=1) {
 			throw new InvalidConstraintReportRetrievalException(context,parameter.rawValues(),includeEntity);
 		}
-		return prepareConstraintReportRetrievalResponse(context,includeEntity,variant,parameter.rawValue());
+		String constraintReportId = parameter.rawValue();
+		try {
+			LOGGER.debug("Retrieving constraint report: {}",constraintReportId);
+
+			PublicResource resource=context.resource();
+			DataSet report=resource.getConstraintReport(constraintReportId);
+			if(report==null) {
+				throw new UnknownConstraintReportException(context,constraintReportId,includeEntity);
+			}
+
+			LOGGER.trace("Constraint report to serialize:\n{}",report);
+			return prepareConstraintReportRetrievalResponse(context,variant,report,includeEntity);
+		} catch (ApplicationExecutionException e) {
+			throw diagnoseApplicationExecutionException(context, e);
+		} catch (ApplicationContextException e) {
+			throw new InternalServerException(context,e);
+		}
 	}
 
 	private OperationContextException diagnoseApplicationExecutionException(OperationContext context, ApplicationExecutionException exception) {
@@ -276,7 +276,7 @@ final class ExistingEndpointController implements EndpointController {
 		try {
 			context.resource().modify(context.dataSet());
 			ResponseBuilder builder=Response.noContent();
-			addRequiredHeaders(context, builder);
+			EndpointControllerUtils.populateRequiredHeaders(builder, context);
 			return builder.build();
 		} catch (ApplicationExecutionException e) {
 			throw diagnoseApplicationExecutionException(context, e);
@@ -308,8 +308,13 @@ final class ExistingEndpointController implements EndpointController {
 				container.createResource(context.dataSet(),context.creationPreferences());
 			URI location = context.resolve(newResource);
 			ResponseBuilder builder=Response.created(location);
-			EndpointControllerUtils.populateResponseBody(builder,location.toString(),EndpointControllerUtils.textResponseVariant(),true);
-			addRequiredHeaders(context, builder);
+			EndpointControllerUtils.populateRequiredHeaders(builder, context);
+			EndpointControllerUtils.
+				populateResponseBody(
+					builder,
+					location.toString(),
+					EndpointControllerUtils.textResponseVariant(),
+					true);
 			return builder.build();
 		} catch (ApplicationExecutionException e) {
 			throw diagnoseApplicationExecutionException(context, e);
