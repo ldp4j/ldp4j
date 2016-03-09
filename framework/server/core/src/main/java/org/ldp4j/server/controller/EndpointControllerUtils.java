@@ -110,6 +110,37 @@ public final class EndpointControllerUtils {
 				VariantUtils.defaultVariants();
 	}
 
+	/**
+	 * Get a text/plain representation that indicates the acceptable media types
+	 * and charsets for the specified resource. The current implementation
+	 * <b>only</b> takes care of the media type, nor language, nor encodings are
+	 * taken into consideration for generating the acceptable content.
+	 *
+	 * @param variants
+	 *            The acceptable variants
+	 * @param resourceLocation
+	 *            The location of the resource
+	 * @param supportedCharsets
+	 *            The supported charsets
+	 * @return A content instance that outlines the acceptable media types
+	 *         together with the locations from where the resource contents for
+	 *         those media types can be retrieved, and the charsets supported.
+	 */
+	static String getAcceptableContent(
+			List<Variant> variants,
+			URI resourceLocation,
+			List<String> supportedCharsets) {
+		StringBuilder builder = new StringBuilder();
+		for (Variant variant : variants) {
+			MediaType mediaType = variant.getMediaType();
+			builder.append(mediaType).append(" : %1$s%n");
+			for(String supportedCharset:supportedCharsets) {
+				builder.append(mediaType.withCharset(supportedCharset)).append(" : %1$s%n");
+			}
+		}
+		return String.format(builder.toString(),resourceLocation);
+	}
+
 	static String retrievalLog(OperationContext context) {
 		StringBuilder builder=new StringBuilder();
 		Query query=context.getQuery();
@@ -195,6 +226,24 @@ public final class EndpointControllerUtils {
 		}
 	}
 
+	static String toString(Query query) {
+		List<String> parameters=Lists.newArrayList();
+		for(String paramName:query.parameterNames()) {
+			for(String rawValue:query.getParameter(paramName).rawValues()) {
+				parameters.add(paramName+"="+rawValue);
+			}
+		}
+		StringBuilder builder=new StringBuilder();
+		Iterator<String> iterator=parameters.iterator();
+		while(iterator.hasNext()) {
+			builder.append(iterator.next());
+			if(iterator.hasNext()) {
+				builder.append("&");
+			}
+		}
+		return builder.toString();
+	}
+
 	public static Response prepareErrorResponse(OperationContextException throwable, String body, int statusCode, ResponseEnricher... enrichers) {
 		ResponseBuilder builder=Response.status(statusCode);
 		populateResponseBody(builder,body, errorResponseVariant(), true);
@@ -204,37 +253,6 @@ public final class EndpointControllerUtils {
 			builder=enricher.apply(builder);
 		}
 		return builder.build();
-	}
-
-	/**
-	 * Get a text/plain representation that indicates the acceptable media types
-	 * and charsets for the specified resource. The current implementation
-	 * <b>only</b> takes care of the media type, nor language, nor encodings are
-	 * taken into consideration for generating the acceptable content.
-	 *
-	 * @param variants
-	 *            The acceptable variants
-	 * @param resourceLocation
-	 *            The location of the resource
-	 * @param supportedCharsets
-	 *            The supported charsets
-	 * @return A content instance that outlines the acceptable media types
-	 *         together with the locations from where the resource contents for
-	 *         those media types can be retrieved, and the charsets supported.
-	 */
-	public static String getAcceptableContent(
-			List<Variant> variants,
-			URI resourceLocation,
-			List<String> supportedCharsets) {
-		StringBuilder builder = new StringBuilder();
-		for (Variant variant : variants) {
-			MediaType mediaType = variant.getMediaType();
-			builder.append(mediaType).append(" : %1$s%n");
-			for(String supportedCharset:supportedCharsets) {
-				builder.append(mediaType.withCharset(supportedCharset)).append(" : %1$s%n");
-			}
-		}
-		return String.format(builder.toString(),resourceLocation);
 	}
 
 	public static void populateAllowedHeaders(ResponseBuilder builder, Capabilities capabilities) {
@@ -266,24 +284,6 @@ public final class EndpointControllerUtils {
 		} catch (UnsupportedEncodingException e) {
 			throw new AssertionError("UTF-8 encoding should always be supported",e);
 		}
-	}
-
-	static String toString(Query query) {
-		List<String> parameters=Lists.newArrayList();
-		for(String paramName:query.parameterNames()) {
-			for(String rawValue:query.getParameter(paramName).rawValues()) {
-				parameters.add(paramName+"="+rawValue);
-			}
-		}
-		StringBuilder builder=new StringBuilder();
-		Iterator<String> iterator=parameters.iterator();
-		while(iterator.hasNext()) {
-			builder.append(iterator.next());
-			if(iterator.hasNext()) {
-				builder.append("&");
-			}
-		}
-		return builder.toString();
 	}
 
 	public static Response prepareErrorResponse(DiagnosedException throwable, ResponseEnricher... enrichers) {

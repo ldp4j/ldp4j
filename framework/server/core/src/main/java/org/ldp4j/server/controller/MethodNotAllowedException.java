@@ -26,21 +26,57 @@
  */
 package org.ldp4j.server.controller;
 
+import java.util.List;
+
+import javax.ws.rs.core.Response.Status;
+
+import org.ldp4j.application.engine.context.Capabilities;
 import org.ldp4j.application.engine.context.HttpRequest.HttpMethod;
 
-public class MethodNotAllowedException extends OperationContextException {
+import com.google.common.base.Joiner;
+import com.google.common.collect.Lists;
+
+public class MethodNotAllowedException extends DiagnosedException {
 
 	private static final long serialVersionUID = -3661009844197939466L;
 
 	private final HttpMethod operation;
 
 	public MethodNotAllowedException(OperationContext operationContext, HttpMethod method) {
-		super(operationContext);
+		super(
+			operationContext,
+			null,
+			Diagnosis.
+				create().
+					statusCode(Status.METHOD_NOT_ALLOWED).
+					diagnostic(
+						"Endpoint '%s' does not support %s. It only supports: %s",
+						resourceLocation(operationContext),
+						method,
+						toHttpMethods(resourceCapabilities(operationContext)))
+		);
 		this.operation = method;
 	}
 
 	public HttpMethod getMethod() {
 		return operation;
+	}
+
+	private static String toHttpMethods(Capabilities capabilities) {
+		List<String> list = Lists.newArrayList("HEAD","GET","OPTIONS");
+		if(capabilities.isModifiable()) {
+			list.add("PUT");
+		}
+		if(capabilities.isDeletable()) {
+			list.add("DELETE");
+		}
+		if(capabilities.isFactory()) {
+			list.add("POST");
+		}
+		if(capabilities.isPatchable()) {
+			list.add("PATCH");
+		}
+		return Joiner.on(", ").join(list);
 	}
 
 }

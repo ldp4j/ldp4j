@@ -93,12 +93,11 @@ public class OperationContextException extends RuntimeException {
 
 	public OperationContextException(String message, Throwable cause, OperationContext context) {
 		super(message, cause);
-		PublicResource resource=context.resource();
-		this.capabilities=new SerializableCapabilities(resource.capabilities());
-		this.location = context.base().resolve(resource.path());
-		this.lastModified=resource.lastModified();
-		this.entityTag=resource.entityTag();
-		this.clazz=resource.getClass();
+		this.capabilities=new SerializableCapabilities(resourceCapabilities(context));
+		this.location = resourceLocation(context);
+		this.lastModified= resourceLastModified(context);
+		this.entityTag=resourceEntityTag(context);
+		this.clazz=resourceClass(context);
 	}
 
 	public OperationContextException(OperationContext context) {
@@ -124,12 +123,33 @@ public class OperationContextException extends RuntimeException {
 	public final Capabilities resourceCapabilities() {
 		return this.capabilities;
 	}
+
 	public final Date resourceLastModified() {
 		return this.lastModified;
 	}
 
 	public final EntityTag resourceEntityTag() {
 		return this.entityTag;
+	}
+
+	static Class<? extends PublicResource> resourceClass(OperationContext context) {
+		return context.resource().getClass();
+	}
+
+	static URI resourceLocation(OperationContext context) {
+		return context.base().resolve(context.resource().path());
+	}
+
+	static Capabilities resourceCapabilities(OperationContext context) {
+		return context.resource().capabilities();
+	}
+
+	static Date resourceLastModified(OperationContext context) {
+		return context.resource().lastModified();
+	}
+
+	static EntityTag resourceEntityTag(OperationContext context) {
+		return context.resource().entityTag();
 	}
 
 }

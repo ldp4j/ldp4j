@@ -29,27 +29,47 @@ package org.ldp4j.server.controller;
 import java.nio.charset.Charset;
 import java.util.List;
 
+import javax.ws.rs.core.Response.Status;
+
+import org.ldp4j.server.utils.VariantUtils;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
-public class NotAcceptableException extends OperationContextException {
+public class NotAcceptableException extends DiagnosedException {
 
 	private static final long serialVersionUID = 6897847237787548607L;
 
 	private final List<String> supportedCharsets;
 
+	private NotAcceptableException(OperationContext context, List<String> supportedCharsets) {
+		super(
+			context,
+			null,
+			Diagnosis.
+				create().
+					statusCode(Status.NOT_ACCEPTABLE).
+					diagnostic(
+						EndpointControllerUtils.
+							getAcceptableContent(
+								VariantUtils.defaultVariants(),
+								resourceLocation(context),
+								supportedCharsets))
+		);
+		this.supportedCharsets=supportedCharsets;
+	}
+
 	public NotAcceptableException(OperationContext context) {
-		super(context);
-		this.supportedCharsets=getNames(context.supportedCharsets());
+		this(context,getNames(context.supportedCharsets()));
 	}
 
 	public List<String> supportedCharsets() {
 		return this.supportedCharsets;
 	}
 
-	private static List<String> getNames(List<Charset> supportedCharsets2) {
+	private static List<String> getNames(List<Charset> supportedCharsets) {
 		Builder<String> builder=ImmutableList.<String>builder();
-		for(Charset supportedCharset:supportedCharsets2) {
+		for(Charset supportedCharset:supportedCharsets) {
 			builder.add(supportedCharset.name());
 		}
 		return builder.build();

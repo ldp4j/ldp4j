@@ -26,40 +26,24 @@
  */
 package org.ldp4j.server.controller.providers;
 
-import java.util.List;
-
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.ldp4j.application.engine.context.Capabilities;
 import org.ldp4j.server.controller.EndpointControllerUtils;
 import org.ldp4j.server.controller.EndpointControllerUtils.ResponseEnricher;
 import org.ldp4j.server.controller.MethodNotAllowedException;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 
 @Provider
 public class MethodNotAllowedExceptionMapper implements ExceptionMapper<MethodNotAllowedException> {
 
 	@Override
 	public Response toResponse(final MethodNotAllowedException throwable) {
-		String body =
-			String.format(
-				"Endpoint '%s' does not support %s. It only supports: %s",
-				throwable.resourceLocation(),
-				throwable.getMethod(),
-				toHttpMethods(throwable.resourceCapabilities()));
-
 		return
 			EndpointControllerUtils.
 				prepareErrorResponse(
 					throwable,
-					body,
-					Status.METHOD_NOT_ALLOWED.getStatusCode(),
 					new ResponseEnricher() {
 						@Override
 						protected void enrich(ResponseBuilder builder) {
@@ -67,23 +51,6 @@ public class MethodNotAllowedExceptionMapper implements ExceptionMapper<MethodNo
 						}
 					}
 				);
-	}
-
-	private String toHttpMethods(Capabilities capabilities) {
-		List<String> list = Lists.newArrayList("HEAD","GET","OPTIONS");
-		if(capabilities.isModifiable()) {
-			list.add("PUT");
-		}
-		if(capabilities.isDeletable()) {
-			list.add("DELETE");
-		}
-		if(capabilities.isFactory()) {
-			list.add("POST");
-		}
-		if(capabilities.isPatchable()) {
-			list.add("PATCH");
-		}
-		return Joiner.on(", ").join(list);
 	}
 
 }

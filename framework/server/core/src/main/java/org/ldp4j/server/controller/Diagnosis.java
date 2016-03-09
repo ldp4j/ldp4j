@@ -84,9 +84,11 @@ final class Diagnosis implements Serializable {
 	}
 
 	public static Diagnosis create() {
-		return new Diagnosis(
+		return
+			new Diagnosis(
 				Status.INTERNAL_SERVER_ERROR.getStatusCode(),
-				Status.INTERNAL_SERVER_ERROR.getReasonPhrase(),true);
+				Status.INTERNAL_SERVER_ERROR.getReasonPhrase(),
+				true);
 	}
 
 

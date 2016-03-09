@@ -29,32 +29,22 @@ package org.ldp4j.server.controller.providers;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 import org.ldp4j.server.controller.EndpointControllerUtils;
 import org.ldp4j.server.controller.EndpointControllerUtils.ResponseEnricher;
 import org.ldp4j.server.controller.NotAcceptableException;
-import org.ldp4j.server.utils.VariantUtils;
 
 @Provider
 public class NotAcceptableExceptionMapper implements ExceptionMapper<NotAcceptableException> {
 
 	@Override
 	public Response toResponse(final NotAcceptableException throwable) {
-		String body=
-			EndpointControllerUtils.
-				getAcceptableContent(
-					VariantUtils.defaultVariants(),
-					throwable.resourceLocation(),
-					throwable.supportedCharsets());
 		return
 			EndpointControllerUtils.
 				prepareErrorResponse(
 					throwable,
-					body,
-					Status.NOT_ACCEPTABLE.getStatusCode(),
 					new ResponseEnricher() {
 						@Override
 						protected void enrich(ResponseBuilder builder) {
