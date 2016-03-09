@@ -79,14 +79,10 @@
 			<ref bean="logOutInterceptor" />
 		</jaxrs:outInterceptors>
 		<jaxrs:providers>
-			<bean id="naeMapper"   class="org.ldp4j.server.controller.providers.NotAcceptableExceptionMapper"/>
-			<bean id="uceMapper"   class="org.ldp4j.server.controller.providers.UnsupportedContentExceptionMapper"/>
-			<bean id="mceMapper"   class="org.ldp4j.server.controller.providers.MissingContentExceptionMapper"/>
-			<bean id="mcteMapper"  class="org.ldp4j.server.controller.providers.MissingContentTypeExceptionMapper"/>
-			<bean id="mnaMapper"   class="org.ldp4j.server.controller.providers.MethodNotAllowedExceptionMapper"/>
-			<bean id="iceMapper"   class="org.ldp4j.server.controller.providers.InvalidRequestContentExceptionMapper"/>
-			<bean id="icdeMapper"  class="org.ldp4j.server.controller.providers.InvalidContentDiagnosedExceptionMapper"/>
-			<bean id="deMapper"    class="org.ldp4j.server.controller.providers.DiagnosedExceptionMapper"/>
+			<bean id="naeMapper"  class="org.ldp4j.server.controller.providers.NotAcceptableExceptionMapper"/>
+			<bean id="mnaMapper"  class="org.ldp4j.server.controller.providers.MethodNotAllowedExceptionMapper"/>
+			<bean id="icdeMapper" class="org.ldp4j.server.controller.providers.InvalidContentDiagnosedExceptionMapper"/>
+			<bean id="deMapper"   class="org.ldp4j.server.controller.providers.DiagnosedExceptionMapper"/>
 		</jaxrs:providers>
 	</jaxrs:server>
 

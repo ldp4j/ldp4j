@@ -26,13 +26,15 @@
  */
 package org.ldp4j.server.controller;
 
+import javax.ws.rs.core.Response.Status;
+
 
 public class MissingContentTypeException extends ContentProcessingException {
 
 	private static final long serialVersionUID = -4089212032162404842L;
 
 	public MissingContentTypeException(OperationContext context) {
-		super("No content type header specified",context);
+		super("No content type specified. Expecting ",context,Status.BAD_REQUEST);
 	}
 
 }

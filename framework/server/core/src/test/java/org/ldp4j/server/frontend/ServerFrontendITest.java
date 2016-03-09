@@ -47,6 +47,8 @@ import java.util.concurrent.TimeUnit;
 import javax.ws.rs.core.Link;
 import javax.ws.rs.core.Response.Status;
 
+import mockit.Deencapsulation;
+
 import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHeaders;
@@ -723,13 +725,14 @@ public class ServerFrontendITest {
 		String resource = "ldp4j/api/"+MyApplication.ROOT_QUERYABLE_RESOURCE_PATH;
 		String path = resource+"?method="+testName.getMethodName();
 		String link =
-			EndpointControllerUtils.
-				createQueryOfLink(
-					url+resource,
-					QueryBuilder.
-						newInstance().
-							withParameter("method", testName.getMethodName()).
-							build());
+			Deencapsulation.invoke(
+				EndpointControllerUtils.class,
+				"createQueryOfLink",
+				url+resource,
+				QueryBuilder.
+					newInstance().
+						withParameter("method", testName.getMethodName()).
+						build());
 		Response response =
 			given().
 				accept(TEXT_TURTLE).

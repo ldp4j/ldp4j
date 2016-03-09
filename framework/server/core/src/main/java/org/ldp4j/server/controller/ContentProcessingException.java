@@ -29,20 +29,36 @@ package org.ldp4j.server.controller;
 import java.util.Collections;
 import java.util.List;
 
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 
 import org.ldp4j.server.utils.VariantUtils;
 
-public class ContentProcessingException extends OperationContextException {
+public class ContentProcessingException extends DiagnosedException {
 
 	private static final long serialVersionUID = -7271633668400276805L;
 
-	public ContentProcessingException(String message, OperationContext context) {
-		this(message,null,context);
+	public ContentProcessingException(String message, OperationContext context, Status statusCode) {
+		this(message,null,context,statusCode);
 	}
 
-	public ContentProcessingException(String message, Throwable cause, OperationContext context) {
-		super(message,cause,context);
+	public ContentProcessingException(String message, Throwable cause, OperationContext context, Status statusCode) {
+		super(
+			context,
+			cause,
+			Diagnosis.
+				create().
+					statusCode(statusCode).
+					diagnostic(getFailureMessage(message,VariantUtils.defaultVariants())));
+	}
+
+	static String getFailureMessage(String message, List<Variant> variants) {
+		return
+			new StringBuilder().
+				append(message).
+				append(variants.size()==1?"":"one of: ").
+				append(VariantUtils.toString(variants)).
+				toString();
 	}
 
 	public final List<Variant> getSupportedVariants() {

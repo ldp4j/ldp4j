@@ -27,6 +27,7 @@
 package org.ldp4j.server.controller;
 
 import javax.ws.rs.core.Variant;
+import javax.ws.rs.core.Response.Status;
 
 
 public class UnsupportedContentException extends ContentProcessingException {
@@ -38,7 +39,7 @@ public class UnsupportedContentException extends ContentProcessingException {
 	}
 
 	public UnsupportedContentException(OperationContext context, Variant variant, Throwable cause) {
-		super("Unsupported content exception ("+variant+")",cause,context);
+		super("Unsupported content exception ("+variant+"). Expecting ",cause,context,Status.UNSUPPORTED_MEDIA_TYPE);
 	}
 
 }

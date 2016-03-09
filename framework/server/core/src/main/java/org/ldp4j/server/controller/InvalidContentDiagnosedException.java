@@ -43,8 +43,8 @@ public class InvalidContentDiagnosedException extends DiagnosedException {
 		this.constraintReportLink =
 			RetrievalScenario.
 				constraintReportLink(
-						context,
-						cause.getConstraintsId());
+					context,
+					cause.getConstraintsId());
 	}
 
 	public String getConstraintReportLink() {

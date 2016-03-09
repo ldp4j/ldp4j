@@ -43,6 +43,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
@@ -428,7 +429,7 @@ final class OperationContextImpl implements OperationContext {
 		} catch(UnsupportedMediaTypeException e) {
 			throw new UnsupportedContentException(this,contentVariant(),e);
 		} catch(IOException e) {
-			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",e,this);
+			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"'. Expecting content matching ",e,this,Status.BAD_REQUEST);
 		}
 	}
 

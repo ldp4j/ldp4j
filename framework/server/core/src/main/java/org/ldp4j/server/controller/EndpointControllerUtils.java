@@ -226,6 +226,15 @@ public final class EndpointControllerUtils {
 		}
 	}
 
+	static String createQueryOfLink(Object uriRef, Query query) {
+		String strQuery = toString(query);
+		try {
+			return MoreHttp.createLink(uriRef, "queryOf")+"; parameters=\""+URLEncoder.encode(strQuery,"UTF-8")+"\"";
+		} catch (UnsupportedEncodingException e) {
+			throw new AssertionError("UTF-8 encoding should always be supported",e);
+		}
+	}
+
 	static String toString(Query query) {
 		List<String> parameters=Lists.newArrayList();
 		for(String paramName:query.parameterNames()) {
@@ -242,17 +251,6 @@ public final class EndpointControllerUtils {
 			}
 		}
 		return builder.toString();
-	}
-
-	public static Response prepareErrorResponse(OperationContextException throwable, String body, int statusCode, ResponseEnricher... enrichers) {
-		ResponseBuilder builder=Response.status(statusCode);
-		populateResponseBody(builder,body, errorResponseVariant(), true);
-		populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
-		populateProtocolSpecificHeaders(builder,throwable.resourceClass());
-		for(Function<ResponseBuilder, ResponseBuilder> enricher:enrichers) {
-			builder=enricher.apply(builder);
-		}
-		return builder.build();
 	}
 
 	public static void populateAllowedHeaders(ResponseBuilder builder, Capabilities capabilities) {
@@ -274,15 +272,6 @@ public final class EndpointControllerUtils {
 			for(MediaType mediaType:DataTransformator.supportedMediaTypes()) {
 				builder.header(MoreHttp.ACCEPT_POST_HEADER,mediaType.toString());
 			}
-		}
-	}
-
-	public static String createQueryOfLink(Object uriRef, Query query) {
-		String strQuery = toString(query);
-		try {
-			return MoreHttp.createLink(uriRef, "queryOf")+"; parameters=\""+URLEncoder.encode(strQuery,"UTF-8")+"\"";
-		} catch (UnsupportedEncodingException e) {
-			throw new AssertionError("UTF-8 encoding should always be supported",e);
 		}
 	}
 

@@ -26,6 +26,8 @@
  */
 package org.ldp4j.server.controller;
 
+import javax.ws.rs.core.Response.Status;
+
 
 public class InvalidRequestContentException extends ContentProcessingException {
 
@@ -36,7 +38,7 @@ public class InvalidRequestContentException extends ContentProcessingException {
 	}
 
 	public InvalidRequestContentException(String message, Throwable cause, OperationContext context) {
-		super(message,cause,context);
+		super(message+". Required content matching ",cause,context,Status.BAD_REQUEST);
 	}
 
 }
