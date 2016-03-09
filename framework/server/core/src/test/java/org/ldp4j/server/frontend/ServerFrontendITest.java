@@ -371,7 +371,7 @@ public class ServerFrontendITest {
 				toString();
 		post.setHeader("Link",interactionModel);
 		Metadata response = HELPER.httpRequest(post);
-		assertThat(response.status,equalTo(HttpStatus.SC_FORBIDDEN));
+		assertThat(response.status,equalTo(HttpStatus.SC_BAD_REQUEST));
 		LOGGER.info("Completed {}",testName.getMethodName());
 	}
 

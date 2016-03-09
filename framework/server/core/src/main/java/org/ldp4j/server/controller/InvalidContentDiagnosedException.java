@@ -51,7 +51,7 @@ public class InvalidContentDiagnosedException extends DiagnosedException {
 		return this.constraintReportLink;
 	}
 
-	static Diagnosis diagnose(InvalidContentException rootCause) {
+	private static Diagnosis diagnose(InvalidContentException rootCause) {
 		Diagnosis diagnosis = Diagnosis.create(rootCause);
 		if(rootCause instanceof InconsistentContentException) {
 			diagnosis=

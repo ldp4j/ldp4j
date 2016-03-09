@@ -67,13 +67,16 @@ import com.google.common.collect.Lists;
 
 public final class EndpointControllerUtils {
 
-	public static abstract class ResponseEnricher implements Function<ResponseBuilder,ResponseBuilder> {
+	public abstract static class ResponseEnricher implements Function<ResponseBuilder,ResponseBuilder> {
+
+		@Override
 		public final ResponseBuilder apply(ResponseBuilder builder) {
 			enrich(builder);
 			return builder;
 		}
 
 		protected abstract void enrich(ResponseBuilder builder);
+
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(EndpointControllerUtils.class);

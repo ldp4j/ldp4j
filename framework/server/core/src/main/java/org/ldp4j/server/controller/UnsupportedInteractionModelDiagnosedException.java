@@ -31,8 +31,12 @@ import javax.ws.rs.core.Response.Status;
 import org.ldp4j.application.engine.context.UnsupportedInteractionModelException;
 
 /**
- * TODO: Check the semantics of the LDP spec. Does it make sense to return a
- * FORBIDDEN instead of a BAD_REQUEST?
+ * According to the LDP specification (see section 5.2.3.4) If any requested
+ * interaction model cannot be honored, the server must fail the request.
+ * However, the specification does not mandate how the server has to fail. The
+ * most sensible response status code is one that makes clear that the problem
+ * is on the client side and that the user should not retry the operation. That
+ * is, return a BAD REQUEST error.
  */
 public class UnsupportedInteractionModelDiagnosedException extends DiagnosedException {
 
@@ -44,7 +48,7 @@ public class UnsupportedInteractionModelDiagnosedException extends DiagnosedExce
 			cause,
 			Diagnosis.
 				create().
-				statusCode(Status.FORBIDDEN).
+				statusCode(Status.BAD_REQUEST).
 				diagnostic(cause.getMessage()).
 				mandatory(true));
 	}

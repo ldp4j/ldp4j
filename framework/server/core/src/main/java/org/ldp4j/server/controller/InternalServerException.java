@@ -57,10 +57,13 @@ public class InternalServerException extends DiagnosedException {
 			builder.append(message);
 		}
 		if(cause!=null) {
-			if(builder.length()==0) {
+			if(builder.length()>0) {
 				builder.append(System.lineSeparator());
 			}
 			builder.append(Throwables.getStackTraceAsString(cause));
+		}
+		if(builder.length()==0) {
+			builder.append("Unexpected application failure");
 		}
 		return builder.toString();
 	}
