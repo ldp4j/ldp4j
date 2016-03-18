@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <!--
 
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
@@ -21,15 +22,13 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.commons:ldp4j-commons:0.3.0-SNAPSHOT
-      Bundle      : ldp4j-commons-0.3.0-SNAPSHOT.pom
+      Artifact    : org.ldp4j.commons:ldp4j-commons-http:0.3.0-SNAPSHOT
+      Bundle      : ldp4j-commons-http-0.3.0-SNAPSHOT.jar
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
-<project
-	xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<!-- =================================================================== -->
@@ -37,36 +36,52 @@
 	<!-- =================================================================== -->
 
 	<parent>
-		<groupId>org.ldp4j</groupId>
-		<artifactId>ldp4j-build</artifactId>
+		<groupId>org.ldp4j.commons</groupId>
+		<artifactId>ldp4j-commons</artifactId>
 		<version>0.3.0-SNAPSHOT</version>
-		<relativePath>../build/pom.xml</relativePath>
+		<relativePath>../pom.xml</relativePath>
 	</parent>
 
-	<groupId>org.ldp4j.commons</groupId>
-	<artifactId>ldp4j-commons</artifactId>
-	<packaging>pom</packaging>
+	<artifactId>ldp4j-commons-http</artifactId>
+	<packaging>jar</packaging>
 
-	<!-- =================================================================== -->
-	<!--   MODULE INFORMATION                                                -->
-	<!-- =================================================================== -->
+	<!-- ===================================================================== -->
+	<!--   PROJECT INFORMATION                                                 -->
+	<!-- ===================================================================== -->
 
-	<name>LDP4j :: Commons</name>
-	<description>Common utilities for the LDP4j components</description>
+	<name>LDP4j :: Commons :: HTTP </name>
+
+	<description>Common HTTP utility libraries for the LDP4j project</description>
 
 	<!-- =================================================================== -->
 	<!--   BUILD SETTINGS                                                    -->
 	<!-- =================================================================== -->
 
-	<modules>
-		<module>core</module>
-		<module>http</module>
-		<module>rmf</module>
-		<module>testing</module>
-	</modules>
-
-	<!-- =================================================================== -->
-	<!--   ENVIRONMENT SETTINGS                                              -->
-	<!-- =================================================================== -->
+	<dependencies>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-api</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>com.google.guava</groupId>
+			<artifactId>guava</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.hamcrest</groupId>
+			<artifactId>hamcrest-integration</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
 </project>
