@@ -26,17 +26,23 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.util.Map;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	HttpUtilsTest.class,
-	MoreCollectionsTest.class,
-	CaseInsensitiveMapTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+final class MoreCollections {
+
+	private MoreCollections() {
+	}
+
+	/**
+	 * Return {@code true} if the supplied Map is {@code null} or empty.
+	 * Otherwise, return {@code false}.
+	 *
+	 * @param map
+	 *            the Map to check
+	 * @return whether the given Map is empty
+	 */
+	static boolean isEmpty(final Map<?, ?> map) {
+		return map==null || map.isEmpty();
+	}
+
 }

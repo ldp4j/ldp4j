@@ -26,17 +26,36 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	HttpUtilsTest.class,
-	MoreCollectionsTest.class,
-	CaseInsensitiveMapTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+import java.util.Collections;
+
+import org.junit.Test;
+import org.ldp4j.commons.testing.Utils;
+
+import com.google.common.collect.ImmutableMap;
+
+public class MoreCollectionsTest {
+
+	@Test
+	public void nullMapsAreEmpty() throws Exception {
+		assertThat(MoreCollections.isEmpty(null), equalTo(true));
+	}
+
+	@Test
+	public void emptyMapsAreEmpty() throws Exception {
+		assertThat(MoreCollections.isEmpty(Collections.emptyMap()), equalTo(true));
+	}
+
+	@Test
+	public void nonEmptyMapsAreNotEmpty() throws Exception {
+		assertThat(MoreCollections.isEmpty(ImmutableMap.builder().put("key", "value").build()), equalTo(false));
+	}
+
+	@Test
+	public void isUtilityClass() throws Exception {
+		assertThat(Utils.isUtilityClass(MoreCollections.class),equalTo(true));
+	}
+
 }
