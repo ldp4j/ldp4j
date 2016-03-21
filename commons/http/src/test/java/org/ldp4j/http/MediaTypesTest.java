@@ -26,19 +26,39 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import mockit.Invocation;
+import mockit.Mock;
+import mockit.MockUp;
+import mockit.integration.junit4.JMockit;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	HttpUtilsTest.class,
-	MoreCollectionsTest.class,
-	CaseInsensitiveMapTest.class,
-	ImmutableMediaTypeTest.class,
-	MediaTypesTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.ldp4j.commons.testing.Utils;
+
+@RunWith(JMockit.class)
+public class MediaTypesTest {
+
+	@Test
+	public void isUtilityClass() throws Exception {
+		assertThat(Utils.isUtilityClass(MediaTypes.class),equalTo(true));
+	}
+
+	@Test
+	public void dependsOnImmutableMediaType() {
+		final String mediaType = "text/turtle";
+		new MockUp<ImmutableMediaType>() {
+			@Mock
+			public ImmutableMediaType fromString(Invocation context, String aValue) {
+				assertThat(aValue,equalTo(mediaType));
+				return context.proceed(aValue);
+			}
+		};
+		MediaType result=MediaTypes.fromString(mediaType);
+		assertThat(result.type(),equalTo("text"));
+		assertThat(result.subType(),equalTo("turtle"));
+	}
+
+
 }

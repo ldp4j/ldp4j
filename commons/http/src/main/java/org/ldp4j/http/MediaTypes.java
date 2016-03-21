@@ -26,19 +26,23 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	HttpUtilsTest.class,
-	MoreCollectionsTest.class,
-	CaseInsensitiveMapTest.class,
-	ImmutableMediaTypeTest.class,
-	MediaTypesTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+public final class MediaTypes {
+
+	private MediaTypes() {
+	}
+
+	/**
+	 * Parse the given String into a single {@code MediaType}.
+	 *
+	 * @param mediaType
+	 *            the string to parse
+	 * @return the mime type
+	 * @throws InvalidMediaTypeException
+	 *             if the string cannot be parsed
+	 */
+	public static MediaType fromString(final String mediaType) {
+		return ImmutableMediaType.fromString(mediaType);
+	}
+
 }

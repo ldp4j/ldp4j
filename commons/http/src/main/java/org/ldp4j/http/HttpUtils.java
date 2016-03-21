@@ -30,6 +30,9 @@ import static com.google.common.base.Preconditions.*;
 
 final class HttpUtils {
 
+	private static final char   PARAM_DELIMITER = ';';
+	private static final char   DQUOTE          = '\"';
+
 	private HttpUtils() {
 	}
 
@@ -54,12 +57,30 @@ final class HttpUtils {
 		return token.substring(startOffset,endOffset);
 	}
 
+	static boolean isQuotedString(final String s) {
+		boolean result=false;
+		final int length = s.length();
+		if(length>1) {
+			result=
+				s.charAt(0)       ==DQUOTE &&
+				s.charAt(length-1)==DQUOTE;
+		}
+		return result;
+	}
+
+	static String unquote(final String s) {
+		return
+			isQuotedString(s) ?
+				s.substring(1, s.length() - 1) :
+				s;
+	}
+
 	static boolean isWhitespace(final char ch) {
 		return ch==' ' || ch=='\t';
 	}
 
 	static boolean isParameterDelimiter(final char ch) {
-		return ch==';';
+		return ch==PARAM_DELIMITER;
 	}
 
 }
