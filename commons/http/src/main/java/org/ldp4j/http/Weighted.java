@@ -77,13 +77,13 @@ final class Weighted<T> implements Acceptable {
 	static double round(final double weight) {
 		checkArgument(weight>=0.0D,"Weight cannot be negative (%s)",weight);
 		checkArgument(weight<=1.0D,"Weight cannot be greater than 1 (%s)",weight);
-		checkArgument(hasPrecision(weight, 3),"Weight cannot have more than 3 decimals (%s)",weight);
+		checkArgument(hasPrecision(weight,3),"Weight cannot have more than 3 decimals (%s)",weight);
 		return weight;
 	}
 
 	private static boolean hasPrecision(final double weight,final int decimals) {
 		final double scaled=weight*Math.pow(10D, decimals);
-		return scaled-(long)scaled==0;
+		return Double.doubleToRawLongBits(scaled-(long)scaled)==0;
 	}
 
 }

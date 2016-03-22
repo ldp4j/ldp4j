@@ -88,22 +88,18 @@ final class ImmutableMediaType implements MediaType {
 		TOKEN.andNot(ctl);
 		TOKEN.andNot(delimiters);
 
-		final BitSet obs_text=new BitSet(0xFF);
-		obs_text.set(0x80,0xFF);
-		obs_text.set(0xFF);
-
 		QDTEXT=new BitSet(0xFF);
 		QDTEXT.set('\t');
-		QDTEXT.set(0x20,0x7F);   // All printable ASCII chars...
-		QDTEXT.clear(0x5C); // ... except '\'
-		QDTEXT.set(0x80,0xFF);
-		QDTEXT.set(0xFF);
+		QDTEXT.set(0x20,0x7F); // All printable ASCII chars...
+		QDTEXT.clear(0x5C);    // ... except '\'
+		QDTEXT.set(0x80,0xFF); // Other non-ASCII chars in
+		QDTEXT.set(0xFF);      // a byte
 
 		QUOTED_PAIR=new BitSet(0xFF);
 		QUOTED_PAIR.set('\t');
 		QUOTED_PAIR.set(0x20,0x7F); // All printable ASCII chars
-		QUOTED_PAIR.set(0x80,0xFF);
-		QUOTED_PAIR.set(0xFF);
+		QUOTED_PAIR.set(0x80,0xFF); // Other non-ASCII chars in
+		QUOTED_PAIR.set(0xFF);      // a byte
 	}
 
 	private final String type;
@@ -147,6 +143,14 @@ final class ImmutableMediaType implements MediaType {
 	}
 
 	@Override
+	public int hashCode() {
+		return
+			mediaRangeHashCode() ^
+			standardParametersHashCode() ^
+			customParametersHashCode();
+	}
+
+	@Override
 	public boolean equals(final Object other) {
 		if(this==other) {
 			return true;
@@ -161,18 +165,6 @@ final class ImmutableMediaType implements MediaType {
 			hasSameCustomParameters(that);
 	}
 
-	private boolean hasSameMediaRange(final ImmutableMediaType that) {
-		return
-			this.type.equalsIgnoreCase(that.type) &&
-			this.subtype.equalsIgnoreCase(that.subtype);
-	}
-
-	private boolean hasSameStandardParameters(final ImmutableMediaType that) {
-		return
-			Objects.equals(this.charset, that.charset)  &&
-			Objects.equals(this.weight, that.weight);
-	}
-
 	@Override
 	public String toString() {
 		return
@@ -185,9 +177,41 @@ final class ImmutableMediaType implements MediaType {
 					toString();
 	}
 
+	private int mediaRangeHashCode() {
+		return 17*caseInsensitiveHashCode(this.type)*caseInsensitiveHashCode(this.subtype);
+	}
+
+	private int standardParametersHashCode() {
+		return 13*Objects.hash(this.charset,this.weight);
+	}
+
+	private int customParametersHashCode() {
+		int hash=19;
+		for(final Entry<String, String> parameter : this.parameters.entrySet()) {
+			final String key=parameter.getKey();
+			if(isStandardParameter(key)) {
+				continue;
+			}
+			hash*=caseInsensitiveHashCode(key)^parameter.getValue().hashCode();
+		}
+		return hash;
+	}
+
+	private boolean hasSameMediaRange(final ImmutableMediaType that) {
+		return
+			this.type.equalsIgnoreCase(that.type) &&
+			this.subtype.equalsIgnoreCase(that.subtype);
+	}
+
+	private boolean hasSameStandardParameters(final ImmutableMediaType that) {
+		return
+			Objects.equals(this.charset, that.charset)  &&
+			Objects.equals(this.weight, that.weight);
+	}
+
 	/**
-	 * Determine if the parameters in this {@code MimeType} and the supplied
-	 * {@code MimeType} are equal, ignoring parameters with special semantics
+	 * Determine if the parameters in this {@code MediaType} and the supplied
+	 * {@code MediaType} are equal, ignoring parameters with special semantics
 	 * (Charset and Q).
 	 */
 	private boolean hasSameCustomParameters(final ImmutableMediaType that) {
@@ -207,9 +231,6 @@ final class ImmutableMediaType implements MediaType {
 		return true;
 	}
 
-	private static boolean isStandardParameter(final String parameter) {
-		return MediaType.PARAM_CHARSET.equals(parameter) || MediaType.PARAM_QUALITY.equals(parameter);
-	}
 	/**
 	 * Parse the given String into a single {@code MediaType}.
 	 *
@@ -230,7 +251,7 @@ final class ImmutableMediaType implements MediaType {
 
 		String fullType = parts[0];
 		// java.net.HttpURLConnection returns a *; q=.2 Accept header
-		if(MediaType.WILDCARD_TYPE.equals(fullType)) {
+		if(MediaTypes.WILDCARD_TYPE.equals(fullType)) {
 			fullType = "*/*";
 		}
 		final String[] types=parseTypes(mediaType, fullType);
@@ -242,7 +263,14 @@ final class ImmutableMediaType implements MediaType {
 		}
 	}
 
-	static String[] parseTypes(final String mediaType, final String fullType) {
+	private static int caseInsensitiveHashCode(String str) {
+		return str.toLowerCase().hashCode();
+	}
+
+	private static boolean isStandardParameter(final String parameter) {
+		return MediaTypes.PARAM_CHARSET.equals(parameter) || MediaTypes.PARAM_QUALITY.equals(parameter);
+	}
+	private static String[] parseTypes(final String mediaType, final String fullType) {
 		if(HttpUtils.trimWhitespace(fullType).isEmpty()) {
 			throw new InvalidMediaTypeException(mediaType,"no media range specified");
 		}
@@ -253,7 +281,7 @@ final class ImmutableMediaType implements MediaType {
 		return types;
 	}
 
-	static Map<String, String> parseParameters(final String mediaType, final String[] parts) {
+	private static Map<String, String> parseParameters(final String mediaType, final String[] parts) {
 		Map<String, String> parameters=Collections.emptyMap();
 		if(parts.length>1) {
 			parameters=new LinkedHashMap<>(parts.length-1);
@@ -278,7 +306,7 @@ final class ImmutableMediaType implements MediaType {
 		String cSecond=second;
 		String cFirst=first;
 		boolean caseSensitive=true;
-		if(MediaType.PARAM_CHARSET.equalsIgnoreCase(attribute)) {
+		if(MediaTypes.PARAM_CHARSET.equalsIgnoreCase(attribute)) {
 			cFirst=HttpUtils.unquote(first);
 			cSecond=HttpUtils.unquote(second);
 			caseSensitive=false;
@@ -292,7 +320,7 @@ final class ImmutableMediaType implements MediaType {
 
 	private static Charset getCharset(final Map<String, String> parameters) {
 		Charset result=null;
-		final String charsetName = parameters.get(MediaType.PARAM_CHARSET);
+		final String charsetName = parameters.get(MediaTypes.PARAM_CHARSET);
 		if(charsetName!=null) {
 			result = Charset.forName(HttpUtils.unquote(charsetName));
 		}
@@ -300,7 +328,7 @@ final class ImmutableMediaType implements MediaType {
 	}
 
 	private static double getWeight(final Map<String, String> parameters) {
-		final String weightValue = parameters.get(MediaType.PARAM_QUALITY);
+		final String weightValue = parameters.get(MediaTypes.PARAM_QUALITY);
 		double result=1.0D;
 		if(weightValue!=null) {
 			result = Double.parseDouble(weightValue);
@@ -309,7 +337,7 @@ final class ImmutableMediaType implements MediaType {
 	}
 
 	private static void ensureValidMediaType(final String type, final String subtype) {
-		if(MediaType.WILDCARD_TYPE.equals(type) && !MediaType.WILDCARD_TYPE.equals(subtype)) {
+		if(MediaTypes.WILDCARD_TYPE.equals(type) && !MediaTypes.WILDCARD_TYPE.equals(subtype)) {
 			throw new IllegalArgumentException("wildcard type is legal only in wildcard media range ('*/*')");
 		}
 	}
@@ -389,16 +417,16 @@ final class ImmutableMediaType implements MediaType {
 		checkHasLength(attribute, "parameter attribute must not be empty");
 		checkHasLength(value, "parameter value must not be empty");
 		checkToken(attribute);
-		if(MediaType.PARAM_CHARSET.equalsIgnoreCase(attribute)) {
-			value = HttpUtils.unquote(value);
+		if(MediaTypes.PARAM_CHARSET.equalsIgnoreCase(attribute)) {
+			String unquotedValue = HttpUtils.unquote(value);
 			try {
-				Charset.forName(value);
+				Charset.forName(unquotedValue);
 			} catch (final UnsupportedCharsetException ex) {
 				throw new IllegalArgumentException("Unsupported charset '"+ex.getCharsetName()+"'",ex);
 			} catch (final IllegalCharsetNameException ex) {
 				throw new IllegalArgumentException("Invalid charset name '"+ex.getCharsetName()+"'",ex);
 			}
-		} else if(MediaType.PARAM_QUALITY.equalsIgnoreCase(attribute)) {
+		} else if(MediaTypes.PARAM_QUALITY.equalsIgnoreCase(attribute)) {
 			checkArgument(WEIGHT_PATTERN.matcher(value).matches(),"Invalid quality value '%s'",value);
 		} else if(!HttpUtils.isQuotedString(value)) {
 			checkToken(value);

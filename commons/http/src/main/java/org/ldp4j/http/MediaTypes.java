@@ -29,6 +29,21 @@ package org.ldp4j.http;
 
 public final class MediaTypes {
 
+	/**
+	 * The key for the standard 'charset' media type parameter
+	 */
+	public static final String PARAM_CHARSET   = "charset";
+
+	/**
+	 * The key for the standard 'quality' media type parameter
+	 */
+	public static final String PARAM_QUALITY   = "q";
+
+	/**
+	 * The wildcard type/subtype
+	 */
+	public static final String WILDCARD_TYPE   = "*";
+
 	private MediaTypes() {
 	}
 

@@ -97,10 +97,6 @@ import java.util.Map;
  */
 interface MediaType extends Acceptable {
 
-	static final String PARAM_CHARSET   = "charset";
-	static final String PARAM_QUALITY   = "q";
-	static final String WILDCARD_TYPE   = "*";
-
 	/**
 	 * Get the primary type.
 	 *

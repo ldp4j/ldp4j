@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import com.google.common.collect.ForwardingMap;
 
@@ -48,10 +49,6 @@ import com.google.common.collect.ForwardingMap;
 /**
  * TODO: Add support for load factor on the constructor
  */
-/**
- * TODO: Override equals and hashCode as we are should respect the case
- * insensitivity
- */
 final class CaseInsensitiveMap<V> extends ForwardingMap<String, V> {
 
 	private static final int DEFAULT_INITIAL_CAPACITY = 16;
@@ -63,7 +60,7 @@ final class CaseInsensitiveMap<V> extends ForwardingMap<String, V> {
 	private CaseInsensitiveMap(final LinkedHashMap<String,V> delegate, final Map<String,String> caseInsensitiveKeys, final Locale locale) {
 		this.delegate = delegate;
 		this.caseInsensitiveKeys = caseInsensitiveKeys;
-		this.locale = (locale != null ? locale : Locale.getDefault());
+		this.locale = locale != null ? locale : Locale.getDefault();
 	}
 
 	/**
@@ -171,6 +168,54 @@ final class CaseInsensitiveMap<V> extends ForwardingMap<String, V> {
 	public void clear() {
 		this.caseInsensitiveKeys.clear();
 		super.clear();
+	}
+
+	/**
+	 * Hash code is calculated normalizing the keys of the map to lower-case.
+	 */
+	@Override
+	public int hashCode() {
+		int hash=19*this.locale.hashCode();
+		for(Entry<String,V> entry:super.entrySet()) {
+			hash*=convertKey(entry.getKey()).hashCode()^entry.getValue().hashCode();
+		}
+		return hash;
+	}
+
+	/**
+	 * The instance is equal to another object if the other object is the
+	 * instance itself, or it is an instance of CaseInsensitiveMap with the same
+	 * locale and contains the same values as the instance for equivalent keys.
+	 */
+	@Override
+	public boolean equals(final Object other) {
+		if(this==other) {
+			return true;
+		}
+		if(!(other instanceof CaseInsensitiveMap<?>)) {
+			return false;
+		}
+		final CaseInsensitiveMap<?> that = (CaseInsensitiveMap<?>) other;
+		return
+			hasSameLocale(that) &&
+			hasSameEntries(that);
+	}
+
+	private boolean hasSameEntries(CaseInsensitiveMap<?> that) {
+		if(this.delegate.size()!=that.delegate.size()) {
+			return false;
+		}
+		for(final Entry<String,V> parameter : this.delegate.entrySet()) {
+			final String key=parameter.getKey();
+			if(!Objects.equals(parameter.getValue(), that.get(key))) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	private boolean hasSameLocale(CaseInsensitiveMap<?> that) {
+		return Objects.equals(this.locale, that.locale);
 	}
 
 	private String addKey(final String key) {
