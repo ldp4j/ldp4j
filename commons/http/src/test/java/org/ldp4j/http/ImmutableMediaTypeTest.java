@@ -52,16 +52,29 @@ public class ImmutableMediaTypeTest {
 		assertThat(actual,not(nullValue()));
 		assertThat(actual.type(),equalTo("text"));
 		assertThat(actual.subType(),equalTo("turtle"));
+		assertThat(actual.suffix(),nullValue());
 		assertThat(actual.charset(),nullValue());
 		assertThat(actual.parameters().isEmpty(),equalTo(true));
 	}
 
 	@Test
-	public void canParseMediaTypesWithWildcardSubtype() throws Exception {
+	public void canParseMediaTypesWithSimpleWildcardSubtype() throws Exception {
 		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/*");
 		assertThat(actual,not(nullValue()));
 		assertThat(actual.type(),equalTo("text"));
 		assertThat(actual.subType(),equalTo("*"));
+		assertThat(actual.suffix(),nullValue());
+		assertThat(actual.charset(),nullValue());
+		assertThat(actual.parameters().isEmpty(),equalTo(true));
+	}
+
+	@Test
+	public void canParseMediaTypesWithCompositeWildcardSubtype() throws Exception {
+		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/*+xml");
+		assertThat(actual,not(nullValue()));
+		assertThat(actual.type(),equalTo("text"));
+		assertThat(actual.subType(),equalTo("*"));
+		assertThat(actual.suffix(),equalTo("xml"));
 		assertThat(actual.charset(),nullValue());
 		assertThat(actual.parameters().isEmpty(),equalTo(true));
 	}
@@ -82,6 +95,7 @@ public class ImmutableMediaTypeTest {
 		assertThat(actual,not(nullValue()));
 		assertThat(actual.type(),equalTo("*"));
 		assertThat(actual.subType(),equalTo("*"));
+		assertThat(actual.suffix(),nullValue());
 		assertThat(actual.charset(),nullValue());
 		assertThat(actual.parameters().isEmpty(),equalTo(true));
 	}
@@ -242,6 +256,20 @@ public class ImmutableMediaTypeTest {
 	public void mediaTypesWithDifferentSubtypeHaveDifferentHashCode() {
 		final ImmutableMediaType one=defaultMediaType().build();
 		final ImmutableMediaType other=defaultMediaType().withAlternativeSubtype().build();
+		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentSuffixAreDifferent() {
+		final ImmutableMediaType one=defaultMediaType().withSuffix().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeSuffix().build();
+		assertThat(one,not(equalTo(other)));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentSuffixHaveDifferentHashCode() {
+		final ImmutableMediaType one=defaultMediaType().withSuffix().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeSuffix().build();
 		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
 	}
 
@@ -421,6 +449,36 @@ public class ImmutableMediaTypeTest {
 	}
 
 	@Test
+	public void cannotParseMediaTypeWithDanglingStructureSeparator() throws Exception {
+		try {
+			ImmutableMediaType.fromString("text/turtle+");
+			fail("Should fail for invalid structured media range");
+		} catch (final InvalidMediaTypeException e) {
+			assertThat(e.getMessage(),containsString("missing suffix for structured media type (turtle)"));
+		}
+	}
+
+	@Test
+	public void cannotParseStructuredMediaTypeWithMissingSubtype() throws Exception {
+		try {
+			ImmutableMediaType.fromString("text/+structure");
+			fail("Should fail for invalid structured media range");
+		} catch (final InvalidMediaTypeException e) {
+			assertThat(e.getMessage(),containsString("missing subtype for structured media type (structure)"));
+		}
+	}
+
+	@Test
+	public void cannotParseStructuredMediaTypeWithMultipleSuffixes() throws Exception {
+		try {
+			ImmutableMediaType.fromString("text/turtle+one+other");
+			fail("Should fail for invalid structured media range");
+		} catch (final InvalidMediaTypeException e) {
+			assertThat(e.getMessage(),containsString("only one suffix can be defined for a structured media type (one, other)"));
+		}
+	}
+
+	@Test
 	public void cannotParseMediaTypesWithUnsupportedCharsets() throws Exception {
 		try {
 			createParam("charset=catepora");
@@ -588,6 +646,7 @@ public class ImmutableMediaTypeTest {
 		assertThat(actual,not(nullValue()));
 		assertThat(actual.type(),equalTo("text"));
 		assertThat(actual.subType(),equalTo("turtle"));
+		assertThat(actual.suffix(),nullValue());
 		assertThat(actual.charset(),nullValue());
 		assertThat(actual.weight(),equalTo(0.123D));
 		assertThat(actual.parameters().size(),equalTo(2));
@@ -599,6 +658,7 @@ public class ImmutableMediaTypeTest {
 		assertThat(actual,not(nullValue()));
 		assertThat(actual.type(),equalTo("text"));
 		assertThat(actual.subType(),equalTo("turtle"));
+		assertThat(actual.suffix(),nullValue());
 		assertThat(actual.charset(),nullValue());
 		assertThat(actual.parameters().size(),equalTo(1));
 		return actual;
@@ -632,6 +692,16 @@ public class ImmutableMediaTypeTest {
 
 		Builder withAlternativeSubtype() {
 			this.mediaRange="text/html";
+			return this;
+		}
+
+		Builder withSuffix() {
+			this.mediaRange="text/turle+zip";
+			return this;
+		}
+
+		Builder withAlternativeSuffix() {
+			this.mediaRange="text/turle+ber";
 			return this;
 		}
 

@@ -31,7 +31,9 @@ import java.util.Map;
 
 /**
  * An abstraction for a media type. <br/>
- * <b>NOTE</b>: <br/><br/>
+ *
+ * <b>NOTE</b>: <br/>
+ * <br/>
  *
  * RFC 2046 specified that the default "charset" parameter (i.e., the value used
  * when the parameter is not specified) is "US-ASCII" (Section 4.1.2 of
@@ -40,21 +42,25 @@ import java.util.Map;
  * not very common for new "text/*" media types and a special rule in the HTTP
  * specification adds confusion about which specification ([RFC2046] or
  * [RFC2616]) is authoritative in regards to the default charset for "text/*"
- * media types. <br/><br/>
+ * media types. <br/>
+ * <br/>
  *
  * Many complex text subtypes such as "text/html" [RFC2854] and "text/ xml"
  * [RFC3023] have internal (to their format) means of describing the charset.
  * Many existing User Agents ignore the default of "US-
- * ASCII" rule for at least "text/html" and "text/xml". <br/><br/>
+ * ASCII" rule for at least "text/html" and "text/xml". <br/>
+ * <br/>
  *
  * RFC 6657 changes RFC 2046 rules regarding default "charset" parameter values
  * for "text/*" media types to better align with common usage by existing
  * clients and servers. It does not change the defaults for any currently
- * registered media type. <br/><br/>
+ * registered media type. <br/>
+ * <br/>
  *
  * Each new subtype of the "text" media type that uses the "charset" parameter
  * can define its own default value for the "charset" parameter, including the
- * absence of any default. <br/><br/>
+ * absence of any default. <br/>
+ * <br/>
  *
  * In order to improve interoperability with deployed agents, "text/*" media
  * type registrations SHOULD either <br/>
@@ -62,38 +68,46 @@ import java.util.Map;
  * because the charset information is transported inside the payload (such as in
  * "text/xml"), or <br/>
  * b. require explicit unconditional inclusion of the "charset" parameter,
- * eliminating the need for a default value. <br/><br/>
+ * eliminating the need for a default value. <br/>
+ * <br/>
  *
  * In accordance with option (a) above, registrations for "text/*" media types
  * that can transport charset information inside the corresponding payloads
  * (such as "text/html" and "text/xml") SHOULD NOT specify the use of a
  * "charset" parameter, nor any default value, in order to avoid conflicting
  * interpretations should the "charset" parameter value and the value specified
- * in the payload disagree. <br/><br/>
+ * in the payload disagree. <br/>
+ * <br/>
  *
  * Thus, new subtypes of the "text" media type SHOULD NOT define a default
  * "charset" value. If there is a strong reason to do so despite this advice,
- * they SHOULD use the "UTF-8" [RFC3629] charset as the default. <br/><br/>
+ * they SHOULD use the "UTF-8" [RFC3629] charset as the default. <br/>
+ * <br/>
  *
  * Regardless of what approach is chosen, all new "text/*" registrations MUST
  * clearly specify how the charset is determined; relying on the default defined
  * in Section 4.1.2 of [RFC2046] is no longer permitted. However, existing
  * "text/*" registrations that fail to specify how the charset is determined
- * still default to US-ASCII. <br/><br/>
+ * still default to US-ASCII. <br/>
+ * <br/>
  *
  * Specifications covering the "charset" parameter, and what default value, if
  * any, is used, are subtype-specific, NOT protocol-specific. Protocols that use
  * MIME, therefore, MUST NOT override default charset values for "text/*" media
  * types to be different for their specific protocol. The protocol definitions
- * MUST leave that to the subtype definitions. <br/><br/>
+ * MUST leave that to the subtype definitions. <br/>
+ * <br/>
  *
  * However, the default "charset" parameter value for "text/plain" is unchanged
  * from [RFC2046] and remains as "US-ASCII".
  *
- * @see <a href="https://tools.ietf.org/html/rfc7231#section-3.1.1.1">[RFC 7231] Hypertext
- *      Transfer Protocol (HTTP/1.1): Semantics and Content, section 3.1.1.1</a>
- * @see <a href="http://tools.ietf.org/html/rfc6657">[RFC 6657] Update to MIME regarding
- *      "charset" Parameter Handling in Textual Media Types</a>
+ * @see <a href="https://tools.ietf.org/html/rfc7231#section-3.1.1.1">[RFC 7231]
+ *      Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content, section
+ *      3.1.1.1</a>
+ * @see <a href="https://tools.ietf.org/html/rfc6838#section-4.2.8">[RFC 6838]
+ *      Media Type Specifications and Registration Procedures, section 4.2.8</a>
+ * @see <a href="http://tools.ietf.org/html/rfc6657">[RFC 6657] Update to MIME
+ *      regarding "charset" Parameter Handling in Textual Media Types</a>
  */
 interface MediaType extends Acceptable {
 
@@ -110,6 +124,14 @@ interface MediaType extends Acceptable {
 	 * @return value of the subtype.
 	 */
 	String subType();
+
+	/**
+	 * Get the structure suffix
+	 *
+	 * @return value of the suffix, or {@code null} if media type is not
+	 *         structure.
+	 */
+	String suffix();
 
 	/**
 	 * Get the preferred charset for the media type.

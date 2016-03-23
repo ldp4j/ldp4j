@@ -31,6 +31,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
+import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -40,6 +41,7 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 
@@ -104,13 +106,21 @@ final class ImmutableMediaType implements MediaType {
 
 	private final String type;
 	private final String subtype;
+	private final String suffix;
+
 	private final Map<String, String> parameters;
 	private final Charset charset;
 	private final double weight;
 
-	ImmutableMediaType(final String type, final String subtype, final Map<String, String> parameters) {
+	/**
+	 * TODO: Verify that suffix is valid, and align type verifications to match
+	 * restrictions imposed on RFC 6838 (see
+	 * https://tools.ietf.org/html/rfc6838#section-4.2.8)
+	 */
+	ImmutableMediaType(final String type, final String subtype, String suffix, final Map<String, String> parameters) {
 		this.type=verifyType(type.trim(),"media range type cannot be empty");
 		this.subtype=verifyType(subtype.trim(),"media range subtype cannot be empty");
+		this.suffix=suffix;
 		ensureValidMediaType(this.type,this.subtype);
 		this.parameters=verifyParameters(parameters);
 		this.charset=getCharset(this.parameters);
@@ -130,6 +140,11 @@ final class ImmutableMediaType implements MediaType {
 	@Override
 	public Charset charset() {
 		return this.charset;
+	}
+
+	@Override
+	public String suffix() {
+		return this.suffix;
 	}
 
 	@Override
@@ -173,12 +188,17 @@ final class ImmutableMediaType implements MediaType {
 					omitNullValues().
 					add("type",this.type).
 					add("subtype",this.subtype).
+					add("suffix",this.suffix).
 					add("parameters",this.parameters).
 					toString();
 	}
 
 	private int mediaRangeHashCode() {
-		return 17*caseInsensitiveHashCode(this.type)*caseInsensitiveHashCode(this.subtype);
+		return
+			17*
+			caseInsensitiveHashCode(this.type)*
+			caseInsensitiveHashCode(this.subtype)*
+			(this.suffix==null?13:caseInsensitiveHashCode(this.suffix));
 	}
 
 	private int standardParametersHashCode() {
@@ -200,7 +220,8 @@ final class ImmutableMediaType implements MediaType {
 	private boolean hasSameMediaRange(final ImmutableMediaType that) {
 		return
 			this.type.equalsIgnoreCase(that.type) &&
-			this.subtype.equalsIgnoreCase(that.subtype);
+			this.subtype.equalsIgnoreCase(that.subtype) &&
+			Objects.equals(this.suffix, that.suffix);
 	}
 
 	private boolean hasSameStandardParameters(final ImmutableMediaType that) {
@@ -254,10 +275,10 @@ final class ImmutableMediaType implements MediaType {
 		if(MediaTypes.WILDCARD_TYPE.equals(fullType)) {
 			fullType = "*/*";
 		}
-		final String[] types=parseTypes(mediaType, fullType);
+		final String[] structure=parseStructure(mediaType, fullType);
 		final Map<String, String> parameters=parseParameters(mediaType, parts);
 		try {
-			return new ImmutableMediaType(types[0],types[1],parameters);
+			return new ImmutableMediaType(structure[0],structure[1],structure[2],parameters);
 		} catch (final IllegalArgumentException ex) {
 			throw new InvalidMediaTypeException(mediaType,ex,ex.getMessage());
 		}
@@ -270,7 +291,8 @@ final class ImmutableMediaType implements MediaType {
 	private static boolean isStandardParameter(final String parameter) {
 		return MediaTypes.PARAM_CHARSET.equals(parameter) || MediaTypes.PARAM_QUALITY.equals(parameter);
 	}
-	private static String[] parseTypes(final String mediaType, final String fullType) {
+
+	private static String[] parseStructure(final String mediaType, final String fullType) {
 		if(HttpUtils.trimWhitespace(fullType).isEmpty()) {
 			throw new InvalidMediaTypeException(mediaType,"no media range specified");
 		}
@@ -278,7 +300,27 @@ final class ImmutableMediaType implements MediaType {
 		if(types.length!=2) {
 			throw new InvalidMediaTypeException(mediaType, "expected 2 types in media range ("+types.length+")");
 		}
-		return types;
+		String suffix=null;
+		final int plusIdx = types[1].indexOf('+');
+		if(plusIdx==0) {
+			throw new InvalidMediaTypeException(mediaType, "missing subtype for structured media type ("+types[1].substring(1)+")");
+		} else if(plusIdx>0) {
+			final String[] parts=types[1].split("\\+");
+			if(parts.length==1) {
+				throw new InvalidMediaTypeException(mediaType, "missing suffix for structured media type ("+parts[0]+")");
+			} else if(parts.length==2) {
+				types[1]=parts[0];
+				suffix=parts[1];
+			} else {
+				throw new InvalidMediaTypeException(mediaType, "only one suffix can be defined for a structured media type ("+Joiner.on(", ").join(Arrays.copyOfRange(parts, 1, parts.length))+")");
+			}
+		}
+
+		final String[] structure=new String[3];
+		structure[0]=types[0];
+		structure[1]=types[1];
+		structure[2]=suffix;
+		return structure;
 	}
 
 	private static Map<String, String> parseParameters(final String mediaType, final String[] parts) {
