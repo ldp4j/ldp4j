@@ -34,14 +34,13 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.fail;
 import static org.ldp4j.http.ContentNegotiation.acceptCharset;
-import static org.ldp4j.http.ContentNegotiation.acceptLanguage;
 
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.Locale;
 
+import mockit.Invocation;
 import mockit.Mock;
 import mockit.MockUp;
 import mockit.integration.junit4.JMockit;
@@ -113,110 +112,18 @@ public class ContentNegotiationTest {
 	}
 
 	@Test
-	public void testAcceptLanguage$onlyAcceptsOneWeight() throws Exception {
-		try {
-			acceptLanguage("es;q=0.000;q=1.000");
-			fail("Should fail for a language with multiple qualities");
-		} catch(final IllegalArgumentException e) {
-			assertThat(e.getMessage(),startsWith("Only one quality value can be specified (found 2: 0.000, 1.000)"));
-		}
-	}
-
-	@Test
-	public void testAcceptLanguage$onlyLanguageTag() throws Exception {
-		final Locale expected=Locale.ENGLISH;
-		final Weighted<Locale> result = acceptLanguage("en;q=0.000");
-		assertThat(result,not(nullValue()));
-		final Locale actual = result.get();
-		assertThat(actual,not(nullValue()));
-		assertThat(actual.getLanguage(),equalTo(expected.getLanguage()));
-		assertThat(actual.getCountry(),equalTo(expected.getCountry()));
-	}
-
-	@Test
-	public void testAcceptLanguage$languageAndCountryTag() throws Exception {
-		final Locale expected=Locale.US;
-		final Weighted<Locale> result = acceptLanguage("en-US;q=0.000");
-		assertThat(result,not(nullValue()));
-		final Locale actual = result.get();
-		assertThat(actual,not(nullValue()));
-		assertThat(actual.getLanguage(),equalTo(expected.getLanguage()));
-		assertThat(actual.getCountry(),equalTo(expected.getCountry()));
-	}
-
-	@Test
-	public void testAcceptLanguage$wildcard() throws Exception {
-		assertThat(acceptLanguage("*;q=0.000").get(),nullValue());
-	}
-
-	@Test
-	public void testAcceptLanguage$noTags() throws Exception {
-		try {
-			acceptLanguage(";q=0.000");
-			fail("Should fail when there are no tags");
-		} catch (final IllegalArgumentException e) {
-			assertThat(e.getMessage(),startsWith("Invalid language-range: "));
-		}
-	}
-
-	@Test
-	public void testAcceptLanguage$tooManyTags() throws Exception {
-		try {
-			acceptLanguage("to-many-tags;q=0.000");
-			fail("Should fail when there are more than 2 tags");
-		} catch (final IllegalArgumentException e) {
-			assertThat(e.getMessage(),startsWith("Invalid language-range: "));
-		}
-	}
-
-	@Test
-	public void testAcceptLanguage$badPrimaryTagLength() throws Exception {
-		try {
-			acceptLanguage("badPrimaryTagLength;q=0.000");
-			fail("Should fail when primary tag is too long");
-		} catch (final IllegalArgumentException e) {
-			assertThat(e.getMessage(),startsWith("Invalid language-range: "));
-		}
-	}
-
-	@Test
-	public void testAcceptLanguage$badPrimaryTagComposition() throws Exception {
-		try {
-			acceptLanguage("bad 1st tag Composition;q=0.000");
-			fail("Should fail when primary tag is not alphabetic");
-		} catch (final IllegalArgumentException e) {
-			assertThat(e.getMessage(),startsWith("Invalid language-range: "));
-		}
-	}
-
-	@Test
-	public void testAcceptLanguage$badPrimaryTagComposition$cornerCase() throws Exception {
-		try {
-			acceptLanguage("-;q=0.000");
-			fail("Should fail when cannot find sensible media range");
-		} catch (final IllegalArgumentException e) {
-			assertThat(e.getMessage(),startsWith("Invalid language-range: "));
-		}
-	}
-
-	@Test
-	public void testAcceptLanguage$badSubTagLength() throws Exception {
-		try {
-			acceptLanguage("en-badSubTagLength;q=0.000");
-			fail("Should fail when sub tag is too long");
-		} catch (final IllegalArgumentException e) {
-			assertThat(e.getMessage(),startsWith("Invalid language-range: "));
-		}
-	}
-
-	@Test
-	public void testAcceptLanguage$badSubTagComposition() throws Exception {
-		try {
-			acceptLanguage("en-bad sub tag composition;q=0.000");
-			fail("Should fail when sub tag is not alphanumeric");
-		} catch (final IllegalArgumentException e) {
-			assertThat(e.getMessage(),startsWith("Invalid language-range: "));
-		}
+	public void dependsOnLanguages() {
+		final String value = "en-US";
+		new MockUp<Languages>() {
+			@Mock
+			public Language fromString(Invocation context, String aValue) {
+				assertThat(aValue,equalTo(value));
+				return context.proceed(aValue);
+			}
+		};
+		Language result=ContentNegotiation.acceptLanguage(value);
+		assertThat(result.primaryTag(),equalTo("en"));
+		assertThat(result.subTag(),equalTo("US"));
 	}
 
 }

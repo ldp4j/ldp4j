@@ -36,7 +36,9 @@ import org.junit.runners.Suite.SuiteClasses;
 	MoreCollectionsTest.class,
 	CaseInsensitiveMapTest.class,
 	ImmutableMediaTypeTest.class,
+	ImmutableLanguageTest.class,
 	MediaTypesTest.class,
+	LanguagesTest.class,
 	WeightedTest.class,
 	ContentNegotiationTest.class
 })

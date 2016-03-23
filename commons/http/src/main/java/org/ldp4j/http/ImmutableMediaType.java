@@ -119,15 +119,10 @@ final class ImmutableMediaType implements MediaType {
 	private final double weight;
 	private final boolean hasWeight;
 
-	/**
-	 * TODO: Verify that suffix is valid, and align type verifications to match
-	 * restrictions imposed on RFC 6838 (see
-	 * https://tools.ietf.org/html/rfc6838#section-4.2.8)
-	 */
 	ImmutableMediaType(final String type, final String subtype, String suffix, final Map<String, String> parameters) {
-		this.type=verifyType(type.trim(),"media range type cannot be empty");
-		this.subtype=verifyType(subtype.trim(),"media range subtype cannot be empty");
-		this.suffix=suffix;
+		this.type=verifyType(type,"media range type cannot be empty");
+		this.subtype=verifyType(subtype,"media range subtype cannot be empty");
+		this.suffix=verifySuffix(suffix,"invalid media range suffix");
 		ensureValidMediaType(this.type,this.subtype);
 		this.parameters=verifyParameters(parameters);
 		this.charset=getCharset(this.parameters);
@@ -288,7 +283,7 @@ final class ImmutableMediaType implements MediaType {
 		if(MediaTypes.WILDCARD_TYPE.equals(fullType)) {
 			fullType = "*/*";
 		}
-		final MediaRange mr=parseMediaRange(mediaType, fullType);
+		final MediaRange mr=parseMediaRange(mediaType,HttpUtils.trimWhitespace(fullType));
 		final Map<String, String> parameters=parseParameters(mediaType, parts);
 		try {
 			return new ImmutableMediaType(mr.type,mr.subType,mr.suffix,parameters);
@@ -302,7 +297,7 @@ final class ImmutableMediaType implements MediaType {
 	}
 
 	private static MediaRange parseMediaRange(final String mediaType, final String fullType) {
-		if(HttpUtils.trimWhitespace(fullType).isEmpty()) {
+		if(fullType.isEmpty()) {
 			throw new InvalidMediaTypeException(mediaType,"no media range specified");
 		}
 		final MediaRange mr=new MediaRange();
@@ -329,6 +324,14 @@ final class ImmutableMediaType implements MediaType {
 	}
 
 	private static void parseTypes(final MediaRange mr, final String mediaType, final String fullType) {
+		final int separatorIdx=fullType.indexOf('/');
+		if(separatorIdx==-1) {
+			throw new InvalidMediaTypeException(mediaType,"no media range subtype specified");
+		} else if(separatorIdx==0) {
+			throw new InvalidMediaTypeException(mediaType,"no media range type specified");
+		} else if(separatorIdx==fullType.length()-1) {
+			throw new InvalidMediaTypeException(mediaType,"no media range subtype specified");
+		}
 		final String[] types=fullType.split(TYPE_SEPARATOR);
 		if(types.length!=2) {
 			throw new InvalidMediaTypeException(mediaType, "expected 2 types in media range ("+types.length+")");
@@ -405,10 +408,22 @@ final class ImmutableMediaType implements MediaType {
 		}
 	}
 
+	/**
+	 * TODO: Align type verifications to match restrictions imposed on RFC 6838
+	 * @see https://tools.ietf.org/html/rfc6838#section-4.2.8
+	 */
 	private static String verifyType(final String type, final String message) {
 		checkHasLength(type,message);
 		checkToken(type);
 		return type.toLowerCase(Locale.ENGLISH);
+	}
+
+	/**
+	 * TODO: Verify that suffix is valid
+	 * @see https://tools.ietf.org/html/rfc6838#section-4.2.8
+	 */
+	private static String verifySuffix(final String suffix, final String message) {
+		return suffix==null?null:suffix.toLowerCase();
 	}
 
 	private static Map<String, String> verifyParameters(final Map<String, String> parameters) {

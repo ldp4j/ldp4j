@@ -31,6 +31,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
 
@@ -45,6 +46,41 @@ import org.junit.runner.RunWith;
 
 @RunWith(JMockit.class)
 public class ImmutableMediaTypeTest {
+
+	@Test
+	public void typeCannotBeEmpty() {
+		try {
+			new ImmutableMediaType(null,null,null,null);
+			fail("Should not accept empty type");
+		} catch (IllegalArgumentException e) {
+			assertThat(e.getMessage(),equalTo("media range type cannot be empty"));
+		}
+	}
+
+	@Test
+	public void subTypeCannotBeEmpty() {
+		try {
+			new ImmutableMediaType("type",null,null,null);
+			fail("Should not accept empty sub type");
+		} catch (IllegalArgumentException e) {
+			assertThat(e.getMessage(),equalTo("media range subtype cannot be empty"));
+		}
+	}
+
+	@Test
+	public void constructorAcceptsNullParameters() {
+		ImmutableMediaType sut=new ImmutableMediaType("type","subtype",null,null);
+		assertThat(sut.parameters(),notNullValue());
+		assertThat(sut.parameters().isEmpty(),equalTo(true));
+	}
+
+	@Test
+	public void mediaRangeIsNormalized() {
+		ImmutableMediaType sut=new ImmutableMediaType("TYPE","SUBTYPE","SUFFIX",null);
+		assertThat(sut.type(),equalTo("type"));
+		assertThat(sut.subType(),equalTo("subtype"));
+		assertThat(sut.suffix(),equalTo("suffix"));
+	}
 
 	@Test
 	public void canParseMediaTypesWithRegularMediaRange() throws Exception {
@@ -192,180 +228,6 @@ public class ImmutableMediaTypeTest {
 
 
 	@Test
-	public void sameInstanceIsEqual() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		assertThat(one,equalTo(one));
-	}
-
-	@Test
-	public void mediaTypesWithSameConfigurationAreEqual() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().build();
-		assertThat(one,equalTo(other));
-	}
-
-	@Test
-	public void mediaTypesWithSameConfigurationHaveSameHashCode() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().build();
-		assertThat(one.hashCode(),equalTo(other.hashCode()));
-	}
-
-	@Test
-	public void mediaTypesAreOnlyEqualToMediaTypes() {
-		final MediaType one=defaultMediaType().build();
-		assertThat((Object)one,not(equalTo((Object)"data")));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentMediaRangeAreDifferent() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeMediaRange().build();
-		assertThat(one,not(equalTo(other)));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentMediaRangeHaveDifferentHashCode() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeMediaRange().build();
-		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentTypeAreDifferent() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeType().build();
-		assertThat(one,not(equalTo(other)));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentTypeAreHaveDifferentHashCode() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeType().build();
-		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentSubtypeAreDifferent() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeSubtype().build();
-		assertThat(one,not(equalTo(other)));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentSubtypeHaveDifferentHashCode() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeSubtype().build();
-		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentSuffixAreDifferent() {
-		final ImmutableMediaType one=defaultMediaType().withSuffix().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeSuffix().build();
-		assertThat(one,not(equalTo(other)));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentSuffixHaveDifferentHashCode() {
-		final ImmutableMediaType one=defaultMediaType().withSuffix().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeSuffix().build();
-		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentCharsetsAreDifferent() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeCharset().build();
-		assertThat(one,not(equalTo(other)));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentCharsetsHaveDifferentHashCode() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeCharset().build();
-		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
-	}
-
-	@Test
-	public void mediaTypesWithCompatibleCharsetsAreEqual() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withCompatibleCharset().build();
-		assertThat(one.toString(),not(equalTo(other.toString())));
-		assertThat(one,equalTo(other));
-	}
-
-	@Test
-	public void mediaTypesWithCompatibleCharsetsHaveSameHashCode() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withCompatibleCharset().build();
-		assertThat(one.toString(),not(equalTo(other.toString())));
-		assertThat(one.hashCode(),equalTo(other.hashCode()));
-	}
-
-	@Test
-	public void mediaTypesWithCompatibleQualityAreEqual() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withCompatibleQuality().build();
-		assertThat(one.toString(),not(equalTo(other.toString())));
-		assertThat(one,equalTo(other));
-	}
-
-	@Test
-	public void mediaTypesWithCompatibleQualityHaveSameHashCode() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withCompatibleQuality().build();
-		assertThat(one.toString(),not(equalTo(other.toString())));
-		assertThat(one.hashCode(),equalTo(other.hashCode()));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentQualityAreDifferent() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeQuality().build();
-		assertThat(one,not(equalTo(other)));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentQualityHaveDifferentHashCode() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeQuality().build();
-		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentParameterNumberAreDifferent() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAdditionalParameter().build();
-		assertThat(one,not(equalTo(other)));
-	}
-
-	/**
-	 * WARNING: Collisions may happen because of rounding and overflow when
-	 * calculating the hash code
-	 */
-	@Test
-	public void mediaTypesWithDifferentParameterNumberHaveDifferentHashCode() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAdditionalParameter().build();
-		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentValuesForTheSameParameterAreDifferent() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeParameter().build();
-		assertThat(one,not(equalTo(other)));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentValuesForTheSameParameterHaveDifferentHashCode() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeParameter().build();
-		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
-	}
-
-	@Test
 	public void cannotParseNullMediaTypes() throws Exception {
 		try {
 			ImmutableMediaType.fromString(null);
@@ -375,6 +237,7 @@ public class ImmutableMediaTypeTest {
 			assertThat(e.getMediaType(),equalTo(null));
 		}
 	}
+
 	@Test
 	public void cannotParseEmptyMediaTypes() throws Exception {
 		try {
@@ -383,6 +246,18 @@ public class ImmutableMediaTypeTest {
 		} catch (final InvalidMediaTypeException e) {
 			assertThat(e.getMessage(),containsString("media type cannot be empty"));
 			assertThat(e.getMediaType(),equalTo(""));
+		}
+	}
+
+	@Test
+	public void cannotParseMediaTypesPartialMediaRange() throws Exception {
+		final String offending="partial;parameter=value";
+		try {
+			ImmutableMediaType.fromString(offending);
+			fail("Should fail for invalid media range");
+		} catch (final InvalidMediaTypeException e) {
+			assertThat(e.getMediaType(),equalTo(offending));
+			assertThat(e.getMessage(),containsString("no media range subtype specified"));
 		}
 	}
 
@@ -414,7 +289,7 @@ public class ImmutableMediaTypeTest {
 			ImmutableMediaType.fromString("text/ ");
 			fail("Should fail for invalid media range");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("media range subtype cannot be empty"));
+			assertThat(e.getMessage(),containsString("no media range subtype specified"));
 		}
 	}
 
@@ -424,7 +299,7 @@ public class ImmutableMediaTypeTest {
 			ImmutableMediaType.fromString("/turtle");
 			fail("Should fail for invalid media range");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("media range type cannot be empty"));
+			assertThat(e.getMessage(),containsString("no media range type specified"));
 		}
 	}
 
@@ -434,7 +309,7 @@ public class ImmutableMediaTypeTest {
 			ImmutableMediaType.fromString("/");
 			fail("Should fail for invalid media range");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("expected 2 types in media range (0)"));
+			assertThat(e.getMessage(),containsString("no media range type specified"));
 		}
 	}
 
@@ -629,6 +504,180 @@ public class ImmutableMediaTypeTest {
 		} catch (final InvalidMediaTypeException e) {
 			assertThat(e.getMessage(),containsString("duplicated parameter 'myparam': found '2' after '1'"));
 		}
+	}
+
+	@Test
+	public void sameInstanceIsEqual() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		assertThat(one,equalTo(one));
+	}
+
+	@Test
+	public void mediaTypesWithSameConfigurationAreEqual() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().build();
+		assertThat(one,equalTo(other));
+	}
+
+	@Test
+	public void mediaTypesWithSameConfigurationHaveSameHashCode() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().build();
+		assertThat(one.hashCode(),equalTo(other.hashCode()));
+	}
+
+	@Test
+	public void mediaTypesAreOnlyEqualToMediaTypes() {
+		final MediaType one=defaultMediaType().build();
+		assertThat((Object)one,not(equalTo((Object)"data")));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentMediaRangeAreDifferent() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeMediaRange().build();
+		assertThat(one,not(equalTo(other)));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentMediaRangeHaveDifferentHashCode() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeMediaRange().build();
+		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentTypeAreDifferent() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeType().build();
+		assertThat(one,not(equalTo(other)));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentTypeAreHaveDifferentHashCode() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeType().build();
+		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentSubtypeAreDifferent() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeSubtype().build();
+		assertThat(one,not(equalTo(other)));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentSubtypeHaveDifferentHashCode() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeSubtype().build();
+		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentSuffixAreDifferent() {
+		final ImmutableMediaType one=defaultMediaType().withSuffix().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeSuffix().build();
+		assertThat(one,not(equalTo(other)));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentSuffixHaveDifferentHashCode() {
+		final ImmutableMediaType one=defaultMediaType().withSuffix().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeSuffix().build();
+		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentCharsetsAreDifferent() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeCharset().build();
+		assertThat(one,not(equalTo(other)));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentCharsetsHaveDifferentHashCode() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeCharset().build();
+		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
+	}
+
+	@Test
+	public void mediaTypesWithCompatibleCharsetsAreEqual() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withCompatibleCharset().build();
+		assertThat(one.toString(),not(equalTo(other.toString())));
+		assertThat(one,equalTo(other));
+	}
+
+	@Test
+	public void mediaTypesWithCompatibleCharsetsHaveSameHashCode() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withCompatibleCharset().build();
+		assertThat(one.toString(),not(equalTo(other.toString())));
+		assertThat(one.hashCode(),equalTo(other.hashCode()));
+	}
+
+	@Test
+	public void mediaTypesWithCompatibleQualityAreEqual() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withCompatibleQuality().build();
+		assertThat(one.toString(),not(equalTo(other.toString())));
+		assertThat(one,equalTo(other));
+	}
+
+	@Test
+	public void mediaTypesWithCompatibleQualityHaveSameHashCode() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withCompatibleQuality().build();
+		assertThat(one.toString(),not(equalTo(other.toString())));
+		assertThat(one.hashCode(),equalTo(other.hashCode()));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentQualityAreDifferent() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeQuality().build();
+		assertThat(one,not(equalTo(other)));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentQualityHaveDifferentHashCode() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeQuality().build();
+		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentParameterNumberAreDifferent() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAdditionalParameter().build();
+		assertThat(one,not(equalTo(other)));
+	}
+
+	/**
+	 * WARNING: Collisions may happen because of rounding and overflow when
+	 * calculating the hash code
+	 */
+	@Test
+	public void mediaTypesWithDifferentParameterNumberHaveDifferentHashCode() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAdditionalParameter().build();
+		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentValuesForTheSameParameterAreDifferent() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeParameter().build();
+		assertThat(one,not(equalTo(other)));
+	}
+
+	@Test
+	public void mediaTypesWithDifferentValuesForTheSameParameterHaveDifferentHashCode() {
+		final ImmutableMediaType one=defaultMediaType().build();
+		final ImmutableMediaType other=defaultMediaType().withAlternativeParameter().build();
+		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
 	}
 
 	private String offending() {

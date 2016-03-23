@@ -26,41 +26,16 @@
  */
 package org.ldp4j.http;
 
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
+import java.util.Locale;
 
-import org.ldp4j.http.Weighted.Parser;
+public interface Language extends Acceptable {
 
-final class ContentNegotiation {
+	boolean isWildcard();
 
-	private static final class CharsetParser implements Parser<Charset> {
+	String primaryTag();
 
-		@Override
-		public Charset parse(final String data) {
-			if("*".equals(data)) {
-				return null;
-			}
-			try {
-				return Charset.forName(data);
-			} catch (final IllegalCharsetNameException e) {
-				throw new IllegalArgumentException("Invalid charset: illegal charset name ('"+data+"')",e);
-			} catch (final UnsupportedCharsetException e) {
-				throw new IllegalArgumentException("Invalid charset: not supported ('"+data+"')",e);
-			}
-		}
+	String subTag();
 
-	}
-
-	private ContentNegotiation() {
-	}
-
-	static Weighted<Charset> acceptCharset(final String header) {
-		return Weighted.fromString(header, new CharsetParser());
-	}
-
-	static Language acceptLanguage(final String header) {
-		return Languages.fromString(header);
-	}
+	Locale locale();
 
 }

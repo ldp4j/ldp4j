@@ -26,41 +26,46 @@
  */
 package org.ldp4j.http;
 
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
+import java.util.Locale;
 
-import org.ldp4j.http.Weighted.Parser;
+final class ImmutableLanguage implements Language {
 
-final class ContentNegotiation {
+	private final Locale locale;
+	private final Double weight;
 
-	private static final class CharsetParser implements Parser<Charset> {
-
-		@Override
-		public Charset parse(final String data) {
-			if("*".equals(data)) {
-				return null;
-			}
-			try {
-				return Charset.forName(data);
-			} catch (final IllegalCharsetNameException e) {
-				throw new IllegalArgumentException("Invalid charset: illegal charset name ('"+data+"')",e);
-			} catch (final UnsupportedCharsetException e) {
-				throw new IllegalArgumentException("Invalid charset: not supported ('"+data+"')",e);
-			}
-		}
-
+	ImmutableLanguage(Locale locale, Double weight) {
+		this.locale=locale;
+		this.weight=weight;
 	}
 
-	private ContentNegotiation() {
+	@Override
+	public boolean isWildcard() {
+		return locale==null;
 	}
 
-	static Weighted<Charset> acceptCharset(final String header) {
-		return Weighted.fromString(header, new CharsetParser());
+	@Override
+	public String primaryTag() {
+		return locale==null?"*":this.locale.getLanguage();
 	}
 
-	static Language acceptLanguage(final String header) {
-		return Languages.fromString(header);
+	@Override
+	public String subTag() {
+		return locale==null?null:this.locale.getCountry();
+	}
+
+	@Override
+	public boolean hasWeight() {
+		return weight!=null;
+	}
+
+	@Override
+	public double weight() {
+		return weight==null?1.0D:this.weight;
+	}
+
+	@Override
+	public Locale locale() {
+		return this.locale;
 	}
 
 }

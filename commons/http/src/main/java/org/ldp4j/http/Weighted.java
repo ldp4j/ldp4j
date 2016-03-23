@@ -28,29 +28,41 @@ package org.ldp4j.http;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.Lists;
 
 final class Weighted<T> implements Acceptable {
 
+	interface Parser<T> {
+
+		T parse(String data);
+
+	}
+
+	private static final Pattern QUALITY_PATTERN = Pattern.compile("[ \t]*;[ \t]*[qQ]=((1\\.0{0,3})|(0\\.\\d{0,3}))");
+
 	private static final double DEFAULT_WEIGHT = 1.0D;
 
-	private final double weight;
-	private final boolean hasWeight;
+	private final Double weight;
 
 	private final T value;
 
-	Weighted(final boolean hasWeight,final double weight, final T content) {
-		this.hasWeight = hasWeight;
+	private Weighted(final Double weight, final T content) {
 		this.weight = weight;
 		this.value = content;
 	}
 
-	Weighted<T> weight(final double weight) {
-		return new Weighted<T>(true, round(weight),this.value);
+	Weighted<T> weight(final Double weight) {
+		return new Weighted<T>(round(weight),this.value);
 	}
 
 	<S> Weighted<S> content(final S content) {
-		return new Weighted<S>(this.hasWeight,this.weight,content);
+		return new Weighted<S>(this.weight,content);
 	}
 
 	T get() {
@@ -59,12 +71,12 @@ final class Weighted<T> implements Acceptable {
 
 	@Override
 	public boolean hasWeight() {
-		return this.hasWeight;
+		return this.weight!=null;
 	}
 
 	@Override
 	public double weight() {
-		return this.weight;
+		return this.weight==null?DEFAULT_WEIGHT:this.weight;
 	}
 
 	@Override
@@ -74,16 +86,43 @@ final class Weighted<T> implements Acceptable {
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("value",this.value).
-					add("hasWeight",this.hasWeight).
 					add("weight", this.weight).
 					toString();
 	}
 
 	static <T> Weighted<T> newInstance() {
-		return new Weighted<T>(false,DEFAULT_WEIGHT,null);
+		return new Weighted<T>(null,null);
 	}
 
-	static double round(final double weight) {
+	static Weighted<String> fromString(String candidate) {
+		final Matcher matcher = QUALITY_PATTERN.matcher(candidate);
+		final List<String> weights=Lists.newArrayList();
+		while(matcher.find()) {
+			final String group = matcher.group(1);
+			weights.add(group);
+		}
+		checkArgument(weights.size()<2,"Only one quality value can be specified (found %s: %s)",weights.size(),Joiner.on(", ").join(weights));
+		final String trimmed = matcher.replaceAll("");
+		final Double weight=
+			weights.isEmpty()?
+				null:
+				Double.parseDouble(weights.get(0));
+		return
+			Weighted.
+				newInstance().
+					weight(weight).
+					content(trimmed);
+	}
+
+	static <T> Weighted<T> fromString(final String candidate, final Parser<T> parser) {
+		final Weighted<String> base=fromString(candidate);
+		return base.content(parser.parse(base.get()));
+	}
+
+	static Double round(final Double weight) {
+		if(weight==null) {
+			return null;
+		}
 		checkArgument(weight>=0.0D,"Weight cannot be negative (%s)",weight);
 		checkArgument(weight<=1.0D,"Weight cannot be greater than 1 (%s)",weight);
 		checkArgument(hasPrecision(weight,3),"Weight cannot have more than 3 decimals (%s)",weight);
