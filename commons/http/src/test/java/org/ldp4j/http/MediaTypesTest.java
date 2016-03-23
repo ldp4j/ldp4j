@@ -72,42 +72,42 @@ public class MediaTypesTest {
 	public void regularWildcardTypeIncludesRegularMediaTypes() {
 		MediaType one=anyMediaType();
 		MediaType other=textTurtle();
-		assertThat(MediaTypes.includes(one,other),equalTo(true));
+		checkIncludes(one, other, true);
 	}
 
 	@Test
 	public void regularWildcardSubtypeIncludesMediaTypesFromSameTypeFamily() {
 		MediaType one=anyTextMediaType();
 		MediaType other=textTurtle();
-		assertThat(MediaTypes.includes(one,other),equalTo(true));
+		checkIncludes(one, other, true);
 	}
 
 	@Test
 	public void regularWildcardSubtypeDoesNotIncludeMediaTypesFromOtherTypeFamily() {
 		MediaType one=anyTextMediaType();
 		MediaType other=applicationJson();
-		assertThat(MediaTypes.includes(one,other),equalTo(false));
+		checkIncludes(one, other, false);
 	}
 
 	@Test
 	public void structuredWildcardSubtypeIncludesMediaTypesFromSameTypeFamilyAndSuffix() {
 		MediaType one=anyApplicationMediaTypeAndXml();
 		MediaType other=applicationRdfXml();
-		assertThat(MediaTypes.includes(one,other),equalTo(true));
+		checkIncludes(one, other, true);
 	}
 
 	@Test
 	public void structuredWildcardSubtypeDoesNotIncludeMediaTypeWithSameTypeAndSubtypeMatchingTheSuffix() {
 		MediaType one=anyApplicationMediaTypeAndXml();
 		MediaType other=applicationXml();
-		assertThat(MediaTypes.includes(one,other),equalTo(false));
+		checkIncludes(one, other, false);
 	}
 
 	@Test
 	public void structuredWildcardSubtypeIncludesSelf() {
 		MediaType one=anyApplicationMediaTypeAndXml();
 		MediaType other=anyApplicationMediaTypeAndXml();
-		assertThat(MediaTypes.includes(one,other),equalTo(true));
+		checkIncludes(one, other, true);
 	}
 
 	@Test
@@ -121,28 +121,28 @@ public class MediaTypesTest {
 	public void regularMediaTypeIncludesSelf() {
 		MediaType one=textTurtle();
 		MediaType other=textTurtle();
-		assertThat(MediaTypes.includes(one,other),equalTo(true));
+		checkIncludes(one, other, true);
 	}
 
 	@Test
 	public void regularMediaTypeDoesNotIncludeAlternativeMediaTypesFromTheTypeFamily() {
 		MediaType one=textTurtle();
 		MediaType other=textPlain();
-		assertThat(MediaTypes.includes(one,other),equalTo(false));
+		checkIncludes(one, other, false);
 	}
 
 	@Test
 	public void regularMediaTypeDoNotIncludeAlternativeStructuredMedia() {
 		MediaType one=applicationRdf();
 		MediaType other=applicationRdfXml();
-		assertThat(MediaTypes.includes(one,other),equalTo(false));
+		checkIncludes(one, other, false);
 	}
 
 	@Test
 	public void structuredMediaTypeIncludesSelf() {
 		MediaType one=applicationRdfXml();
 		MediaType other=applicationRdfXml();
-		assertThat(MediaTypes.includes(one,other),equalTo(true));
+		checkIncludes(one, other, true);
 	}
 
 	@Test
@@ -156,48 +156,42 @@ public class MediaTypesTest {
 	public void regularWildcardTypeIsCompatibleWithRegularMediaTypes() {
 		MediaType one=anyMediaType();
 		MediaType other=textTurtle();
-		assertThat(MediaTypes.areCompatible(one,other),equalTo(true));
-		assertThat(MediaTypes.areCompatible(other,one),equalTo(true));
+		checkCompatibility(one, other, true);
 	}
 
 	@Test
 	public void regularWildcardSubtypeIsCompatibleWithMediaTypesFromSameTypeFamily() {
 		MediaType one=anyTextMediaType();
 		MediaType other=textTurtle();
-		assertThat(MediaTypes.areCompatible(one,other),equalTo(true));
-		assertThat(MediaTypes.areCompatible(other,one),equalTo(true));
+		checkCompatibility(one, other, true);
 	}
 
 	@Test
 	public void regularWildcardSubtypeIsNotCompatibleWithMediaTypesFromOtherTypeFamily() {
 		MediaType one=anyTextMediaType();
 		MediaType other=applicationJson();
-		assertThat(MediaTypes.areCompatible(one,other),equalTo(false));
-		assertThat(MediaTypes.areCompatible(other,one),equalTo(false));
+		checkCompatibility(one, other, false);
 	}
 
 	@Test
 	public void structuredWildcardSubtypeIsCompatibleWithMediaTypesFromSameTypeFamilyAndSuffix() {
 		MediaType one=anyApplicationMediaTypeAndXml();
 		MediaType other=applicationRdfXml();
-		assertThat(MediaTypes.areCompatible(one,other),equalTo(true));
-		assertThat(MediaTypes.areCompatible(other,one),equalTo(true));
+		checkCompatibility(one, other, true);
 	}
 
 	@Test
 	public void structuredWildcardSubtypeIsNotCompatibleWithMediaTypeWithSameTypeAndSubtypeMatchingTheSuffix() {
 		MediaType one=anyApplicationMediaTypeAndXml();
 		MediaType other=applicationXml();
-		assertThat(MediaTypes.areCompatible(one,other),equalTo(false));
-		assertThat(MediaTypes.areCompatible(other,one),equalTo(false));
+		checkCompatibility(one, other, false);
 	}
 
 	@Test
 	public void structuredWildcardSubtypeIsCompatibleWithSelf() {
 		MediaType one=anyApplicationMediaTypeAndXml();
 		MediaType other=anyApplicationMediaTypeAndXml();
-		assertThat(MediaTypes.areCompatible(one,other),equalTo(true));
-		assertThat(MediaTypes.areCompatible(other,one),equalTo(true));
+		checkCompatibility(one, other, true);
 	}
 
 	@Test
@@ -211,32 +205,28 @@ public class MediaTypesTest {
 	public void regularMediaTypeIsCompatibleWithSelf() {
 		MediaType one=textTurtle();
 		MediaType other=textTurtle();
-		assertThat(MediaTypes.areCompatible(one,other),equalTo(true));
-		assertThat(MediaTypes.areCompatible(other,one),equalTo(true));
+		checkCompatibility(one, other, true);
 	}
 
 	@Test
 	public void regularMediaTypeIsNotCompatibleWithAlternativeMediaTypesFromTheTypeFamily() {
 		MediaType one=textTurtle();
 		MediaType other=textPlain();
-		assertThat(MediaTypes.areCompatible(one,other),equalTo(false));
-		assertThat(MediaTypes.areCompatible(other,one),equalTo(false));
+		checkCompatibility(one, other, false);
 	}
 
 	@Test
 	public void regularMediaTypeIsNotCompatibleWithAlternativeStructuredMedia() {
 		MediaType one=applicationRdf();
 		MediaType other=applicationRdfXml();
-		assertThat(MediaTypes.areCompatible(one,other),equalTo(false));
-		assertThat(MediaTypes.areCompatible(other,one),equalTo(false));
+		checkCompatibility(one, other, false);
 	}
 
 	@Test
 	public void structuredMediaTypeIsCompatibleWithSelf() {
 		MediaType one=applicationRdfXml();
 		MediaType other=applicationRdfXml();
-		assertThat(MediaTypes.areCompatible(one,other),equalTo(true));
-		assertThat(MediaTypes.areCompatible(other,one),equalTo(true));
+		checkCompatibility(one, other, true);
 	}
 
 	@Test
@@ -257,6 +247,36 @@ public class MediaTypesTest {
 	@Test
 	public void structuredMediaTypeIsNotStructured() {
 		assertThat(MediaTypes.isStructured(applicationRdfXml()),equalTo(true));
+	}
+
+	@Test
+	public void headerStringNormalizesMediaRange() {
+		MediaType mt=MediaTypes.fromString("APPLICATION/RDF+XML");
+		assertThat(MediaTypes.toHeader(mt),equalTo("application/rdf+xml"));
+	}
+
+	@Test
+	public void headerStringNormalizesCharsetParameter() {
+		MediaType mt=MediaTypes.fromString("application/rdf+xml;CHARSET=\"UTF-8\"");
+		assertThat(MediaTypes.toHeader(mt),equalTo("application/rdf+xml;charset=utf-8"));
+	}
+
+	@Test
+	public void headerStringNormalizesQualityParameter() {
+		MediaType mt=MediaTypes.fromString("application/rdf+xml;Q=0.123");
+		assertThat(MediaTypes.toHeader(mt),equalTo("application/rdf+xml;q=0.123"));
+	}
+
+	@Test
+	public void headerStringNormalizesCustomParameterNames() {
+		MediaType mt=MediaTypes.fromString("application/rdf+xml;PARAM=value;QPARAM=\"value\"");
+		assertThat(MediaTypes.toHeader(mt),equalTo("application/rdf+xml;param=value;qparam=\"value\""));
+	}
+
+	@Test
+	public void headerStringSortsParameters() {
+		MediaType mt=MediaTypes.fromString("application/rdf+xml;PARAM=value;QPARAM=\"value\";CHARSET=\"UTF-8\";Q=0.001");
+		assertThat(MediaTypes.toHeader(mt),equalTo("application/rdf+xml;charset=utf-8;param=value;qparam=\"value\";q=0.001"));
 	}
 
 	private MediaType textTurtle() {
@@ -297,6 +317,18 @@ public class MediaTypesTest {
 
 	private MediaType anyApplicationMediaTypeAndXml() {
 		return MediaTypes.fromString("application/*+xml");
+	}
+
+	private void checkIncludes(MediaType one, MediaType other, boolean expected) {
+		System.out.printf("includes(%s, %s)=%s%n",MediaTypes.toHeader(one),MediaTypes.toHeader(other),expected);
+		assertThat(MediaTypes.includes(one,other),equalTo(expected));
+	}
+
+	private void checkCompatibility(MediaType one, MediaType other, boolean expected) {
+		System.out.printf("compatible(%s, %s)=%s%n",MediaTypes.toHeader(one),MediaTypes.toHeader(other),expected);
+		assertThat(MediaTypes.areCompatible(one,other),equalTo(expected));
+		System.out.printf("compatible(%s, %s)=%s%n",MediaTypes.toHeader(other),MediaTypes.toHeader(one),expected);
+		assertThat(MediaTypes.areCompatible(other,one),equalTo(expected));
 	}
 
 }

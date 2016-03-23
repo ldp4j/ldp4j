@@ -72,7 +72,9 @@ public class WeightedTest {
 		final Weighted<Object> original = Weighted.newInstance();
 		final Weighted<?> updated = original.weight(0.123D);
 		assertThat(original.weight(),equalTo(1.0D));
+		assertThat(original.hasWeight(),equalTo(false));
 		assertThat(updated.weight(),equalTo(0.123D));
+		assertThat(updated.hasWeight(),equalTo(true));
 	}
 
 	@Test

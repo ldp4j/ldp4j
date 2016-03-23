@@ -35,23 +35,31 @@ final class Weighted<T> implements Acceptable {
 	private static final double DEFAULT_WEIGHT = 1.0D;
 
 	private final double weight;
+	private final boolean hasWeight;
+
 	private final T value;
 
-	Weighted(final double weight, final T content) {
+	Weighted(final boolean hasWeight,final double weight, final T content) {
+		this.hasWeight = hasWeight;
 		this.weight = weight;
 		this.value = content;
 	}
 
 	Weighted<T> weight(final double weight) {
-		return new Weighted<T>(round(weight),this.value);
+		return new Weighted<T>(true, round(weight),this.value);
 	}
 
 	<S> Weighted<S> content(final S content) {
-		return new Weighted<S>(this.weight,content);
+		return new Weighted<S>(this.hasWeight,this.weight,content);
 	}
 
 	T get() {
 		return this.value;
+	}
+
+	@Override
+	public boolean hasWeight() {
+		return this.hasWeight;
 	}
 
 	@Override
@@ -66,12 +74,13 @@ final class Weighted<T> implements Acceptable {
 				toStringHelper(getClass()).
 					omitNullValues().
 					add("value",this.value).
+					add("hasWeight",this.hasWeight).
 					add("weight", this.weight).
 					toString();
 	}
 
 	static <T> Weighted<T> newInstance() {
-		return new Weighted<T>(DEFAULT_WEIGHT,null);
+		return new Weighted<T>(false,DEFAULT_WEIGHT,null);
 	}
 
 	static double round(final double weight) {

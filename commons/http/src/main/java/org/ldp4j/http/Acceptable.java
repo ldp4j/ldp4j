@@ -28,6 +28,8 @@ package org.ldp4j.http;
 
 public interface Acceptable {
 
+	boolean hasWeight();
+
 	double weight();
 
 }
