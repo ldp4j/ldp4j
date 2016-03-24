@@ -28,7 +28,7 @@ package org.ldp4j.http;
 
 import java.util.Locale;
 
-public interface Language extends Acceptable {
+public interface Language {
 
 	boolean isWildcard();
 

@@ -47,7 +47,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
 
 @RunWith(JMockit.class)
 public class ImmutableMediaTypeTest {
@@ -107,20 +106,6 @@ public class ImmutableMediaTypeTest {
 		assertThat(sut.type(),equalTo("type"));
 		assertThat(sut.subType(),equalTo("subtype"));
 		assertThat(sut.suffix(),equalTo("suffix"));
-	}
-
-	@Test
-	public void hasDefaultWeightIfNoParameterDefined() {
-		ImmutableMediaType sut=new ImmutableMediaType(MediaRangeSyntax.RFC7230,"type","subtype",null,null);
-		assertThat(sut.hasWeight(),equalTo(false));
-		assertThat(sut.weight(),equalTo(1.0D));
-	}
-
-	@Test
-	public void hasCustomWeightParameterDefined() {
-		ImmutableMediaType sut=new ImmutableMediaType(MediaRangeSyntax.RFC7230,"type","subtype",null,ImmutableMap.<String,String>builder().put("q","0.123").build());
-		assertThat(sut.hasWeight(),equalTo(true));
-		assertThat(sut.weight(),equalTo(0.123D));
 	}
 
 	@Test
@@ -232,18 +217,6 @@ public class ImmutableMediaTypeTest {
 		final MediaType actual = createParam("charset=\"UTF-8\"");
 		assertThat(actual.charset(),equalTo(StandardCharsets.UTF_8));
 		assertThat(actual.parameters().get("charset"),equalTo("\"UTF-8\""));
-	}
-
-	@Test
-	public void canParseMediaTypesWithQualityEqualToOneAndDecimalPointButNoDecimals() throws Exception {
-		final ImmutableMediaType actual=createWithQualityValue("1.");
-		assertThat(actual.weight(),equalTo(1.0D));
-	}
-
-	@Test
-	public void canParseMediaTypesWithQualityEqualToZeroAndDecimalPointButNoDecimals() throws Exception {
-		final ImmutableMediaType actual=createWithQualityValue("0.");
-		assertThat(actual.weight(),equalTo(0.0D));
 	}
 
 	@Test
@@ -411,56 +384,6 @@ public class ImmutableMediaTypeTest {
 		} catch (final InvalidMediaTypeException e) {
 			assertThat(e.getCause(),instanceOf(IllegalArgumentException.class));
 			assertThat(((IllegalCharsetNameException)e.getCause().getCause()).getCharsetName(),equalTo("<catepora>"));
-		}
-	}
-
-	@Test
-	public void cannotParseMediaTypesWithQualityGreaterThanOne() throws Exception {
-		try {
-			createWithQualityValue("23.000");
-			fail("Should fail for invalid quality value");
-		} catch (final InvalidMediaTypeException e) {
-			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid quality value '23.000'"));
-		}
-	}
-
-	@Test
-	public void cannotParseMediaTypesWithQualityWithoutDecimals() throws Exception {
-		try {
-			createWithQualityValue("23");
-			fail("Should fail for invalid quality value");
-		} catch (final InvalidMediaTypeException e) {
-			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid quality value '23'"));
-		}
-	}
-
-	@Test
-	public void cannotParseMediaTypesWithQualityEqualToOneButWithTooManyDecimals() throws Exception {
-		try {
-			createWithQualityValue("1.0000");
-			fail("Should fail for invalid quality value");
-		} catch (final InvalidMediaTypeException e) {
-			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid quality value '1.0000'"));
-		}
-	}
-
-	@Test
-	public void cannotParseMediaTypesWithQualityLowerThanOneButWithTooManyDecimals() throws Exception {
-		try {
-			createWithQualityValue("0.0123");
-			fail("Should fail for invalid quality value");
-		} catch (final InvalidMediaTypeException e) {
-			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid quality value '0.0123'"));
-		}
-	}
-
-	@Test
-	public void cannotParseMediaTypesWithParametersAfterQuality() throws Exception {
-		try {
-			final ImmutableMediaType actual = ImmutableMediaType.fromString("text/turtle;q=0.312;parameter=value;parameter=\"value\"",MediaTypes.preferredSyntax());
-			fail("Should fail for parameters beyond quality");
-		} catch (final InvalidMediaTypeException e) {
-			assertThat(Throwables.getRootCause(e).getMessage(),containsString("No parameters beyond 'q' are allowed (parameter=value, parameter=\"value\""));
 		}
 	}
 
@@ -677,36 +600,6 @@ public class ImmutableMediaTypeTest {
 	}
 
 	@Test
-	public void mediaTypesWithCompatibleQualityAreEqual() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withCompatibleQuality().build();
-		assertThat(one.toString(),not(equalTo(other.toString())));
-		assertThat(one,equalTo(other));
-	}
-
-	@Test
-	public void mediaTypesWithCompatibleQualityHaveSameHashCode() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withCompatibleQuality().build();
-		assertThat(one.toString(),not(equalTo(other.toString())));
-		assertThat(one.hashCode(),equalTo(other.hashCode()));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentQualityAreDifferent() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeQuality().build();
-		assertThat(one,not(equalTo(other)));
-	}
-
-	@Test
-	public void mediaTypesWithDifferentQualityHaveDifferentHashCode() {
-		final ImmutableMediaType one=defaultMediaType().build();
-		final ImmutableMediaType other=defaultMediaType().withAlternativeQuality().build();
-		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
-	}
-
-	@Test
 	public void mediaTypesWithDifferentParameterNumberAreDifferent() {
 		final ImmutableMediaType one=defaultMediaType().build();
 		final ImmutableMediaType other=defaultMediaType().withAdditionalParameter().build();
@@ -755,22 +648,9 @@ public class ImmutableMediaTypeTest {
 		assertThat(actual.subType(),equalTo("turtle"));
 		assertThat(actual.suffix(),nullValue());
 		assertThat(actual.charset(),nullValue());
-		assertThat(actual.weight(),equalTo(0.123D));
 		assertThat(actual.parameters().size(),equalTo(2));
 		return actual;
 	}
-
-	private ImmutableMediaType createWithQualityValue(final String weight) {
-		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/turtle;q="+weight, MediaTypes.preferredSyntax());
-		assertThat(actual,not(nullValue()));
-		assertThat(actual.type(),equalTo("text"));
-		assertThat(actual.subType(),equalTo("turtle"));
-		assertThat(actual.suffix(),nullValue());
-		assertThat(actual.charset(),nullValue());
-		assertThat(actual.parameters().size(),equalTo(1));
-		return actual;
-	}
-
 
 	private Builder defaultMediaType() {
 		return new Builder();
@@ -780,14 +660,12 @@ public class ImmutableMediaTypeTest {
 
 		private String mediaRange;
 		private String charsetName;
-		private String weight;
 		private String parameter;
 		private String random;
 
 		Builder() {
 			this.mediaRange="text/turtle";
 			this.charsetName=StandardCharsets.UTF_8.name();
-			this.weight="0.120";
 			this.parameter="param=value";
 			this.random="";
 		}
@@ -832,23 +710,13 @@ public class ImmutableMediaTypeTest {
 			return this;
 		}
 
-		Builder withAlternativeQuality() {
-			this.weight="1.000";
-			return this;
-		}
-
-		Builder withCompatibleQuality() {
-			this.weight="0.12";
-			return this;
-		}
-
 		Builder withCompatibleCharset() {
 			this.charsetName="\""+StandardCharsets.UTF_8.name()+"\"";
 			return this;
 		}
 
 		ImmutableMediaType build() {
-			final ImmutableMediaType actual=ImmutableMediaType.fromString(this.mediaRange+";charset="+this.charsetName+";"+this.parameter+this.random+";q="+this.weight, MediaTypes.preferredSyntax());
+			final ImmutableMediaType actual=ImmutableMediaType.fromString(this.mediaRange+";charset="+this.charsetName+";"+this.parameter+this.random, MediaTypes.preferredSyntax());
 			assertThat(actual,not(nullValue()));
 			return actual;
 		}

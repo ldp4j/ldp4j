@@ -31,11 +31,9 @@ import java.util.Locale;
 final class ImmutableLanguage implements Language {
 
 	private final Locale locale;
-	private final Double weight;
 
-	ImmutableLanguage(Locale locale, Double weight) {
+	ImmutableLanguage(Locale locale) {
 		this.locale=locale;
-		this.weight=weight;
 	}
 
 	@Override
@@ -51,16 +49,6 @@ final class ImmutableLanguage implements Language {
 	@Override
 	public String subTag() {
 		return locale==null?null:this.locale.getCountry();
-	}
-
-	@Override
-	public boolean hasWeight() {
-		return weight!=null;
-	}
-
-	@Override
-	public double weight() {
-		return weight==null?1.0D:this.weight;
 	}
 
 	@Override

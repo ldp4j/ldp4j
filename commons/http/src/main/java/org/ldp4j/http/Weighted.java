@@ -40,11 +40,59 @@ final class Weighted<T> implements Acceptable {
 
 	interface Parser<T> {
 
-		T parse(String data);
+		T parse(String before, String after);
 
 	}
 
-	private static final Pattern QUALITY_PATTERN = Pattern.compile("[ \t]*;[ \t]*[qQ]=((1\\.0{0,3})|(0\\.\\d{0,3}))");
+	private static final class StringParser implements Parser<String> {
+		@Override
+		public String parse(String before, String after) {
+			return before+(after==null?"":after);
+		}
+	}
+
+	private static final class Match {
+
+		private final int start;
+		private final int end;
+		private final String weight;
+
+		public Match(int start,int end,String weight) {
+			this.start = start;
+			this.end   = end;
+			this.weight = weight;
+		}
+
+		String before(String candidate) {
+			return candidate.substring(0,this.start);
+		}
+
+		String after(String candidate) {
+			String result="";
+			if(this.end<candidate.length()) {
+				result=candidate.substring(this.end);
+			}
+			return result;
+		}
+
+		Double weight() {
+			return Double.parseDouble(this.weight);
+		}
+
+		@Override
+		public String toString() {
+			return
+				new StringBuilder().
+					append("'").append(this.weight).append("'").
+					append(" {").append(this.start).append(",").append(this.end).append("}").
+					toString();
+		}
+
+	}
+
+	private static final Pattern QUALITY_PATTERN = Pattern.compile("[ \t]*;[ \t]*[qQ]([ \t]*)=([ \t]*)([^ \t;]*)");
+
+	private static final Pattern WEIGHT_PATTERN  = Pattern.compile("((?:1\\.0{0,3})|(?:0\\.\\d{0,3}))");
 
 	private static final double DEFAULT_WEIGHT = 1.0D;
 
@@ -95,28 +143,37 @@ final class Weighted<T> implements Acceptable {
 	}
 
 	static Weighted<String> fromString(String candidate) {
-		final Matcher matcher = QUALITY_PATTERN.matcher(candidate);
-		final List<String> weights=Lists.newArrayList();
-		while(matcher.find()) {
-			final String group = matcher.group(1);
-			weights.add(group);
-		}
-		checkArgument(weights.size()<2,"Only one quality value can be specified (found %s: %s)",weights.size(),Joiner.on(", ").join(weights));
-		final String trimmed = matcher.replaceAll("");
-		final Double weight=
-			weights.isEmpty()?
-				null:
-				Double.parseDouble(weights.get(0));
-		return
-			Weighted.
-				newInstance().
-					weight(weight).
-					content(trimmed);
+		return fromString(candidate,new StringParser());
 	}
 
 	static <T> Weighted<T> fromString(final String candidate, final Parser<T> parser) {
-		final Weighted<String> base=fromString(candidate);
-		return base.content(parser.parse(base.get()));
+		final Matcher matcher = QUALITY_PATTERN.matcher(candidate);
+		final List<Match> weights=Lists.newArrayList();
+		final List<String> errors=Lists.newArrayList();
+		while(matcher.find()) {
+			weights.
+				add(
+					new Match(
+						matcher.start(),
+						matcher.end(),
+						validateDefinition(matcher,errors)));
+		}
+		checkArgument(errors.isEmpty(),"Quality definition failure%s found: %s",errors.size()==1?"":"s",Joiner.on(", ").join(errors));
+		checkArgument(weights.size()<2,"Only one quality value can be specified (found %s: %s)",weights.size(),Joiner.on(", ").join(weights));
+		if(weights.size()==0) {
+			return Weighted.newInstance().content(parser.parse(candidate,null));
+		}
+		final Match match=weights.get(0);
+		final T value=
+			parser.
+				parse(
+					match.before(candidate),
+					match.after(candidate));
+		return
+			Weighted.
+				newInstance().
+					weight(match.weight()).
+					content(value);
 	}
 
 	static Double round(final Double weight) {
@@ -126,6 +183,25 @@ final class Weighted<T> implements Acceptable {
 		checkArgument(weight>=0.0D,"Weight cannot be negative (%s)",weight);
 		checkArgument(weight<=1.0D,"Weight cannot be greater than 1 (%s)",weight);
 		checkArgument(hasPrecision(weight,3),"Weight cannot have more than 3 decimals (%s)",weight);
+		return weight;
+	}
+
+	private static String validateDefinition(final Matcher matcher, final List<String> errors) {
+		if(!matcher.group(1).isEmpty()) {
+			errors.add("whitespace before equal from "+matcher.start(1)+" to "+matcher.end(1));
+		}
+		if(!matcher.group(2).isEmpty()) {
+			errors.add("whitespace after equal from "+matcher.start(2)+" to "+matcher.end(2));
+		}
+		final String weight = matcher.group(3);
+		final Matcher weightMatcher = WEIGHT_PATTERN.matcher(weight);
+		if(!weightMatcher.matches()) {
+			if(weight.isEmpty()) {
+				errors.add("weight cannot be empty");
+			} else {
+				errors.add("invalid weight value '"+weight+"' from "+matcher.start(3)+" to "+matcher.end(3));
+			}
+		}
 		return weight;
 	}
 

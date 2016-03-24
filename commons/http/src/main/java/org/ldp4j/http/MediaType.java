@@ -109,7 +109,7 @@ import java.util.Map;
  * @see <a href="http://tools.ietf.org/html/rfc6657">[RFC 6657] Update to MIME
  *      regarding "charset" Parameter Handling in Textual Media Types</a>
  */
-interface MediaType extends Acceptable {
+interface MediaType {
 
 	/**
 	 * Get the primary type.
@@ -145,6 +145,6 @@ interface MediaType extends Acceptable {
 	 *
 	 * @return an immutable map of parameters.
 	 */
-	Map<String, String> parameters();
+	Map<String,String> parameters();
 
 }

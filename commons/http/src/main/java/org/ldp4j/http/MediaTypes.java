@@ -35,17 +35,12 @@ import java.util.concurrent.atomic.AtomicReference;
 public final class MediaTypes {
 
 	private static final String REFERENCE_MEDIA_TYPE_CANNOT_BE_NULL = "Reference media type cannot be null";
-	private static final String MEDIA_TYPE_CANNOT_BE_NULL = "Media type cannot be null";
+	private static final String MEDIA_TYPE_CANNOT_BE_NULL           = "Media type cannot be null";
 
 	/**
 	 * The key for the standard 'charset' media type parameter
 	 */
 	public static final String PARAM_CHARSET   = "charset";
-
-	/**
-	 * The key for the standard 'quality' media type parameter
-	 */
-	public static final String PARAM_QUALITY   = "q";
 
 	/**
 	 * The wildcard type/subtype
@@ -198,9 +193,6 @@ public final class MediaTypes {
 			}
 			builder.append(';').append(key.toLowerCase()).append('=').append(entry.getValue());
 		}
-		if(mediaType.hasWeight()) {
-			builder.append(';').append("q=").append(mediaType.weight());
-		}
 		return builder.toString();
 	}
 
@@ -214,7 +206,7 @@ public final class MediaTypes {
 	 *         otherwise.
 	 */
 	public static boolean isStandardParameter(final String parameter) {
-		return PARAM_CHARSET.equalsIgnoreCase(parameter) || PARAM_QUALITY.equalsIgnoreCase(parameter);
+		return PARAM_CHARSET.equalsIgnoreCase(parameter);
 	}
 
 	private static boolean areCompatible(final MediaType one, final MediaType other, boolean symmetric) {

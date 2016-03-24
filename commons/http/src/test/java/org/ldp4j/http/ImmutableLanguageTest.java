@@ -37,8 +37,6 @@ import org.junit.Test;
 
 public class ImmutableLanguageTest {
 
-	private static final double DEFAULT_WEIGHT = 1.0D;
-
 	@Test
 	public void wildcardsAreWildcards() throws Exception {
 		assertThat(wildcard().isWildcard(),equalTo(true));
@@ -57,22 +55,6 @@ public class ImmutableLanguageTest {
 	@Test
 	public void wildcardsDoNotHaveSubTag() throws Exception {
 		assertThat(wildcard().subTag(),nullValue());
-	}
-
-	@Test
-	public void wildcardsCanHaveDefaultWeight() throws Exception {
-		assertThat(wildcard().hasWeight(),equalTo(false));
-		assertThat(wildcard().weight(),equalTo(DEFAULT_WEIGHT));
-	}
-
-	@Test
-	public void wildcardsCanBeWeighted() throws Exception {
-		assertThat(weightedWildcard().hasWeight(),equalTo(true));
-	}
-
-	@Test
-	public void wildcardsCanHaveCustomWeight() throws Exception {
-		assertThat(weightedWildcard().weight(),equalTo(weight()));
 	}
 
 	@Test
@@ -96,22 +78,6 @@ public class ImmutableLanguageTest {
 	}
 
 	@Test
-	public void simpleLanguagesCanHaveDefaultWeight() throws Exception {
-		assertThat(simpleLanguage().hasWeight(),equalTo(false));
-		assertThat(simpleLanguage().weight(),equalTo(DEFAULT_WEIGHT));
-	}
-
-	@Test
-	public void simpleLanguagesCanBeWeighted() throws Exception {
-		assertThat(weightedSimpleLanguage().hasWeight(),equalTo(true));
-	}
-
-	@Test
-	public void simpleLanguagesCanHaveCustomWeight() throws Exception {
-		assertThat(weightedSimpleLanguage().weight(),equalTo(weight()));
-	}
-
-	@Test
 	public void compositeLanguagesAreNotWildcards() throws Exception {
 		assertThat(compositeLanguage().isWildcard(),equalTo(false));
 	}
@@ -131,44 +97,16 @@ public class ImmutableLanguageTest {
 		assertThat(compositeLanguage().subTag(),equalTo(compositeLocale().getCountry()));
 	}
 
-	@Test
-	public void compositeLanguagesCanHaveDefaultWeight() throws Exception {
-		assertThat(compositeLanguage().hasWeight(),equalTo(false));
-		assertThat(compositeLanguage().weight(),equalTo(DEFAULT_WEIGHT));
-	}
-
-	@Test
-	public void compositeLanguagesCanBeWeighted() throws Exception {
-		assertThat(weightedCompositeLanguage().hasWeight(),equalTo(true));
-	}
-
-	@Test
-	public void compositeLanguagesCanHaveCustomWeight() throws Exception {
-		assertThat(weightedCompositeLanguage().weight(),equalTo(weight()));
-	}
-
 	private ImmutableLanguage wildcard() {
-		return new ImmutableLanguage(null,null);
-	}
-
-	private ImmutableLanguage weightedWildcard() {
-		return new ImmutableLanguage(null,weight());
+		return new ImmutableLanguage(null);
 	}
 
 	private ImmutableLanguage simpleLanguage() {
-		return new ImmutableLanguage(simpleLocale(),null);
-	}
-
-	private ImmutableLanguage weightedSimpleLanguage() {
-		return new ImmutableLanguage(simpleLocale(),weight());
+		return new ImmutableLanguage(simpleLocale());
 	}
 
 	private ImmutableLanguage compositeLanguage() {
-		return new ImmutableLanguage(compositeLocale(),null);
-	}
-
-	private ImmutableLanguage weightedCompositeLanguage() {
-		return new ImmutableLanguage(compositeLocale(),weight());
+		return new ImmutableLanguage(compositeLocale());
 	}
 
 	private Locale simpleLocale() {
@@ -177,10 +115,6 @@ public class ImmutableLanguageTest {
 
 	private Locale compositeLocale() {
 		return Locale.US;
-	}
-
-	private double weight() {
-		return 0.123D;
 	}
 
 }

@@ -63,7 +63,7 @@ public class ContentNegotiationTest {
 			acceptCharset("utf-8;q=0.000;q=1.000");
 			fail("Should fail for a charset with multiple qualities");
 		} catch(final IllegalArgumentException e) {
-			assertThat(e.getMessage(),startsWith("Only one quality value can be specified (found 2: 0.000, 1.000)"));
+			assertThat(e.getMessage(),startsWith("Only one quality value can be specified (found 2: "));
 		}
 	}
 
@@ -121,9 +121,11 @@ public class ContentNegotiationTest {
 				return context.proceed(aValue);
 			}
 		};
-		Language result=ContentNegotiation.acceptLanguage(value);
-		assertThat(result.primaryTag(),equalTo("en"));
-		assertThat(result.subTag(),equalTo("US"));
+		final Weighted<Language> result=ContentNegotiation.acceptLanguage(value);
+		assertThat(result.get().primaryTag(),equalTo("en"));
+		assertThat(result.get().subTag(),equalTo("US"));
+		assertThat(result.hasWeight(),equalTo(false));
+		assertThat(result.weight(),equalTo(1.0D));
 	}
 
 }

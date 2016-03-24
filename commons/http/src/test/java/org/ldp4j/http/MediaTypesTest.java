@@ -321,6 +321,7 @@ public class MediaTypesTest {
 		return MediaTypes.fromString("*/*");
 	}
 
+	@SuppressWarnings("unused")
 	private MediaType anyMediaTypeAndXml() {
 		return MediaTypes.fromString("*/*+xml");
 	}

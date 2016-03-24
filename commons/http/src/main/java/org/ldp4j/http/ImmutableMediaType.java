@@ -33,7 +33,6 @@ import static org.ldp4j.http.HttpUtils.checkToken;
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
-import java.util.Arrays;
 import java.util.BitSet;
 import java.util.Collections;
 import java.util.LinkedHashMap;
@@ -41,9 +40,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
-import java.util.regex.Pattern;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.Strings;
 
@@ -59,8 +56,6 @@ final class ImmutableMediaType implements MediaType {
 
 	private static final BitSet QDTEXT;
 	private static final BitSet QUOTED_PAIR;
-
-	private static final Pattern WEIGHT_PATTERN=Pattern.compile("((?:1\\.0{0,3})|(?:0\\.\\d{0,3}))");
 
 	private static final String TYPE_SEPARATOR  = "/";
 	private static final String PARAM_SEPARATOR = ";";
@@ -86,7 +81,6 @@ final class ImmutableMediaType implements MediaType {
 
 	private final Map<String, String> parameters;
 	private final Charset charset;
-	private final Double weight;
 
 	ImmutableMediaType(final MediaRangeSyntax syntax, final String type, final String subtype, String suffix, final Map<String, String> parameters) {
 		checkNotNull(syntax,"Syntax cannot be null");
@@ -96,7 +90,6 @@ final class ImmutableMediaType implements MediaType {
 		ensureValidMediaType(this.type,this.subtype);
 		this.parameters=verifyParameters(parameters);
 		this.charset=getCharset(this.parameters);
-		this.weight=getWeight(this.parameters);
 	}
 
 	@Override
@@ -122,16 +115,6 @@ final class ImmutableMediaType implements MediaType {
 	@Override
 	public Map<String,String> parameters() {
 		return this.parameters;
-	}
-
-	@Override
-	public boolean hasWeight() {
-		return this.weight!=null;
-	}
-
-	@Override
-	public double weight() {
-		return this.weight==null?1.0D:this.weight;
 	}
 
 	@Override
@@ -179,12 +162,12 @@ final class ImmutableMediaType implements MediaType {
 	}
 
 	private int standardParametersHashCode() {
-		return 13*Objects.hash(this.charset,this.weight);
+		return 13*Objects.hash(this.charset);
 	}
 
 	private int customParametersHashCode() {
 		int hash=19;
-		for(final Entry<String, String> parameter : this.parameters.entrySet()) {
+		for(final Entry<String, String> parameter:this.parameters.entrySet()) {
 			final String key=parameter.getKey();
 			if(MediaTypes.isStandardParameter(key)) {
 				continue;
@@ -202,9 +185,7 @@ final class ImmutableMediaType implements MediaType {
 	}
 
 	private boolean hasSameStandardParameters(final ImmutableMediaType that) {
-		return
-			Objects.equals(this.charset,that.charset)  &&
-			Objects.equals(this.weight,that.weight);
+		return Objects.equals(this.charset,that.charset);
 	}
 
 	/**
@@ -318,21 +299,14 @@ final class ImmutableMediaType implements MediaType {
 		Map<String, String> parameters=Collections.emptyMap();
 		if(parts.length>1) {
 			parameters=new LinkedHashMap<>(parts.length-1);
-			boolean qualityFound=false;
 			for(int i=1;i<parts.length;i++) {
-				if(qualityFound) {
-					throw new InvalidMediaTypeException(mediaType,"No parameters beyond 'q' are allowed ("+Joiner.on(", ").join(Arrays.copyOfRange(parts,i,parts.length))+")");
-				}
-				final String name = parseParameter(mediaType,parameters,parts[i]);
-				if(MediaTypes.PARAM_QUALITY.equalsIgnoreCase(name)) {
-					qualityFound=true;
-				}
+				parseParameter(mediaType,parameters,parts[i]);
 			}
 		}
 		return parameters;
 	}
 
-	private static String parseParameter(final String mediaType,Map<String,String> parameters,String rawParameter) {
+	private static void parseParameter(final String mediaType,Map<String,String> parameters,String rawParameter) {
 		final String parameter=HttpUtils.trimWhitespace(rawParameter);
 		final int eqIndex=parameter.indexOf('=');
 		if(eqIndex==-1) {
@@ -344,7 +318,6 @@ final class ImmutableMediaType implements MediaType {
 		if(previous!=null && !areCompatible(name, previous, value)) {
 			throw new InvalidMediaTypeException(mediaType,"Duplicated parameter '"+name+"': found '"+value+"' after '"+previous+"'");
 		}
-		return name;
 	}
 
 	private static boolean areCompatible(final String attribute, final String first, final String second) {
@@ -368,15 +341,6 @@ final class ImmutableMediaType implements MediaType {
 		final String charsetName = parameters.get(MediaTypes.PARAM_CHARSET);
 		if(charsetName!=null) {
 			result = Charset.forName(HttpUtils.unquote(charsetName));
-		}
-		return result;
-	}
-
-	private static Double getWeight(final Map<String, String> parameters) {
-		final String weightValue = parameters.get(MediaTypes.PARAM_QUALITY);
-		Double result=null;
-		if(weightValue!=null) {
-			result = Double.parseDouble(weightValue);
 		}
 		return result;
 	}
@@ -446,8 +410,6 @@ final class ImmutableMediaType implements MediaType {
 			} catch (final IllegalCharsetNameException ex) {
 				throw new IllegalArgumentException("Invalid charset name '"+ex.getCharsetName()+"'",ex);
 			}
-		} else if(MediaTypes.PARAM_QUALITY.equalsIgnoreCase(parameter)) {
-			checkArgument(WEIGHT_PATTERN.matcher(value).matches(),"Invalid quality value '%s'",value);
 		} else if(!HttpUtils.isQuotedString(value)) {
 			checkToken(value);
 		} else {

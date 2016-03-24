@@ -26,27 +26,42 @@
  */
 package org.ldp4j.http;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.UnsupportedCharsetException;
 
 import org.ldp4j.http.Weighted.Parser;
 
+import com.google.common.base.Strings;
+
 final class ContentNegotiation {
+
+	private static final class LanguageParser implements Parser<Language> {
+
+		@Override
+		public Language parse(final String before, final String after) {
+			checkArgument(Strings.isNullOrEmpty(after),"No more parameters after quality expected (%s)",after);
+			return Languages.fromString(before);
+		}
+
+	}
 
 	private static final class CharsetParser implements Parser<Charset> {
 
 		@Override
-		public Charset parse(final String data) {
-			if("*".equals(data)) {
+		public Charset parse(final String before, final String after) {
+			checkArgument(Strings.isNullOrEmpty(after),"No more parameters after quality expected (%s)",after);
+			if("*".equals(before)) {
 				return null;
 			}
 			try {
-				return Charset.forName(data);
+				return Charset.forName(before);
 			} catch (final IllegalCharsetNameException e) {
-				throw new IllegalArgumentException("Invalid charset: illegal charset name ('"+data+"')",e);
+				throw new IllegalArgumentException("Invalid charset: illegal charset name ('"+before+"')",e);
 			} catch (final UnsupportedCharsetException e) {
-				throw new IllegalArgumentException("Invalid charset: not supported ('"+data+"')",e);
+				throw new IllegalArgumentException("Invalid charset: not supported ('"+before+"')",e);
 			}
 		}
 
@@ -59,8 +74,8 @@ final class ContentNegotiation {
 		return Weighted.fromString(header, new CharsetParser());
 	}
 
-	static Language acceptLanguage(final String header) {
-		return Languages.fromString(header);
+	static Weighted<Language> acceptLanguage(final String header) {
+		return Weighted.fromString(header,new LanguageParser());
 	}
 
 }

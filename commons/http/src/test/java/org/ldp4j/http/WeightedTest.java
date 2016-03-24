@@ -30,12 +30,186 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
 import org.ldp4j.commons.testing.Utils;
+import org.ldp4j.http.Weighted.Parser;
 
 public class WeightedTest {
+
+	@Test
+	public void parsingDoesNotRequireQualityDefinition() {
+		final String candidate = "value ; qa=1.000";
+		final Weighted<String> sut = Weighted.fromString(candidate);
+		assertThat(sut.get(),equalTo(candidate));
+		assertThat(sut.hasWeight(),equalTo(false));
+		assertThat(sut.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void qualityParameterCanBeSeparatedWithSpaces() {
+		final Weighted<String> sut = Weighted.fromString("value ; q=1.000");
+		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.hasWeight(),equalTo(true));
+		assertThat(sut.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void qualityParameterCanBeSeparatedWithTabs() {
+		final Weighted<String> sut = Weighted.fromString("value\t;\tq=1.000");
+		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.hasWeight(),equalTo(true));
+		assertThat(sut.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void qualityParameterCanBeLowerCase() {
+		final Weighted<String> sut = Weighted.fromString("value;q=1.000");
+		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.hasWeight(),equalTo(true));
+		assertThat(sut.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void qualityParameterCanBeUpperCase() {
+		final Weighted<String> sut = Weighted.fromString("value;Q=1.000");
+		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.hasWeight(),equalTo(true));
+		assertThat(sut.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void qualityParameterValueCanHaveNoDecimals() {
+		final Weighted<String> sut = Weighted.fromString("value;Q=1.");
+		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.hasWeight(),equalTo(true));
+		assertThat(sut.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void qualityParameterValueCanHaveOneDecimal() {
+		final Weighted<String> sut = Weighted.fromString("value;q=0.1");
+		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.hasWeight(),equalTo(true));
+		assertThat(sut.weight(),equalTo(0.1D));
+	}
+
+	@Test
+	public void qualityParameterValueCanHaveTwoDecimals() {
+		final Weighted<String> sut = Weighted.fromString("value;q=0.01");
+		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.hasWeight(),equalTo(true));
+		assertThat(sut.weight(),equalTo(0.01D));
+	}
+
+	@Test
+	public void qualityParameterValueCanHaveThreeDecimals() {
+		final Weighted<String> sut = Weighted.fromString("value;q=0.001");
+		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.hasWeight(),equalTo(true));
+		assertThat(sut.weight(),equalTo(0.001D));
+	}
+
+	@Test
+	public void qualityParameterCannotHaveWhitespacesBeforeEqual() {
+		try {
+			Weighted.fromString("value;q \t=1.000");
+			fail("Should fail when whitespaces before equal");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),startsWith("Quality definition failure found: whitespace before equal"));
+		}
+	}
+
+	@Test
+	public void qualityParameterCannotHaveWhitespacesAfterEqual() {
+		try {
+			Weighted.fromString("value;q=\t 1.000");
+			fail("Should fail when whitespaces after equal");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),startsWith("Quality definition failure found: whitespace after equal"));
+		}
+	}
+
+	@Test
+	public void qualityParameterValuesCannotHaveMoreThanThreeDigits() {
+		try {
+			Weighted.fromString("value;q=1.0000");
+			fail("Should fail when quality parameter value has more than three digits");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),startsWith("Quality definition failure found: invalid weight value '1.0000'"));
+		}
+	}
+
+	@Test
+	public void qualityParameterValuesRequireDotSeparator() {
+		try {
+			Weighted.fromString("value;q=1");
+			fail("Should fail when no dot separator is present");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),startsWith("Quality definition failure found: invalid weight value '1'"));
+		}
+	}
+
+	@Test
+	public void qualityParameterValuesCannotBeGreaterThanOne() {
+		try {
+			Weighted.fromString("value;q=2.0");
+			fail("Should fail when quality value is greater than 1");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),startsWith("Quality definition failure found: invalid weight value '2.0'"));
+		}
+	}
+
+	@Test
+	public void qualityParameterValuesCannotBeEmpty() {
+		try {
+			Weighted.fromString("value;q=");
+			fail("Should fail when quality parameter value is empty");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),startsWith("Quality definition failure found: weight cannot be empty"));
+		}
+	}
+
+	@Test
+	public void parsersGetSubstringBeforeAndAfterQualityDefinition() {
+		Weighted<String> sut = Weighted.fromString("value ; q=1.000;param=value", new Parser<String>(){
+			@Override
+			public String parse(String before, String after) {
+				assertThat(before,equalTo("value"));
+				assertThat(after,equalTo(";param=value"));
+				return before;
+			}});
+		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.hasWeight(),equalTo(true));
+		assertThat(sut.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void parsersGetInputDataAndNullStringIfNoQualityDefinitionWasFound() {
+		final String candidate = "value ; qa=1.000;param=value";
+		Weighted<String> sut = Weighted.fromString(candidate, new Parser<String>(){
+			@Override
+			public String parse(String before, String after) {
+				assertThat(before,equalTo(candidate));
+				assertThat(after,nullValue());
+				return before;
+			}});
+		assertThat(sut.get(),equalTo(candidate));
+		assertThat(sut.hasWeight(),equalTo(false));
+		assertThat(sut.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void multipleQualityParametersAreNotAllowed() {
+		try {
+			Weighted.fromString("value;q=1.000;q=0.000");
+			fail("Should fail when multiple quality parameters are defined");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),startsWith("Only one quality value can be specified (found 2: "));
+		}
+	}
 
 	@Test
 	public void weightsCannotBeNegative() throws Exception {
@@ -89,6 +263,11 @@ public class WeightedTest {
 	public void hasCustomStringRepresentation() {
 		final Weighted<String> original=Weighted.newInstance().weight(0.123D).content("text/turtle");
 		assertThat(original.toString(),not(equalTo(Utils.defaultToString(original))));
+	}
+
+	@Test
+	public void nullWeightIsRoundedToNull() {
+		assertThat(Weighted.round(null),nullValue());
 	}
 
 }
