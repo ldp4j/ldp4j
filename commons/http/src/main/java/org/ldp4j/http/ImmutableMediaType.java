@@ -27,6 +27,8 @@
 package org.ldp4j.http;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.ldp4j.http.HttpUtils.checkToken;
 
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -55,7 +57,6 @@ final class ImmutableMediaType implements MediaType {
 
 	private static final char SLASH = '\\';
 
-	private static final BitSet TOKEN;
 	private static final BitSet QDTEXT;
 	private static final BitSet QUOTED_PAIR;
 
@@ -65,37 +66,6 @@ final class ImmutableMediaType implements MediaType {
 	private static final String PARAM_SEPARATOR = ";";
 
 	static {
-		// ASCII Control codes
-		final BitSet ctl = new BitSet(128);
-		ctl.set(0x00,0x20);
-		ctl.set(0x7F);
-
-		// SP, DQUOTE and "(),/:;<=>?@[\]{}"
-		final BitSet delimiters = new BitSet(128);
-		delimiters.set(' ');
-		delimiters.set('\"');
-		delimiters.set('(');
-		delimiters.set(')');
-		delimiters.set(',');
-		delimiters.set('/');
-		delimiters.set(':');
-		delimiters.set(';');
-		delimiters.set('<');
-		delimiters.set('=');
-		delimiters.set('>');
-		delimiters.set('?');
-		delimiters.set('@');
-		delimiters.set('[');
-		delimiters.set(SLASH);
-		delimiters.set(']');
-		delimiters.set('{');
-		delimiters.set('}');
-
-		TOKEN = new BitSet(0x80);
-		TOKEN.set(0,0x80);
-		TOKEN.andNot(ctl);
-		TOKEN.andNot(delimiters);
-
 		QDTEXT=new BitSet(0xFF);
 		QDTEXT.set('\t');
 		QDTEXT.set(0x20,0x7F); // All printable ASCII chars...
@@ -116,18 +86,17 @@ final class ImmutableMediaType implements MediaType {
 
 	private final Map<String, String> parameters;
 	private final Charset charset;
-	private final double weight;
-	private final boolean hasWeight;
+	private final Double weight;
 
-	ImmutableMediaType(final String type, final String subtype, String suffix, final Map<String, String> parameters) {
-		this.type=verifyType(type,"media range type cannot be empty");
-		this.subtype=verifyType(subtype,"media range subtype cannot be empty");
-		this.suffix=verifySuffix(suffix,"invalid media range suffix");
+	ImmutableMediaType(final MediaRangeSyntax syntax, final String type, final String subtype, String suffix, final Map<String, String> parameters) {
+		checkNotNull(syntax,"Syntax cannot be null");
+		this.type=syntax.checkType(type);
+		this.subtype=syntax.checkSubType(subtype);
+		this.suffix=syntax.checkSuffix(suffix);
 		ensureValidMediaType(this.type,this.subtype);
 		this.parameters=verifyParameters(parameters);
 		this.charset=getCharset(this.parameters);
 		this.weight=getWeight(this.parameters);
-		this.hasWeight=hasWeight(this.parameters);
 	}
 
 	@Override
@@ -157,12 +126,12 @@ final class ImmutableMediaType implements MediaType {
 
 	@Override
 	public boolean hasWeight() {
-		return this.hasWeight;
+		return this.weight!=null;
 	}
 
 	@Override
 	public double weight() {
-		return this.weight;
+		return this.weight==null?1.0D:this.weight;
 	}
 
 	@Override
@@ -229,13 +198,13 @@ final class ImmutableMediaType implements MediaType {
 		return
 			this.type.equalsIgnoreCase(that.type) &&
 			this.subtype.equalsIgnoreCase(that.subtype) &&
-			Objects.equals(this.suffix, that.suffix);
+			Objects.equals(this.suffix,that.suffix);
 	}
 
 	private boolean hasSameStandardParameters(final ImmutableMediaType that) {
 		return
-			Objects.equals(this.charset, that.charset)  &&
-			Objects.equals(this.weight, that.weight);
+			Objects.equals(this.charset,that.charset)  &&
+			Objects.equals(this.weight,that.weight);
 	}
 
 	/**
@@ -247,13 +216,13 @@ final class ImmutableMediaType implements MediaType {
 		if(this.parameters.size()!=that.parameters.size()) {
 			return false;
 		}
-		for(final Entry<String, String> parameter : this.parameters.entrySet()) {
+		for(final Entry<String, String> parameter:this.parameters.entrySet()) {
 			final String key=parameter.getKey();
 			if(MediaTypes.isStandardParameter(key)) {
 				continue;
 			}
 
-			if(!Objects.equals(parameter.getValue(), that.parameters.get(key))) {
+			if(!Objects.equals(parameter.getValue(),that.parameters.get(key))) {
 				return false;
 			}
 		}
@@ -265,16 +234,17 @@ final class ImmutableMediaType implements MediaType {
 	 *
 	 * @param mediaType
 	 *            the string to parse
+	 * @param syntax the syntax of the media type
 	 * @return the mime type
 	 * @throws InvalidMediaTypeException
 	 *             if the string cannot be parsed
 	 */
-	static ImmutableMediaType fromString(final String mediaType) {
+	static ImmutableMediaType fromString(final String mediaType, final MediaRangeSyntax syntax) {
 		if(mediaType==null) {
 			throw new InvalidMediaTypeException("Media type cannot be null");
 		}
 		if(mediaType.isEmpty()) {
-			throw new InvalidMediaTypeException(mediaType,"media type cannot be empty");
+			throw new InvalidMediaTypeException(mediaType,"Media type cannot be empty");
 		}
 		final String[] parts = mediaType.split(PARAM_SEPARATOR);
 
@@ -284,84 +254,97 @@ final class ImmutableMediaType implements MediaType {
 			fullType = "*/*";
 		}
 		final MediaRange mr=parseMediaRange(mediaType,HttpUtils.trimWhitespace(fullType));
-		final Map<String, String> parameters=parseParameters(mediaType, parts);
+		final Map<String,String> parameters=parseParameters(mediaType,parts);
 		try {
-			return new ImmutableMediaType(mr.type,mr.subType,mr.suffix,parameters);
+			return new ImmutableMediaType(syntax,mr.type,mr.subType,mr.suffix,parameters);
 		} catch (final IllegalArgumentException ex) {
-			throw new InvalidMediaTypeException(mediaType,ex,ex.getMessage());
+			throw new InvalidMediaTypeException(mediaType,ex,"Could not create media type");
 		}
 	}
 
 	private static int caseInsensitiveHashCode(String str) {
-		return str.toLowerCase().hashCode();
+		return str.toLowerCase(Locale.ENGLISH).hashCode();
 	}
 
 	private static MediaRange parseMediaRange(final String mediaType, final String fullType) {
 		if(fullType.isEmpty()) {
-			throw new InvalidMediaTypeException(mediaType,"no media range specified");
+			throw new InvalidMediaTypeException(mediaType,"No media range specified");
 		}
 		final MediaRange mr=new MediaRange();
-		parseTypes(mr, mediaType, fullType);
-		parseSuffix(mr, mediaType);
+		parseTypes(mr,mediaType,fullType);
+		parseSuffix(mr,mediaType);
 		return mr;
 	}
 
+	/**
+	 * As per RFC 6838, Section 4.2 structuring syntaxes specifier syntaxes are
+	 * defined after the last '+' symbol.
+	 *
+	 * @see <a href="https://tools.ietf.org/html/rfc6838#section-4.2>[RFC 6838]
+	 *      Media Type Specifications and Registration Procedures, Section
+	 *      4.2</a>
+	 */
 	private static void parseSuffix(final MediaRange mr, final String mediaType) {
-		final int plusIdx = mr.subType.indexOf('+');
+		final String subType=mr.subType;
+		final int plusIdx=subType.lastIndexOf('+');
 		if(plusIdx==0) {
-			throw new InvalidMediaTypeException(mediaType, "missing subtype for structured media type ("+mr.subType.substring(1)+")");
+			throw new InvalidMediaTypeException(mediaType,"missing subtype for structured media type ("+subType.substring(1)+")");
+		} else if(plusIdx==subType.length()-1) {
+			throw new InvalidMediaTypeException(mediaType,"missing suffix for structured media type ("+subType.substring(0,subType.length()-1)+")");
 		} else if(plusIdx>0) {
-			final String[] parts=mr.subType.split("\\+");
-			if(parts.length==2) {
-				mr.subType=parts[0];
-				mr.suffix=parts[1];
-			} else if(parts.length==1) {
-				throw new InvalidMediaTypeException(mediaType, "missing suffix for structured media type ("+parts[0]+")");
-			} else {
-				throw new InvalidMediaTypeException(mediaType, "only one suffix can be defined for a structured media type ("+Joiner.on(", ").join(Arrays.copyOfRange(parts,1,parts.length))+")");
-			}
-		}
+			mr.subType=subType.substring(0,plusIdx);
+			mr.suffix=subType.substring(plusIdx+1);
+		} // Otherwise the subtype does not define a structuring syntax.
 	}
 
 	private static void parseTypes(final MediaRange mr, final String mediaType, final String fullType) {
 		final int separatorIdx=fullType.indexOf('/');
 		if(separatorIdx==-1) {
-			throw new InvalidMediaTypeException(mediaType,"no media range subtype specified");
+			throw new InvalidMediaTypeException(mediaType,"No media range subtype specified");
 		} else if(separatorIdx==0) {
-			throw new InvalidMediaTypeException(mediaType,"no media range type specified");
+			throw new InvalidMediaTypeException(mediaType,"No media range type specified");
 		} else if(separatorIdx==fullType.length()-1) {
-			throw new InvalidMediaTypeException(mediaType,"no media range subtype specified");
+			throw new InvalidMediaTypeException(mediaType,"No media range subtype specified");
 		}
 		final String[] types=fullType.split(TYPE_SEPARATOR);
 		if(types.length!=2) {
-			throw new InvalidMediaTypeException(mediaType, "expected 2 types in media range ("+types.length+")");
+			throw new InvalidMediaTypeException(mediaType,"Expected 2 types in media range but got "+types.length+"");
 		}
 		mr.type=types[0];
 		mr.subType=types[1];
 	}
 
-	/**
-	 * TODO: Ensure that quality parameter is the last to appear...
-	 */
 	private static Map<String, String> parseParameters(final String mediaType, final String[] parts) {
 		Map<String, String> parameters=Collections.emptyMap();
 		if(parts.length>1) {
 			parameters=new LinkedHashMap<>(parts.length-1);
+			boolean qualityFound=false;
 			for(int i=1;i<parts.length;i++) {
-				final String parameter=HttpUtils.trimWhitespace(parts[i]);
-				final int eqIndex=parameter.indexOf('=');
-				if(eqIndex==-1) {
-					throw new InvalidMediaTypeException(mediaType, "invalid parameter '"+parts[i]+"'");
+				if(qualityFound) {
+					throw new InvalidMediaTypeException(mediaType,"No parameters beyond 'q' are allowed ("+Joiner.on(", ").join(Arrays.copyOfRange(parts,i,parts.length))+")");
 				}
-				final String attribute=parameter.substring(0,eqIndex);
-				final String value=parameter.substring(eqIndex+1);
-				final String old=parameters.put(attribute, value);
-				if(old!=null && !areCompatible(attribute, old, value)) {
-					throw new InvalidMediaTypeException(mediaType, "duplicated parameter '"+attribute+"': found '"+value+"' after '"+old+"'");
+				final String name = parseParameter(mediaType,parameters,parts[i]);
+				if(MediaTypes.PARAM_QUALITY.equalsIgnoreCase(name)) {
+					qualityFound=true;
 				}
 			}
 		}
 		return parameters;
+	}
+
+	private static String parseParameter(final String mediaType,Map<String,String> parameters,String rawParameter) {
+		final String parameter=HttpUtils.trimWhitespace(rawParameter);
+		final int eqIndex=parameter.indexOf('=');
+		if(eqIndex==-1) {
+			throw new InvalidMediaTypeException(mediaType,"Invalid parameter '"+rawParameter+"': no value defined");
+		}
+		final String name=parameter.substring(0,eqIndex);
+		final String value=parameter.substring(eqIndex+1);
+		final String previous=parameters.put(name, value);
+		if(previous!=null && !areCompatible(name, previous, value)) {
+			throw new InvalidMediaTypeException(mediaType,"Duplicated parameter '"+name+"': found '"+value+"' after '"+previous+"'");
+		}
+		return name;
 	}
 
 	private static boolean areCompatible(final String attribute, final String first, final String second) {
@@ -389,41 +372,19 @@ final class ImmutableMediaType implements MediaType {
 		return result;
 	}
 
-	private static double getWeight(final Map<String, String> parameters) {
+	private static Double getWeight(final Map<String, String> parameters) {
 		final String weightValue = parameters.get(MediaTypes.PARAM_QUALITY);
-		double result=1.0D;
+		Double result=null;
 		if(weightValue!=null) {
 			result = Double.parseDouble(weightValue);
 		}
 		return result;
 	}
 
-	private static boolean hasWeight(final Map<String, String> parameters) {
-		return parameters.containsKey(MediaTypes.PARAM_QUALITY);
-	}
-
 	private static void ensureValidMediaType(final String type, final String subtype) {
 		if(MediaTypes.WILDCARD_TYPE.equals(type) && !MediaTypes.WILDCARD_TYPE.equals(subtype)) {
 			throw new IllegalArgumentException("wildcard type is legal only in wildcard media range ('*/*')");
 		}
-	}
-
-	/**
-	 * TODO: Align type verifications to match restrictions imposed on RFC 6838
-	 * @see https://tools.ietf.org/html/rfc6838#section-4.2.8
-	 */
-	private static String verifyType(final String type, final String message) {
-		checkHasLength(type,message);
-		checkToken(type);
-		return type.toLowerCase(Locale.ENGLISH);
-	}
-
-	/**
-	 * TODO: Verify that suffix is valid
-	 * @see https://tools.ietf.org/html/rfc6838#section-4.2.8
-	 */
-	private static String verifySuffix(final String suffix, final String message) {
-		return suffix==null?null:suffix.toLowerCase();
 	}
 
 	private static Map<String, String> verifyParameters(final Map<String, String> parameters) {
@@ -441,27 +402,8 @@ final class ImmutableMediaType implements MediaType {
 		return tmp;
 	}
 
-	private static void checkHasLength(final String argument, final String message) {
-		checkArgument(!Strings.isNullOrEmpty(argument),message);
-	}
-
-	/**
-	 * Checks the given token string for illegal characters, as defined in RFC
-	 * 7230, section 3.2.6.
-	 *
-	 * @throws IllegalArgumentException
-	 *             in case of illegal characters
-	 * @see <a href="http://tools.ietf.org/html/rfc7230#section-3.2.6">Hypertext
-	 *      Transfer Protocol (HTTP/1.1): Message Syntax and Routing, Section
-	 *      3.2.6</a>
-	 */
-	private static void checkToken(final String token) {
-		for(int i=0;i<token.length();i++) {
-			final char ch=token.charAt(i);
-			if(!TOKEN.get(ch)) {
-				throw new IllegalArgumentException("invalid token character '"+ch+"' in token \""+token+"\" at "+i);
-			}
-		}
+	private static void checkHasLength(final String argument, final String message, Object... args) {
+		checkArgument(!Strings.isNullOrEmpty(argument),message,args);
 	}
 
 	/**
@@ -491,11 +433,11 @@ final class ImmutableMediaType implements MediaType {
 		checkArgument(!quotedPair,"Missing quoted-pair character in quoted string '%s' at %d",quotedString,quotedString.length());
 	}
 
-	private static void checkParameter(final String attribute, String value) {
-		checkHasLength(attribute, "parameter attribute must not be empty");
-		checkHasLength(value, "parameter value must not be empty");
-		checkToken(attribute);
-		if(MediaTypes.PARAM_CHARSET.equalsIgnoreCase(attribute)) {
+	private static void checkParameter(final String parameter, String value) {
+		checkHasLength(parameter, "Parameter name cannot be empty");
+		checkToken(parameter,"Invalid parameter name '%s'",parameter);
+		checkHasLength(value, "Value for parameter '%s' cannot be empty",parameter);
+		if(MediaTypes.PARAM_CHARSET.equalsIgnoreCase(parameter)) {
 			String unquotedValue = HttpUtils.unquote(value);
 			try {
 				Charset.forName(unquotedValue);
@@ -504,7 +446,7 @@ final class ImmutableMediaType implements MediaType {
 			} catch (final IllegalCharsetNameException ex) {
 				throw new IllegalArgumentException("Invalid charset name '"+ex.getCharsetName()+"'",ex);
 			}
-		} else if(MediaTypes.PARAM_QUALITY.equalsIgnoreCase(attribute)) {
+		} else if(MediaTypes.PARAM_QUALITY.equalsIgnoreCase(parameter)) {
 			checkArgument(WEIGHT_PATTERN.matcher(value).matches(),"Invalid quality value '%s'",value);
 		} else if(!HttpUtils.isQuotedString(value)) {
 			checkToken(value);

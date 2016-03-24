@@ -26,24 +26,24 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.sameInstance;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	MoreCollectionsTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	MediaTypesTest.class,
-	LanguagesTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+import org.junit.Test;
+
+
+public class InvalidTokenExceptionTest {
+
+	@Test
+	public void checkInvariant() throws Exception {
+		final Throwable cause = new RuntimeException();
+		final String token = "token";
+		final String message = "message";
+		InvalidTokenException sut=new InvalidTokenException(message,token,cause);
+		assertThat(sut.getMessage(),equalTo(message));
+		assertThat(sut.getCause(),sameInstance(cause));
+		assertThat(sut.getToken(),equalTo(token));
+	}
+
 }

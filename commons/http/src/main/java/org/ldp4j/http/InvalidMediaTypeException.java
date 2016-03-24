@@ -26,8 +26,9 @@
  */
 package org.ldp4j.http;
 
+
 /**
- * Exception thrown from {@link ImmutableMediaType#fromString(String)} in case of
+ * Exception thrown from {@link ImmutableMediaType#fromString(String, MediaRangeSyntax)} in case of
  * encountering an invalid media type specification String.
  */
 public class InvalidMediaTypeException extends IllegalArgumentException {
@@ -60,7 +61,7 @@ public class InvalidMediaTypeException extends IllegalArgumentException {
 	 *            a detail message indicating the invalid part
 	 */
 	public InvalidMediaTypeException(final String mediaType, final Throwable cause, final String message) {
-		super("Invalid media type \"" + mediaType + "\": " + message,cause);
+		super(message,cause);
 		this.mediaType = mediaType;
 	}
 
@@ -72,8 +73,7 @@ public class InvalidMediaTypeException extends IllegalArgumentException {
 	 *            a detail message indicating the problem
 	 */
 	public InvalidMediaTypeException(final String message) {
-		super(message,null);
-		this.mediaType = null;
+		this(null,message);
 	}
 
 	/**

@@ -26,24 +26,14 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.io.Serializable;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	MoreCollectionsTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	MediaTypesTest.class,
-	LanguagesTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+interface MediaRangeValidator extends Serializable {
+
+	void checkType(String type);
+
+	void checkSubType(String subType);
+
+	void checkSuffix(String suffix);
+
 }

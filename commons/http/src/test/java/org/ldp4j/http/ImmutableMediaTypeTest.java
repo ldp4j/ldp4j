@@ -39,52 +39,93 @@ import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 
+import mockit.Expectations;
+import mockit.Mocked;
 import mockit.integration.junit4.JMockit;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
+
 @RunWith(JMockit.class)
 public class ImmutableMediaTypeTest {
 
+	private static final String OUTPUT = "output";
+	private static final String INPUT  = "input";
+
 	@Test
-	public void typeCannotBeEmpty() {
-		try {
-			new ImmutableMediaType(null,null,null,null);
-			fail("Should not accept empty type");
-		} catch (IllegalArgumentException e) {
-			assertThat(e.getMessage(),equalTo("media range type cannot be empty"));
-		}
+	public void usesSyntaxForValidatingType(@Mocked final MediaRangeSyntax syntax) {
+		new Expectations() {{
+			syntax.checkType(INPUT);result=OUTPUT;
+			syntax.checkSubType(null);
+			syntax.checkSuffix(null);
+		}};
+		ImmutableMediaType sut=new ImmutableMediaType(syntax,INPUT,null,null,null);
+		assertThat(sut.type(),equalTo(OUTPUT));
+		assertThat(sut.subType(),nullValue());
+		assertThat(sut.suffix(),nullValue());
 	}
 
 	@Test
-	public void subTypeCannotBeEmpty() {
-		try {
-			new ImmutableMediaType("type",null,null,null);
-			fail("Should not accept empty sub type");
-		} catch (IllegalArgumentException e) {
-			assertThat(e.getMessage(),equalTo("media range subtype cannot be empty"));
-		}
+	public void usesSyntaxForValidatingSubtype(@Mocked final MediaRangeSyntax syntax) {
+		new Expectations() {{
+			syntax.checkType(null);
+			syntax.checkSubType(INPUT);result=OUTPUT;
+			syntax.checkSuffix(null);
+		}};
+		ImmutableMediaType sut=new ImmutableMediaType(syntax,null,INPUT,null,null);
+		assertThat(sut.type(),nullValue());
+		assertThat(sut.subType(),equalTo(OUTPUT));
+		assertThat(sut.suffix(),nullValue());
+	}
+
+	@Test
+	public void usesSyntaxForValidatingSuffix(@Mocked final MediaRangeSyntax syntax) {
+		new Expectations() {{
+			syntax.checkType(null);
+			syntax.checkSubType(null);
+			syntax.checkSuffix(INPUT);result=OUTPUT;
+		}};
+		ImmutableMediaType sut=new ImmutableMediaType(syntax,null,null,INPUT,null);
+		assertThat(sut.type(),nullValue());
+		assertThat(sut.subType(),nullValue());
+		assertThat(sut.suffix(),equalTo(OUTPUT));
 	}
 
 	@Test
 	public void constructorAcceptsNullParameters() {
-		ImmutableMediaType sut=new ImmutableMediaType("type","subtype",null,null);
+		ImmutableMediaType sut=new ImmutableMediaType(MediaRangeSyntax.RFC7230,"type","subtype",null,null);
 		assertThat(sut.parameters(),notNullValue());
 		assertThat(sut.parameters().isEmpty(),equalTo(true));
 	}
 
 	@Test
 	public void mediaRangeIsNormalized() {
-		ImmutableMediaType sut=new ImmutableMediaType("TYPE","SUBTYPE","SUFFIX",null);
+		ImmutableMediaType sut=new ImmutableMediaType(MediaRangeSyntax.RFC7230,"TYPE","SUBTYPE","SUFFIX",null);
 		assertThat(sut.type(),equalTo("type"));
 		assertThat(sut.subType(),equalTo("subtype"));
 		assertThat(sut.suffix(),equalTo("suffix"));
 	}
 
 	@Test
+	public void hasDefaultWeightIfNoParameterDefined() {
+		ImmutableMediaType sut=new ImmutableMediaType(MediaRangeSyntax.RFC7230,"type","subtype",null,null);
+		assertThat(sut.hasWeight(),equalTo(false));
+		assertThat(sut.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void hasCustomWeightParameterDefined() {
+		ImmutableMediaType sut=new ImmutableMediaType(MediaRangeSyntax.RFC7230,"type","subtype",null,ImmutableMap.<String,String>builder().put("q","0.123").build());
+		assertThat(sut.hasWeight(),equalTo(true));
+		assertThat(sut.weight(),equalTo(0.123D));
+	}
+
+	@Test
 	public void canParseMediaTypesWithRegularMediaRange() throws Exception {
-		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/turtle");
+		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/turtle", MediaTypes.preferredSyntax());
 		assertThat(actual,not(nullValue()));
 		assertThat(actual.type(),equalTo("text"));
 		assertThat(actual.subType(),equalTo("turtle"));
@@ -95,7 +136,7 @@ public class ImmutableMediaTypeTest {
 
 	@Test
 	public void canParseMediaTypesWithSimpleWildcardSubtype() throws Exception {
-		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/*");
+		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/*", MediaTypes.preferredSyntax());
 		assertThat(actual,not(nullValue()));
 		assertThat(actual.type(),equalTo("text"));
 		assertThat(actual.subType(),equalTo("*"));
@@ -106,7 +147,7 @@ public class ImmutableMediaTypeTest {
 
 	@Test
 	public void canParseMediaTypesWithCompositeWildcardSubtype() throws Exception {
-		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/*+xml");
+		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/*+xml", MediaTypes.preferredSyntax());
 		assertThat(actual,not(nullValue()));
 		assertThat(actual.type(),equalTo("text"));
 		assertThat(actual.subType(),equalTo("*"));
@@ -117,7 +158,7 @@ public class ImmutableMediaTypeTest {
 
 	@Test
 	public void canParseMediaTypesWithWildcardMediaRange() throws Exception {
-		final ImmutableMediaType actual = ImmutableMediaType.fromString("*/*");
+		final ImmutableMediaType actual = ImmutableMediaType.fromString("*/*", MediaTypes.preferredSyntax());
 		assertThat(actual,not(nullValue()));
 		assertThat(actual.type(),equalTo("*"));
 		assertThat(actual.subType(),equalTo("*"));
@@ -127,7 +168,7 @@ public class ImmutableMediaTypeTest {
 
 	@Test
 	public void canParseMediaTypesWithLegacyWildcardMediaRange() throws Exception {
-		final ImmutableMediaType actual = ImmutableMediaType.fromString("*");
+		final ImmutableMediaType actual = ImmutableMediaType.fromString("*", MediaTypes.preferredSyntax());
 		assertThat(actual,not(nullValue()));
 		assertThat(actual.type(),equalTo("*"));
 		assertThat(actual.subType(),equalTo("*"));
@@ -226,14 +267,21 @@ public class ImmutableMediaTypeTest {
 		assertThat(actual.parameters().get("charset"),equalTo("\"UTF-8\""));
 	}
 
+	@Test
+	public void canParseStructuredMediaTypesWithMultipleSuffixes() throws Exception {
+		ImmutableMediaType sut = ImmutableMediaType.fromString("text/turtle+one+other", MediaTypes.preferredSyntax());
+		assertThat(sut.type(),equalTo("text"));
+		assertThat(sut.subType(),equalTo("turtle+one"));
+		assertThat(sut.suffix(),equalTo("other"));
+	}
 
 	@Test
 	public void cannotParseNullMediaTypes() throws Exception {
 		try {
-			ImmutableMediaType.fromString(null);
+			ImmutableMediaType.fromString(null, MediaTypes.preferredSyntax());
 			fail("Should fail for null media type");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("Media type cannot be null"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Media type cannot be null"));
 			assertThat(e.getMediaType(),equalTo(null));
 		}
 	}
@@ -241,10 +289,10 @@ public class ImmutableMediaTypeTest {
 	@Test
 	public void cannotParseEmptyMediaTypes() throws Exception {
 		try {
-			ImmutableMediaType.fromString("");
+			ImmutableMediaType.fromString("", MediaTypes.preferredSyntax());
 			fail("Should fail for null media type");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("media type cannot be empty"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Media type cannot be empty"));
 			assertThat(e.getMediaType(),equalTo(""));
 		}
 	}
@@ -253,11 +301,11 @@ public class ImmutableMediaTypeTest {
 	public void cannotParseMediaTypesPartialMediaRange() throws Exception {
 		final String offending="partial;parameter=value";
 		try {
-			ImmutableMediaType.fromString(offending);
+			ImmutableMediaType.fromString(offending, MediaTypes.preferredSyntax());
 			fail("Should fail for invalid media range");
 		} catch (final InvalidMediaTypeException e) {
 			assertThat(e.getMediaType(),equalTo(offending));
-			assertThat(e.getMessage(),containsString("no media range subtype specified"));
+			assertThat(Throwables.getRootCause(e).getMessage(),equalTo("No media range subtype specified"));
 		}
 	}
 
@@ -265,91 +313,81 @@ public class ImmutableMediaTypeTest {
 	public void cannotParseMediaTypesWithoutMediaRange() throws Exception {
 		final String offending = " ;parameter=value";
 		try {
-			ImmutableMediaType.fromString(offending);
+			ImmutableMediaType.fromString(offending, MediaTypes.preferredSyntax());
 			fail("Should fail for invalid media range");
 		} catch (final InvalidMediaTypeException e) {
 			assertThat(e.getMediaType(),equalTo(offending));
-			assertThat(e.getMessage(),containsString("no media range specified"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("No media range specified"));
 		}
 	}
 
 	@Test
 	public void cannotParseMediaTypesWithVariableType() throws Exception {
 		try {
-			ImmutableMediaType.fromString("*/turtle");
+			ImmutableMediaType.fromString("*/turtle", MediaTypes.preferredSyntax());
 			fail("Should fail for invalid media range");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("wildcard type is legal only in wildcard media range ('*/*')"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("wildcard type is legal only in wildcard media range ('*/*')"));
 		}
 	}
 
 	@Test
 	public void cannotParseMediaTypesWithEmptySubtype() throws Exception {
 		try {
-			ImmutableMediaType.fromString("text/ ");
+			ImmutableMediaType.fromString("text/ ", MediaTypes.preferredSyntax());
 			fail("Should fail for invalid media range");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("no media range subtype specified"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("No media range subtype specified"));
 		}
 	}
 
 	@Test
 	public void cannotParseMediaTypesWithoutType() throws Exception {
 		try {
-			ImmutableMediaType.fromString("/turtle");
+			ImmutableMediaType.fromString("/turtle", MediaTypes.preferredSyntax());
 			fail("Should fail for invalid media range");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("no media range type specified"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("No media range type specified"));
 		}
 	}
 
 	@Test
 	public void cannotParseMediaTypesWithNeitherTypeNorSubtype() throws Exception {
 		try {
-			ImmutableMediaType.fromString("/");
+			ImmutableMediaType.fromString("/", MediaTypes.preferredSyntax());
 			fail("Should fail for invalid media range");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("no media range type specified"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("No media range type specified"));
 		}
 	}
 
 	@Test
 	public void cannotParseMediaTypesWithMoreTypesThanExpected() throws Exception {
 		try {
-			ImmutableMediaType.fromString("text/turtle/something");
+			ImmutableMediaType.fromString("text/turtle/something", MediaTypes.preferredSyntax());
 			fail("Should fail for invalid media range");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("expected 2 types in media range (3)"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Expected 2 types in media range but got 3"));
 		}
 	}
 
 	@Test
 	public void cannotParseMediaTypeWithDanglingStructureSeparator() throws Exception {
 		try {
-			ImmutableMediaType.fromString("text/turtle+");
+			ImmutableMediaType.fromString("text/turtle+", MediaTypes.preferredSyntax());
 			fail("Should fail for invalid structured media range");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("missing suffix for structured media type (turtle)"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("missing suffix for structured media type (turtle)"));
 		}
 	}
 
 	@Test
 	public void cannotParseStructuredMediaTypeWithMissingSubtype() throws Exception {
 		try {
-			ImmutableMediaType.fromString("text/+structure");
+			ImmutableMediaType.fromString("text/+structure", MediaTypes.preferredSyntax());
 			fail("Should fail for invalid structured media range");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("missing subtype for structured media type (structure)"));
-		}
-	}
-
-	@Test
-	public void cannotParseStructuredMediaTypeWithMultipleSuffixes() throws Exception {
-		try {
-			ImmutableMediaType.fromString("text/turtle+one+other");
-			fail("Should fail for invalid structured media range");
-		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("only one suffix can be defined for a structured media type (one, other)"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("missing subtype for structured media type (structure)"));
 		}
 	}
 
@@ -377,12 +415,12 @@ public class ImmutableMediaTypeTest {
 	}
 
 	@Test
-	public void cannotParseMediaTypesQualityGreaterThanOne() throws Exception {
+	public void cannotParseMediaTypesWithQualityGreaterThanOne() throws Exception {
 		try {
 			createWithQualityValue("23.000");
 			fail("Should fail for invalid quality value");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("Invalid quality value '23.000'"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid quality value '23.000'"));
 		}
 	}
 
@@ -392,7 +430,7 @@ public class ImmutableMediaTypeTest {
 			createWithQualityValue("23");
 			fail("Should fail for invalid quality value");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("Invalid quality value '23'"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid quality value '23'"));
 		}
 	}
 
@@ -402,7 +440,7 @@ public class ImmutableMediaTypeTest {
 			createWithQualityValue("1.0000");
 			fail("Should fail for invalid quality value");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("Invalid quality value '1.0000'"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid quality value '1.0000'"));
 		}
 	}
 
@@ -412,7 +450,17 @@ public class ImmutableMediaTypeTest {
 			createWithQualityValue("0.0123");
 			fail("Should fail for invalid quality value");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("Invalid quality value '0.0123'"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid quality value '0.0123'"));
+		}
+	}
+
+	@Test
+	public void cannotParseMediaTypesWithParametersAfterQuality() throws Exception {
+		try {
+			final ImmutableMediaType actual = ImmutableMediaType.fromString("text/turtle;q=0.312;parameter=value;parameter=\"value\"",MediaTypes.preferredSyntax());
+			fail("Should fail for parameters beyond quality");
+		} catch (final InvalidMediaTypeException e) {
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("No parameters beyond 'q' are allowed (parameter=value, parameter=\"value\""));
 		}
 	}
 
@@ -422,7 +470,17 @@ public class ImmutableMediaTypeTest {
 			createParam(" \t \t");
 			fail("Should fail for empty parameters");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("invalid parameter ' \t \t'"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid parameter ' \t \t'"));
+		}
+	}
+
+	@Test
+	public void cannotParseMediaTypesWithEmptyParameterValue() throws Exception {
+		try {
+			createParam("myparam= ");
+			fail("Should fail for empty parameter value");
+		} catch (final InvalidMediaTypeException e) {
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Value for parameter 'myparam' cannot be empty"));
 		}
 	}
 
@@ -432,7 +490,7 @@ public class ImmutableMediaTypeTest {
 			createParam("myparam=\"");
 			fail("Should fail for dangling quotation mark");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("invalid token character '\"'"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid character '\"' in token '\"' at 0"));
 		}
 	}
 
@@ -442,7 +500,7 @@ public class ImmutableMediaTypeTest {
 			createParam("myparam=\"value");
 			fail("Should fail for dangling initial quotation mark");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("invalid token character '\"'"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid character '\"' in token '\"value' at 0"));
 		}
 	}
 
@@ -452,7 +510,7 @@ public class ImmutableMediaTypeTest {
 			createParam("myparam=value\"");
 			fail("Should fail for dangling final quotation mark");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("invalid token character '\"'"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid character '\"' in token 'value\"' at 5"));
 		}
 	}
 
@@ -462,7 +520,7 @@ public class ImmutableMediaTypeTest {
 			createParam("myparam=\"a"+offending()+"a\"");
 			fail("Should fail for dangling quoted pair");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("Invalid character '"+offending()+"' in quoted string"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid character '"+offending()+"' in quoted string"));
 		}
 	}
 
@@ -472,7 +530,7 @@ public class ImmutableMediaTypeTest {
 			createParam("myparam=\"a"+Character.toString('\\')+offending()+"a\"");
 			fail("Should fail for dangling quoted pair");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("Invalid quoted-pair character '"+offending()+"'"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid quoted-pair character '"+offending()+"'"));
 		}
 	}
 
@@ -482,7 +540,7 @@ public class ImmutableMediaTypeTest {
 			createParam("myparam=\""+Character.toString('\\')+offending()+"a\"");
 			fail("Should fail for dangling initial quoted pair");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("Invalid quoted-pair character '"+offending()+"'"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid quoted-pair character '"+offending()+"'"));
 		}
 	}
 
@@ -492,7 +550,7 @@ public class ImmutableMediaTypeTest {
 			createParam("myparam=\"a\\\"");
 			fail("Should fail for dangling final quoted pair");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("Missing quoted-pair character in quoted string"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Missing quoted-pair character in quoted string"));
 		}
 	}
 
@@ -502,7 +560,7 @@ public class ImmutableMediaTypeTest {
 			createParam("myparam=1;myparam=2");
 			fail("Should fail for multiple different definitions for the same parameter");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(e.getMessage(),containsString("duplicated parameter 'myparam': found '2' after '1'"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Duplicated parameter 'myparam': found '2' after '1'"));
 		}
 	}
 
@@ -685,13 +743,13 @@ public class ImmutableMediaTypeTest {
 	}
 
 	private MediaType createParam(final String paramDef) {
-		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/turtle;"+paramDef);
+		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/turtle;"+paramDef, MediaTypes.preferredSyntax());
 		assertThat(actual,not(nullValue()));
 		return actual;
 	}
 
 	private MediaType verifyParam(final String param, final String value) {
-		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/turtle;"+param+"="+value+";q=0.123");
+		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/turtle;"+param+"="+value+";q=0.123", MediaTypes.preferredSyntax());
 		assertThat(actual,not(nullValue()));
 		assertThat(actual.type(),equalTo("text"));
 		assertThat(actual.subType(),equalTo("turtle"));
@@ -703,7 +761,7 @@ public class ImmutableMediaTypeTest {
 	}
 
 	private ImmutableMediaType createWithQualityValue(final String weight) {
-		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/turtle;q="+weight);
+		final ImmutableMediaType actual = ImmutableMediaType.fromString("text/turtle;q="+weight, MediaTypes.preferredSyntax());
 		assertThat(actual,not(nullValue()));
 		assertThat(actual.type(),equalTo("text"));
 		assertThat(actual.subType(),equalTo("turtle"));
@@ -790,7 +848,7 @@ public class ImmutableMediaTypeTest {
 		}
 
 		ImmutableMediaType build() {
-			final ImmutableMediaType actual=ImmutableMediaType.fromString(this.mediaRange+";charset="+this.charsetName+";q="+this.weight+";"+this.parameter+this.random);
+			final ImmutableMediaType actual=ImmutableMediaType.fromString(this.mediaRange+";charset="+this.charsetName+";"+this.parameter+this.random+";q="+this.weight, MediaTypes.preferredSyntax());
 			assertThat(actual,not(nullValue()));
 			return actual;
 		}

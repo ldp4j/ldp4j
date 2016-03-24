@@ -30,6 +30,7 @@ import static java.util.Objects.requireNonNull;
 
 import java.nio.charset.Charset;
 import java.util.Map.Entry;
+import java.util.concurrent.atomic.AtomicReference;
 
 public final class MediaTypes {
 
@@ -51,7 +52,21 @@ public final class MediaTypes {
 	 */
 	public static final String WILDCARD_TYPE   = "*";
 
+	private static final AtomicReference<MediaRangeSyntax> SYNTAX=new AtomicReference<>(MediaRangeSyntax.RFC7230);
+
 	private MediaTypes() {
+	}
+
+	public static MediaRangeSyntax preferredSyntax() {
+		return SYNTAX.get();
+	}
+
+	public static void preferredSyntax(MediaRangeSyntax syntax) {
+		if(syntax==null) {
+			SYNTAX.set(MediaRangeSyntax.RFC7230);
+		} else {
+			SYNTAX.set(syntax);
+		}
 	}
 
 	/**
@@ -64,7 +79,7 @@ public final class MediaTypes {
 	 *             if the string cannot be parsed
 	 */
 	public static MediaType fromString(final String mediaType) {
-		return ImmutableMediaType.fromString(mediaType);
+		return ImmutableMediaType.fromString(mediaType, MediaTypes.preferredSyntax());
 	}
 
 	/**

@@ -28,10 +28,49 @@ package org.ldp4j.http;
 
 import static com.google.common.base.Preconditions.*;
 
+import java.util.BitSet;
+
+import com.google.common.base.Strings;
+
 final class HttpUtils {
 
 	private static final char   PARAM_DELIMITER = ';';
 	private static final char   DQUOTE          = '\"';
+
+	private static final BitSet TOKEN;
+
+	static {
+		// ASCII Control codes
+		final BitSet ctl = new BitSet(128);
+		ctl.set(0x00,0x20);
+		ctl.set(0x7F);
+
+		// SP, DQUOTE and "(),/:;<=>?@[\]{}"
+		final BitSet delimiters = new BitSet(128);
+		delimiters.set(' ');
+		delimiters.set('\"');
+		delimiters.set('(');
+		delimiters.set(')');
+		delimiters.set(',');
+		delimiters.set('/');
+		delimiters.set(':');
+		delimiters.set(';');
+		delimiters.set('<');
+		delimiters.set('=');
+		delimiters.set('>');
+		delimiters.set('?');
+		delimiters.set('@');
+		delimiters.set('[');
+		delimiters.set('\\');
+		delimiters.set(']');
+		delimiters.set('{');
+		delimiters.set('}');
+
+		TOKEN = new BitSet(0x80);
+		TOKEN.set(0,0x80);
+		TOKEN.andNot(ctl);
+		TOKEN.andNot(delimiters);
+	}
 
 	private HttpUtils() {
 	}
@@ -81,6 +120,43 @@ final class HttpUtils {
 
 	static boolean isParameterDelimiter(final char ch) {
 		return ch==PARAM_DELIMITER;
+	}
+
+	/**
+	 * Checks the given type name for illegal characters, as defined in RFC
+	 * 7230, section 3.2.6.
+	 *
+	 * @param token
+	 *            the string to validate
+	 * @throws IllegalArgumentException
+	 *             in case of illegal characters
+	 * @see <a href="http://tools.ietf.org/html/rfc7230#section-3.2.6">Hypertext
+	 *      Transfer Protocol (HTTP/1.1): Message Syntax and Routing, Section
+	 *      3.2.6</a>
+	 */
+	static void checkToken(final String token, final String message, Object... args) {
+		checkNotNull(message,"Message cannot be null");
+		try {
+			validateLength(token);
+			validateCharacters(token);
+		} catch (IllegalArgumentException e) {
+			throw new InvalidTokenException(String.format(message,args),token,e);
+		}
+	}
+
+	static void checkToken(final String token) {
+		checkToken(token,"Invalid token");
+	}
+
+	private static void validateCharacters(final String token) {
+		for(int i=0;i<token.length();i++) {
+			final char ch=token.charAt(i);
+			checkArgument(TOKEN.get(ch),"Invalid character '%s' in token '%s' at %s",ch,token,i);
+		}
+	}
+
+	private static void validateLength(final String token) {
+		checkArgument(!Strings.isNullOrEmpty(token),"Token cannot be empty");
 	}
 
 }

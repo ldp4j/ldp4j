@@ -26,24 +26,48 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static com.google.common.base.Preconditions.checkArgument;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	MoreCollectionsTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	MediaTypesTest.class,
-	LanguagesTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+import java.util.Locale;
+
+import com.google.common.base.Strings;
+
+public enum MediaRangeSyntax {
+	RFC6838(new RFC6838MediaRangeValidator()),
+	RFC7230(new RFC7230MediaRangeValidator()),
+	;
+
+	private final MediaRangeValidator validator;
+
+	private MediaRangeSyntax(MediaRangeValidator validator) {
+		this.validator = validator;
+	}
+
+	String checkType(final String type) {
+		validateLength(type,"Type");
+		this.validator.checkType(type);
+		return type.toLowerCase(Locale.ENGLISH);
+	}
+
+	String checkSubType(final String subType) {
+		validateLength(subType,"Subtype");
+		this.validator.checkSubType(subType);
+		return subType.toLowerCase(Locale.ENGLISH);
+	}
+
+	String checkSuffix(final String suffix) {
+		if(!Strings.isNullOrEmpty(suffix)) {
+			int idx = suffix.indexOf('+');
+			checkArgument(idx<0,"Invalid character '+' in suffix '%s' at %s",suffix,idx);
+			this.validator.checkSuffix(suffix);
+		}
+		return suffix==null?suffix:suffix.toLowerCase(Locale.ENGLISH);
+	}
+
+	private void validateLength(final String value, final String name) {
+		checkArgument(value!=null,"%s cannot be null",name);
+		checkArgument(!value.isEmpty(),"%s cannot be empty",name);
+	}
+
+
 }

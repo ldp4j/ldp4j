@@ -26,24 +26,19 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+public class InvalidTokenException extends IllegalArgumentException {
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	MoreCollectionsTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	MediaTypesTest.class,
-	LanguagesTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+	private static final long serialVersionUID = 2465726747471598269L;
+
+	private final String token;
+
+	public InvalidTokenException(String message, String token, Throwable cause) {
+		super(message,cause);
+		this.token = token;
+	}
+
+	public String getToken() {
+		return this.token;
+	}
+
 }

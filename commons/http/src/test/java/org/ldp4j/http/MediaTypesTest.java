@@ -51,14 +51,28 @@ public class MediaTypesTest {
 		final String mediaType = "text/turtle";
 		new MockUp<ImmutableMediaType>() {
 			@Mock
-			public ImmutableMediaType fromString(Invocation context, String aValue) {
+			public ImmutableMediaType fromString(Invocation context, String aValue, MediaRangeSyntax syntax) {
 				assertThat(aValue,equalTo(mediaType));
-				return context.proceed(aValue);
+				return context.proceed(aValue,syntax);
 			}
 		};
 		MediaType result=MediaTypes.fromString(mediaType);
 		assertThat(result.type(),equalTo("text"));
 		assertThat(result.subType(),equalTo("turtle"));
+	}
+
+	@Test
+	public void defaultPreferredSyntaxIsRFC7230() {
+		assertThat(MediaTypes.preferredSyntax(),equalTo(MediaRangeSyntax.RFC7230));
+	}
+
+	@Test
+	public void canCustomizePreferredSyntax() {
+		assertThat(MediaTypes.preferredSyntax(),equalTo(MediaRangeSyntax.RFC7230));
+		MediaTypes.preferredSyntax(MediaRangeSyntax.RFC6838);
+		assertThat(MediaTypes.preferredSyntax(),equalTo(MediaRangeSyntax.RFC6838));
+		MediaTypes.preferredSyntax(null);
+		assertThat(MediaTypes.preferredSyntax(),equalTo(MediaRangeSyntax.RFC7230));
 	}
 
 	@Test

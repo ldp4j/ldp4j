@@ -86,4 +86,24 @@ public class HttpUtilsTest {
 		assertThat(HttpUtils.isParameterDelimiter(','),equalTo(false));
 	}
 
+	@Test
+	public void nullIsNotValidToken() {
+		try {
+			HttpUtils.checkToken(null);
+			fail("Null is not a valid token");
+		} catch (IllegalArgumentException e) {
+			assertThat(e.getCause().getMessage(),equalTo("Token cannot be empty"));
+		}
+	}
+
+	@Test
+	public void emptyStringIsNotValidToken() {
+		try {
+			HttpUtils.checkToken("");
+			fail("Empty string is not a valid token");
+		} catch (IllegalArgumentException e) {
+			assertThat(e.getCause().getMessage(),equalTo("Token cannot be empty"));
+		}
+	}
+
 }
