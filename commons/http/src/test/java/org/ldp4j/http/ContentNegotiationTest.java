@@ -27,13 +27,16 @@
 package org.ldp4j.http;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.fail;
+import static org.ldp4j.http.ContentNegotiation.accept;
 import static org.ldp4j.http.ContentNegotiation.acceptCharset;
+import static org.ldp4j.http.ContentNegotiation.acceptLanguage;
 
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
@@ -72,14 +75,14 @@ public class ContentNegotiationTest {
 		final Charset expected=StandardCharsets.UTF_8;
 		final Weighted<Charset> result=acceptCharset(expected.name()+";q=0.000");
 		assertThat(result,not(nullValue()));
-		final Charset actual = result.get();
+		final Charset actual = result.entity();
 		assertThat(actual,not(nullValue()));
 		assertThat(actual,equalTo(expected));
 	}
 
 	@Test
 	public void testAcceptCharset$wildcard() throws Exception {
-		assertThat(acceptCharset("*;q=0.000").get(),nullValue());
+		assertThat(acceptCharset("*;q=0.000").entity(),nullValue());
 	}
 
 	@Test
@@ -112,7 +115,7 @@ public class ContentNegotiationTest {
 	}
 
 	@Test
-	public void dependsOnLanguages() {
+	public void dependsOnLanguagesClassForCreatingWeightedMediaTypes() {
 		final String value = "en-US";
 		new MockUp<Languages>() {
 			@Mock
@@ -122,10 +125,110 @@ public class ContentNegotiationTest {
 			}
 		};
 		final Weighted<Language> result=ContentNegotiation.acceptLanguage(value);
-		assertThat(result.get().primaryTag(),equalTo("en"));
-		assertThat(result.get().subTag(),equalTo("US"));
+		assertThat(result.entity().primaryTag(),equalTo("en"));
+		assertThat(result.entity().subTag(),equalTo("US"));
 		assertThat(result.hasWeight(),equalTo(false));
 		assertThat(result.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void dependsOnMediaTypesClassForCreatingWeightedMediaTypes() {
+		final String value = "text/turtle";
+		new MockUp<MediaTypes>() {
+			@Mock
+			public MediaType fromString(Invocation context, String aValue) {
+				assertThat(aValue,equalTo(value));
+				return context.proceed(aValue);
+			}
+		};
+		final Weighted<MediaType> result=ContentNegotiation.accept(value);
+		assertThat(result.entity().type(),equalTo("text"));
+		assertThat(result.entity().subType(),equalTo("turtle"));
+		assertThat(result.hasWeight(),equalTo(false));
+		assertThat(result.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void acceptAllowsAnExtensionParameterAfterQualityDefinition() {
+		final Weighted<MediaType> weighted = accept("text/turtle;q=0.000;param=value");
+		assertThat(weighted.hasWeight(),equalTo(true));
+		assertThat(weighted.weight(),equalTo(0.0D));
+		final MediaType result = weighted.entity();
+		assertThat(result.parameters().isEmpty(),equalTo(true));
+		assertThat(result.type(),equalTo("text"));
+		assertThat(result.subType(),equalTo("turtle"));
+	}
+
+	@Test
+	public void acceptDoesNotRequireAnExtensionParameterAfterQualityDefinition() {
+		final Weighted<MediaType> weighted = accept("text/turtle;q=0.000");
+		assertThat(weighted.hasWeight(),equalTo(true));
+		assertThat(weighted.weight(),equalTo(0.0D));
+		final MediaType result = weighted.entity();
+		assertThat(result.parameters().isEmpty(),equalTo(true));
+		assertThat(result.type(),equalTo("text"));
+		assertThat(result.subType(),equalTo("turtle"));
+	}
+
+	@Test
+	public void acceptDoesNotAllowsMultipleParametersAfterQualityDefinition() {
+		try {
+			accept("text/turtle;q=0.000;param=value;ext=value");
+			fail("accept should fail when multiple parameters are found after quality definition");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),equalTo("Invalid content after extension parameter [;ext=value] (;param=value;ext=value)"));
+		}
+	}
+
+	@Test
+	public void acceptDoesNotAllowsBadContentAfterQualityDefinition() {
+		try {
+			accept("text/turtle;q=0.000;bad data");
+			fail("accept should fail when bad content is found after the quality definition");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),endsWith(" (;bad data)"));
+		}
+	}
+
+	@Test
+	public void acceptDoesNotAllowsBadContentBeforeExtensionParameter() {
+		try {
+			accept("text/turtle;q=0.000;;param=value dangling data");
+			fail("accept should fail when fails to find first candidate extension parameter");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),startsWith("Invalid content before extension parameter: "));
+			assertThat(e.getMessage(),endsWith(" (;;param=value dangling data)"));
+		}
+	}
+
+	@Test
+	public void acceptDoesNotAllowsBadContentAfterExtensionParameter() {
+		try {
+			accept("text/turtle;q=0.000;param=value dangling data");
+			fail("accept should fail when bad content is defined after extension parameter");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),equalTo("Invalid content after extension parameter [ dangling data] (;param=value dangling data)"));
+		}
+	}
+
+	@Test
+	public void acceptCharsetDoesNotAllowParametersAfterQualityDefinition() {
+		try {
+			acceptCharset("utf-8;q=0.000;param=value");
+			fail("acceptCharset should fail when parameters are found after quality definition");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),equalTo("Content after quality definition is not allowed (;param=value)"));
+		}
+	}
+
+	@Test
+	public void acceptLanguageDoesNotAllowParametersAfterQualityDefinition() {
+		try {
+			acceptLanguage("en-US;q=0.000;param=value");
+			fail("acceptLanguage should fail when parameters are found after quality definition");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),equalTo("Content after quality definition is not allowed (;param=value)"));
+		}
 	}
 
 }

@@ -72,7 +72,7 @@ public final class Languages {
 
 	private static final Requirements[] REQUIREMENTS={
 		new Requirements("primary tag","alphabetical",CharMatcher.JAVA_LETTER),
-		new Requirements("subtag","alphanumerical",CharMatcher.JAVA_LETTER_OR_DIGIT)
+		new Requirements("subtag","alphanumerical",CharMatcher.JAVA_LETTER_OR_DIGIT),
 	};
 
 	private static final String WILDCARD = "*";

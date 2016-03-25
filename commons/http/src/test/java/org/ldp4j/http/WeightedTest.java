@@ -43,7 +43,7 @@ public class WeightedTest {
 	public void parsingDoesNotRequireQualityDefinition() {
 		final String candidate = "value ; qa=1.000";
 		final Weighted<String> sut = Weighted.fromString(candidate);
-		assertThat(sut.get(),equalTo(candidate));
+		assertThat(sut.entity(),equalTo(candidate));
 		assertThat(sut.hasWeight(),equalTo(false));
 		assertThat(sut.weight(),equalTo(1.0D));
 	}
@@ -51,7 +51,7 @@ public class WeightedTest {
 	@Test
 	public void qualityParameterCanBeSeparatedWithSpaces() {
 		final Weighted<String> sut = Weighted.fromString("value ; q=1.000");
-		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.entity(),equalTo("value"));
 		assertThat(sut.hasWeight(),equalTo(true));
 		assertThat(sut.weight(),equalTo(1.0D));
 	}
@@ -59,7 +59,7 @@ public class WeightedTest {
 	@Test
 	public void qualityParameterCanBeSeparatedWithTabs() {
 		final Weighted<String> sut = Weighted.fromString("value\t;\tq=1.000");
-		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.entity(),equalTo("value"));
 		assertThat(sut.hasWeight(),equalTo(true));
 		assertThat(sut.weight(),equalTo(1.0D));
 	}
@@ -67,7 +67,7 @@ public class WeightedTest {
 	@Test
 	public void qualityParameterCanBeLowerCase() {
 		final Weighted<String> sut = Weighted.fromString("value;q=1.000");
-		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.entity(),equalTo("value"));
 		assertThat(sut.hasWeight(),equalTo(true));
 		assertThat(sut.weight(),equalTo(1.0D));
 	}
@@ -75,7 +75,7 @@ public class WeightedTest {
 	@Test
 	public void qualityParameterCanBeUpperCase() {
 		final Weighted<String> sut = Weighted.fromString("value;Q=1.000");
-		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.entity(),equalTo("value"));
 		assertThat(sut.hasWeight(),equalTo(true));
 		assertThat(sut.weight(),equalTo(1.0D));
 	}
@@ -83,7 +83,7 @@ public class WeightedTest {
 	@Test
 	public void qualityParameterValueCanHaveNoDecimals() {
 		final Weighted<String> sut = Weighted.fromString("value;Q=1.");
-		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.entity(),equalTo("value"));
 		assertThat(sut.hasWeight(),equalTo(true));
 		assertThat(sut.weight(),equalTo(1.0D));
 	}
@@ -91,7 +91,7 @@ public class WeightedTest {
 	@Test
 	public void qualityParameterValueCanHaveOneDecimal() {
 		final Weighted<String> sut = Weighted.fromString("value;q=0.1");
-		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.entity(),equalTo("value"));
 		assertThat(sut.hasWeight(),equalTo(true));
 		assertThat(sut.weight(),equalTo(0.1D));
 	}
@@ -99,7 +99,7 @@ public class WeightedTest {
 	@Test
 	public void qualityParameterValueCanHaveTwoDecimals() {
 		final Weighted<String> sut = Weighted.fromString("value;q=0.01");
-		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.entity(),equalTo("value"));
 		assertThat(sut.hasWeight(),equalTo(true));
 		assertThat(sut.weight(),equalTo(0.01D));
 	}
@@ -107,7 +107,7 @@ public class WeightedTest {
 	@Test
 	public void qualityParameterValueCanHaveThreeDecimals() {
 		final Weighted<String> sut = Weighted.fromString("value;q=0.001");
-		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.entity(),equalTo("value"));
 		assertThat(sut.hasWeight(),equalTo(true));
 		assertThat(sut.weight(),equalTo(0.001D));
 	}
@@ -181,7 +181,21 @@ public class WeightedTest {
 				assertThat(after,equalTo(";param=value"));
 				return before;
 			}});
-		assertThat(sut.get(),equalTo("value"));
+		assertThat(sut.entity(),equalTo("value"));
+		assertThat(sut.hasWeight(),equalTo(true));
+		assertThat(sut.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void parsersGetSubstringBeforeAndEmptyStringIfQualityDefinitionIsTheTailOfTheHeader() {
+		Weighted<String> sut = Weighted.fromString("value ; q=1.000", new Parser<String>(){
+			@Override
+			public String parse(String before, String after) {
+				assertThat(before,equalTo("value"));
+				assertThat(after,equalTo(""));
+				return before;
+			}});
+		assertThat(sut.entity(),equalTo("value"));
 		assertThat(sut.hasWeight(),equalTo(true));
 		assertThat(sut.weight(),equalTo(1.0D));
 	}
@@ -196,7 +210,7 @@ public class WeightedTest {
 				assertThat(after,nullValue());
 				return before;
 			}});
-		assertThat(sut.get(),equalTo(candidate));
+		assertThat(sut.entity(),equalTo(candidate));
 		assertThat(sut.hasWeight(),equalTo(false));
 		assertThat(sut.weight(),equalTo(1.0D));
 	}
@@ -214,7 +228,7 @@ public class WeightedTest {
 	@Test
 	public void weightsCannotBeNegative() throws Exception {
 		try {
-			Weighted.newInstance().weight(-1.0D);
+			Weighted.newInstance().withWeight(-1.0D);
 			fail("Should fail if weight is negative");
 		} catch (final IllegalArgumentException e) {
 			assertThat(e.getMessage(),equalTo("Weight cannot be negative (-1.0)"));
@@ -224,7 +238,7 @@ public class WeightedTest {
 	@Test
 	public void weightsCannotBeGreaterThanOne() throws Exception {
 		try {
-			Weighted.newInstance().weight(1.001D);
+			Weighted.newInstance().withWeight(1.001D);
 			fail("Should fail if weight is greater than one");
 		} catch (final IllegalArgumentException e) {
 			assertThat(e.getMessage(),equalTo("Weight cannot be greater than 1 (1.001)"));
@@ -234,7 +248,7 @@ public class WeightedTest {
 	@Test
 	public void weightsCannotHaveMoreThanThreeDecimals() throws Exception {
 		try {
-			Weighted.newInstance().weight(0.1234D);
+			Weighted.newInstance().withWeight(0.1234D);
 			fail("Should fail if weight has more than three decimals");
 		} catch (final IllegalArgumentException e) {
 			assertThat(e.getMessage(),equalTo("Weight cannot have more than 3 decimals (0.1234)"));
@@ -244,7 +258,7 @@ public class WeightedTest {
 	@Test
 	public void changingTheWeightDoesNotModifyTheInstance() throws Exception {
 		final Weighted<Object> original = Weighted.newInstance();
-		final Weighted<?> updated = original.weight(0.123D);
+		final Weighted<?> updated = original.withWeight(0.123D);
 		assertThat(original.weight(),equalTo(1.0D));
 		assertThat(original.hasWeight(),equalTo(false));
 		assertThat(updated.weight(),equalTo(0.123D));
@@ -254,14 +268,14 @@ public class WeightedTest {
 	@Test
 	public void changingTheWeightedDoesNotModifyTheInstance() throws Exception {
 		final Weighted<Object> original = Weighted.newInstance();
-		final Weighted<String> updated = original.content("string");
-		assertThat(original.get(),nullValue());
-		assertThat(updated.get(),equalTo("string"));
+		final Weighted<String> updated = original.withEntity("string");
+		assertThat(original.entity(),nullValue());
+		assertThat(updated.entity(),equalTo("string"));
 	}
 
 	@Test
 	public void hasCustomStringRepresentation() {
-		final Weighted<String> original=Weighted.newInstance().weight(0.123D).content("text/turtle");
+		final Weighted<String> original=Weighted.newInstance().withWeight(0.123D).withEntity("text/turtle");
 		assertThat(original.toString(),not(equalTo(Utils.defaultToString(original))));
 	}
 

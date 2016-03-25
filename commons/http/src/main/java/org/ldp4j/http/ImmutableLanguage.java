@@ -38,17 +38,17 @@ final class ImmutableLanguage implements Language {
 
 	@Override
 	public boolean isWildcard() {
-		return locale==null;
+		return this.locale==null;
 	}
 
 	@Override
 	public String primaryTag() {
-		return locale==null?"*":this.locale.getLanguage();
+		return this.locale==null?"*":this.locale.getLanguage();
 	}
 
 	@Override
 	public String subTag() {
-		return locale==null?null:this.locale.getCountry();
+		return this.locale==null?null:this.locale.getCountry();
 	}
 
 	@Override

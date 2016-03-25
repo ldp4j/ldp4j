@@ -26,7 +26,8 @@
  */
 package org.ldp4j.http;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.BitSet;
 
@@ -96,22 +97,22 @@ final class HttpUtils {
 		return token.substring(startOffset,endOffset);
 	}
 
-	static boolean isQuotedString(final String s) {
+	static boolean isQuotedString(final String str) {
 		boolean result=false;
-		final int length = s.length();
+		final int length=str.length();
 		if(length>1) {
 			result=
-				s.charAt(0)       ==DQUOTE &&
-				s.charAt(length-1)==DQUOTE;
+				str.charAt(0)       ==DQUOTE &&
+				str.charAt(length-1)==DQUOTE;
 		}
 		return result;
 	}
 
-	static String unquote(final String s) {
+	static String unquote(final String str) {
 		return
-			isQuotedString(s) ?
-				s.substring(1, s.length() - 1) :
-				s;
+			isQuotedString(str) ?
+				str.substring(1, str.length() - 1) :
+				str;
 	}
 
 	static boolean isWhitespace(final char ch) {

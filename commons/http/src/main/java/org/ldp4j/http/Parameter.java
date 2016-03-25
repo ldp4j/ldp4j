@@ -26,26 +26,48 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static com.google.common.base.Preconditions.checkArgument;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	MoreCollectionsTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	MediaTypesTest.class,
-	LanguagesTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+import com.google.common.base.MoreObjects;
+
+final class Parameter {
+
+	private final String name;
+	private final String value;
+
+	Parameter(String name, String value) {
+		HttpUtils.checkToken(name,"Parameter name '%s' is not a token",name);
+		HttpUtils.checkToken(value,"Parameter value '%s' is not a token",value);
+		this.name = name;
+		this.value = value;
+	}
+
+	String name() {
+		return this.name;
+	}
+
+	String value() {
+		return this.value;
+	}
+
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					add("name",this.name).
+					add("value",this.value).
+					toString();
+	}
+
+	static Parameter fromString(String value) {
+		final String rawValue=HttpUtils.trimWhitespace(value);
+		final int eqIndex=rawValue.indexOf('=');
+		checkArgument(eqIndex!=-1,"Invalid parameter '"+value+"': no value defined");
+		return
+			new Parameter(
+				rawValue.substring(0,eqIndex),
+				rawValue.substring(eqIndex+1));
+	}
+
 }

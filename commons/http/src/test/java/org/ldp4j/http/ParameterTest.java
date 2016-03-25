@@ -26,26 +26,26 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	MoreCollectionsTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	MediaTypesTest.class,
-	LanguagesTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+import org.junit.Test;
+
+public class ParameterTest {
+
+	private static final String VALUE = "value";
+	private static final String NAME = "name";
+
+	private Parameter sut=new Parameter(NAME,VALUE);
+
+	@Test
+	public void retrievesParameterName() throws Exception {
+		assertThat(sut.name(),equalTo(NAME));
+	}
+
+	@Test
+	public void retrievesParameterValue() throws Exception {
+		assertThat(sut.value(),equalTo(VALUE));
+	}
+
 }

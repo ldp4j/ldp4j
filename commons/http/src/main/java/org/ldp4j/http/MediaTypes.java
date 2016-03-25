@@ -138,7 +138,7 @@ public final class MediaTypes {
 	 *         media type; {@code false} otherwise
 	 */
 	public static boolean includes(final MediaType one, final MediaType other) {
-		return areCompatible(one, other,false);
+		return areCompatibleMediaTypes(one, other,false);
 	}
 
 	/**
@@ -157,7 +157,7 @@ public final class MediaTypes {
 	 *         otherwise
 	 */
 	public static boolean areCompatible(final MediaType one, final MediaType other) {
-		return areCompatible(one,other,true);
+		return areCompatibleMediaTypes(one,other,true);
 	}
 
 	/**
@@ -209,7 +209,7 @@ public final class MediaTypes {
 		return PARAM_CHARSET.equalsIgnoreCase(parameter);
 	}
 
-	private static boolean areCompatible(final MediaType one, final MediaType other, boolean symmetric) {
+	private static boolean areCompatibleMediaTypes(final MediaType one, final MediaType other, boolean symmetric) {
 		requireNonNull(one,REFERENCE_MEDIA_TYPE_CANNOT_BE_NULL);
 		if(other==null) {
 			return false;

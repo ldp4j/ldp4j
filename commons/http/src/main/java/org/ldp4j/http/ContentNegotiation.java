@@ -38,11 +38,52 @@ import com.google.common.base.Strings;
 
 final class ContentNegotiation {
 
+	private static final class MediaTypeParser implements Parser<MediaType> {
+
+		private static final String WITNESS = "header";
+
+		@Override
+		public MediaType parse(String before, String after) {
+			String error = isValidExtensionParameter(after);
+			checkArgument(error==null,error);
+			return MediaTypes.fromString(before);
+		}
+
+		private String isValidExtensionParameter(String data) {
+			if(data==null) {
+				return null;
+			}
+			final HeaderPartIterator it=HeaderPartIterator.create(WITNESS+data);
+			// Consume the witness
+			it.next();
+			// If there is not valid next, we have a failure before the optional extension parameter...
+			if(it.hasFailure()) {
+				return "Invalid content before extension parameter: "+it.failure()+ " ("+data+")";
+			}
+			// ... but if there is no next at all, then no optional extension parameter is available
+			if(!it.hasNext()) {
+				return null;
+			}
+			try {
+				final Parameter parameter=Parameter.fromString(it.next());
+				// Anything left to parse is invalid...
+				if(it.hasFailure() || it.hasNext()) {
+					return "Invalid content after extension parameter ["+it.header().substring(it.endsAt())+"] ("+data+")";
+				}
+				System.err.println("Discarding extension parameter "+parameter);
+				return null;
+			} catch(IllegalArgumentException e) {
+				return e.getMessage()+" ("+data+")";
+			}
+		}
+
+	}
+
 	private static final class LanguageParser implements Parser<Language> {
 
 		@Override
 		public Language parse(final String before, final String after) {
-			checkArgument(Strings.isNullOrEmpty(after),"No more parameters after quality expected (%s)",after);
+			checkArgument(Strings.isNullOrEmpty(after),"Content after quality definition is not allowed (%s)",after);
 			return Languages.fromString(before);
 		}
 
@@ -52,7 +93,7 @@ final class ContentNegotiation {
 
 		@Override
 		public Charset parse(final String before, final String after) {
-			checkArgument(Strings.isNullOrEmpty(after),"No more parameters after quality expected (%s)",after);
+			checkArgument(Strings.isNullOrEmpty(after),"Content after quality definition is not allowed (%s)",after);
 			if("*".equals(before)) {
 				return null;
 			}
@@ -68,6 +109,10 @@ final class ContentNegotiation {
 	}
 
 	private ContentNegotiation() {
+	}
+
+	static Weighted<MediaType> accept(final String header) {
+		return Weighted.fromString(header, new MediaTypeParser());
 	}
 
 	static Weighted<Charset> acceptCharset(final String header) {

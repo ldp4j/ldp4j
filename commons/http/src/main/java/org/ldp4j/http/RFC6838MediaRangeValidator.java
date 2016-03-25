@@ -68,7 +68,6 @@ final class RFC6838MediaRangeValidator implements MediaRangeValidator {
 	 *
 	 * @param type
 	 *            the string to validate
-	 * @return
 	 * @throws IllegalArgumentException
 	 *             in case of illegal characters
 	 * @see <a href="https://tools.ietf.org/html/rfc6838#section-4.2">Media Type
@@ -87,7 +86,6 @@ final class RFC6838MediaRangeValidator implements MediaRangeValidator {
 	 *
 	 * @param subType
 	 *            the string to validate
-	 * @return
 	 * @throws IllegalArgumentException
 	 *             in case of illegal characters
 	 * @see <a href="https://tools.ietf.org/html/rfc6838#section-4.2">Media Type

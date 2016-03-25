@@ -321,18 +321,18 @@ final class ImmutableMediaType implements MediaType {
 	}
 
 	private static boolean areCompatible(final String attribute, final String first, final String second) {
-		String cSecond=second;
-		String cFirst=first;
+		String actualFirst=first;
+		String actualSecond=second;
 		boolean caseSensitive=true;
 		if(MediaTypes.PARAM_CHARSET.equalsIgnoreCase(attribute)) {
-			cFirst=HttpUtils.unquote(first);
-			cSecond=HttpUtils.unquote(second);
+			actualFirst=HttpUtils.unquote(first);
+			actualSecond=HttpUtils.unquote(second);
 			caseSensitive=false;
 		}
 		if(caseSensitive) {
-			return cFirst.equals(cSecond);
+			return actualFirst.equals(actualSecond);
 		} else {
-			return cFirst.equalsIgnoreCase(cSecond);
+			return actualFirst.equalsIgnoreCase(actualSecond);
 		}
 	}
 

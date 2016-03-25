@@ -40,7 +40,6 @@ final class RFC7230MediaRangeValidator implements MediaRangeValidator {
 	 *
 	 * @param type
 	 *            the string to validate
-	 * @return
 	 * @throws IllegalArgumentException
 	 *             in case of illegal characters
 	 * @see <a href="http://tools.ietf.org/html/rfc7230#section-3.2.6">Hypertext

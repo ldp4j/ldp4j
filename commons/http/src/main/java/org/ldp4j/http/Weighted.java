@@ -57,7 +57,7 @@ final class Weighted<T> implements Acceptable {
 		private final int end;
 		private final String weight;
 
-		public Match(int start,int end,String weight) {
+		Match(int start,int end,String weight) {
 			this.start = start;
 			this.end   = end;
 			this.weight = weight;
@@ -105,15 +105,15 @@ final class Weighted<T> implements Acceptable {
 		this.value = content;
 	}
 
-	Weighted<T> weight(final Double weight) {
+	Weighted<T> withWeight(final Double weight) {
 		return new Weighted<T>(round(weight),this.value);
 	}
 
-	<S> Weighted<S> content(final S content) {
+	<S> Weighted<S> withEntity(final S content) {
 		return new Weighted<S>(this.weight,content);
 	}
 
-	T get() {
+	T entity() {
 		return this.value;
 	}
 
@@ -161,7 +161,7 @@ final class Weighted<T> implements Acceptable {
 		checkArgument(errors.isEmpty(),"Quality definition failure%s found: %s",errors.size()==1?"":"s",Joiner.on(", ").join(errors));
 		checkArgument(weights.size()<2,"Only one quality value can be specified (found %s: %s)",weights.size(),Joiner.on(", ").join(weights));
 		if(weights.size()==0) {
-			return Weighted.newInstance().content(parser.parse(candidate,null));
+			return Weighted.newInstance().withEntity(parser.parse(candidate,null));
 		}
 		final Match match=weights.get(0);
 		final T value=
@@ -172,8 +172,8 @@ final class Weighted<T> implements Acceptable {
 		return
 			Weighted.
 				newInstance().
-					weight(match.weight()).
-					content(value);
+					withWeight(match.weight()).
+					withEntity(value);
 	}
 
 	static Double round(final Double weight) {

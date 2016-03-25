@@ -39,7 +39,7 @@ public enum MediaRangeSyntax {
 
 	private final MediaRangeValidator validator;
 
-	private MediaRangeSyntax(MediaRangeValidator validator) {
+	MediaRangeSyntax(MediaRangeValidator validator) {
 		this.validator = validator;
 	}
 
