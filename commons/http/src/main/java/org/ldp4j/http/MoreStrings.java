@@ -111,36 +111,76 @@ final class MoreStrings {
 	}
 
 	/**
-	 * Green implementation of regionMatches.
+	 * Tests if two {@link CharSequence charsequence} regions are equal.
+	 * <p>
+	 * A region of the {@code target} charsequence is compared to a region of
+	 * the {@code other} charsequence. The result is {@code true} if these regions
+	 * represent character sequences that are the same, ignoring case if and
+	 * only if {@code ignoreCase} is true. The region of the {@code target}
+	 * charsequence to be compared begins at index {@code offset}
+	 * , whereas the region of the {@code other} charsequence begins at index {@code start}. Both
+	 * regions have a length {@code length}.
+	 * <p>
+	 * The result is {@code false} if and only if at least one of the following
+	 * is true:
+	 * <ul>
+	 * <li>{@code toffset} is negative.
+	 * <li>{@code ooffset} is negative.
+	 * <li>{@code toffset+length} is greater than the length of {@code target}
+	 * argument.
+	 * <li>{@code ooffset+length} is greater than the length of {@code other}
+	 * argument.
+	 * <li>{@code ignoreCase} is {@code false} and there is some nonnegative
+	 * integer <i>k</i> less than {@code length} such that: <blockquote>
+	 *
+	 * <pre>
+	 * target.charAt(toffset + k) != other.charAt(ooffset + k)
+	 * </pre>
+	 *
+	 * </blockquote>
+	 * <li>{@code ignoreCase} is {@code true} and there is some nonnegative
+	 * integer <i>k</i> less than {@code length} such that: <blockquote>
+	 *
+	 * <pre>
+	 * let:
+	 *   char u1=Character.toUpperCase(target.charAt(toffset + k))
+	 *   char u2=Character.toUpperCase(other.charAt(ooffset + k))
+	 *
+	 * u1! = u2 && Character.toLowerCase(u1) != Character.toLowerCase(u2)
+	 * </pre>
+	 * </ul>
 	 *
 	 * @param target
-	 *            the {@code CharSequence} to be processed
+	 *            the first charsequence to compare.
 	 * @param ignoreCase
-	 *            whether or not to be case insensitive
-	 * @param offset
-	 *            the index to start on the {@code cs} CharSequence
+	 *            if {@code true}, ignore case when comparing characters.
+	 * @param toffset
+	 *            the starting offset of the subregion of the {@code target}
+	 *            argument.
 	 * @param other
-	 *            the {@code CharSequence} to be looked for
-	 * @param start
-	 *            the index to start on the {@code substring} CharSequence
+	 *            the second charsequence to compare.
+	 * @param ooffset
+	 *            the starting offset of the subregion in the {@code other}
+	 *            argument.
 	 * @param length
-	 *            character length of the region
-	 * @return {@code true} if the region matched; {@code false} otherwise
-	 * @throws NullPointerException
-	 *             if the target or other {@code CharSequence} are {@code null}
+	 *            the number of characters to compare.
+	 * @return {@code true} if the specified subregion of the {@code target}
+	 *         argument matches the specified subregion of the {@code other}
+	 *         argument; {@code false} otherwise. Whether the matching is exact
+	 *         or case insensitive depends on the {@code ignoreCase} argument.
 	 */
 	static boolean regionMatches(
 			final CharSequence target,
 			final boolean ignoreCase,
-			final int offset,
+			final int toffset,
 			final CharSequence other,
-			final int start,
+			final int ooffset,
 			final int length) {
 		boolean result;
 		if (target instanceof String && other instanceof String) {
-			result=delegateCheck((String)target,ignoreCase,offset,start,length,(String) other);
+			result=delegateCheck((String)target,ignoreCase,toffset,ooffset,length,(String) other);
 		} else {
-			result=carryOutCheck(target, ignoreCase, offset, other, start, length);
+			result=carryOutCheck(target, ignoreCase, toffset, other, ooffset, length);
 		}
 		return result;
 	}
@@ -165,6 +205,9 @@ final class MoreStrings {
 		int index1=offset;
 		int index2=start;
 		int tmpLen=length;
+		if(outOfBounds(target,offset,length) || outOfBounds(other,start,length)) {
+			return false;
+		}
 		while(tmpLen-->0) {
 			final char c1=target.charAt(index1++);
 			final char c2=other.charAt(index2++);
@@ -199,6 +242,10 @@ final class MoreStrings {
 			return false;
 		}
 		return true;
+	}
+
+	private static boolean outOfBounds(final CharSequence str, final int offset, final int length) {
+		return offset < 0 || offset > (long) str.length() - length;
 	}
 
 }

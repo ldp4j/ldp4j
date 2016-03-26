@@ -126,10 +126,45 @@ public class MoreStringsTest {
 	}
 
 	@Test
-	public void regionMatchesCaseSensitiveIfStringsEqual() throws Exception {
-		final CharSequence str1 = new StringBuilder("camelCaseString");
-		final CharSequence str2 = "camelCaseString";
-		assertThat(MoreStrings.regionMatches(str1, false, 0, str2, 0, str1.length()),equalTo(true));
+	public void regionMatchesCaseSensitiveIfStringsAreEqual() throws Exception {
+		final String str1 = "camelCaseString";
+		final String str2 = "camelCaseString";
+		regionMatchesCase(str1, false, 0, str2, 0, str1.length());
+	}
+
+	@Test
+	public void regionDoesNotMatchIfTargetOffsetIsNegative() throws Exception {
+		final String str1 = "camelCaseString";
+		final String str2 = "camelCaseString";
+		regionMatchesCase(str1, true, -1, str2, 0, str1.length());
+	}
+
+	@Test
+	public void regionDoesNotMatchIfTargetIsNotLongEnough() throws Exception {
+		final String str1 = "camelCaseString";
+		final String str2 = "camelCaseString";
+		regionMatchesCase(str1, true, 0, str2, 0, str1.length()+1);
+	}
+
+	@Test
+	public void regionDoesNotMatchIfOtherOffsetIsNegative() throws Exception {
+		final String str1 = "camelCaseString";
+		final String str2 = "camelCaseString";
+		regionMatchesCase(str1, true, 0, str2, -1, str1.length());
+	}
+
+	@Test
+	public void regionDoesNotMatchIfOtherIsNotLongEnough() throws Exception {
+		final String str1 = "camelCaseString";
+		final String str2 = "camelCase";
+		regionMatchesCase(str1, true, 0, str2, 0, str1.length());
+	}
+
+	@Test
+	public void regionMatchesIfGoingBackwards() throws Exception {
+		final String str1 = "camelCaseString";
+		final String str2 = "camelCaseString";
+		regionMatchesCase(str1, true, str1.length(), str2, 0, -str1.length());
 	}
 
 	@Test
@@ -163,6 +198,21 @@ public class MoreStringsTest {
 		final CharSequence str2 = new StringBuilder().appendCodePoint(0x0131); // Latin small letter dotless I
 		System.out.printf("Latin Extended-A Block (capital letter and small letter): %s <--> %s%n",str1,str2);
 		assertThat(MoreStrings.equalsIgnoreCase(str1, str2),equalTo(true));
+	}
+
+	private void regionMatchesCase(
+			final String target,
+			final boolean ignoreCase,
+			final int toffset,
+			final String other,
+			final int ooffset,
+			final int length) {
+		final CharSequence cs1 = new StringBuilder(target);
+		final CharSequence cs2 = new StringBuilder(other);
+		assertThat(
+			MoreStrings.regionMatches(cs1, ignoreCase, toffset, cs2, ooffset, length),
+			equalTo(
+				MoreStrings.regionMatches(target, ignoreCase, toffset, other, ooffset, length)));
 	}
 
 }
