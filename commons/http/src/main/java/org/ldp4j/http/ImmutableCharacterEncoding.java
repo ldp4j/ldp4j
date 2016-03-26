@@ -26,29 +26,29 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.nio.charset.Charset;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	MoreStringsTest.class,
-	MoreCollectionsTest.class,
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	ImmutableCharacterEncodingTest.class,
-	MediaTypesTest.class,
-	LanguagesTest.class,
-	CharacterEncodingsTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+final class ImmutableCharacterEncoding implements CharacterEncoding {
+
+	private final Charset charset;
+
+	ImmutableCharacterEncoding(Charset charset) {
+		this.charset = charset;
+	}
+
+	@Override
+	public boolean isWildcard() {
+		return this.charset==null;
+	}
+
+	@Override
+	public String name() {
+		return this.charset==null?"*":this.charset.name();
+	}
+
+	@Override
+	public Charset charset() {
+		return this.charset;
+	}
+
 }

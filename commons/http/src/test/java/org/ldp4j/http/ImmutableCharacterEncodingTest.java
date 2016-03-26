@@ -26,29 +26,44 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	MoreStringsTest.class,
-	MoreCollectionsTest.class,
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	ImmutableCharacterEncodingTest.class,
-	MediaTypesTest.class,
-	LanguagesTest.class,
-	CharacterEncodingsTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+import java.nio.charset.StandardCharsets;
+
+import org.junit.Test;
+
+public class ImmutableCharacterEncodingTest {
+
+	@Test
+	public void nullCharsetsAreUsedForWildcards() throws Exception {
+		assertThat(new ImmutableCharacterEncoding(null).isWildcard(),equalTo(true));
+	}
+
+	@Test
+	public void nonNullCharsetsAreNotWildcards() throws Exception {
+		assertThat(new ImmutableCharacterEncoding(StandardCharsets.UTF_8).isWildcard(),equalTo(false));
+	}
+
+	@Test
+	public void wildcardCharacterEncodingHasWildcardName() throws Exception {
+		assertThat(new ImmutableCharacterEncoding(null).name(),equalTo("*"));
+	}
+
+	@Test
+	public void regularCharacterEncodingHasNameOfTheCharset() throws Exception {
+		assertThat(new ImmutableCharacterEncoding(StandardCharsets.UTF_8).name(),equalTo(StandardCharsets.UTF_8.name()));
+	}
+
+	@Test
+	public void wildcardCharacterEncodingHasNullCharset() throws Exception {
+		assertThat(new ImmutableCharacterEncoding(null).charset(),nullValue());
+	}
+
+	@Test
+	public void regularCharacterEncodingExposesItCharset() throws Exception {
+		assertThat(new ImmutableCharacterEncoding(StandardCharsets.UTF_8).charset(),equalTo(StandardCharsets.UTF_8));
+	}
+
 }

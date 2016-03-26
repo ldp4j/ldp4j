@@ -26,29 +26,41 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static java.util.Objects.requireNonNull;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	MoreStringsTest.class,
-	MoreCollectionsTest.class,
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	ImmutableCharacterEncodingTest.class,
-	MediaTypesTest.class,
-	LanguagesTest.class,
-	CharacterEncodingsTest.class,
-	WeightedTest.class,
-	ContentNegotiationTest.class
-})
-public class HttpUnitTestSuite {
+import java.nio.charset.Charset;
+import java.nio.charset.IllegalCharsetNameException;
+import java.nio.charset.UnsupportedCharsetException;
+
+public final class CharacterEncodings {
+
+	private static final String WILDCARD = "*";
+
+	private CharacterEncodings() {
+	}
+
+	public static CharacterEncoding wildcard() {
+		return new ImmutableCharacterEncoding(null);
+	}
+
+	public static CharacterEncoding of(Charset charset) {
+		requireNonNull(charset,"Charset cannot be null");
+		return new ImmutableCharacterEncoding(charset);
+	}
+
+	public static CharacterEncoding fromString(final String name) {
+		requireNonNull(name,"Character encoding name cannot be null");
+		try {
+			if(WILDCARD.equals(name)) {
+				return wildcard();
+			} else {
+				return of(Charset.forName(name));
+			}
+		} catch (final UnsupportedCharsetException ex) {
+			throw new IllegalArgumentException("Unsupported character encoding '"+ex.getCharsetName()+"'",ex);
+		} catch (final IllegalCharsetNameException ex) {
+			throw new IllegalArgumentException("Invalid character encoding name '"+ex.getCharsetName()+"'",ex);
+		}
+	}
+
 }
