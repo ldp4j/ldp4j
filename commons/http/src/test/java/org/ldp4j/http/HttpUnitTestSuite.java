@@ -32,11 +32,12 @@ import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
 @SuiteClasses({
+	MoreStringsTest.class,
+	MoreCollectionsTest.class,
 	InvalidTokenExceptionTest.class,
 	HttpUtilsTest.class,
 	ParameterTest.class,
 	HeaderPartIteratorTest.class,
-	MoreCollectionsTest.class,
 	CaseInsensitiveMapTest.class,
 	RFC6838MediaRangeValidatorTest.class,
 	MediaRangeSyntaxTest.class,
