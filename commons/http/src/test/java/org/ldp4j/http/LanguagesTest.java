@@ -147,4 +147,14 @@ public class LanguagesTest {
 		}
 	}
 
+	@Test
+	public void cannotCreateLanguageFromVariantCharset() throws Exception {
+		try {
+			Languages.of(new Locale("th","TH","TH"));
+			fail("Should fail when locale is a variant");
+		} catch (final IllegalArgumentException e) {
+			assertThat(e.getMessage(),equalTo("Language does not allow locale variants (TH)"));
+		}
+	}
+
 }

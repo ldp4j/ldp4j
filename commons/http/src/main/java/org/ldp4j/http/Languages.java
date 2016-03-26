@@ -27,6 +27,7 @@
 package org.ldp4j.http;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static java.util.Objects.requireNonNull;
 
 import java.util.List;
 import java.util.Locale;
@@ -35,6 +36,8 @@ import com.google.common.base.CharMatcher;
 import com.google.common.collect.Lists;
 
 public final class Languages {
+
+	private static final ImmutableLanguage WILDCARD_INSTANCE=new ImmutableLanguage(null);
 
 	private static final class Requirements {
 
@@ -81,23 +84,55 @@ public final class Languages {
 	}
 
 	/**
-	 * Parser capable of producing {@code Locale} instances for valid
-	 * {@code language-range} definitions.
+	 * Create a wildcard {@code Language}
 	 *
+	 * @return a wildcard {@code Language} instance
+	 */
+	public static Language wildcard() {
+		return WILDCARD_INSTANCE;
+	}
+
+	/**
+	 * Create a {@code Language} for a given {@code Locale}.
+	 *
+	 * @param locale
+	 *            the {@code Locale} for the {@code Language}
+	 * @return a {@code Language} instance with the specified {@code Locale}
+	 * @throws NullPointerException
+	 *             if {@code locale} is {@code null}
+	 * @throws IllegalArgumentException
+	 *             if the provided locale is a variant (i.e.,
+	 *             {@link Locale#getVariant()} is not empty)
+	 */
+	public static Language of(Locale locale) {
+		requireNonNull(locale,"Locale cannot be null");
+		checkArgument(locale.getVariant().isEmpty(),"Language does not allow locale variants (%s)",locale.getVariant());
+		return new ImmutableLanguage(locale);
+	}
+
+	/**
+	 * Create a {@code Language} instance from a valid {@code language-range}
+	 * definition.
+	 *
+	 * @throws NullPointerException
+	 *             if {@code language} is null
+	 * @throws IllegalArgumentException
+	 *             if {@code language} is not a valid {@code language-range}
 	 * @see <a href="http://tools.ietf.org/html/rfc4674#section-2.1">RFC 4674 -
 	 *      Section 2.1</a>
 	 * @see <a href="http://tools.ietf.org/html/rfc7231#section-5.3.5">RFC 7231
 	 *      - Section 5.3.5</a>
 	 */
 	public static Language fromString(final String language) {
-		final Locale locale=parseLocale(language);
-		return new ImmutableLanguage(locale);
+		requireNonNull(language,"Language cannot be null");
+		if(WILDCARD.equals(language)) {
+			return wildcard();
+		} else {
+			return of(parseLocale(language));
+		}
 	}
 
 	private static Locale parseLocale(final String locale) {
-		if(WILDCARD.equals(locale)) {
-			return null;
-		}
 		final List<String> tags=getTags(locale);
 		checkArgument(tags.size()<3,"Invalid language-range: to many tags (%s)",tags.size());
 		return
