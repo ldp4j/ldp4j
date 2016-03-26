@@ -402,7 +402,7 @@ final class ImmutableMediaType implements MediaType {
 		checkToken(parameter,"Invalid parameter name '%s'",parameter);
 		checkHasLength(value, "Value for parameter '%s' cannot be empty",parameter);
 		if(MediaTypes.PARAM_CHARSET.equalsIgnoreCase(parameter)) {
-			String unquotedValue = HttpUtils.unquote(value);
+			final String unquotedValue = HttpUtils.unquote(value);
 			try {
 				Charset.forName(unquotedValue);
 			} catch (final UnsupportedCharsetException ex) {

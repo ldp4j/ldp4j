@@ -52,10 +52,22 @@ public final class MediaTypes {
 	private MediaTypes() {
 	}
 
+	/**
+	 * Get the preferred syntax used for parsing media types
+	 *
+	 * @return the syntax
+	 */
 	public static MediaRangeSyntax preferredSyntax() {
 		return SYNTAX.get();
 	}
 
+	/**
+	 * Set the preferred syntax to use for parsing media types. If the specified
+	 * syntax is {@code null}, RFC7230 syntax will be used as default.
+	 *
+	 * @param syntax
+	 *            the syntax
+	 */
 	public static void preferredSyntax(MediaRangeSyntax syntax) {
 		if(syntax==null) {
 			SYNTAX.set(MediaRangeSyntax.RFC7230);

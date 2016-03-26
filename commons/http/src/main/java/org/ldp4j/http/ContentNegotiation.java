@@ -65,12 +65,11 @@ final class ContentNegotiation {
 				return null;
 			}
 			try {
-				final Parameter parameter=Parameter.fromString(it.next());
+				Parameter.fromString(it.next());
 				// Anything left to parse is invalid...
 				if(it.hasFailure() || it.hasNext()) {
 					return "Invalid content after extension parameter ["+it.header().substring(it.endsAt())+"] ("+data+")";
 				}
-				System.err.println("Discarding extension parameter "+parameter);
 				return null;
 			} catch(IllegalArgumentException e) {
 				return e.getMessage()+" ("+data+")";

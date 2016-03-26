@@ -234,14 +234,14 @@ public class ImmutableMediaTypeTest {
 	}
 
 	@Test
-	public void canParseMediaTypesWithCompatibleQuotationCharsetDefinitions() throws Exception {
+	public void canParseMediaTypesWithCompatibleQuotedCharsetDefinitions() throws Exception {
 		final MediaType actual= createParam("charset=utf-8;charset=\"UTF-8\"");
 		assertThat(actual.charset(),equalTo(StandardCharsets.UTF_8));
 		assertThat(actual.parameters().get("charset"),equalTo("\"UTF-8\""));
 	}
 
 	@Test
-	public void canParseStructuredMediaTypesWithMultipleSuffixes() throws Exception {
+	public void canParseStructuredMediaTypesWithSubtypeIncludingThePlusSymbol() throws Exception {
 		ImmutableMediaType sut = ImmutableMediaType.fromString("text/turtle+one+other", MediaTypes.preferredSyntax());
 		assertThat(sut.type(),equalTo("text"));
 		assertThat(sut.subType(),equalTo("turtle+one"));
@@ -438,12 +438,22 @@ public class ImmutableMediaTypeTest {
 	}
 
 	@Test
-	public void cannotParseMediaTypesWithInvalidQuotedCharacter() throws Exception {
+	public void cannotParseMediaTypesWithInvalidQuotedParameterValue() throws Exception {
 		try {
 			createParam("myparam=\"a"+offending()+"a\"");
-			fail("Should fail for dangling quoted pair");
+			fail("Should fail for invalid quoted character");
 		} catch (final InvalidMediaTypeException e) {
 			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid character '"+offending()+"' in quoted string"));
+		}
+	}
+
+	@Test
+	public void cannotParseMediaTypesWithInvalidUnquotedParameterValue() throws Exception {
+		try {
+			createParam("myparam=a"+offending()+"a");
+			fail("Should fail for invalid unquoted parameter value");
+		} catch (final InvalidMediaTypeException e) {
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Invalid character '"+offending()+"' in token"));
 		}
 	}
 
@@ -491,6 +501,20 @@ public class ImmutableMediaTypeTest {
 	public void sameInstanceIsEqual() {
 		final ImmutableMediaType one=defaultMediaType().build();
 		assertThat(one,equalTo(one));
+	}
+
+	@Test
+	public void parameterlessMediaTypesAreEqualIfHaveSameMediaRange() {
+		final ImmutableMediaType one=new ImmutableMediaType(MediaRangeSyntax.RFC7230, "application", "rdf", "xml", null);
+		final ImmutableMediaType other=new ImmutableMediaType(MediaRangeSyntax.RFC7230, "application", "rdf", "xml", null);
+		assertThat(one,equalTo(other));
+	}
+
+	@Test
+	public void equalParameterlessMediaTypesHaveSameHashCode() {
+		final ImmutableMediaType one=new ImmutableMediaType(MediaRangeSyntax.RFC7230, "application", "rdf", "xml", null);
+		final ImmutableMediaType other=new ImmutableMediaType(MediaRangeSyntax.RFC7230, "application", "rdf", "xml", null);
+		assertThat(one.hashCode(),equalTo(other.hashCode()));
 	}
 
 	@Test

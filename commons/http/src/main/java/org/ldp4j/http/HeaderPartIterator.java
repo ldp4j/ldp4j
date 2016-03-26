@@ -225,6 +225,12 @@ final class HeaderPartIterator implements Iterator<String> {
 
 	private Traversal continueTraversal() {
 		final Traversal next=new Traversal(this.partEnd,this.length);
+		final State state = traverse(next);
+		verifyTermination(next,state);
+		return next;
+	}
+
+	private State traverse(final Traversal next) {
 		State state=State.BEFORE_DELIMITER;
 		while(next.canContinue()) {
 			final char lastChar=this.header.charAt(next.currentOffset());
@@ -239,6 +245,10 @@ final class HeaderPartIterator implements Iterator<String> {
 					afterDelimiter(next, lastChar);
 			}
 		}
+		return state;
+	}
+
+	private void verifyTermination(final Traversal next, State state) {
 		if(!next.isTerminated()) {
 			if(next.hasAdvanced()) {
 				next.process(
@@ -251,7 +261,6 @@ final class HeaderPartIterator implements Iterator<String> {
 				next.process(Traversal.Action.TOKEN_MISSING);
 			}
 		}
-		return next;
 	}
 
 	private State beforeDelimiter(final Traversal traversal, final char lastChar) {

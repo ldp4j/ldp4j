@@ -28,8 +28,10 @@ package org.ldp4j.http;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 
 import org.junit.Test;
+import org.ldp4j.commons.testing.Utils;
 
 public class ParameterTest {
 
@@ -46,6 +48,11 @@ public class ParameterTest {
 	@Test
 	public void retrievesParameterValue() throws Exception {
 		assertThat(sut.value(),equalTo(VALUE));
+	}
+
+	@Test
+	public void hasCustomToString() throws Exception {
+		assertThat(sut.toString(),not(equalTo(Utils.defaultToString(sut))));
 	}
 
 }

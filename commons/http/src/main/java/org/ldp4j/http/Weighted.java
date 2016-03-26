@@ -187,12 +187,12 @@ final class Weighted<T> implements Acceptable {
 	}
 
 	private static String validateDefinition(final Matcher matcher, final List<String> errors) {
-		if(!matcher.group(1).isEmpty()) {
-			errors.add("whitespace before equal from "+matcher.start(1)+" to "+matcher.end(1));
-		}
-		if(!matcher.group(2).isEmpty()) {
-			errors.add("whitespace after equal from "+matcher.start(2)+" to "+matcher.end(2));
-		}
+		verifyNoWhitespaceBeforeEqual(matcher, errors);
+		verifyNoWhitespaceAfterEqual(matcher, errors);
+		return verifyWeight(matcher, errors);
+	}
+
+	private static String verifyWeight(final Matcher matcher, final List<String> errors) {
 		final String weight = matcher.group(3);
 		final Matcher weightMatcher = WEIGHT_PATTERN.matcher(weight);
 		if(!weightMatcher.matches()) {
@@ -203,6 +203,18 @@ final class Weighted<T> implements Acceptable {
 			}
 		}
 		return weight;
+	}
+
+	private static void verifyNoWhitespaceAfterEqual(final Matcher matcher, final List<String> errors) {
+		if(!matcher.group(2).isEmpty()) {
+			errors.add("whitespace after equal from "+matcher.start(2)+" to "+matcher.end(2));
+		}
+	}
+
+	private static void verifyNoWhitespaceBeforeEqual(final Matcher matcher, final List<String> errors) {
+		if(!matcher.group(1).isEmpty()) {
+			errors.add("whitespace before equal from "+matcher.start(1)+" to "+matcher.end(1));
+		}
 	}
 
 	private static boolean hasPrecision(final double weight,final int decimals) {
