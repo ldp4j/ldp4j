@@ -46,7 +46,7 @@ final class HeaderPartIterator implements Iterator<String> {
 
 	private static final class Traversal {
 
-		enum Action {
+		private enum Action {
 			CONTINUE(false),
 			ACCEPT(true),
 			LEADING_DELIMITER("Leading delimiter found"),
@@ -225,27 +225,9 @@ final class HeaderPartIterator implements Iterator<String> {
 
 	private Traversal continueTraversal() {
 		final Traversal next=new Traversal(this.partEnd,this.length);
-		final State state = traverse(next);
-		verifyTermination(next,state);
+		State state = traverse(next);
+		verifyTermination(next, state);
 		return next;
-	}
-
-	private State traverse(final Traversal next) {
-		State state=State.BEFORE_DELIMITER;
-		while(next.canContinue()) {
-			final char lastChar=this.header.charAt(next.currentOffset());
-			switch(state) {
-				case BEFORE_DELIMITER:
-					state=beforeDelimiter(next, lastChar);
-					break;
-				case DELIMITER:
-					state=delimiter(next, lastChar);
-					break;
-				default: // AFTER_DELIMITER
-					afterDelimiter(next, lastChar);
-			}
-		}
-		return state;
 	}
 
 	private void verifyTermination(final Traversal next, State state) {
@@ -261,6 +243,21 @@ final class HeaderPartIterator implements Iterator<String> {
 				next.process(Traversal.Action.TOKEN_MISSING);
 			}
 		}
+	}
+
+	private State traverse(final Traversal next) {
+		State state=State.BEFORE_DELIMITER;
+		while(next.canContinue()) {
+			final char lastChar=this.header.charAt(next.currentOffset());
+			if(State.BEFORE_DELIMITER.equals(state)) {
+				state=beforeDelimiter(next,lastChar);
+			} else if(State.DELIMITER.equals(state)) {
+				state=delimiter(next,lastChar);
+			} else { // AFTER_DELIMITER
+				afterDelimiter(next,lastChar);
+			}
+		}
+		return state;
 	}
 
 	private State beforeDelimiter(final Traversal traversal, final char lastChar) {
