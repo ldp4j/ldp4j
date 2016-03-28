@@ -52,7 +52,7 @@ final class MoreStrings {
 	 *         has length; {@code false} otherwise
 	 */
 	static boolean hasLength(final CharSequence cs) {
-		return (cs != null && cs.length() > 0);
+		return cs != null && cs.length() > 0;
 	}
 
 	/**
@@ -208,7 +208,7 @@ final class MoreStrings {
 		if(outOfBounds(target,offset,length) || outOfBounds(other,start,length)) {
 			return false;
 		}
-		while(tmpLen-->0) {
+		while(tmpLen-->0) { // NOSONAR
 			final char c1=target.charAt(index1++);
 			final char c2=other.charAt(index2++);
 			if(c1==c2) {

@@ -160,7 +160,7 @@ final class Weighted<T> implements Acceptable {
 		}
 		checkArgument(errors.isEmpty(),"Quality definition failure%s found: %s",errors.size()==1?"":"s",Joiner.on(", ").join(errors));
 		checkArgument(weights.size()<2,"Only one quality value can be specified (found %s: %s)",weights.size(),Joiner.on(", ").join(weights));
-		if(weights.size()==0) {
+		if(weights.isEmpty()) {
 			return Weighted.newInstance().withEntity(parser.parse(candidate,null));
 		}
 		final Match match=weights.get(0);

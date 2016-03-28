@@ -44,35 +44,31 @@ final class ContentNegotiation {
 
 		@Override
 		public MediaType parse(String before, String after) {
-			String error = isValidExtensionParameter(after);
-			checkArgument(error==null,error);
+			validateSubstringAfterQualityDefinition(after);
 			return MediaTypes.fromString(before);
 		}
 
-		private String isValidExtensionParameter(String data) {
-			if(data==null) {
-				return null;
-			}
-			final HeaderPartIterator it=HeaderPartIterator.create(WITNESS+data);
-			// Consume the witness
-			it.next();
-			// If there is not valid next, we have a failure before the optional extension parameter...
-			if(it.hasFailure()) {
-				return "Invalid content before extension parameter: "+it.failure()+ " ("+data+")";
-			}
-			// ... but if there is no next at all, then no optional extension parameter is available
-			if(!it.hasNext()) {
-				return null;
-			}
-			try {
-				Parameter.fromString(it.next());
-				// Anything left to parse is invalid...
-				if(it.hasFailure() || it.hasNext()) {
-					return "Invalid content after extension parameter ["+it.header().substring(it.endsAt())+"] ("+data+")";
+		private void validateSubstringAfterQualityDefinition(String data) {
+			if(data!=null) {
+				final HeaderPartIterator it=HeaderPartIterator.create(WITNESS+data);
+				// Consume the witness
+				it.next();
+				// If there is not valid next, we have a failure before the optional extension parameter...
+				checkArgument(!it.hasFailure(),"Invalid content before extension parameter: %s (%s)",it.failure(),data);
+				// ... but if there is no next at all, then no optional extension parameter is available
+				if(it.hasNext()) {
+					validateExtensionParameter(data, it.next());
+					// Anything left to parse is invalid...
+					checkArgument(!it.hasFailure() && !it.hasNext(),"Invalid content after extension parameter [%s] (%s)",it.header().substring(it.endsAt()),data);
 				}
-				return null;
+			}
+		}
+
+		private void validateExtensionParameter(String data, String extensionParameter) {
+			try {
+				Parameter.fromString(extensionParameter);
 			} catch(IllegalArgumentException e) {
-				return e.getMessage()+" ("+data+")";
+				throw new IllegalArgumentException("Invalid extension parameter ["+extensionParameter+"] ("+data+")",e);
 			}
 		}
 
