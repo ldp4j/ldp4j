@@ -34,6 +34,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public final class MediaTypes {
 
+	private static final String TYPE_CANNOT_BE_NULL                 = "Type cannot be null";
 	private static final String REFERENCE_MEDIA_TYPE_CANNOT_BE_NULL = "Reference media type cannot be null";
 	private static final String MEDIA_TYPE_CANNOT_BE_NULL           = "Media type cannot be null";
 
@@ -74,6 +75,91 @@ public final class MediaTypes {
 		} else {
 			SYNTAX.set(syntax);
 		}
+	}
+
+	/**
+	 * Create a wildcard media type
+	 *
+	 * @return a wildcard media type
+	 */
+	public static MediaType wildcard() {
+		return new ImmutableMediaType(MediaTypes.preferredSyntax(),WILDCARD_TYPE,WILDCARD_TYPE,null,null);
+	}
+
+	/**
+	 * Create a wildcard media type for a given primary type
+	 *
+	 * @param type
+	 *            The media type primary type
+	 * @return a wildcard media type for the given primary type
+	 * @throws NullPointerException
+	 *             if the type is null
+	 * @throws IllegalArgumentException
+	 *             if the specified type is not valid
+	 */
+	public static MediaType wildcard(String type) {
+		requireNonNull(type,TYPE_CANNOT_BE_NULL);
+		return new ImmutableMediaType(MediaTypes.preferredSyntax(),type,WILDCARD_TYPE,null,null);
+	}
+
+	/**
+	 * Create a wildcard structured-syntax media type for a given primary type
+	 *
+	 * @param type
+	 *            The media type primary type
+	 * @param suffix
+	 *            The suffix associated to the structured-syntax
+	 * @return a wildcard media type for the given primary type and suffix
+	 * @throws NullPointerException
+	 *             if the type or suffix is null
+	 * @throws IllegalArgumentException
+	 *             if the specified type or suffix is not valid
+	 */
+	public static MediaType wildcard(String type, String suffix) {
+		requireNonNull(type,TYPE_CANNOT_BE_NULL);
+		requireNonNull(suffix,"Suffix cannot be null");
+		return new ImmutableMediaType(MediaTypes.preferredSyntax(),type,WILDCARD_TYPE,suffix,null);
+	}
+
+	/**
+	 * Create a media type
+	 *
+	 * @param type
+	 *            The media type primary type
+	 * @param subtype
+	 *            The media type subtype
+	 * @return A media type for the specified media range
+	 * @throws NullPointerException
+	 *             if any of the specified media range elements is null
+	 * @throws InvalidMediaTypeException
+	 *             if any of the specified media range elements is not valid
+	 */
+	public static MediaType of(String type, String subtype) {
+		requireNonNull(type,TYPE_CANNOT_BE_NULL);
+		requireNonNull(subtype,"Subtype cannot be null");
+		return fromString(type+"/"+subtype);
+	}
+
+	/**
+	 * Create a structured-syntax media type
+	 *
+	 * @param type
+	 *            The media type primary type
+	 * @param subtype
+	 *            The media type subtype
+	 * @param suffix
+	 *            The suffix associated to the structured-syntax
+	 * @return A media type for the specified media range
+	 * @throws NullPointerException
+	 *             if any of the specified media range elements is null
+	 * @throws InvalidMediaTypeException
+	 *             if any of the specified media range elements is not valid
+	 */
+	public static MediaType of(String type, String subtype, String suffix) {
+		requireNonNull(type,TYPE_CANNOT_BE_NULL);
+		requireNonNull(subtype,"Subtype cannot be null");
+		requireNonNull(suffix,"Suffix cannot be null");
+		return fromString(type+"/"+subtype+"+"+suffix);
 	}
 
 	/**

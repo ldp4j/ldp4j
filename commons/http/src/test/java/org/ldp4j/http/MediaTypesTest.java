@@ -28,6 +28,7 @@ package org.ldp4j.http;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
 import mockit.Invocation;
 import mockit.Mock;
@@ -291,6 +292,56 @@ public class MediaTypesTest {
 	public void headerStringSortsParameters() {
 		MediaType mt=MediaTypes.fromString("application/rdf+xml;PARAM=value;QPARAM=\"value\";CHARSET=\"UTF-8\";Q=0.001");
 		assertThat(MediaTypes.toHeader(mt),equalTo("application/rdf+xml;charset=utf-8;param=value;qparam=\"value\";q=0.001"));
+	}
+
+	@Test
+	public void createsSimpleWildcard() {
+		MediaType mt=MediaTypes.wildcard();
+		assertThat(mt.type(),equalTo("*"));
+		assertThat(mt.subType(),equalTo("*"));
+		assertThat(mt.suffix(),nullValue());
+		assertThat(mt.charset(),nullValue());
+		assertThat(mt.parameters().size(),equalTo(0));
+	}
+
+	@Test
+	public void createsSimpleSubtypeWildcard() {
+		MediaType mt=MediaTypes.wildcard("application");
+		assertThat(mt.type(),equalTo("application"));
+		assertThat(mt.subType(),equalTo("*"));
+		assertThat(mt.suffix(),nullValue());
+		assertThat(mt.charset(),nullValue());
+		assertThat(mt.parameters().size(),equalTo(0));
+	}
+
+	@Test
+	public void createsStructuredSubtypeWildcard() {
+		MediaType mt=MediaTypes.wildcard("application","xml");
+		assertThat(mt.type(),equalTo("application"));
+		assertThat(mt.subType(),equalTo("*"));
+		assertThat(mt.suffix(),equalTo("xml"));
+		assertThat(mt.charset(),nullValue());
+		assertThat(mt.parameters().size(),equalTo(0));
+	}
+
+	@Test
+	public void createsSimpleMediaTypes() {
+		MediaType mt=MediaTypes.of("application","json");
+		assertThat(mt.type(),equalTo("application"));
+		assertThat(mt.subType(),equalTo("json"));
+		assertThat(mt.suffix(),nullValue());
+		assertThat(mt.charset(),nullValue());
+		assertThat(mt.parameters().size(),equalTo(0));
+	}
+
+	@Test
+	public void createsStructuredMediaTypes() {
+		MediaType mt=MediaTypes.of("application","ld","json");
+		assertThat(mt.type(),equalTo("application"));
+		assertThat(mt.subType(),equalTo("ld"));
+		assertThat(mt.suffix(),equalTo("json"));
+		assertThat(mt.charset(),nullValue());
+		assertThat(mt.parameters().size(),equalTo(0));
 	}
 
 	private MediaType textTurtle() {
