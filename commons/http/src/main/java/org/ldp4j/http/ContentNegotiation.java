@@ -28,10 +28,6 @@ package org.ldp4j.http;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
-import java.nio.charset.UnsupportedCharsetException;
-
 import org.ldp4j.http.Weighted.Parser;
 
 import com.google.common.base.Strings;
@@ -84,21 +80,12 @@ final class ContentNegotiation {
 
 	}
 
-	private static final class CharsetParser implements Parser<Charset> {
+	private static final class CharsetParser implements Parser<CharacterEncoding> {
 
 		@Override
-		public Charset parse(final String before, final String after) {
+		public CharacterEncoding parse(final String before, final String after) {
 			checkArgument(Strings.isNullOrEmpty(after),"Content after quality definition is not allowed (%s)",after);
-			if("*".equals(before)) {
-				return null;
-			}
-			try {
-				return Charset.forName(before);
-			} catch (final IllegalCharsetNameException e) {
-				throw new IllegalArgumentException("Invalid charset: illegal charset name ('"+before+"')",e);
-			} catch (final UnsupportedCharsetException e) {
-				throw new IllegalArgumentException("Invalid charset: not supported ('"+before+"')",e);
-			}
+			return CharacterEncodings.fromString(before);
 		}
 
 	}
@@ -110,7 +97,7 @@ final class ContentNegotiation {
 		return Weighted.fromString(header, new MediaTypeParser());
 	}
 
-	static Weighted<Charset> acceptCharset(final String header) {
+	static Weighted<CharacterEncoding> acceptCharset(final String header) {
 		return Weighted.fromString(header, new CharsetParser());
 	}
 

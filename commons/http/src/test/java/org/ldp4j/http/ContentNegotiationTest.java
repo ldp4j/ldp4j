@@ -29,7 +29,6 @@ package org.ldp4j.http;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.endsWith;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
@@ -39,9 +38,7 @@ import static org.ldp4j.http.ContentNegotiation.acceptCharset;
 import static org.ldp4j.http.ContentNegotiation.acceptLanguage;
 
 import java.nio.charset.Charset;
-import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.StandardCharsets;
-import java.nio.charset.UnsupportedCharsetException;
 
 import mockit.Invocation;
 import mockit.Mock;
@@ -71,50 +68,6 @@ public class ContentNegotiationTest {
 	}
 
 	@Test
-	public void testAcceptCharset$supported() throws Exception {
-		final Charset expected=StandardCharsets.UTF_8;
-		final Weighted<Charset> result=acceptCharset(expected.name()+";q=0.000");
-		assertThat(result,not(nullValue()));
-		final Charset actual = result.entity();
-		assertThat(actual,not(nullValue()));
-		assertThat(actual,equalTo(expected));
-	}
-
-	@Test
-	public void testAcceptCharset$wildcard() throws Exception {
-		assertThat(acceptCharset("*;q=0.000").entity(),nullValue());
-	}
-
-	@Test
-	public void testAcceptCharset$badCharset() throws Exception {
-		try {
-			acceptCharset("<bad charset name>;q=0.000");
-			fail("Should fail when charset name is invalid");
-		} catch (final IllegalArgumentException e) {
-			assertThat(e.getMessage(),startsWith("Invalid charset: "));
-			assertThat(e.getCause(),instanceOf(IllegalCharsetNameException.class));
-		}
-	}
-
-	@Test
-	public void testAcceptCharset$unsupportedCharset() throws Exception {
-		new MockUp<Charset>() {
-			@Mock
-			Charset forName(final String name) {
-				throw new UnsupportedCharsetException(name);
-			}
-		};
-		try {
-			acceptCharset("<bad charset name>;q=0.000");
-			fail("Should fail when charset name is invalid");
-		} catch (final IllegalArgumentException e) {
-			assertThat(e.getMessage(),startsWith("Invalid charset: "));
-			assertThat(e.getCause(),instanceOf(UnsupportedCharsetException.class));
-			assertThat(((UnsupportedCharsetException)e.getCause()).getCharsetName(),equalTo("<bad charset name>"));
-		}
-	}
-
-	@Test
 	public void dependsOnLanguagesClassForCreatingWeightedMediaTypes() {
 		final String value = "en-US";
 		new MockUp<Languages>() {
@@ -127,6 +80,23 @@ public class ContentNegotiationTest {
 		final Weighted<Language> result=ContentNegotiation.acceptLanguage(value);
 		assertThat(result.entity().primaryTag(),equalTo("en"));
 		assertThat(result.entity().subTag(),equalTo("US"));
+		assertThat(result.hasWeight(),equalTo(false));
+		assertThat(result.weight(),equalTo(1.0D));
+	}
+
+	@Test
+	public void dependsOnCharacterEncodingsClassForCreatingWeightedCharacterEncodings() throws Exception {
+		final Charset expected=StandardCharsets.UTF_8;
+		new MockUp<CharacterEncodings>() {
+			@Mock
+			public CharacterEncoding fromString(Invocation context, String aValue) {
+				assertThat(aValue,equalTo(expected.name()));
+				return context.proceed(aValue);
+			}
+		};
+		final Weighted<CharacterEncoding> result=acceptCharset(expected.name());
+		assertThat(result,not(nullValue()));
+		assertThat(result.entity().charset(),equalTo(expected));
 		assertThat(result.hasWeight(),equalTo(false));
 		assertThat(result.weight(),equalTo(1.0D));
 	}
