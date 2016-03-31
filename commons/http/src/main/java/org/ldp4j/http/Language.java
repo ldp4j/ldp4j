@@ -28,9 +28,7 @@ package org.ldp4j.http;
 
 import java.util.Locale;
 
-public interface Language {
-
-	boolean isWildcard();
+public interface Language  extends Negotiable {
 
 	String primaryTag();
 

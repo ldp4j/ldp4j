@@ -29,24 +29,68 @@ package org.ldp4j.http;
 import static java.util.Objects.requireNonNull;
 
 import java.nio.charset.Charset;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
+import com.google.common.collect.Maps;
+
 public final class MediaTypes {
 
-	private static final String TYPE_CANNOT_BE_NULL                 = "Type cannot be null";
-	private static final String REFERENCE_MEDIA_TYPE_CANNOT_BE_NULL = "Reference media type cannot be null";
-	private static final String MEDIA_TYPE_CANNOT_BE_NULL           = "Media type cannot be null";
+	public static final class MediaTypeBuilder {
 
-	/**
-	 * The key for the standard 'charset' media type parameter
-	 */
-	public static final String PARAM_CHARSET   = "charset";
+		private final MediaType mediaType;
+		private final Map<String, String> parameters;
+		private MediaRangeSyntax syntax;
+
+		public MediaTypeBuilder(MediaType mediaType) {
+			this.mediaType = mediaType;
+			this.parameters=Maps.newLinkedHashMap(mediaType.parameters());
+			this.syntax=preferredSyntax();
+		}
+
+		public MediaTypeBuilder withSyntax(MediaRangeSyntax syntax) {
+			if(this.syntax==null) {
+				this.syntax=preferredSyntax();
+			} else {
+				this.syntax=syntax;
+			}
+			return this;
+		}
+
+		public MediaTypeBuilder withCharset(Charset charset) {
+			if(charset==null) {
+				this.parameters.remove(MediaTypes.PARAM_CHARSET);
+			} else {
+				this.parameters.put(MediaTypes.PARAM_CHARSET,charset.name());
+			}
+			return this;
+		}
+
+		public MediaType build() {
+			return
+				new ImmutableMediaType(
+					this.syntax,
+					this.mediaType.type(),
+					this.mediaType.subType(),
+					this.mediaType.suffix(),
+					this.parameters);
+		}
+
+	}
 
 	/**
 	 * The wildcard type/subtype
 	 */
 	public static final String WILDCARD_TYPE   = "*";
+
+	private static final String MEDIA_TYPE_CANNOT_BE_NULL           = "Media type cannot be null";
+	private static final String TYPE_CANNOT_BE_NULL                 = "Type cannot be null";
+	private static final String REFERENCE_MEDIA_TYPE_CANNOT_BE_NULL = "Reference media type cannot be null";
+	/**
+	 * The key for the standard 'charset' media type parameter
+	 */
+	public static final String PARAM_CHARSET   = "charset";
 
 	private static final AtomicReference<MediaRangeSyntax> SYNTAX=new AtomicReference<>(MediaRangeSyntax.RFC7230);
 
@@ -141,6 +185,19 @@ public final class MediaTypes {
 	}
 
 	/**
+	 * Parse the given String into a single {@code MediaType}.
+	 *
+	 * @param mediaType
+	 *            the string to parse
+	 * @return the mime type
+	 * @throws InvalidMediaTypeException
+	 *             if the string cannot be parsed
+	 */
+	public static MediaType fromString(final String mediaType) {
+		return ImmutableMediaType.fromString(mediaType, MediaTypes.preferredSyntax());
+	}
+
+	/**
 	 * Create a structured-syntax media type
 	 *
 	 * @param type
@@ -160,19 +217,6 @@ public final class MediaTypes {
 		requireNonNull(subtype,"Subtype cannot be null");
 		requireNonNull(suffix,"Suffix cannot be null");
 		return fromString(type+"/"+subtype+"+"+suffix);
-	}
-
-	/**
-	 * Parse the given String into a single {@code MediaType}.
-	 *
-	 * @param mediaType
-	 *            the string to parse
-	 * @return the mime type
-	 * @throws InvalidMediaTypeException
-	 *             if the string cannot be parsed
-	 */
-	public static MediaType fromString(final String mediaType) {
-		return ImmutableMediaType.fromString(mediaType, MediaTypes.preferredSyntax());
 	}
 
 	/**
@@ -305,6 +349,10 @@ public final class MediaTypes {
 	 */
 	public static boolean isStandardParameter(final String parameter) {
 		return PARAM_CHARSET.equalsIgnoreCase(parameter);
+	}
+
+	public static MediaTypeBuilder from(MediaType mediaType) {
+		return new MediaTypeBuilder(mediaType);
 	}
 
 	private static boolean areCompatibleMediaTypes(final MediaType one, final MediaType other, boolean symmetric) {

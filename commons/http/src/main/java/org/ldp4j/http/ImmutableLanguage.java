@@ -56,4 +56,9 @@ final class ImmutableLanguage implements Language {
 		return this.locale;
 	}
 
+	@Override
+	public String toHeader() {
+		return this.locale==null?"*":this.locale.getLanguage()+"-"+this.locale.getCountry();
+	}
+
 }

@@ -109,7 +109,7 @@ import java.util.Map;
  * @see <a href="http://tools.ietf.org/html/rfc6657">[RFC 6657] Update to MIME
  *      regarding "charset" Parameter Handling in Textual Media Types</a>
  */
-public interface MediaType {
+public interface MediaType extends Negotiable {
 
 	/**
 	 * Get the primary type.

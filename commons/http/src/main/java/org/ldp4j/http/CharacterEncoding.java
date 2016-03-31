@@ -28,9 +28,7 @@ package org.ldp4j.http;
 
 import java.nio.charset.Charset;
 
-public interface CharacterEncoding {
-
-	boolean isWildcard();
+public interface CharacterEncoding extends Negotiable {
 
 	String name();
 

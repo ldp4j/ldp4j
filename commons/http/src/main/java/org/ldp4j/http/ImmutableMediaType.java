@@ -118,6 +118,16 @@ final class ImmutableMediaType implements MediaType {
 	}
 
 	@Override
+	public boolean isWildcard() {
+		return MediaTypes.WILDCARD_TYPE.equals(this.type) || MediaTypes.WILDCARD_TYPE.equals(this.subtype);
+	}
+
+	@Override
+	public String toHeader() {
+		return MediaTypes.toHeader(this);
+	}
+
+	@Override
 	public int hashCode() {
 		return
 			mediaRangeHashCode() ^

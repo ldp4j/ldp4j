@@ -26,34 +26,10 @@
  */
 package org.ldp4j.http;
 
-import java.nio.charset.Charset;
+public interface Negotiable {
 
-final class ImmutableCharacterEncoding implements CharacterEncoding {
+	boolean isWildcard();
 
-	private final Charset charset;
-
-	ImmutableCharacterEncoding(Charset charset) {
-		this.charset = charset;
-	}
-
-	@Override
-	public boolean isWildcard() {
-		return this.charset==null;
-	}
-
-	@Override
-	public String name() {
-		return this.charset==null?"*":this.charset.name();
-	}
-
-	@Override
-	public Charset charset() {
-		return this.charset;
-	}
-
-	@Override
-	public String toHeader() {
-		return name();
-	}
+	String toHeader();
 
 }

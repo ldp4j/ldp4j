@@ -32,7 +32,7 @@ import org.ldp4j.http.Weighted.Parser;
 
 import com.google.common.base.Strings;
 
-final class ContentNegotiation {
+final class ContentNegotiationUtil {
 
 	private static final class MediaTypeParser implements Parser<MediaType> {
 
@@ -90,7 +90,7 @@ final class ContentNegotiation {
 
 	}
 
-	private ContentNegotiation() {
+	private ContentNegotiationUtil() {
 	}
 
 	static Weighted<MediaType> accept(final String header) {
