@@ -48,7 +48,8 @@ import org.junit.runners.Suite.SuiteClasses;
 	LanguagesTest.class,
 	CharacterEncodingsTest.class,
 	WeightedTest.class,
-	ContentNegotiationUtilTest.class
+	ContentNegotiationUtilTest.class,
+	AlternativeProviderTest.class,
 })
 public class HttpUnitTestSuite {
 }

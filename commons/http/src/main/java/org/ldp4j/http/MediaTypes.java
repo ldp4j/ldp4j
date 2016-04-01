@@ -50,7 +50,7 @@ public final class MediaTypes {
 		}
 
 		public MediaTypeBuilder withSyntax(MediaRangeSyntax syntax) {
-			if(this.syntax==null) {
+			if(syntax==null) {
 				this.syntax=preferredSyntax();
 			} else {
 				this.syntax=syntax;
@@ -352,6 +352,7 @@ public final class MediaTypes {
 	}
 
 	public static MediaTypeBuilder from(MediaType mediaType) {
+		requireNonNull(mediaType,"Media type cannot be null");
 		return new MediaTypeBuilder(mediaType);
 	}
 

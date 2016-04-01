@@ -75,6 +75,21 @@ public class RFC6838MediaRangeValidatorTest {
 	}
 
 	@Test
+	public void acceptsWildcardType() {
+		sut.checkType("*");
+	}
+
+	@Test
+	public void failsForWrongWildcardType() {
+		try {
+			sut.checkType("*bad");
+			fail("Should fail type check if bad wildcard type is defined");
+		} catch (IllegalArgumentException e) {
+			assertThat(e.getMessage(),equalTo("Invalid character '*' in type '*bad' at 0"));
+		}
+	}
+
+	@Test
 	public void failsForTypeWithInvalidOtherChar() throws Exception {
 		try {
 			sut.checkType("invalidÓtherChar");
@@ -107,6 +122,21 @@ public class RFC6838MediaRangeValidatorTest {
 	@Test
 	public void acceptsMinimalSubtype() {
 		sut.checkSubType("A");
+	}
+
+	@Test
+	public void acceptsWildcardSubType() {
+		sut.checkSubType("*");
+	}
+
+	@Test
+	public void failsForWrongWildcardSubType() {
+		try {
+			sut.checkSubType("*bad");
+			fail("Should fail subtype check if bad wildcard subtype is defined");
+		} catch (IllegalArgumentException e) {
+			assertThat(e.getMessage(),equalTo("Invalid character '*' in subtype '*bad' at 0"));
+		}
 	}
 
 	@Test

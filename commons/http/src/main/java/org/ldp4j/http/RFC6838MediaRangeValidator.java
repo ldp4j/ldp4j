@@ -64,7 +64,7 @@ final class RFC6838MediaRangeValidator implements MediaRangeValidator {
 
 	/**
 	 * Checks the given {@code type} for illegal characters, as defined in RFC
-	 * 6838, section 4.2.
+	 * 6838, section 4.2. NOTE: '*' is accepted as a valid type.
 	 *
 	 * @param type
 	 *            the string to validate
@@ -82,7 +82,7 @@ final class RFC6838MediaRangeValidator implements MediaRangeValidator {
 
 	/**
 	 * Checks the given {@code subtype} for illegal characters, as defined in RFC
-	 * 6838, section 4.2.
+	 * 6838, section 4.2. NOTE: '*' is accepted as a valid subtype.
 	 *
 	 * @param subType
 	 *            the string to validate
@@ -120,7 +120,13 @@ final class RFC6838MediaRangeValidator implements MediaRangeValidator {
 
 	private void validateFirstChar(final String value, String name) {
 		final char ch = value.charAt(0);
-		checkArgument(RESTRICTED_NAME_FIRST.get(ch),"Invalid character '%s' in %s '%s' at 0",ch,name,value);
+		boolean check=false;
+		if(ch=='*') {
+			check=value.length()==1;
+		} else {
+			check=RESTRICTED_NAME_FIRST.get(ch);
+		}
+		checkArgument(check,"Invalid character '%s' in %s '%s' at 0",ch,name,value);
 	}
 
 	private void validateOtherChars(final String value, final String name) {

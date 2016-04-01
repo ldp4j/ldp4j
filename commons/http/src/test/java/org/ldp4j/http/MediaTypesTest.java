@@ -30,6 +30,10 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
+
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+
 import mockit.Invocation;
 import mockit.Mock;
 import mockit.MockUp;
@@ -395,6 +399,72 @@ public class MediaTypesTest {
 		assertThat(MediaTypes.areCompatible(one,other),equalTo(expected));
 		System.out.printf("compatible(%s, %s)=%s%n",MediaTypes.toHeader(other),MediaTypes.toHeader(one),expected);
 		assertThat(MediaTypes.areCompatible(other,one),equalTo(expected));
+	}
+
+	@Test
+	public void cannotEditNullMediaType() throws Exception {
+		try {
+			MediaTypes.from(null);
+			fail("Should not be able to edit null media types");
+		} catch (NullPointerException e) {
+			assertThat(e.getMessage(),equalTo("Media type cannot be null"));
+		}
+	}
+
+	@Test
+	public void canModifyMediaTypeCharset() throws Exception {
+		Charset expected = StandardCharsets.ISO_8859_1;
+		MediaType original = MediaTypes.fromString("text/turtle;charset=utf-8");
+		MediaType modified =
+			MediaTypes.
+				from(original).
+					withCharset(expected).
+					build();
+		assertThat(modified.charset(),equalTo(expected));
+		assertThat(modified.type(),equalTo(original.type()));
+		assertThat(modified.subType(),equalTo(original.subType()));
+		assertThat(modified.suffix(),equalTo(original.suffix()));
+		assertThat(modified.parameters().size(),equalTo(1));
+	}
+
+	@Test
+	public void canRemoveMediaTypeCharset() throws Exception {
+		MediaType original = MediaTypes.fromString("text/turtle;charset=utf-8");
+		MediaType modified =
+			MediaTypes.
+				from(original).
+					withCharset(null).
+					build();
+		assertThat(modified.charset(),nullValue());
+		assertThat(modified.type(),equalTo(original.type()));
+		assertThat(modified.subType(),equalTo(original.subType()));
+		assertThat(modified.suffix(),equalTo(original.suffix()));
+		assertThat(modified.parameters().size(),equalTo(0));
+	}
+
+	@Test
+	public void canSelecteMediaTypeSyntax() throws Exception {
+		MediaType original = MediaTypes.fromString(".badRFC6838Type/turtle");
+		try {
+			MediaTypes.
+				from(original).
+					withSyntax(MediaRangeSyntax.RFC6838).
+					build();
+			fail("Should fail if the new media type syntax does not accept prexisting values");
+		} catch (IllegalArgumentException e) {
+			assertThat(e.getMessage(),equalTo("Invalid character '.' in type '.badrfc6838type' at 0"));
+		}
+	}
+
+	@Test
+	public void usesPreferredSyntaxIfNullSyntaxSpecifiedForModifyingTheMediaType() throws Exception {
+		MediaType original = MediaTypes.fromString(".badRFC6838Type/turtle;charset=utf-8");
+		MediaType modified=
+			MediaTypes.
+				from(original).
+					withSyntax(null).
+					build();
+		assertThat(modified,equalTo(original));
 	}
 
 }

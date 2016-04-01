@@ -655,6 +655,30 @@ public class ImmutableMediaTypeTest {
 		assertThat(one.hashCode(),not(equalTo(other.hashCode())));
 	}
 
+	@Test
+	public void typeWilcardIsWildcard() {
+		ImmutableMediaType sut = new ImmutableMediaType(MediaRangeSyntax.RFC6838,"*","*",null,null);
+		assertThat(sut.isWildcard(),equalTo(true));
+	}
+
+	@Test
+	public void unstructuredSubtypeWilcardIsWildcard() {
+		ImmutableMediaType sut = new ImmutableMediaType(MediaRangeSyntax.RFC6838,"application","*",null,null);
+		assertThat(sut.isWildcard(),equalTo(true));
+	}
+
+	@Test
+	public void structuredSubtypeWilcardIsWildcard() {
+		ImmutableMediaType sut = new ImmutableMediaType(MediaRangeSyntax.RFC6838,"application","*","xml",null);
+		assertThat(sut.isWildcard(),equalTo(true));
+	}
+
+	@Test
+	public void regularMediaTypesAreNotWildcard() {
+		ImmutableMediaType sut = new ImmutableMediaType(MediaRangeSyntax.RFC6838,"application","rdf","xml",null);
+		assertThat(sut.isWildcard(),equalTo(false));
+	}
+
 	private String offending() {
 		return Character.toString((char)0x7f);
 	}
