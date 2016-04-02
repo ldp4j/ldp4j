@@ -27,6 +27,9 @@
 package org.ldp4j.http;
 
 import java.util.Locale;
+import java.util.Objects;
+
+import com.google.common.base.MoreObjects;
 
 final class ImmutableLanguage implements Language {
 
@@ -58,7 +61,40 @@ final class ImmutableLanguage implements Language {
 
 	@Override
 	public String toHeader() {
-		return this.locale==null?"*":this.locale.getLanguage()+"-"+this.locale.getCountry();
+		return languageTag().toLowerCase(Locale.ENGLISH);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(this.locale);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj instanceof Language) {
+			Language that=(Language)obj;
+			result=Objects.equals(this.locale,that.locale());
+		}
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					add("locale",languageTag()).
+					toString();
+	}
+
+	private String languageTag() {
+		return this.locale==null?
+			"*":
+			this.locale.getLanguage()+
+			(this.locale.getCountry().isEmpty()?
+				"":
+				"-"+this.locale.getCountry());
 	}
 
 }

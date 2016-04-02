@@ -28,6 +28,7 @@ package org.ldp4j.http;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.util.Locale;
@@ -95,6 +96,102 @@ public class ImmutableLanguageTest {
 	@Test
 	public void compositeLanguagesHasLocaleCountryAsSubTag() throws Exception {
 		assertThat(compositeLanguage().subTag(),equalTo(compositeLocale().getCountry()));
+	}
+
+	@Test
+	public void wildcardHasCustomToString() throws Exception {
+		ImmutableLanguage sut = wildcard();
+		assertThat(sut.toString(),equalTo("ImmutableLanguage{locale=*}"));
+	}
+
+	@Test
+	public void wildcardHeaderRepresentationIsValid() throws Exception {
+		ImmutableLanguage sut = wildcard();
+		assertThat(sut.toHeader(),equalTo("*"));
+	}
+
+	@Test
+	public void simpleLanguageHasCustomToString() throws Exception {
+		ImmutableLanguage sut = simpleLanguage();
+		assertThat(sut.toString(),equalTo("ImmutableLanguage{locale=en}"));
+	}
+
+	@Test
+	public void simpleLanguageHeaderRepresentationIsValid() throws Exception {
+		ImmutableLanguage sut = simpleLanguage();
+		assertThat(sut.toHeader(),equalTo(simpleLocale().getLanguage()));
+	}
+
+	@Test
+	public void compositeLanguageHasCustomToString() throws Exception {
+		ImmutableLanguage sut = compositeLanguage();
+		assertThat(sut.toString(),equalTo("ImmutableLanguage{locale=en-US}"));
+	}
+
+	@Test
+	public void compositeLanguageHeaderRepresentationIsValid() throws Exception {
+		ImmutableLanguage sut = compositeLanguage();
+		assertThat(sut.toHeader(),equalTo("en-us"));
+	}
+
+	@Test
+	public void languagesAreNotEqualToNonLanguageInstances() {
+		assertThat((Object)simpleLanguage(),not(equalTo((Object)"String")));
+	}
+
+	@Test
+	public void wildcardLanguagesAreEqualToThemselves() {
+		assertThat(wildcard(),equalTo(wildcard()));
+	}
+
+	@Test
+	public void wildcardLanguagesHaveSameHashCode() {
+		assertThat(wildcard().hashCode(),equalTo(wildcard().hashCode()));
+	}
+
+	@Test
+	public void simpleLanguagesAreEqualToThemselves() {
+		assertThat(simpleLanguage(),equalTo(simpleLanguage()));
+	}
+
+	@Test
+	public void equalSimpleLanguageHaveSameHashCode() {
+		assertThat(simpleLanguage().hashCode(),equalTo(simpleLanguage().hashCode()));
+	}
+
+	@Test
+	public void compositeLanguagesAreEqualToThemselves() {
+		assertThat(compositeLanguage(),equalTo(compositeLanguage()));
+	}
+
+	@Test
+	public void equalCompositeLanguageHaveSameHashCode() {
+		assertThat(compositeLanguage().hashCode(),equalTo(compositeLanguage().hashCode()));
+	}
+
+	@Test
+	public void simpleLanguagesAreNotEqualToWildcards() {
+		assertThat(simpleLanguage(),not(equalTo(wildcard())));
+	}
+
+	@Test
+	public void compositeLanguagesAreNotEqualToWildcards() {
+		assertThat(compositeLanguage(),not(equalTo(wildcard())));
+	}
+
+	@Test
+	public void languagesAreNotEqualToLanguagesWithDifferentLocale() {
+		assertThat(simpleLanguage(),not(equalTo(compositeLanguage())));
+	}
+
+	@Test
+	public void differentLanguagesHaveDifferentHashCode() {
+		assertThat(simpleLanguage().hashCode(),not(equalTo(compositeLanguage().hashCode())));
+	}
+
+	@Test
+	public void wildcardLanguagesAreNotEqualToLangualesWithLocale() {
+		assertThat(wildcard(),not(equalTo(simpleLanguage())));
 	}
 
 	private ImmutableLanguage wildcard() {

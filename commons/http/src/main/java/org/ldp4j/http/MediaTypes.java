@@ -29,6 +29,7 @@ package org.ldp4j.http;
 import static java.util.Objects.requireNonNull;
 
 import java.nio.charset.Charset;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
@@ -317,23 +318,23 @@ public final class MediaTypes {
 		requireNonNull(mediaType,REFERENCE_MEDIA_TYPE_CANNOT_BE_NULL);
 		final StringBuilder builder=
 			new StringBuilder().
-				append(mediaType.type().toLowerCase()).
+				append(mediaType.type().toLowerCase(Locale.ENGLISH)).
 				append('/').
-				append(mediaType.subType().toLowerCase());
+				append(mediaType.subType().toLowerCase(Locale.ENGLISH));
 		final String suffix=mediaType.suffix();
 		if(suffix!=null) {
-			builder.append('+').append(suffix.toLowerCase());
+			builder.append('+').append(suffix.toLowerCase(Locale.ENGLISH));
 		}
 		final Charset charset=mediaType.charset();
 		if(charset!=null) {
-			builder.append(";charset=").append(charset.name().toLowerCase());
+			builder.append(";charset=").append(charset.name().toLowerCase(Locale.ENGLISH));
 		}
 		for(Entry<String,String> entry:mediaType.parameters().entrySet()) {
 			final String key=entry.getKey();
 			if(isStandardParameter(key)) {
 				continue;
 			}
-			builder.append(';').append(key.toLowerCase()).append('=').append(entry.getValue());
+			builder.append(';').append(key.toLowerCase(Locale.ENGLISH)).append('=').append(entry.getValue());
 		}
 		return builder.toString();
 	}

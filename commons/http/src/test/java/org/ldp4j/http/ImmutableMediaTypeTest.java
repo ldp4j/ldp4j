@@ -47,6 +47,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
 
 @RunWith(JMockit.class)
 public class ImmutableMediaTypeTest {
@@ -677,6 +678,30 @@ public class ImmutableMediaTypeTest {
 	public void regularMediaTypesAreNotWildcard() {
 		ImmutableMediaType sut = new ImmutableMediaType(MediaRangeSyntax.RFC6838,"application","rdf","xml",null);
 		assertThat(sut.isWildcard(),equalTo(false));
+	}
+
+	@Test
+	public void parameterlessRegularMediaTypeHeaderRepresentationIsValid() throws Exception {
+		ImmutableMediaType sut = new ImmutableMediaType(MediaRangeSyntax.RFC6838, "type", "subtype", null, null);
+		assertThat(sut.toHeader(),equalTo("type/subtype"));
+	}
+
+	@Test
+	public void parameterlessStructuredMediaTypeHeaderRepresentationIsValid() throws Exception {
+		ImmutableMediaType sut = new ImmutableMediaType(MediaRangeSyntax.RFC6838, "type", "subtype", "suffix", null);
+		assertThat(sut.toHeader(),equalTo("type/subtype+suffix"));
+	}
+
+	@Test
+	public void mediaTypeWithCharsetHeaderRepresentationIsValid() throws Exception {
+		ImmutableMediaType sut = new ImmutableMediaType(MediaRangeSyntax.RFC6838, "type", "subtype", null, ImmutableMap.<String,String>builder().put("charset","\"UTF-8\"").build());
+		assertThat(sut.toHeader(),equalTo("type/subtype;charset=utf-8"));
+	}
+
+	@Test
+	public void mediaTypeWithCharsetHeaderAndOtherParametersHeaderRepresentationIsValid() throws Exception {
+		ImmutableMediaType sut = new ImmutableMediaType(MediaRangeSyntax.RFC6838, "type", "subtype", null, ImmutableMap.<String,String>builder().put("param","value").put("charset","\"UTF-8\"").build());
+		assertThat(sut.toHeader(),equalTo("type/subtype;charset=utf-8;param=value"));
 	}
 
 	private String offending() {

@@ -28,7 +28,19 @@ package org.ldp4j.http;
 
 import java.util.Locale;
 
-public interface Language  extends Negotiable {
+/**
+ * <h4>NOTE:</h4>
+ * <p>
+ * Beware, <b>{@code Accept-Language}</b> and <b>{@code Content-Language} </b>
+ * headers have different requirements. Whereas the former only allows <i>
+ * {@code language-ranges}</i>, the latter accepts full-fledged <i>
+ * {@code language-tags}</i>.
+ * <p>
+ * See <i>Hypertext Transfer Protocol (HTTP/1.1): Semantics and Content</i>, Sections <a
+ * href="https://tools.ietf.org/html/rfc7231#section-3.1.3.1">3.1.3.1</a> and <a
+ * href="https://tools.ietf.org/html/rfc7231#section-5.3.5">5.3.5</a>.
+ */
+public interface Language extends Negotiable {
 
 	String primaryTag();
 

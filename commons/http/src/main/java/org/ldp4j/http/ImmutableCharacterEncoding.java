@@ -27,6 +27,10 @@
 package org.ldp4j.http;
 
 import java.nio.charset.Charset;
+import java.util.Locale;
+import java.util.Objects;
+
+import com.google.common.base.MoreObjects;
 
 final class ImmutableCharacterEncoding implements CharacterEncoding {
 
@@ -53,7 +57,31 @@ final class ImmutableCharacterEncoding implements CharacterEncoding {
 
 	@Override
 	public String toHeader() {
-		return name();
+		return name().toLowerCase(Locale.ENGLISH);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hashCode(this.charset);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		boolean result=false;
+		if(obj instanceof CharacterEncoding) {
+			CharacterEncoding that=(CharacterEncoding)obj;
+			result=Objects.equals(this.charset,that.charset());
+		}
+		return result;
+	}
+
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					add("charset",name()).
+					toString();
 	}
 
 }
