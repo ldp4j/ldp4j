@@ -26,30 +26,47 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	DoubleUtilsTest.class,
-	MoreStringsTest.class,
-	MoreCollectionsTest.class,
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	ImmutableCharacterEncodingTest.class,
-	MediaTypesTest.class,
-	LanguagesTest.class,
-	CharacterEncodingsTest.class,
-	WeightedTest.class,
-	ContentNegotiationUtilsTest.class
-})
-public class HttpUnitTestSuite {
+import org.junit.Test;
+import org.ldp4j.commons.testing.Utils;
+
+public class DoubleUtilsTest {
+
+	@Test
+	public void isUtilityClass() throws Exception {
+		assertThat(Utils.isUtilityClass(DoubleUtils.class),equalTo(true));
+	}
+
+	@Test
+	public void rejectsValuesWithMoreDigitsThanSpecified() throws Exception {
+		assertThat(DoubleUtils.hasPrecision(0.1234,3),equalTo(false));
+	}
+
+	@Test
+	public void acceptsValuesWithLessDigitsThanSpecified() throws Exception {
+		assertThat(DoubleUtils.hasPrecision(0.12345678,9),equalTo(true));
+	}
+
+	@Test
+	public void acceptsValuesWithTheSameDigitsThanSpecified() throws Exception {
+		assertThat(DoubleUtils.hasPrecision(0.12345,5),equalTo(true));
+	}
+
+	@Test
+	public void doesNotRoundValuesWithLessDigitsThanSpecified() throws Exception {
+		assertThat(DoubleUtils.limitPrecision(0.12345678,9),equalTo(0.12345678));
+	}
+
+	@Test
+	public void roundsValuesWithMoreDigitsThanSpecified$roundDown() throws Exception {
+		assertThat(DoubleUtils.limitPrecision(0.12345678,3),equalTo(0.123));
+	}
+
+	@Test
+	public void roundsValuesWithMoreDigitsThanSpecified$roundUp() throws Exception {
+		assertThat(DoubleUtils.limitPrecision(0.12345678,5),equalTo(0.12346));
+	}
+
 }

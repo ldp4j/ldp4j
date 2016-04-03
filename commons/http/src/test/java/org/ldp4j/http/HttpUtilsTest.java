@@ -28,6 +28,7 @@ package org.ldp4j.http;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.fail;
 
 import org.junit.Test;
@@ -104,6 +105,11 @@ public class HttpUtilsTest {
 		} catch (IllegalArgumentException e) {
 			assertThat(e.getCause().getMessage(),equalTo("Token cannot be empty"));
 		}
+	}
+
+	@Test
+	public void nullQualityIsValid() {
+		assertThat(HttpUtils.checkQuality(null,"Weight"),nullValue());
 	}
 
 }

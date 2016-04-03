@@ -33,9 +33,9 @@ import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.fail;
-import static org.ldp4j.http.ContentNegotiationUtil.accept;
-import static org.ldp4j.http.ContentNegotiationUtil.acceptCharset;
-import static org.ldp4j.http.ContentNegotiationUtil.acceptLanguage;
+import static org.ldp4j.http.ContentNegotiationUtils.accept;
+import static org.ldp4j.http.ContentNegotiationUtils.acceptCharset;
+import static org.ldp4j.http.ContentNegotiationUtils.acceptLanguage;
 
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
@@ -50,11 +50,11 @@ import org.junit.runner.RunWith;
 import org.ldp4j.commons.testing.Utils;
 
 @RunWith(JMockit.class)
-public class ContentNegotiationUtilTest {
+public class ContentNegotiationUtilsTest {
 
 	@Test
 	public void isUtilityClass() throws Exception {
-		assertThat(Utils.isUtilityClass(ContentNegotiationUtil.class),equalTo(true));
+		assertThat(Utils.isUtilityClass(ContentNegotiationUtils.class),equalTo(true));
 	}
 
 	@Test
@@ -77,7 +77,7 @@ public class ContentNegotiationUtilTest {
 				return context.proceed(aValue);
 			}
 		};
-		final Weighted<Language> result=ContentNegotiationUtil.acceptLanguage(value);
+		final Weighted<Language> result=ContentNegotiationUtils.acceptLanguage(value);
 		assertThat(result.entity().primaryTag(),equalTo("en"));
 		assertThat(result.entity().subTag(),equalTo("US"));
 		assertThat(result.hasWeight(),equalTo(false));
@@ -111,7 +111,7 @@ public class ContentNegotiationUtilTest {
 				return context.proceed(aValue);
 			}
 		};
-		final Weighted<MediaType> result=ContentNegotiationUtil.accept(value);
+		final Weighted<MediaType> result=ContentNegotiationUtils.accept(value);
 		assertThat(result.entity().type(),equalTo("text"));
 		assertThat(result.entity().subType(),equalTo("turtle"));
 		assertThat(result.hasWeight(),equalTo(false));

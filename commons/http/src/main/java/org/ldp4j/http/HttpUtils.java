@@ -149,6 +149,16 @@ final class HttpUtils {
 		checkToken(token,"Invalid token");
 	}
 
+	static Double checkQuality(final Double quality, final String parameter) {
+		if(quality==null) {
+			return null;
+		}
+		checkArgument(quality>=0.0D,"%s cannot be negative (%s)",parameter,quality);
+		checkArgument(quality<=1.0D,"%s cannot be greater than 1 (%s)",parameter,quality);
+		checkArgument(DoubleUtils.hasPrecision(quality,3),"%s cannot have more than 3 decimals (%s)",parameter,quality);
+		return quality;
+	}
+
 	private static void validateCharacters(final String token) {
 		for(int i=0;i<token.length();i++) {
 			final char ch=token.charAt(i);

@@ -26,30 +26,28 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.math.RoundingMode;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	DoubleUtilsTest.class,
-	MoreStringsTest.class,
-	MoreCollectionsTest.class,
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	ImmutableCharacterEncodingTest.class,
-	MediaTypesTest.class,
-	LanguagesTest.class,
-	CharacterEncodingsTest.class,
-	WeightedTest.class,
-	ContentNegotiationUtilsTest.class
-})
-public class HttpUnitTestSuite {
+import com.google.common.math.DoubleMath;
+
+final class DoubleUtils {
+
+	private DoubleUtils() {
+	}
+
+	static boolean hasPrecision(final double value, final int decimals) {
+		final double scaled=value*scale(decimals);
+		return Double.doubleToRawLongBits(scaled-(long)scaled)==0;
+	}
+
+	static double limitPrecision(final double value, final int decimals) {
+		final double scale = scale(decimals);
+		final long scaledValue = DoubleMath.roundToLong(value*scale,RoundingMode.HALF_EVEN);
+		return ((double)scaledValue)/scale;
+	}
+
+	private static double scale(final int decimals) {
+		return Math.pow(10D,decimals);
+	}
+
 }

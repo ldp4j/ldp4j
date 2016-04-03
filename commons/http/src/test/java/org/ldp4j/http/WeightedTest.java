@@ -279,9 +279,4 @@ public class WeightedTest {
 		assertThat(original.toString(),not(equalTo(Utils.defaultToString(original))));
 	}
 
-	@Test
-	public void nullWeightIsRoundedToNull() {
-		assertThat(Weighted.round(null),nullValue());
-	}
-
 }

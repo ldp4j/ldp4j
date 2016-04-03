@@ -106,7 +106,7 @@ final class Weighted<T> implements Acceptable {
 	}
 
 	Weighted<T> withWeight(final Double weight) {
-		return new Weighted<T>(round(weight),this.value);
+		return new Weighted<T>(HttpUtils.checkQuality(weight, "Weight"),this.value);
 	}
 
 	<S> Weighted<S> withEntity(final S content) {
@@ -176,16 +176,6 @@ final class Weighted<T> implements Acceptable {
 					withEntity(value);
 	}
 
-	static Double round(final Double weight) {
-		if(weight==null) {
-			return null;
-		}
-		checkArgument(weight>=0.0D,"Weight cannot be negative (%s)",weight);
-		checkArgument(weight<=1.0D,"Weight cannot be greater than 1 (%s)",weight);
-		checkArgument(hasPrecision(weight,3),"Weight cannot have more than 3 decimals (%s)",weight);
-		return weight;
-	}
-
 	private static String validateDefinition(final Matcher matcher, final List<String> errors) {
 		verifyNoWhitespaceBeforeEqual(matcher, errors);
 		verifyNoWhitespaceAfterEqual(matcher, errors);
@@ -215,11 +205,6 @@ final class Weighted<T> implements Acceptable {
 		if(!matcher.group(1).isEmpty()) {
 			errors.add("whitespace before equal from "+matcher.start(1)+" to "+matcher.end(1));
 		}
-	}
-
-	private static boolean hasPrecision(final double weight,final int decimals) {
-		final double scaled=weight*Math.pow(10D, decimals);
-		return Double.doubleToRawLongBits(scaled-(long)scaled)==0;
 	}
 
 }
