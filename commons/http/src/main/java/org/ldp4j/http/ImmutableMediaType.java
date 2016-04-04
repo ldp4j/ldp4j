@@ -253,6 +253,21 @@ final class ImmutableMediaType implements MediaType {
 		}
 	}
 
+	static ImmutableMediaType copyOf(final MediaType other) {
+		ImmutableMediaType result=null;
+		if(other instanceof ImmutableMediaType) {
+			result=(ImmutableMediaType)other;
+		} else if(other!=null) {
+			final String header = other.toHeader();
+			try {
+				result=fromString(header,MediaRangeSyntax.RFC6838);
+			} catch (InvalidMediaTypeException e) { // NOSONAR
+				result=fromString(header,MediaRangeSyntax.RFC7230);
+			}
+		}
+		return result;
+	}
+
 	private static int caseInsensitiveHashCode(String str) {
 		return str.toLowerCase(Locale.ENGLISH).hashCode();
 	}

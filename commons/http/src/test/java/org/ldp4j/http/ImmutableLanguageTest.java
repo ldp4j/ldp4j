@@ -30,12 +30,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 
 import java.util.Locale;
 
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.integration.junit4.JMockit;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
 
-
+@RunWith(JMockit.class)
 public class ImmutableLanguageTest {
 
 	@Test
@@ -192,6 +198,30 @@ public class ImmutableLanguageTest {
 	@Test
 	public void wildcardLanguagesAreNotEqualToLangualesWithLocale() {
 		assertThat(wildcard(),not(equalTo(simpleLanguage())));
+	}
+
+	@Test
+	public void doesNotCloneNull() throws Exception {
+		ImmutableLanguage original = null;
+		ImmutableLanguage copy = ImmutableLanguage.copyOf(original);
+		assertThat(copy,sameInstance(original));
+	}
+
+	@Test
+	public void copyDoesNotCloneImmutableInstances() throws Exception {
+		ImmutableLanguage original = simpleLanguage();
+		ImmutableLanguage copy = ImmutableLanguage.copyOf(original);
+		assertThat(copy,sameInstance(original));
+	}
+
+	@Test
+	public void copyClonesAllLanguageComponents(@Mocked final Language original) throws Exception {
+		new Expectations() {{
+			original.locale();result=simpleLocale();
+		}};
+		ImmutableLanguage copy = ImmutableLanguage.copyOf(original);
+		assertThat(copy,not(sameInstance(original)));
+		assertThat(copy.locale(),equalTo(simpleLocale()));
 	}
 
 	private ImmutableLanguage wildcard() {

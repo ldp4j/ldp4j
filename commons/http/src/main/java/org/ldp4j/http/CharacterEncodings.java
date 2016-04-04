@@ -63,4 +63,17 @@ public final class CharacterEncodings {
 		}
 	}
 
+	public static boolean includes(CharacterEncoding ce1, CharacterEncoding ce2) {
+		if(ce1==null || ce2==null) {
+			return false;
+		}
+		if(ce1.isWildcard()) {
+			return true;
+		}
+		if(ce2.isWildcard()) {
+			return false;
+		}
+		return ce1.charset().equals(ce2.charset());
+	}
+
 }

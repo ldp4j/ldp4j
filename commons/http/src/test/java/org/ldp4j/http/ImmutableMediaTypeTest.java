@@ -33,6 +33,7 @@ import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
 
 import java.nio.charset.IllegalCharsetNameException;
@@ -702,6 +703,55 @@ public class ImmutableMediaTypeTest {
 	public void mediaTypeWithCharsetHeaderAndOtherParametersHeaderRepresentationIsValid() throws Exception {
 		ImmutableMediaType sut = new ImmutableMediaType(MediaRangeSyntax.RFC6838, "type", "subtype", null, ImmutableMap.<String,String>builder().put("param","value").put("charset","\"UTF-8\"").build());
 		assertThat(sut.toHeader(),equalTo("type/subtype;charset=utf-8;param=value"));
+	}
+
+	@Test
+	public void doesNotCloneNull() throws Exception {
+		ImmutableMediaType original = null;
+		ImmutableMediaType copy = ImmutableMediaType.copyOf(original);
+		assertThat(copy,sameInstance(original));
+	}
+
+	@Test
+	public void copyDoesNotCloneImmutableInstances() throws Exception {
+		ImmutableMediaType original = defaultMediaType().build();
+		ImmutableMediaType copy = ImmutableMediaType.copyOf(original);
+		assertThat(copy,sameInstance(original));
+	}
+
+	@Test
+	public void copyClonesAllMediaTypeComponents(@Mocked final MediaType original) throws Exception {
+		final ImmutableMediaType expected = defaultMediaType().build();
+		new Expectations() {{
+			original.toHeader();result=expected.toHeader();
+		}};
+		ImmutableMediaType copy = ImmutableMediaType.copyOf(original);
+		assertThat(copy,not(sameInstance(original)));
+		assertThat(copy,equalTo(expected));
+	}
+
+	@Test
+	public void copySupportsBothSyntaxes(@Mocked final MediaType original) throws Exception {
+		final ImmutableMediaType expected = ImmutableMediaType.fromString(".type/subtype",MediaRangeSyntax.RFC7230);
+		new Expectations() {{
+			original.toHeader();result=expected.toHeader();
+		}};
+		ImmutableMediaType copy = ImmutableMediaType.copyOf(original);
+		assertThat(copy,not(sameInstance(original)));
+		assertThat(copy,equalTo(expected));
+	}
+
+	@Test
+	public void copyMayFailIfOriginalImplementationIsBroken(@Mocked final MediaType original) throws Exception {
+		new Expectations() {{
+			original.toHeader();result="<invalid media type>";
+		}};
+		try {
+			ImmutableMediaType.copyOf(original);
+			fail("Should not copy non-immutable media types whose toHeader method is broken");
+		} catch (InvalidMediaTypeException e) {
+			assertThat(e.getMessage(),equalTo("No media range subtype specified"));
+		}
 	}
 
 	private String offending() {

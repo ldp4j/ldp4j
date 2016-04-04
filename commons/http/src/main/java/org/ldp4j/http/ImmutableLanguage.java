@@ -97,4 +97,14 @@ final class ImmutableLanguage implements Language {
 				"-"+this.locale.getCountry());
 	}
 
+	static ImmutableLanguage copyOf(Language language) {
+		ImmutableLanguage result=null;
+		if(language instanceof ImmutableLanguage) {
+			result=(ImmutableLanguage)language;
+		} else if(language!=null) {
+			result=new ImmutableLanguage(language.locale());
+		}
+		return result;
+	}
+
 }

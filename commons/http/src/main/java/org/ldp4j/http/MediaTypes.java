@@ -68,6 +68,13 @@ public final class MediaTypes {
 			return this;
 		}
 
+		public MediaTypeBuilder withParam(String name, String value) {
+			requireNonNull(name,"Parameter name cannot be null");
+			requireNonNull(value,"Parameter value cannot be null");
+			this.parameters.put(name, value);
+			return this;
+		}
+
 		public MediaType build() {
 			return
 				new ImmutableMediaType(
@@ -167,6 +174,19 @@ public final class MediaTypes {
 	}
 
 	/**
+	 * Parse the given String into a single {@code MediaType}.
+	 *
+	 * @param mediaType
+	 *            the string to parse
+	 * @return the mime type
+	 * @throws InvalidMediaTypeException
+	 *             if the string cannot be parsed
+	 */
+	public static MediaType fromString(final String mediaType) {
+		return ImmutableMediaType.fromString(mediaType, MediaTypes.preferredSyntax());
+	}
+
+	/**
 	 * Create a media type
 	 *
 	 * @param type
@@ -183,19 +203,6 @@ public final class MediaTypes {
 		requireNonNull(type,TYPE_CANNOT_BE_NULL);
 		requireNonNull(subtype,"Subtype cannot be null");
 		return fromString(type+"/"+subtype);
-	}
-
-	/**
-	 * Parse the given String into a single {@code MediaType}.
-	 *
-	 * @param mediaType
-	 *            the string to parse
-	 * @return the mime type
-	 * @throws InvalidMediaTypeException
-	 *             if the string cannot be parsed
-	 */
-	public static MediaType fromString(final String mediaType) {
-		return ImmutableMediaType.fromString(mediaType, MediaTypes.preferredSyntax());
 	}
 
 	/**
@@ -218,6 +225,20 @@ public final class MediaTypes {
 		requireNonNull(subtype,"Subtype cannot be null");
 		requireNonNull(suffix,"Suffix cannot be null");
 		return fromString(type+"/"+subtype+"+"+suffix);
+	}
+
+	/**
+	 * Create a {@code MediaTypeBuilder} from a given media type.
+	 *
+	 * @param mediaType
+	 *            The media type to use as builder configuration
+	 * @return a builder instance prepopulated with the specified media type.
+	 * @throws NullPointerException
+	 *             if the media type is null
+	 */
+	public static MediaTypeBuilder from(MediaType mediaType) {
+		requireNonNull(mediaType,"Media type cannot be null");
+		return new MediaTypeBuilder(mediaType);
 	}
 
 	/**
@@ -350,11 +371,6 @@ public final class MediaTypes {
 	 */
 	public static boolean isStandardParameter(final String parameter) {
 		return PARAM_CHARSET.equalsIgnoreCase(parameter);
-	}
-
-	public static MediaTypeBuilder from(MediaType mediaType) {
-		requireNonNull(mediaType,"Media type cannot be null");
-		return new MediaTypeBuilder(mediaType);
 	}
 
 	private static boolean areCompatibleMediaTypes(final MediaType one, final MediaType other, boolean symmetric) {

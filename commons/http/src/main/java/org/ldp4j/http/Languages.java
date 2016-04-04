@@ -132,6 +132,26 @@ public final class Languages {
 		}
 	}
 
+	/**
+	 * Implements Basic Filtering matching algorithm defined in <a
+	 * href="https://tools.ietf.org/html/rfc4647#section-3.3.1">Section
+	 * 3.3.1</a> of the <b>Matching of Language Tags</b> (BCP 47)
+	 */
+	public static boolean includes(Language language1, Language language2) {
+		if(language1==null || language2==null) {
+			return false;
+		}
+		if(language1.isWildcard()) {
+			return true;
+		}
+		if(language2.isWildcard()) {
+			return false;
+		}
+		return
+			language1.primaryTag().equals(language2.primaryTag()) &&
+			(language1.subTag().isEmpty() || language1.subTag().equals(language2.subTag()));
+	}
+
 	private static Locale parseLocale(final String locale) {
 		final List<String> tags=getTags(locale);
 		checkArgument(tags.size()<3,"Invalid language-range: to many tags (%s)",tags.size());

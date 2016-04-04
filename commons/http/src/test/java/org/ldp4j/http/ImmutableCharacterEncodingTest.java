@@ -30,11 +30,18 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 
 import java.nio.charset.StandardCharsets;
 
-import org.junit.Test;
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.integration.junit4.JMockit;
 
+import org.junit.Test;
+import org.junit.runner.RunWith;
+
+@RunWith(JMockit.class)
 public class ImmutableCharacterEncodingTest {
 
 	@Test
@@ -134,6 +141,30 @@ public class ImmutableCharacterEncodingTest {
 	@Test
 	public void wildcardCharacterEncodingsAreNotEqualToRegular() {
 		assertThat(wildcard(),not(equalTo(regular())));
+	}
+
+	@Test
+	public void doesNotCloneNull() throws Exception {
+		ImmutableLanguage original = null;
+		ImmutableLanguage copy = ImmutableLanguage.copyOf(original);
+		assertThat(copy,sameInstance(original));
+	}
+
+	@Test
+	public void copyDoesNotCloneImmutableInstances() throws Exception {
+		ImmutableCharacterEncoding original = regular();
+		ImmutableCharacterEncoding copy = ImmutableCharacterEncoding.copyOf(original);
+		assertThat(copy,sameInstance(original));
+	}
+
+	@Test
+	public void copyClonesAllCharacterEncodingComponents(@Mocked final CharacterEncoding original) throws Exception {
+		new Expectations() {{
+			original.charset();result=regular().charset();
+		}};
+		ImmutableCharacterEncoding copy = ImmutableCharacterEncoding.copyOf(original);
+		assertThat(copy,not(sameInstance(original)));
+		assertThat(copy.charset(),equalTo(regular().charset()));
 	}
 
 	private ImmutableCharacterEncoding wildcard() {

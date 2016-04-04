@@ -153,10 +153,14 @@ final class HttpUtils {
 		if(quality==null) {
 			return null;
 		}
-		checkArgument(quality>=0.0D,"%s cannot be negative (%s)",parameter,quality);
-		checkArgument(quality<=1.0D,"%s cannot be greater than 1 (%s)",parameter,quality);
+		checkQualityRange(quality, parameter);
 		checkArgument(DoubleUtils.hasPrecision(quality,3),"%s cannot have more than 3 decimals (%s)",parameter,quality);
 		return quality;
+	}
+
+	static void checkQualityRange(final Double quality, final String parameter) {
+		checkArgument(quality>=0.0D,"%s cannot be negative (%s)",parameter,quality);
+		checkArgument(quality<=1.0D,"%s cannot be greater than 1 (%s)",parameter,quality);
 	}
 
 	private static void validateCharacters(final String token) {

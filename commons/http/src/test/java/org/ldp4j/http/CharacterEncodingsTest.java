@@ -30,16 +30,26 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.notNullValue;
+import static org.junit.Assert.fail;
 
 import java.nio.charset.Charset;
 import java.nio.charset.IllegalCharsetNameException;
 import java.nio.charset.StandardCharsets;
 import java.nio.charset.UnsupportedCharsetException;
 
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.integration.junit4.JMockit;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.ldp4j.commons.testing.Utils;
 
+@RunWith(JMockit.class)
 public class CharacterEncodingsTest {
+
+	private static final CharacterEncoding US_ASCII = CharacterEncodings.of(StandardCharsets.US_ASCII);
+	private static final CharacterEncoding UTF_8 = CharacterEncodings.of(StandardCharsets.UTF_8);
 
 	@Test
 	public void isUtilityClass() throws Exception {
@@ -65,6 +75,7 @@ public class CharacterEncodingsTest {
 	public void cannotParsesUnknownCharsets() throws Exception {
 		try {
 			CharacterEncodings.fromString("cateporra");
+			fail("Should not parse unknown charsets");
 		} catch (IllegalArgumentException e) {
 			assertThat(e.getCause(),instanceOf(UnsupportedCharsetException.class));
 		}
@@ -74,9 +85,43 @@ public class CharacterEncodingsTest {
 	public void cannotParseInvalidCharsetNames() throws Exception {
 		try {
 			CharacterEncodings.fromString("<UTF-8>");
+			fail("Should not parse invalid charset names");
 		} catch (IllegalArgumentException e) {
 			assertThat(e.getCause(),instanceOf(IllegalCharsetNameException.class));
 		}
+	}
+
+	@Test
+	public void nullDoesNotIncludeAnything(@Mocked final CharacterEncoding encoding) throws Exception {
+		assertThat(CharacterEncodings.includes(null,encoding),equalTo(false));
+	}
+
+	@Test
+	public void nothingIncludesNull(@Mocked final CharacterEncoding encoding) throws Exception {
+		assertThat(CharacterEncodings.includes(encoding,null),equalTo(false));
+	}
+
+	@Test
+	public void wildcardIncludesEverything(@Mocked final CharacterEncoding encoding) throws Exception {
+		assertThat(CharacterEncodings.includes(CharacterEncodings.wildcard(),encoding),equalTo(true));
+	}
+
+	@Test
+	public void wildcardIsNotIncludedByNonWildcardCharacterEncodings(@Mocked final CharacterEncoding encoding) throws Exception {
+		new Expectations() {{
+			encoding.isWildcard();result=false;
+		}};
+		assertThat(CharacterEncodings.includes(encoding,CharacterEncodings.wildcard()),equalTo(false));
+	}
+
+	@Test
+	public void aRegularCharacterEncodingsIncludesAnotherIffTheyHaveTheSameCharset() throws Exception {
+		assertThat(CharacterEncodings.includes(UTF_8,UTF_8),equalTo(true));
+	}
+
+	@Test
+	public void aRegularCharacterEncodingsDoesNotIncludeAnotherIffTheyHaveTheDifferentCharset() throws Exception {
+		assertThat(CharacterEncodings.includes(UTF_8,US_ASCII),equalTo(false));
 	}
 
 }

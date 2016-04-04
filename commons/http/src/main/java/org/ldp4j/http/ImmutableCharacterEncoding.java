@@ -84,4 +84,14 @@ final class ImmutableCharacterEncoding implements CharacterEncoding {
 					toString();
 	}
 
+	static ImmutableCharacterEncoding copyOf(CharacterEncoding characterEncoding) {
+		ImmutableCharacterEncoding result=null;
+		if(characterEncoding instanceof ImmutableCharacterEncoding) {
+			result=(ImmutableCharacterEncoding)characterEncoding;
+		} else if(characterEncoding!=null) {
+			result=new ImmutableCharacterEncoding(characterEncoding.charset());
+		}
+		return result;
+	}
+
 }

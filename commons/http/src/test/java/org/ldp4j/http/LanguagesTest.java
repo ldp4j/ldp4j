@@ -35,10 +35,20 @@ import static org.junit.Assert.fail;
 
 import java.util.Locale;
 
+import mockit.Expectations;
+import mockit.Mocked;
+import mockit.integration.junit4.JMockit;
+
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.ldp4j.commons.testing.Utils;
 
+@RunWith(JMockit.class)
 public class LanguagesTest {
+
+	private static final Language WILDCARD = Languages.wildcard();
+	private static final Language US_ENGLISH = Languages.of(Locale.US);
+	private static final Language ENGLISH = Languages.of(Locale.ENGLISH);
 
 	@Test
 	public void isUtilityClass() throws Exception {
@@ -155,6 +165,44 @@ public class LanguagesTest {
 		} catch (final IllegalArgumentException e) {
 			assertThat(e.getMessage(),equalTo("Language does not allow locale variants (TH)"));
 		}
+	}
+
+	@Test
+	public void nullDoesNotIncludeAnything(@Mocked final Language language) throws Exception {
+		assertThat(Languages.includes(null,language),equalTo(false));
+	}
+
+	@Test
+	public void nothingIncludesNull(@Mocked final Language language) throws Exception {
+		assertThat(Languages.includes(language,null),equalTo(false));
+	}
+
+	@Test
+	public void wildcardLanguageIncludesEverything(@Mocked final Language language) throws Exception {
+		assertThat(Languages.includes(WILDCARD,language),equalTo(true));
+	}
+
+	@Test
+	public void wildcardLanguageIsNotIncludedBySpecificLanguages(@Mocked final Language language) throws Exception {
+		new Expectations() {{
+			language.isWildcard();result=false;
+		}};
+		assertThat(Languages.includes(language,WILDCARD),equalTo(false));
+	}
+
+	@Test
+	public void aLanguageWithJustPrimaryTagIncludesItself() throws Exception {
+		assertThat(Languages.includes(ENGLISH,ENGLISH),equalTo(true));
+	}
+
+	@Test
+	public void aLanguageWithJustPrimaryTagIncludesLanguagesWithTheSamePrimaryTagAndAnyOtherSubTag() throws Exception {
+		assertThat(Languages.includes(ENGLISH,US_ENGLISH),equalTo(true));
+	}
+
+	@Test
+	public void aLanguageWithSubTagDoesNotIncludeLanguagesWithSamePrimaryTagButDifferentSubtag() throws Exception {
+		assertThat(Languages.includes(US_ENGLISH,ENGLISH),equalTo(false));
 	}
 
 }
