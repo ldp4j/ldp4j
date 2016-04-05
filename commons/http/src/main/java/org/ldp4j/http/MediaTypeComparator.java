@@ -112,18 +112,18 @@ public final class MediaTypeComparator implements Comparator<MediaType> {
 	private int compareParametersStructurally(final MediaType mediaType1, final MediaType mediaType2) {
 		final ParameterComparatorHelper h1=new ParameterComparatorHelper(mediaType1);
 		final ParameterComparatorHelper h2=new ParameterComparatorHelper(mediaType2);
-		final int paramNameComparison = h2.parameterNames().compareTo(h1.parameterNames());
+		final int paramNameComparison = h1.parameterNames().compareTo(h2.parameterNames());
 		if(paramNameComparison!=0) {
 			return paramNameComparison;
 		}
-		final int paramValueComparison=h2.parameterValuesExceptCharset().compareTo(h1.parameterValuesExceptCharset());
+		final int paramValueComparison=h1.parameterValuesExceptCharset().compareTo(h2.parameterValuesExceptCharset());
 		if(paramValueComparison!=0) {
 			return paramValueComparison;
 		}
 		if(!h1.hasCharset()) {
 			return 0;
 		}
-		return mediaType2.charset().compareTo(mediaType1.charset());
+		return mediaType1.charset().compareTo(mediaType2.charset());
 	}
 
 }

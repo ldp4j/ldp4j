@@ -108,6 +108,12 @@ public class MediaTypeComparatorTest extends AbstractComparatorTest<MediaType> {
 	}
 
 	@Test
+	public void mediaTypesOrderingDependsOnParameterValues() throws Exception {
+		assertIsGreaterThan(TEXT_PLAIN_WITH_FORMAT_STRICT,TEXT_PLAIN_WITH_FORMAT_FLOW);
+		assertIsLowerThan(TEXT_PLAIN_WITH_FORMAT_FLOW,TEXT_PLAIN_WITH_FORMAT_STRICT);
+	}
+
+	@Test
 	public void mediaTypesOfSameMediaRangeAndWithSameParametersAreEqualDespiteTheParameterOrder() {
 		assertIsEqualTo(MULTIPLE_PARAMS_NO_CHARSET, MULTIPLE_PARAMS_NO_CHARSET_ALTERNATIVE_ORDERING);
 		assertIsEqualTo(MULTIPLE_PARAMS_NO_CHARSET_ALTERNATIVE_ORDERING, MULTIPLE_PARAMS_NO_CHARSET);
@@ -115,14 +121,14 @@ public class MediaTypeComparatorTest extends AbstractComparatorTest<MediaType> {
 
 	@Test
 	public void mediaTypesOfSameMediaRangeAndWithDifferentNamesAreDifferent() {
-		assertIsGreaterThan(MULTIPLE_PARAMS_NO_CHARSET, MULTIPLE_PARAMS_NO_CHARSET_ALTERNATIVE_PARAM);
-		assertIsLowerThan(MULTIPLE_PARAMS_NO_CHARSET_ALTERNATIVE_PARAM, MULTIPLE_PARAMS_NO_CHARSET);
+		assertIsLowerThan(MULTIPLE_PARAMS_NO_CHARSET, MULTIPLE_PARAMS_NO_CHARSET_ALTERNATIVE_PARAM);
+		assertIsGreaterThan(MULTIPLE_PARAMS_NO_CHARSET_ALTERNATIVE_PARAM, MULTIPLE_PARAMS_NO_CHARSET);
 	}
 
 	@Test
 	public void mediaTypesOfSameMediaRangeAndWithSameParameterNamesButDifferentValuesAreDifferent() {
-		assertIsGreaterThan(MULTIPLE_PARAMS_NO_CHARSET, MULTIPLE_PARAMS_NO_CHARSET_ALTERNATIVE_VALUE);
-		assertIsLowerThan(MULTIPLE_PARAMS_NO_CHARSET_ALTERNATIVE_VALUE, MULTIPLE_PARAMS_NO_CHARSET);
+		assertIsLowerThan(MULTIPLE_PARAMS_NO_CHARSET, MULTIPLE_PARAMS_NO_CHARSET_ALTERNATIVE_VALUE);
+		assertIsGreaterThan(MULTIPLE_PARAMS_NO_CHARSET_ALTERNATIVE_VALUE, MULTIPLE_PARAMS_NO_CHARSET);
 	}
 
 	@Test
@@ -132,8 +138,8 @@ public class MediaTypeComparatorTest extends AbstractComparatorTest<MediaType> {
 
 	@Test
 	public void mediaTypesOfSameMediaRangeAndWithDifferentCharsetDifferent() {
-		assertIsGreaterThan(TEXT_PLAIN_US_ASCII,TEXT_PLAIN_UTF_8);
-		assertIsLowerThan(TEXT_PLAIN_UTF_8,TEXT_PLAIN_US_ASCII);
+		assertIsLowerThan(TEXT_PLAIN_US_ASCII,TEXT_PLAIN_UTF_8);
+		assertIsGreaterThan(TEXT_PLAIN_UTF_8,TEXT_PLAIN_US_ASCII);
 	}
 
 }
