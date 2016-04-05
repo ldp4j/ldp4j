@@ -26,34 +26,41 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.util.Comparator;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	DoubleUtilsTest.class,
-	MoreStringsTest.class,
-	MoreCollectionsTest.class,
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	ImmutableCharacterEncodingTest.class,
-	MediaTypesTest.class,
-	MediaTypeComparatorTest.class,
-	LanguagesTest.class,
-	LanguageComparatorTest.class,
-	CharacterEncodingsTest.class,
-	CharacterEncodingComparatorTest.class,
-	WeightedTest.class,
-	WeightedComparatorTest.class,
-	ContentNegotiationUtilsTest.class
-})
-public class HttpUnitTestSuite {
+final class LanguageComparator implements Comparator<Language> {
+
+	static final LanguageComparator INSTANCE=new LanguageComparator();
+
+	private LanguageComparator() {
+	}
+
+	@Override
+	public int compare(final Language o1, final Language o2) {
+		if(o1.isWildcard() && !o2.isWildcard()) {
+			return 1;
+		} else if(o2.isWildcard() && !o1.isWildcard()) {
+			return -1;
+		}
+		return compareTags(o1, o2);
+	}
+
+	private int compareTags(final Language o1, final Language o2) {
+		int comparison=o1.primaryTag().compareTo(o2.primaryTag());
+		if(comparison!=0) {
+			return comparison;
+		}
+		return compareSubTags(o1, o2);
+	}
+
+	private int compareSubTags(final Language o1, final Language o2) {
+		if(!o1.subTag().isEmpty() && o2.subTag().isEmpty()) {
+			return -1;
+		}
+		if(!o2.subTag().isEmpty() && o1.subTag().isEmpty()) {
+			return 1;
+		}
+		return o1.subTag().compareTo(o2.subTag());
+	}
+
 }

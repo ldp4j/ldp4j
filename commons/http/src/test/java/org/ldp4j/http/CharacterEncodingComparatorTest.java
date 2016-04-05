@@ -26,34 +26,41 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.nio.charset.StandardCharsets;
+import java.util.Comparator;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	DoubleUtilsTest.class,
-	MoreStringsTest.class,
-	MoreCollectionsTest.class,
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	ImmutableCharacterEncodingTest.class,
-	MediaTypesTest.class,
-	MediaTypeComparatorTest.class,
-	LanguagesTest.class,
-	LanguageComparatorTest.class,
-	CharacterEncodingsTest.class,
-	CharacterEncodingComparatorTest.class,
-	WeightedTest.class,
-	WeightedComparatorTest.class,
-	ContentNegotiationUtilsTest.class
-})
-public class HttpUnitTestSuite {
+import org.junit.Test;
+
+public class CharacterEncodingComparatorTest extends AbstractComparatorTest<CharacterEncoding> {
+
+	private static final CharacterEncoding WILDCARD = CharacterEncodings.wildcard();
+	private static final CharacterEncoding US_ASCII = CharacterEncodings.of(StandardCharsets.US_ASCII);
+	private static final CharacterEncoding UTF_8 = CharacterEncodings.of(StandardCharsets.UTF_8);
+
+	@Override
+	protected Comparator<CharacterEncoding> sut() {
+		return CharacterEncodingComparator.INSTANCE;
+	}
+
+	@Test
+	public void wildcardIsGreaterThanAnything() throws Exception {
+		assertIsGreaterThan(WILDCARD, UTF_8);
+	}
+
+	@Test
+	public void regularCharacterEncodingsAreLowerThanWildcardEncodings() throws Exception {
+		assertIsLowerThan(UTF_8,WILDCARD);
+	}
+
+	@Test
+	public void regularCharacterEncodingsOfSameCharsetAreEqual() throws Exception {
+		assertIsEqualTo(UTF_8, UTF_8);
+	}
+
+	@Test
+	public void comparisonOfRegularCharacterEncodingsOfDifferentCharsetDependsOnCharsetOrdering() throws Exception {
+		assertIsGreaterThan(UTF_8,US_ASCII);
+		assertIsLowerThan(US_ASCII,UTF_8);
+	}
+
 }

@@ -26,34 +26,44 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.util.Comparator;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	DoubleUtilsTest.class,
-	MoreStringsTest.class,
-	MoreCollectionsTest.class,
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	ImmutableCharacterEncodingTest.class,
-	MediaTypesTest.class,
-	MediaTypeComparatorTest.class,
-	LanguagesTest.class,
-	LanguageComparatorTest.class,
-	CharacterEncodingsTest.class,
-	CharacterEncodingComparatorTest.class,
-	WeightedTest.class,
-	WeightedComparatorTest.class,
-	ContentNegotiationUtilsTest.class
-})
-public class HttpUnitTestSuite {
+import org.junit.Test;
+
+public class WeightedComparatorTest extends AbstractComparatorTest<Weighted<String>>{
+
+	private static final Weighted<String> VALUE = Weighted.newInstance().withEntity("str1").withWeight(0.123D);
+	private static final Weighted<String> SMALLER_ENTITY = Weighted.newInstance().withEntity("str0").withWeight(0.123D);
+	private static final Weighted<String> SMALLER_WEIGHT = Weighted.newInstance().withEntity("str1").withWeight(0.001D);
+
+	protected WeightedComparator<String> sut() {
+		return
+			WeightedComparator.
+				create(
+					new Comparator<String>(){
+						@Override
+						public int compare(String o1, String o2) {
+							return o1.compareTo(o2);
+						}
+					}
+				);
+	}
+
+	@Test
+	public void weightedAreEqualIfQualityAndEntitiesAreEqual() {
+		assertIsEqualTo(VALUE, VALUE);
+	}
+
+	@Test
+	public void comparatorChecksEntityFirst() throws Exception {
+		assertIsGreaterThan(VALUE,SMALLER_ENTITY);
+		assertIsLowerThan(SMALLER_ENTITY,VALUE);
+	}
+
+	@Test
+	public void comparatorChecksEntityLater() throws Exception {
+		assertIsGreaterThan(VALUE,SMALLER_WEIGHT);
+		assertIsLowerThan(SMALLER_WEIGHT,VALUE);
+	}
+
 }

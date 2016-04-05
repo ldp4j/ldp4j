@@ -26,34 +26,32 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.not;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	DoubleUtilsTest.class,
-	MoreStringsTest.class,
-	MoreCollectionsTest.class,
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	ImmutableCharacterEncodingTest.class,
-	MediaTypesTest.class,
-	MediaTypeComparatorTest.class,
-	LanguagesTest.class,
-	LanguageComparatorTest.class,
-	CharacterEncodingsTest.class,
-	CharacterEncodingComparatorTest.class,
-	WeightedTest.class,
-	WeightedComparatorTest.class,
-	ContentNegotiationUtilsTest.class
-})
-public class HttpUnitTestSuite {
+import java.util.Comparator;
+
+public abstract class AbstractComparatorTest<T> {
+
+	public AbstractComparatorTest() {
+		super();
+	}
+
+	protected abstract Comparator<T> sut();
+
+	protected void assertIsGreaterThan(T mt1, T mt2) {
+		assertThat(String.format("%s should be greater than %s",mt1,mt2),sut().compare(mt1, mt2),greaterThan(0));
+	}
+
+	protected void assertIsLowerThan(T mt1, T mt2) {
+		assertThat(String.format("%s should be lower than %s",mt1,mt2),sut().compare(mt1, mt2),not(greaterThanOrEqualTo(0)));
+	}
+
+	protected void assertIsEqualTo(T mt1, T mt2) {
+		assertThat(String.format("%s should be equalTo than %s",mt1,mt2),sut().compare(mt1, mt2),equalTo(0));
+	}
+
 }

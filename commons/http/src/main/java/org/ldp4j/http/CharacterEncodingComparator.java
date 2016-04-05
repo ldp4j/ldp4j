@@ -26,34 +26,23 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.util.Comparator;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	DoubleUtilsTest.class,
-	MoreStringsTest.class,
-	MoreCollectionsTest.class,
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	ImmutableCharacterEncodingTest.class,
-	MediaTypesTest.class,
-	MediaTypeComparatorTest.class,
-	LanguagesTest.class,
-	LanguageComparatorTest.class,
-	CharacterEncodingsTest.class,
-	CharacterEncodingComparatorTest.class,
-	WeightedTest.class,
-	WeightedComparatorTest.class,
-	ContentNegotiationUtilsTest.class
-})
-public class HttpUnitTestSuite {
+final class CharacterEncodingComparator implements Comparator<CharacterEncoding> {
+
+	static final CharacterEncodingComparator INSTANCE=new CharacterEncodingComparator();
+
+	private CharacterEncodingComparator() {
+	}
+
+	@Override
+	public int compare(CharacterEncoding o1, CharacterEncoding o2) {
+		if(o1.isWildcard() && !o2.isWildcard()) {
+			return 1;
+		} else if(o2.isWildcard() && !o1.isWildcard()) {
+			return -1;
+		}
+		return o1.charset().compareTo(o2.charset());
+	}
+
 }

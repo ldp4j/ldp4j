@@ -26,34 +26,27 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+import java.util.Comparator;
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	DoubleUtilsTest.class,
-	MoreStringsTest.class,
-	MoreCollectionsTest.class,
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	ImmutableCharacterEncodingTest.class,
-	MediaTypesTest.class,
-	MediaTypeComparatorTest.class,
-	LanguagesTest.class,
-	LanguageComparatorTest.class,
-	CharacterEncodingsTest.class,
-	CharacterEncodingComparatorTest.class,
-	WeightedTest.class,
-	WeightedComparatorTest.class,
-	ContentNegotiationUtilsTest.class
-})
-public class HttpUnitTestSuite {
+final class WeightedComparator<T> implements Comparator<Weighted<T>> {
+
+	private final Comparator<T> comparator;
+
+	private WeightedComparator(Comparator<T> comparator) {
+		this.comparator=comparator;
+	}
+
+	@Override
+	public int compare(Weighted<T> o1, Weighted<T> o2) {
+		int comparison=this.comparator.compare(o1.entity(),o2.entity());
+		if(comparison==0) {
+			comparison=Double.compare(o1.weight(), o2.weight());
+		}
+		return comparison;
+	}
+
+	static <T> WeightedComparator<T> create(Comparator<T> comparator) {
+		return new WeightedComparator<T>(comparator);
+	}
+
 }
