@@ -41,6 +41,8 @@ final class CharacterEncodingComparator implements Comparator<CharacterEncoding>
 			return 1;
 		} else if(o2.isWildcard() && !o1.isWildcard()) {
 			return -1;
+		} else if(o1.charset()==o2.charset()) {
+			return 0;
 		}
 		return o1.charset().compareTo(o2.charset());
 	}

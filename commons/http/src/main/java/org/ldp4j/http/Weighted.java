@@ -36,7 +36,7 @@ import com.google.common.base.Joiner;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.Lists;
 
-final class Weighted<T> implements Acceptable {
+final class Weighted<T> {
 
 	interface Parser<T> {
 
@@ -117,13 +117,11 @@ final class Weighted<T> implements Acceptable {
 		return this.value;
 	}
 
-	@Override
-	public boolean hasWeight() {
+	boolean hasWeight() {
 		return this.weight!=null;
 	}
 
-	@Override
-	public double weight() {
+	double weight() {
 		return this.weight==null?DEFAULT_WEIGHT:this.weight;
 	}
 

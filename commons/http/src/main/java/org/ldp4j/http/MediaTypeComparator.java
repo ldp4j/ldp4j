@@ -34,7 +34,7 @@ import java.util.TreeSet;
 import com.google.common.base.Joiner;
 import com.google.common.collect.Sets;
 
-public final class MediaTypeComparator implements Comparator<MediaType> {
+final class MediaTypeComparator implements Comparator<MediaType> {
 
 	private static final class ParameterComparatorHelper {
 
