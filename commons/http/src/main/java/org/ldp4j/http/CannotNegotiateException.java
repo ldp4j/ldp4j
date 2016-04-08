@@ -26,45 +26,12 @@
  */
 package org.ldp4j.http;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.Suite;
-import org.junit.runners.Suite.SuiteClasses;
+public class CannotNegotiateException extends IllegalStateException {
 
-@RunWith(Suite.class)
-@SuiteClasses({
-	DoubleUtilsTest.class,
-	MoreStringsTest.class,
-	MoreCollectionsTest.class,
-	InvalidTokenExceptionTest.class,
-	HttpUtilsTest.class,
-	ParameterTest.class,
-	HeaderPartIteratorTest.class,
-	CaseInsensitiveMapTest.class,
-	RFC6838MediaRangeValidatorTest.class,
-	MediaRangeSyntaxTest.class,
-	ImmutableMediaTypeTest.class,
-	ImmutableLanguageTest.class,
-	ImmutableCharacterEncodingTest.class,
-	MediaTypesTest.class,
-	MediaTypeComparatorTest.class,
-	LanguagesTest.class,
-	LanguageComparatorTest.class,
-	CharacterEncodingsTest.class,
-	CharacterEncodingComparatorTest.class,
-	WeightedTest.class,
-	WeightedComparatorTest.class,
-	ContentNegotiationUtilsTest.class,
-	ImmutableVariantTest.class,
-	ImmutableQualityTest.class,
-	QualitiesTest.class,
-	ImmutableAlternativeTest.class,
-	ImmutableAlternativesTest.class,
-	AlternativeProviderTest.class,
-	AlternativeComparatorTest.class,
-	VariantsTest.class,
-	ImmutableNegotiationResultTest.class,
-	ContentNegotiatorTest.class,
-	ContentNegotiationTest.class,
-})
-public class HttpUnitTestSuite {
+	private static final long serialVersionUID = -1133139303572827355L;
+
+	public CannotNegotiateException() {
+		super("No supported alternatives where defined for the content negotiation process");
+	}
+
 }
