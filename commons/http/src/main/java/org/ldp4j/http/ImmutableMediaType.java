@@ -87,7 +87,7 @@ final class ImmutableMediaType implements MediaType {
 		this.type=syntax.checkType(type);
 		this.subtype=syntax.checkSubType(subtype);
 		this.suffix=syntax.checkSuffix(suffix);
-		ensureValidMediaType(this.type,this.subtype);
+		ensureValidMediaType(this.type,this.subtype,this.suffix);
 		this.parameters=verifyParameters(parameters);
 		this.charset=getCharset(this.parameters);
 	}
@@ -370,9 +370,12 @@ final class ImmutableMediaType implements MediaType {
 		return result;
 	}
 
-	private static void ensureValidMediaType(final String type, final String subtype) {
-		if(MediaTypes.WILDCARD_TYPE.equals(type) && !MediaTypes.WILDCARD_TYPE.equals(subtype)) {
-			throw new IllegalArgumentException("wildcard type is legal only in wildcard media range ('*/*')");
+	private static void ensureValidMediaType(final String type, final String subtype, String suffix) {
+		if(MediaTypes.WILDCARD_TYPE.equals(type)) {
+			checkArgument(MediaTypes.WILDCARD_TYPE.equals(subtype),"Wildcard type is legal only in wildcard media range ('*/*')");
+			checkArgument(suffix==null,"Wildcard structured syntax media types are not allowed (i.e., '*/*+%s')",suffix);
+		} else {
+			checkArgument(!"*".equals(suffix),"Structured syntax suffix cannot be a wildcard");
 		}
 	}
 

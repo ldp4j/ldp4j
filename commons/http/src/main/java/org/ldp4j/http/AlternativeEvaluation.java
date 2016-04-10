@@ -174,19 +174,20 @@ final class AlternativeEvaluation {
 	}
 
 	private static <T extends Negotiable> T normalize(T selected, AttributeQuality<T> computed, T defaultValue) {
-		if(selected==null) {
+		T result=selected;
+		if(result==null) {
 			Weighted<T> matching=computed.value;
 			if(matching!=null) {
-				selected=matching.entity();
-				if(!selected.isWildcard()) {
-					selected=null;
+				result=matching.entity();
+				if(!result.isWildcard()) {
+					result=null;
 				}
 			}
-			if(selected==null) {
-				selected=defaultValue;
+			if(result==null) {
+				result=defaultValue;
 			}
 		}
-		return selected;
+		return result;
 	}
 
 	private static <T extends Negotiable> AttributeQuality<T> computeAttributeQuality(

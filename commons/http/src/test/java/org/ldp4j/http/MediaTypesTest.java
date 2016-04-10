@@ -348,6 +348,38 @@ public class MediaTypesTest {
 		assertThat(mt.parameters().size(),equalTo(0));
 	}
 
+	@Test
+	public void cannotCreateWildcardStructuredMediaType() {
+		try {
+			MediaTypes.wildcard("*","xml");
+			fail("Should not be able to create */*+xml");
+		} catch (IllegalArgumentException e) {
+			assertThat(e.getMessage(),equalTo("Wildcard structured syntax media types are not allowed (i.e., '*/*+xml')"));
+		}
+	}
+
+	@Test
+	public void cannotParseWildcardStructuredMediaType() {
+		try {
+			MediaTypes.fromString("*/*+xml");
+			fail("Should not be able to parse */*+xml");
+		} catch (InvalidMediaTypeException e) {
+			assertThat(e.getMessage(),equalTo("Could not create media type"));
+			assertThat(e.getCause().getMessage(),equalTo("Wildcard structured syntax media types are not allowed (i.e., '*/*+xml')"));
+		}
+	}
+
+	@Test
+	public void cannotCreateMediaTypeWithWildcardSuffix() {
+		try {
+			MediaTypes.of("type", "subtype", "*");
+			fail("Should not be able to create a media type with wildcard suffix");
+		} catch (InvalidMediaTypeException e) {
+			assertThat(e.getMessage(),equalTo("Could not create media type"));
+			assertThat(e.getCause().getMessage(),equalTo("Structured syntax suffix cannot be a wildcard"));
+		}
+	}
+
 	private MediaType textTurtle() {
 		return MediaTypes.fromString("text/turtle");
 	}
@@ -374,11 +406,6 @@ public class MediaTypesTest {
 
 	private MediaType anyMediaType() {
 		return MediaTypes.fromString("*/*");
-	}
-
-	@SuppressWarnings("unused")
-	private MediaType anyMediaTypeAndXml() {
-		return MediaTypes.fromString("*/*+xml");
 	}
 
 	private MediaType anyTextMediaType() {

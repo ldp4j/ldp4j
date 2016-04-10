@@ -69,7 +69,7 @@ public final class Variants {
 	private Variants() {
 	}
 
-	public static boolean equals(final Variant v1, final Variant v2) {
+	public static boolean equals(final Variant v1, final Variant v2) { // NOSONAR
 		if(v1==v2) {
 			return true;
 		}

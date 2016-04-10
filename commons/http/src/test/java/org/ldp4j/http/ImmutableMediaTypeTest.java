@@ -302,7 +302,7 @@ public class ImmutableMediaTypeTest {
 			ImmutableMediaType.fromString("*/turtle", MediaTypes.preferredSyntax());
 			fail("Should fail for invalid media range");
 		} catch (final InvalidMediaTypeException e) {
-			assertThat(Throwables.getRootCause(e).getMessage(),containsString("wildcard type is legal only in wildcard media range ('*/*')"));
+			assertThat(Throwables.getRootCause(e).getMessage(),containsString("Wildcard type is legal only in wildcard media range ('*/*')"));
 		}
 	}
 

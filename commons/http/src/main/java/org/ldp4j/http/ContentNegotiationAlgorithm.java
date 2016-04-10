@@ -50,7 +50,7 @@ final class ContentNegotiationAlgorithm {
 	private final ImmutableVariant errorVariant;
 	private ImmutableAlternatives alternatives;
 
-	ContentNegotiationAlgorithm(
+	ContentNegotiationAlgorithm(  // NOSONAR
 			ImmutableList<MediaType> mediaTypes,
 			ImmutableList<CharacterEncoding> characterEncodings,
 			ImmutableList<Language> languages,
