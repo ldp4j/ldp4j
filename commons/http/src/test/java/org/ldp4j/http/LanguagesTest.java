@@ -205,4 +205,9 @@ public class LanguagesTest {
 		assertThat(Languages.includes(US_ENGLISH,ENGLISH),equalTo(false));
 	}
 
+	@Test
+	public void aLanguageWithPrimaryTagAndSubtagIncludesItself() throws Exception {
+		assertThat(Languages.includes(US_ENGLISH, US_ENGLISH),equalTo(true));
+	}
+
 }

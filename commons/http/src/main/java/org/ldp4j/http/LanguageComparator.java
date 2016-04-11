@@ -37,9 +37,13 @@ final class LanguageComparator implements Comparator<Language> {
 
 	@Override
 	public int compare(final Language o1, final Language o2) {
-		if(o1.isWildcard() && !o2.isWildcard()) {
-			return 1;
-		} else if(o2.isWildcard() && !o1.isWildcard()) {
+		if(o1.isWildcard()) {
+			if(!o2.isWildcard()) {
+				return 1;
+			} else {
+				return 0;
+			}
+		} else if(o2.isWildcard()) {
 			return -1;
 		}
 		return compareTags(o1, o2);

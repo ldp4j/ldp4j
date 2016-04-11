@@ -45,7 +45,12 @@ public class LanguageComparatorTest extends AbstractComparatorTest<Language> {
 	}
 
 	@Test
-	public void wildcardIsGreaterThanAnything() throws Exception {
+	public void wildcardIsEqualToWildcard() throws Exception {
+		assertIsEqualTo(WILDCARD, WILDCARD);
+	}
+
+	@Test
+	public void wildcardIsGreaterThanAnythingExceptWildcard() throws Exception {
 		assertIsGreaterThan(WILDCARD, ENGLISH);
 	}
 

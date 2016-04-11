@@ -251,6 +251,26 @@ public class ContentNegotiatorTest {
 	}
 
 	@Test
+	public void doesNotAddContentLanguageHeaderIfNotAvailable() throws Exception {
+		NegotiationResult result =
+			specRequirementsNegotiator().
+				support(Variants.builder().type(TEXT_HTML).alternative(0.7D)).
+				support(Variants.builder().type(POSTSCRIPT).alternative(1.0D)).
+				negotiate();
+
+		checkNegotiation(
+			result,
+			true,
+			TEXT_HTML,
+			null,
+			null,
+			Optional.of(Quality.Type.DEFINITE),
+			null,
+			Optional.of(2));
+		assertThat(result.responseHeaders(true).containsKey(ContentNegotiation.CONTENT_LANGUAGE),equalTo(false));
+	}
+
+	@Test
 	public void failsNegotiationIfCannotFindAlternative() throws Exception {
 		NegotiationResult result =
 			specRequirementsNegotiator().
