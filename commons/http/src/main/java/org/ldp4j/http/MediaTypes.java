@@ -302,7 +302,7 @@ public final class MediaTypes {
 	 *         media type; {@code false} otherwise
 	 */
 	public static boolean includes(final MediaType one, final MediaType other) {
-		return areCompatibleMediaTypes(one, other,false);
+		return areCompatibleMediaTypes(one,other,false);
 	}
 
 	/**
@@ -378,9 +378,6 @@ public final class MediaTypes {
 		if(other==null) {
 			return false;
 		}
-		if(!equalsIgnoreCase(one.suffix(), other.suffix())) {
-			return false;
-		}
 		return haveCompatibleMediaRange(one, other, symmetric);
 	}
 
@@ -390,6 +387,9 @@ public final class MediaTypes {
 		}
 		if(symmetric && isWildcardType(other)) {
 			return true;
+		}
+		if(!equalsIgnoreCase(one.suffix(), other.suffix())) {
+			return false;
 		}
 		return
 			one.type().equalsIgnoreCase(other.type()) &&

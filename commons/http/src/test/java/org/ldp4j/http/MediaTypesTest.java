@@ -95,6 +95,13 @@ public class MediaTypesTest {
 	}
 
 	@Test
+	public void regularWildcardTypeIncludesMediaTypesWithNonSuffix() {
+		MediaType one=anyMediaType();
+		MediaType other=applicationRdfXml();
+		checkIncludes(one, other, true);
+	}
+
+	@Test
 	public void regularWildcardSubtypeIncludesMediaTypesFromSameTypeFamily() {
 		MediaType one=anyTextMediaType();
 		MediaType other=textTurtle();
