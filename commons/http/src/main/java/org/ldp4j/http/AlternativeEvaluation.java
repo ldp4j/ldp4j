@@ -30,6 +30,7 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.SortedSet;
 
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
@@ -43,6 +44,17 @@ final class AlternativeEvaluation {
 		private AttributeQuality(final Quality quality, final Weighted<T> value) {
 			this.quality = quality;
 			this.value = value;
+		}
+
+		@Override
+		public String toString() {
+			return
+				MoreObjects.
+					toStringHelper(getClass()).
+						omitNullValues().
+						add("quality",this.quality).
+						add("value",this.value).
+						toString();
 		}
 
 		static <T extends Negotiable> AttributeQuality<T> create(double weight) {
@@ -129,9 +141,9 @@ final class AlternativeEvaluation {
 		if(this.predefined) {
 			selection=ImmutableVariant.copyOf(this.alternative);
 		} else {
-			final MediaType mediaType = normalize(this.alternative.type(),this.qt,ContentNegotiator.DEFAULT_MEDIA_TYPE);
-			final CharacterEncoding charset= normalize(this.alternative.charset(), this.qc,ContentNegotiator.DEFAULT_CHARACTER_ENCODING);
-			final Language language= normalize(this.alternative.language(),this.ql,ContentNegotiator.DEFAULT_LANGUAGE);
+			final MediaType mediaType = normalize(this.alternative.type(),ContentNegotiator.DEFAULT_MEDIA_TYPE);
+			final CharacterEncoding charset= normalize(this.alternative.charset(),ContentNegotiator.DEFAULT_CHARACTER_ENCODING);
+			final Language language= normalize(this.alternative.language(),ContentNegotiator.DEFAULT_LANGUAGE);
 			selection=
 				ImmutableVariant.
 					newInstance().
@@ -150,7 +162,7 @@ final class AlternativeEvaluation {
 		this.qt = computeMediaTypeQuality(accepts);
 		this.qc = computeCharsetQuality(acceptCharsets);
 		this.ql = computeLanguageQuality(acceptLanguages);
-		this.quality = combine(qs,qt.quality,qc.quality,ql.quality);
+		this.quality = combine(qs,this.qt.quality,this.qc.quality,this.ql.quality);
 	}
 
 	private AttributeQuality<MediaType> computeMediaTypeQuality(List<Weighted<MediaType>> acceptable) {
@@ -165,6 +177,21 @@ final class AlternativeEvaluation {
 		return computeAttributeQuality(this.alternative.language(),acceptable,LanguageMatcher.INSTANCE,LanguageComparator.INSTANCE);
 	}
 
+	@Override
+	public String toString() {
+		return
+			MoreObjects.
+				toStringHelper(getClass()).
+					omitNullValues().
+					add("predefined",this.predefined).
+					add("alternative",this.alternative).
+					add("qt",this.qt).
+					add("qc",this.qc).
+					add("ql",this.ql).
+					add("quality",this.quality).
+					toString();
+	}
+
 	static AlternativeEvaluation predefined(Alternative alternative) {
 		return new AlternativeEvaluation(true,ImmutableAlternative.copyOf(alternative));
 	}
@@ -173,19 +200,10 @@ final class AlternativeEvaluation {
 		return new AlternativeEvaluation(false,alternative);
 	}
 
-	private static <T extends Negotiable> T normalize(T selected, AttributeQuality<T> computed, T defaultValue) {
-		T result=selected;
+	private static <T extends Negotiable> T normalize(T original, T defaultValue) {
+		T result=original;
 		if(result==null) {
-			Weighted<T> matching=computed.value;
-			if(matching!=null) {
-				result=matching.entity();
-				if(!result.isWildcard()) {
-					result=null;
-				}
-			}
-			if(result==null) {
-				result=defaultValue;
-			}
+			result=defaultValue;
 		}
 		return result;
 	}

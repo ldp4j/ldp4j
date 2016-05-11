@@ -59,6 +59,7 @@ import org.junit.runners.Suite.SuiteClasses;
 	QualitiesTest.class,
 	ImmutableAlternativeTest.class,
 	ImmutableAlternativesTest.class,
+	AlternativeEvaluationTest.class,
 	AlternativeProviderTest.class,
 	AlternativeComparatorTest.class,
 	VariantsTest.class,
