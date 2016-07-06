@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
- *   Bundle      : ldp4j-server-core-0.2.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.1
+ *   Bundle      : ldp4j-server-core-0.2.1.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.controller;
@@ -29,21 +29,36 @@ package org.ldp4j.server.controller;
 import java.util.Collections;
 import java.util.List;
 
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.Variant;
 
-import org.ldp4j.application.engine.context.PublicResource;
 import org.ldp4j.server.utils.VariantUtils;
 
-public class ContentProcessingException extends OperationContextException {
+public class ContentProcessingException extends DiagnosedException {
 
 	private static final long serialVersionUID = -7271633668400276805L;
 
-	public ContentProcessingException(String message, PublicResource resource, OperationContext context) {
-		this(message,null,resource,context);
+	public ContentProcessingException(String message, OperationContext context, Status statusCode) {
+		this(message,null,context,statusCode);
 	}
 
-	public ContentProcessingException(String message, Throwable cause, PublicResource resource, OperationContext context) {
-		super(message,cause,resource,context);
+	public ContentProcessingException(String message, Throwable cause, OperationContext context, Status statusCode) {
+		super(
+			context,
+			cause,
+			Diagnosis.
+				create().
+					statusCode(statusCode).
+					diagnostic(getFailureMessage(message,VariantUtils.defaultVariants())));
+	}
+
+	static String getFailureMessage(String message, List<Variant> variants) {
+		return
+			new StringBuilder().
+				append(message).
+				append(variants.size()==1?"":"one of: ").
+				append(VariantUtils.toString(variants)).
+				toString();
 	}
 
 	public final List<Variant> getSupportedVariants() {

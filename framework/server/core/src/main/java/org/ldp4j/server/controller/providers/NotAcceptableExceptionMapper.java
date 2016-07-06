@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,44 +20,41 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
- *   Bundle      : ldp4j-server-core-0.2.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.1
+ *   Bundle      : ldp4j-server-core-0.2.1.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.controller.providers;
 
-import java.util.List;
-import java.util.Locale;
-
-import javax.ws.rs.core.MediaType;
+import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
-import javax.ws.rs.core.Variant;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
 import org.ldp4j.server.controller.EndpointControllerUtils;
+import org.ldp4j.server.controller.EndpointControllerUtils.ResponseEnricher;
 import org.ldp4j.server.controller.NotAcceptableException;
-import org.ldp4j.server.utils.VariantUtils;
 
 @Provider
 public class NotAcceptableExceptionMapper implements ExceptionMapper<NotAcceptableException> {
 
 	@Override
-	public Response toResponse(NotAcceptableException throwable) {
-		List<Variant> variants = VariantUtils.defaultVariants();
-		String message = EndpointControllerUtils.getAcceptableContent(variants, throwable.resourceLocation());
-		ResponseBuilder builder=
-			Response.
-				status(Status.NOT_ACCEPTABLE).
-				variants(variants).
-				language(Locale.ENGLISH).
-				type(MediaType.TEXT_PLAIN).
-				entity(message);
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.resourceClass());
-		return builder.build();
+	public Response toResponse(final NotAcceptableException throwable) {
+		return
+			EndpointControllerUtils.
+				prepareErrorResponse(
+					throwable,
+					new ResponseEnricher() {
+						@Override
+						protected void enrich(ResponseBuilder builder) {
+							builder.header(HttpHeaders.VARY,HttpHeaders.ACCEPT_CHARSET);
+							for(String supportedCharset:throwable.supportedCharsets()) {
+								builder.header(HttpHeaders.ACCEPT_CHARSET,supportedCharset);
+							}
+						}
+					}
+				);
 	}
 
 }

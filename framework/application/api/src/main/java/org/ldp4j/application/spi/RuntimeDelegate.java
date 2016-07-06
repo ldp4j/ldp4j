@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
- *   Bundle      : ldp4j-application-api-0.2.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
+ *   Bundle      : ldp4j-application-api-0.2.1.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.spi;
@@ -39,6 +39,7 @@ import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.ldp4j.application.ApplicationApiRuntimeException;
 import org.ldp4j.application.ApplicationContextException;
 import org.ldp4j.application.session.ReadSession;
 import org.ldp4j.application.session.ResourceSnapshot;
@@ -315,7 +316,7 @@ public abstract class RuntimeDelegate {
 
 		@Override
 		public void registerShutdownListener(ShutdownListener listener) {
-			// Nothing to do
+			throw new ApplicationApiRuntimeException("No runtime delegate found");
 		}
 
 	}

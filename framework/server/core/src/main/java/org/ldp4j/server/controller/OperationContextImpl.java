@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
- *   Bundle      : ldp4j-server-core-0.2.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.1
+ *   Bundle      : ldp4j-server-core-0.2.1.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.controller;
@@ -30,6 +30,8 @@ import static com.google.common.base.Preconditions.checkState;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -41,6 +43,7 @@ import javax.ws.rs.core.MultivaluedMap;
 import javax.ws.rs.core.Request;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
+import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.core.UriInfo;
 import javax.ws.rs.core.Variant;
 
@@ -61,12 +64,14 @@ import org.ldp4j.rdf.Namespaces;
 import org.ldp4j.server.data.DataTransformator;
 import org.ldp4j.server.data.ResourceResolver;
 import org.ldp4j.server.data.UnsupportedMediaTypeException;
+import org.ldp4j.server.utils.CharsetSelector;
 import org.ldp4j.server.utils.VariantHelper;
 import org.ldp4j.server.utils.VariantUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 
 final class OperationContextImpl implements OperationContext {
 
@@ -100,6 +105,7 @@ final class OperationContextImpl implements OperationContext {
 	}
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(OperationContextImpl.class);
+
 	private final ApplicationContext applicationContext;
 	private final String             endpointPath;
 	private final HttpMethod         method;
@@ -111,6 +117,8 @@ final class OperationContextImpl implements OperationContext {
 	private ApplicationContextOperation applicationContextOperation;
 	private PublicResource              resource;
 	private DataSet                     dataSet;
+
+	private CharsetSelector charsetSelector;
 
 	OperationContextImpl(
 		ApplicationContext applicationContext,
@@ -139,8 +147,7 @@ final class OperationContextImpl implements OperationContext {
 				getRequestHeader(HttpHeaders.CONTENT_ENCODING);
 
 		List<Variant> variants=
-			Variant.VariantListBuilder.
-				newInstance().
+			Variant.
 				mediaTypes(headers().getMediaType()).
 				encodings(requestHeader.toArray(new String[requestHeader.size()])).
 				languages(headers().getLanguage()).
@@ -214,6 +221,20 @@ final class OperationContextImpl implements OperationContext {
 		return allowed;
 	}
 
+	private CharsetSelector charsetSelector() {
+		if(this.charsetSelector==null) {
+			final List<Variant> variants=VariantUtils.defaultVariants();
+			final Variant variant = this.request.selectVariant(variants);
+			this.charsetSelector=
+				CharsetSelector.
+					newInstance().
+						mediaType(variant==null?null:variant.getMediaType()).
+						acceptableCharsets(this.headers.getRequestHeader(HttpHeaders.ACCEPT_CHARSET)).
+						supportedCharsets(supportedCharsets());
+		}
+		return this.charsetSelector;
+	}
+
 	UriInfo uriInfo() {
 		return this.uriInfo;
 	}
@@ -262,15 +283,15 @@ final class OperationContextImpl implements OperationContext {
 	public OperationContext checkContents() {
 		List<Variant> supportedVariants=VariantUtils.defaultVariants();
 		if(entity()==null || entity().isEmpty()) {
-			throw new MissingContentException(this.resource,this);
+			throw new MissingContentException(this);
 		}
 		if(headers().getMediaType()==null) {
-			throw new MissingContentTypeException(this.resource,this);
+			throw new MissingContentTypeException(this);
 		}
 		if(!VariantHelper.
 				forVariants(supportedVariants).
 					isSupported(contentVariant())) {
-			throw new UnsupportedContentException(this.resource,this,contentVariant());
+			throw new UnsupportedContentException(this,contentVariant());
 		}
 		return this;
 	}
@@ -282,7 +303,7 @@ final class OperationContextImpl implements OperationContext {
 		if(HttpMethod.PUT.equals(this.method)) {
 			List<String> requestHeader = this.headers.getRequestHeader(HttpHeaders.IF_MATCH);
 			if(requestHeader==null || requestHeader.isEmpty()) {
-				throw new PreconditionRequiredException(this.resource);
+				throw new PreconditionRequiredException(this);
 			}
 		}
 		ResponseBuilder builder =
@@ -292,7 +313,7 @@ final class OperationContextImpl implements OperationContext {
 					new javax.ws.rs.core.EntityTag(entityTag.getValue()));
 		if(builder!=null) {
 			Response response = builder.build();
-			throw new PreconditionFailedException(this.resource,this,response.getStatus());
+			throw new PreconditionFailedException(this,response.getStatus());
 		}
 		return this;
 	}
@@ -300,7 +321,7 @@ final class OperationContextImpl implements OperationContext {
 	@Override
 	public OperationContext checkOperationSupport() {
 		if(!isMethodAllowed()) {
-			throw new MethodNotAllowedException(this,this.resource,this.method);
+			throw new MethodNotAllowedException(this,this.method);
 		}
 		return this;
 	}
@@ -322,9 +343,9 @@ final class OperationContextImpl implements OperationContext {
 				}
 				this.dataSet=transformator.unmarshall(this.entity);
 			} catch(UnsupportedMediaTypeException e) {
-				throw new UnsupportedContentException(this.resource,this,contentVariant(),e);
+				throw new UnsupportedContentException(this,contentVariant(),e);
 			} catch(IOException e) {
-				throw new InvalidRequestContentException("Entity cannot be parsed as '"+mediaType+"' ("+Throwables.getRootCause(e).getMessage()+")",e,this.resource,this);
+				throw new InvalidRequestContentException("Entity cannot be parsed as '"+mediaType+"' ("+Throwables.getRootCause(e).getMessage()+")",e,this);
 			}
 		}
 		return this.dataSet;
@@ -333,11 +354,50 @@ final class OperationContextImpl implements OperationContext {
 	@Override
 	public Variant expectedVariant() {
 		List<Variant> variants=VariantUtils.defaultVariants();
-		Variant variant = request.selectVariant(variants);
+		Variant variant=this.request.selectVariant(variants);
 		if(variant==null) {
-			throw new NotAcceptableException(this.resource,this);
+			throw new NotAcceptableException(this);
 		}
-		return variant;
+		String acceptableCharset=acceptedCharset();
+		if(acceptableCharset==null) {
+			throw new NotAcceptableException(this);
+		}
+		return
+			Variant.
+				encodings(variant.getEncoding()).
+				languages(variant.getLanguage()).
+				mediaTypes(variant.getMediaType().withCharset(acceptableCharset)).
+				add().
+				build().
+				get(0);
+	}
+
+	@Override
+	public boolean expectsCharset() {
+		return charsetSelector().requiresCharset();
+	}
+
+	@Override
+	public String acceptedCharset() {
+		return charsetSelector().select();
+	}
+
+	/**
+	 * TODO: Add extension point to enable configuring the list of supported
+	 * charsets
+	 */
+	@Override
+	public List<Charset> supportedCharsets() {
+		return
+			ImmutableList.
+				<Charset>builder().
+					add(StandardCharsets.UTF_8).
+					add(StandardCharsets.ISO_8859_1).
+					add(StandardCharsets.US_ASCII).
+					add(StandardCharsets.UTF_16).
+					add(StandardCharsets.UTF_16LE).
+					add(StandardCharsets.UTF_16BE).
+					build();
 	}
 
 	@Override
@@ -367,9 +427,9 @@ final class OperationContextImpl implements OperationContext {
 					permanentEndpoint(endpoint());
 			return transformator.marshall(representation);
 		} catch(UnsupportedMediaTypeException e) {
-			throw new UnsupportedContentException(this.resource,this,contentVariant(),e);
+			throw new UnsupportedContentException(this,contentVariant(),e);
 		} catch(IOException e) {
-			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"' ",e,this.resource,this);
+			throw new ContentProcessingException("Resource representation cannot be parsed as '"+mediaType+"'. Expecting content matching ",e,this,Status.BAD_REQUEST);
 		}
 	}
 

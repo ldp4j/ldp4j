@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,62 +20,37 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
- *   Bundle      : ldp4j-server-core-0.2.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.1
+ *   Bundle      : ldp4j-server-core-0.2.1.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.controller.providers;
 
-import java.util.List;
-import java.util.Locale;
-
-import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.Response.ResponseBuilder;
-import javax.ws.rs.core.Response.Status;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
 
-import org.ldp4j.application.engine.context.Capabilities;
 import org.ldp4j.server.controller.EndpointControllerUtils;
+import org.ldp4j.server.controller.EndpointControllerUtils.ResponseEnricher;
 import org.ldp4j.server.controller.MethodNotAllowedException;
-
-import com.google.common.base.Joiner;
-import com.google.common.collect.Lists;
 
 @Provider
 public class MethodNotAllowedExceptionMapper implements ExceptionMapper<MethodNotAllowedException> {
 
 	@Override
-	public Response toResponse(MethodNotAllowedException throwable) {
-		String message = String.format("Endpoint '%s' does not support %s. It only supports: %s",throwable.resourceLocation(),throwable.getMethod(),toHttpMethods(throwable.resourceCapabilities()));
-		ResponseBuilder builder=
-			Response.
-				status(Status.METHOD_NOT_ALLOWED).
-				language(Locale.ENGLISH).
-				type(MediaType.TEXT_PLAIN).
-				entity(message);
-		EndpointControllerUtils.populateProtocolEndorsedHeaders(builder,throwable.resourceLastModified(),throwable.resourceEntityTag());
-		EndpointControllerUtils.populateProtocolSpecificHeaders(builder,throwable.resourceClass());
-		EndpointControllerUtils.populateAllowedHeaders(builder,throwable.resourceCapabilities());
-		return builder.build();
-	}
-
-	private String toHttpMethods(Capabilities capabilities) {
-		List<String> list = Lists.newArrayList("HEAD","GET","OPTIONS");
-		if(capabilities.isModifiable()) {
-			list.add("PUT");
-		}
-		if(capabilities.isDeletable()) {
-			list.add("DELETE");
-		}
-		if(capabilities.isFactory()) {
-			list.add("POST");
-		}
-		if(capabilities.isPatchable()) {
-			list.add("PATCH");
-		}
-		return Joiner.on(", ").join(list);
+	public Response toResponse(final MethodNotAllowedException throwable) {
+		return
+			EndpointControllerUtils.
+				prepareErrorResponse(
+					throwable,
+					new ResponseEnricher() {
+						@Override
+						protected void enrich(ResponseBuilder builder) {
+							EndpointControllerUtils.populateAllowedHeaders(builder,throwable.resourceCapabilities());
+						}
+					}
+				);
 	}
 
 }

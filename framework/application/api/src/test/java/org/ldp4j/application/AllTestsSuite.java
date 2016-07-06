@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
- *   Bundle      : ldp4j-application-api-0.2.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
+ *   Bundle      : ldp4j-application-api-0.2.1.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application;
@@ -30,6 +30,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 import org.ldp4j.application.data.LiteralsTest;
+import org.ldp4j.application.data.MutableDataSetTest;
 import org.ldp4j.application.ext.annotations.MembershipRelationTest;
 import org.ldp4j.application.session.SnapshotResolverTest;
 import org.ldp4j.application.spi.RuntimeDelegateTest;
@@ -37,9 +38,18 @@ import org.ldp4j.application.vocabulary.VocabularyTestsSuite;
 
 @RunWith(Suite.class)
 @SuiteClasses({
-	VocabularyTestsSuite.class,
+	ApplicationApiExceptionTest.class,
+	ApplicationApiRuntimeExceptionTest.class,
+	ApplicationContextExceptionTest.class,
+	ContextWriteSessionTest.class,
+	ContextWriteSessionReferenceTest.class,
+	ContextWriteSessionStateTest.class,
+	WriteSessionCleanerTest.class,
 	ApplicationContextTest.class,
+	ApplicationContextExtendedTest.class,
+	VocabularyTestsSuite.class,
 	LiteralsTest.class,
+	MutableDataSetTest.class,
 	MembershipRelationTest.class,
 	SnapshotResolverTest.class,
 	RuntimeDelegateTest.class

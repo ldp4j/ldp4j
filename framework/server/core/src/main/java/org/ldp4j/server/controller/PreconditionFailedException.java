@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,28 +20,26 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
- *   Bundle      : ldp4j-server-core-0.2.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.1
+ *   Bundle      : ldp4j-server-core-0.2.1.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.controller;
 
-import org.ldp4j.application.engine.context.PublicResource;
 
-
-public class PreconditionFailedException extends OperationContextException {
+public class PreconditionFailedException extends DiagnosedException {
 
 	private static final long serialVersionUID = 2525728579639037053L;
 
-	private final int statusCode;
-
-	public PreconditionFailedException(PublicResource resource, OperationContext context, int statusCode) {
-		super("",resource,context);
-		this.statusCode = statusCode;
-	}
-
-	public int getStatusCode() {
-		return statusCode;
+	public PreconditionFailedException(OperationContext context, int statusCode) {
+		super(
+			context,
+			null,
+			Diagnosis.
+				create().
+					statusCode(statusCode).
+					diagnostic("Precondition failed").
+					mandatory(true));
 	}
 
 }

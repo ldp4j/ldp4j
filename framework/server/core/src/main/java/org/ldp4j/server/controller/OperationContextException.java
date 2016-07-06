@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
- *   Bundle      : ldp4j-server-core-0.2.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.1
+ *   Bundle      : ldp4j-server-core-0.2.1.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.controller;
@@ -91,44 +91,65 @@ public class OperationContextException extends RuntimeException {
 	private final Class<? extends PublicResource> clazz;
 	private final SerializableCapabilities capabilities;
 
-	public OperationContextException(String message, Throwable cause, PublicResource resource, OperationContext context) {
+	public OperationContextException(String message, Throwable cause, OperationContext context) {
 		super(message, cause);
-		this.capabilities=new SerializableCapabilities(resource.capabilities());
-		this.location = context.base().resolve(resource.path());
-		this.lastModified=resource.lastModified();
-		this.entityTag=resource.entityTag();
-		this.clazz=resource.getClass();
+		this.capabilities=new SerializableCapabilities(resourceCapabilities(context));
+		this.location = resourceLocation(context);
+		this.lastModified= resourceLastModified(context);
+		this.entityTag=resourceEntityTag(context);
+		this.clazz=resourceClass(context);
 	}
 
-	public OperationContextException(PublicResource resource, OperationContext context) {
-		this(DEFAULT_ERROR_MESSAGE,resource,context);
+	public OperationContextException(OperationContext context) {
+		this(DEFAULT_ERROR_MESSAGE,context);
 	}
 
-	public OperationContextException(String message, PublicResource resource, OperationContext context) {
-		this(message,null,resource,context);
+	public OperationContextException(String message, OperationContext context) {
+		this(message,null,context);
 	}
 
-	public OperationContextException(Throwable cause, PublicResource resource, OperationContext context) {
-		this(DEFAULT_ERROR_MESSAGE,cause,resource,context);
+	public OperationContextException(Throwable cause, OperationContext context) {
+		this(DEFAULT_ERROR_MESSAGE,cause,context);
 	}
 
-	public Class<? extends PublicResource> resourceClass() {
-		return clazz;
+	public final Class<? extends PublicResource> resourceClass() {
+		return this.clazz;
 	}
 
 	public final URI resourceLocation() {
-		return location;
+		return this.location;
 	}
 
 	public final Capabilities resourceCapabilities() {
 		return this.capabilities;
 	}
+
 	public final Date resourceLastModified() {
 		return this.lastModified;
 	}
 
 	public final EntityTag resourceEntityTag() {
 		return this.entityTag;
+	}
+
+	static Class<? extends PublicResource> resourceClass(OperationContext context) {
+		return context.resource().getClass();
+	}
+
+	static URI resourceLocation(OperationContext context) {
+		return context.base().resolve(context.resource().path());
+	}
+
+	static Capabilities resourceCapabilities(OperationContext context) {
+		return context.resource().capabilities();
+	}
+
+	static Date resourceLastModified(OperationContext context) {
+		return context.resource().lastModified();
+	}
+
+	static EntityTag resourceEntityTag(OperationContext context) {
+		return context.resource().entityTag();
 	}
 
 }

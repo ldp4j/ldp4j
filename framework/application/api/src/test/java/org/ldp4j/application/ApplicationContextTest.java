@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
- *   Bundle      : ldp4j-application-api-0.2.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
+ *   Bundle      : ldp4j-application-api-0.2.1.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application;
@@ -29,6 +29,7 @@ package org.ldp4j.application;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.fail;
@@ -52,7 +53,6 @@ import org.ldp4j.application.data.Name;
 import org.ldp4j.application.ext.ResourceHandler;
 import org.ldp4j.application.ext.UnknownResourceException;
 import org.ldp4j.application.session.ResourceSnapshot;
-import org.ldp4j.application.session.SessionTerminationException;
 import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.spi.RuntimeDelegate;
 import org.ldp4j.commons.testing.Utils;
@@ -97,6 +97,14 @@ public class ApplicationContextTest {
 	public void verifyIsUtilityClass() throws ClassNotFoundException {
 		Class<?> innerClass = Thread.currentThread().getContextClassLoader().loadClass(ApplicationContext.class.getCanonicalName()+"$ApplicationEngineSingleton");
 		assertThat(Utils.isUtilityClass(innerClass),equalTo(true));
+	}
+
+	@Test
+	public void testToString() throws Exception {
+		ApplicationContext sut = createContext();
+		assertThat(
+			sut.toString(),
+			not(equalTo(Utils.defaultToString(sut))));
 	}
 
 	@Test
@@ -155,80 +163,6 @@ public class ApplicationContextTest {
 		new Verifications() {{
 			nativeSession.close();maxTimes=1;minTimes=1;
 		}};
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test
-	public void testDisposeSession(@Mocked final WriteSession nativeSession) throws Exception {
-		new Expectations() {{
-			delegate.createSession();result=nativeSession;
-		}};
-		ApplicationContext sut = createContext();
-		WriteSession session = sut.createSession();
-		sut.disposeSession(session);
-		session.close();
-		new Verifications() {{
-			nativeSession.close();maxTimes=1;minTimes=1;
-		}};
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test
-	public void testDisposeSession$terminationFailure(@Mocked final WriteSession nativeSession) throws Exception {
-		new Expectations() {{
-			delegate.createSession();result=nativeSession;
-			nativeSession.close();result=new SessionTerminationException("FAILURE");
-		}};
-		ApplicationContext sut = createContext();
-		WriteSession session = sut.createSession();
-		try {
-			sut.disposeSession(session);
-			fail("Should propagate close failure");
-		} catch (Exception e) {
-			assertThat(Throwables.getRootCause(e),instanceOf(SessionTerminationException.class));
-		} finally {
-			session.close();
-		}
-		new Verifications() {{
-			nativeSession.close();maxTimes=1;minTimes=1;
-		}};
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test(expected=NullPointerException.class)
-	public void testDisposeSession$null() throws Exception {
-		ApplicationContext sut = createContext();
-		sut.disposeSession(null);
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test
-	public void testDisposeSession$unknownSession$withSession(@Mocked final WriteSession nativeSession, @Mocked final WriteSession other) throws Exception {
-		new Expectations() {{
-			delegate.createSession();result=nativeSession;
-		}};
-		ApplicationContext sut = createContext();
-		WriteSession session = sut.createSession();
-		try {
-			sut.disposeSession(other);
-			fail("Should not allow dipossing unknown sessions");
-		} catch(ApplicationContextException e) {
-			assertThat(e.getMessage(),notNullValue());
-		} finally {
-			session.close();
-		}
-	}
-
-	@SuppressWarnings("deprecation")
-	@Test
-	public void testDisposeSession$unknownSession$noSession(@Mocked final WriteSession nativeSession, @Mocked final WriteSession other) throws Exception {
-		ApplicationContext sut = createContext();
-		try {
-			sut.disposeSession(other);
-			fail("Should not allow dipossing unknown sessions");
-		} catch(ApplicationContextException e) {
-			assertThat(e.getMessage(),notNullValue());
-		}
 	}
 
 	@Test
@@ -574,76 +508,6 @@ public class ApplicationContextTest {
 			nativeSession.saveChanges();maxTimes=1;minTimes=1;
 			nativeSession.close();maxTimes=1;minTimes=1;
 		}};
-	}
-
-	@Test
-	public void testWriteSession$forceSessionClose$happyPath(@Mocked final WriteSession nativeSession) throws Exception {
-		prepareExpectations(nativeSession,null);
-		ApplicationContext sut = createContext();
-		useSession(sut);
-		forceGarbageCollection(sut);
-		awaitWriteSessionCleaner(sut);
-		verifySessionUsage(nativeSession);
-	}
-
-	@Test
-	public void testWriteSession$forceSessionClose$failurePath(@Mocked final WriteSession nativeSession) throws Exception {
-		prepareExpectations(nativeSession,new SessionTerminationException("failure"));
-		ApplicationContext sut = createContext();
-		useSession(sut);
-		forceGarbageCollection(sut);
-		awaitWriteSessionCleaner(sut);
-		verifySessionUsage(nativeSession);
-	}
-
-	@Test
-	public void testWriteSession$forceSessionClose$errorPath(@Mocked final WriteSession nativeSession) throws Exception {
-		prepareExpectations(nativeSession,new IllegalStateException("failure"));
-		ApplicationContext sut = createContext();
-		useSession(sut);
-		forceGarbageCollection(sut);
-		awaitWriteSessionCleaner(sut);
-		verifySessionUsage(nativeSession);
-	}
-
-	@Test
-	public void testWriteSession$forceSessionClose$interruptionPath(@Mocked final WriteSession nativeSession) throws Exception {
-		prepareExpectations(nativeSession, new InterruptedException("failure"));
-		ApplicationContext sut = createContext();
-		useSession(sut);
-		forceGarbageCollection(sut);
-		awaitWriteSessionCleaner(sut);
-		verifySessionUsage(nativeSession);
-	}
-
-	private void useSession(ApplicationContext sut) throws Exception {
-		WriteSession session = sut.createSession();
-		System.out.printf("%s - Created session %s%n",this.name.getMethodName(),session);
-		session.saveChanges();
-		System.out.printf("%s - Saved session %s%n",this.name.getMethodName(),session);
-		session=null;
-		System.out.printf("%s - Session nulled%n",this.name.getMethodName());
-	}
-
-	private void prepareExpectations(final WriteSession nativeSession, final Throwable failure) throws Exception {
-		new Expectations() {{
-			delegate.createSession();this.result=nativeSession;
-			nativeSession.close();this.result=failure;
-		}};
-	}
-
-	private void awaitWriteSessionCleaner(ApplicationContext sut) throws InterruptedException {
-		TimeUnit.MILLISECONDS.sleep(3000);
-		System.out.printf("%s - After waiting for the cleaner (%s)%n",name.getMethodName(),sut);
-	}
-
-	private void forceGarbageCollection(ApplicationContext sut) {
-		System.out.printf("%s - Force garbage collection (%s)%n",name.getMethodName(),sut);
-		int i=0;
-		while(i<10) {
-			i++;
-			System.gc();
-		}
 	}
 
 	private void verifySessionUsage(final WriteSession nativeSession) throws Exception {

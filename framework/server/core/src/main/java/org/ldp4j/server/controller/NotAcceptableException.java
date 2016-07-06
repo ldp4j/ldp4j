@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,20 +20,59 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
- *   Bundle      : ldp4j-server-core-0.2.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.1
+ *   Bundle      : ldp4j-server-core-0.2.1.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.controller;
 
-import org.ldp4j.application.engine.context.PublicResource;
+import java.nio.charset.Charset;
+import java.util.List;
 
-public class NotAcceptableException extends OperationContextException {
+import javax.ws.rs.core.Response.Status;
+
+import org.ldp4j.server.utils.VariantUtils;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+
+public class NotAcceptableException extends DiagnosedException {
 
 	private static final long serialVersionUID = 6897847237787548607L;
 
-	public NotAcceptableException(PublicResource resource, OperationContext context) {
-		super(resource,context);
+	private final List<String> supportedCharsets;
+
+	private NotAcceptableException(OperationContext context, List<String> supportedCharsets) {
+		super(
+			context,
+			null,
+			Diagnosis.
+				create().
+					statusCode(Status.NOT_ACCEPTABLE).
+					diagnostic(
+						EndpointControllerUtils.
+							getAcceptableContent(
+								VariantUtils.defaultVariants(),
+								resourceLocation(context),
+								supportedCharsets))
+		);
+		this.supportedCharsets=supportedCharsets;
+	}
+
+	public NotAcceptableException(OperationContext context) {
+		this(context,getNames(context.supportedCharsets()));
+	}
+
+	public List<String> supportedCharsets() {
+		return this.supportedCharsets;
+	}
+
+	private static List<String> getNames(List<Charset> supportedCharsets) {
+		Builder<String> builder=ImmutableList.<String>builder();
+		for(Charset supportedCharset:supportedCharsets) {
+			builder.add(supportedCharset.name());
+		}
+		return builder.build();
 	}
 
 }

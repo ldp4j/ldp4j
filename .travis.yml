@@ -16,22 +16,20 @@ cache:
   - "$HOME/.sonar"
 
 before_cache:
-  - mkdir /tmp/cache-trick
-  - mv $HOME/.m2/repository/org/ldp4j /tmp/cache-trick/
+  - source ./.travis/utils.sh backup-maven-repo
 
 before_install:
-- openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in config/src/main/resources/ci/secring.gpg.enc
-  -out local.secring.gpg -d
-- openssl aes-256-cbc -pass pass:$ENCRYPTION_PASSWORD -in config/src/main/resources/ci/pubring.gpg.enc
-  -out local.pubring.gpg -d
-- if [[ -a .git/shallow ]]; then git fetch --unshallow; fi
+  - source ./.travis/utils.sh prepare-build-bom $ENCRYPTION_PASSWORD
 
 install:
-- "/bin/true"
+  - "/bin/true"
 
 script:
-- chmod ugo+x ./.travis/travis.sh
-- ./.travis/travis.sh
+  - source ./.travis/build.sh
+
+after_success:
+  - source ./.travis/utils.sh restore-maven-repo
+  - source ./.travis/qa.sh
 
 env:
   global:

@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,41 +20,28 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.0
- *   Bundle      : ldp4j-server-core-0.2.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.1
+ *   Bundle      : ldp4j-server-core-0.2.1.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.controller;
 
-import java.util.Date;
+import com.google.common.net.HttpHeaders;
 
-import org.ldp4j.application.engine.context.EntityTag;
-import org.ldp4j.application.engine.context.PublicResource;
 
-public class PreconditionRequiredException extends RuntimeException {
+public class PreconditionRequiredException extends DiagnosedException {
 
 	private static final long serialVersionUID = 8286288208444290507L;
 
-	private final Class<? extends PublicResource> clazz;
-	private final Date lastModified;
-	private final EntityTag entityTag;
-
-	public PreconditionRequiredException(PublicResource resource) {
-		this.clazz = resource.getClass();
-		this.lastModified=resource.lastModified();
-		this.entityTag=resource.entityTag();
-	}
-
-	public Class<? extends PublicResource> resourceClass() {
-		return this.clazz;
-	}
-
-	public Date resourceLastModified() {
-		return this.lastModified;
-	}
-
-	public EntityTag resourceEntityTag() {
-		return this.entityTag;
+	public PreconditionRequiredException(OperationContext context) {
+		super(
+			context,
+			null,
+			Diagnosis.
+				create().
+					statusCode(MoreHttp.PRECONDITION_REQUIRED_STATUS_CODE).
+					diagnostic("No %s header specified.",HttpHeaders.IF_MATCH).
+					mandatory(true));
 	}
 
 }

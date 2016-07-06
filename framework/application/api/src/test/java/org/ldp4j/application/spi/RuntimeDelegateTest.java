@@ -6,7 +6,7 @@
  *   Center for Open Middleware
  *     http://www.centeropenmiddleware.com/
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Copyright (C) 2014 Center for Open Middleware.
+ *   Copyright (C) 2014-2016 Center for Open Middleware.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  *   Licensed under the Apache License, Version 2.0 (the "License");
  *   you may not use this file except in compliance with the License.
@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.0
- *   Bundle      : ldp4j-application-api-0.2.0.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
+ *   Bundle      : ldp4j-application-api-0.2.1.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.spi;
@@ -56,6 +56,7 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 import org.junit.runner.RunWith;
+import org.ldp4j.application.ApplicationApiRuntimeException;
 import org.ldp4j.application.ApplicationContextException;
 import org.ldp4j.application.session.ResourceSnapshot;
 import org.ldp4j.application.session.WriteSession;
@@ -431,6 +432,16 @@ public class RuntimeDelegateTest {
 	public void testDefaultResourceSnapshotResolver$resolveURI() throws Exception {
 		ResourceSnapshotResolver resolver = sut().createResourceResolver(canonicalBase,session);
 		assertThat(resolver.resolve(endpoint),nullValue());
+	}
+
+	@Test
+	public void testDefaultResourceSnapshotResolver$registerShutdownListener(@Mocked final ShutdownListener listener) throws Exception {
+		try {
+			sut().registerShutdownListener(listener);
+			fail("Operation should fail");
+		} catch (ApplicationApiRuntimeException e) {
+			assertThat(e.getMessage(),equalTo("No runtime delegate found"));
+		}
 	}
 
 }
