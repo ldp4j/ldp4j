@@ -59,6 +59,7 @@
 
 	<modules>
 		<module>sesame</module>
+		<module>rdf4j</module>
 	</modules>
 
 </project>
