@@ -41,24 +41,24 @@ import org.ldp4j.rdf.NodeVisitor;
 import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.TypedLiteral;
 import org.ldp4j.rdf.URIRef;
-import org.ldp4j.rdf.sesame.TurtlePrettyPrinter;
-import org.openrdf.model.Statement;
-import org.openrdf.model.ValueFactory;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandler;
-import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFWriter;
-import org.openrdf.rio.RDFWriterFactory;
-import org.openrdf.rio.RDFWriterRegistry;
-import org.openrdf.rio.Rio;
-import org.openrdf.rio.helpers.BasicWriterSettings;
-import org.openrdf.rio.helpers.JSONLDMode;
-import org.openrdf.rio.helpers.JSONLDSettings;
-import org.openrdf.rio.turtle.TurtleUtil;
-import org.openrdf.rio.turtle.TurtleWriter;
-import org.openrdf.sail.memory.model.MemValueFactory;
+import org.ldp4j.rdf.rdf4j.TurtlePrettyPrinter;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.model.ValueFactory;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFHandler;
+import org.eclipse.rdf4j.rio.RDFHandlerException;
+import org.eclipse.rdf4j.rio.RDFWriter;
+import org.eclipse.rdf4j.rio.RDFWriterFactory;
+import org.eclipse.rdf4j.rio.RDFWriterRegistry;
+import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.rio.helpers.BasicWriterSettings;
+import org.eclipse.rdf4j.rio.helpers.JSONLDMode;
+import org.eclipse.rdf4j.rio.helpers.JSONLDSettings;
+import org.eclipse.rdf4j.rio.turtle.TurtleUtil;
+import org.eclipse.rdf4j.rio.turtle.TurtleWriter;
+import org.eclipse.rdf4j.sail.memory.model.MemValueFactory;
 
 final class RDFModelFormater {
 
@@ -83,7 +83,7 @@ final class RDFModelFormater {
 		}
 
 		@Override
-		protected void writeURI(org.openrdf.model.URI uri)
+		protected void writeURI(org.eclipse.rdf4j.model.IRI uri)
 				throws IOException {
 			URI create = URI.create(uri.toString());
 			URI rel = baseURI.relativize(create);
@@ -99,20 +99,20 @@ final class RDFModelFormater {
 
 	private static class TripleFormater {
 
-		private final class ObjectFormater extends NodeVisitor<org.openrdf.model.Value> {
+		private final class ObjectFormater extends NodeVisitor<org.eclipse.rdf4j.model.Value> {
 			@Override
-			public org.openrdf.model.Value visitURIRef(URIRef node, org.openrdf.model.Value defaultResult) {
+			public org.eclipse.rdf4j.model.Value visitURIRef(URIRef node, org.eclipse.rdf4j.model.Value defaultResult) {
 				return valueFactory.createURI(baseURI.resolve(node.getIdentity()).toString());
 			}
 
 			@Override
-			public org.openrdf.model.Value visitBlankNode(BlankNode node, org.openrdf.model.Value defaultResult) {
+			public org.eclipse.rdf4j.model.Value visitBlankNode(BlankNode node, org.eclipse.rdf4j.model.Value defaultResult) {
 				return valueFactory.createBNode(node.getIdentity());
 			}
 
 			@Override
-			public org.openrdf.model.Value visitLiteral(Literal<?> node, org.openrdf.model.Value defaultResult) {
-				org.openrdf.model.Value result=null;
+			public org.eclipse.rdf4j.model.Value visitLiteral(Literal<?> node, org.eclipse.rdf4j.model.Value defaultResult) {
+				org.eclipse.rdf4j.model.Value result=null;
 				Object value = node.getValue();
 				if(value instanceof Boolean) {
 					result = valueFactory.createLiteral((Boolean)value);
@@ -137,30 +137,30 @@ final class RDFModelFormater {
 			}
 
 			@Override
-			public org.openrdf.model.Value visitLanguageLiteral(LanguageLiteral node, org.openrdf.model.Value defaultResult) {
+			public org.eclipse.rdf4j.model.Value visitLanguageLiteral(LanguageLiteral node, org.eclipse.rdf4j.model.Value defaultResult) {
 				return valueFactory.createLiteral(node.getValue(),node.getLanguage());
 			}
 
 			@Override
-			public org.openrdf.model.Value visitTypedLiteral(TypedLiteral<?> node, org.openrdf.model.Value defaultResult) {
+			public org.eclipse.rdf4j.model.Value visitTypedLiteral(TypedLiteral<?> node, org.eclipse.rdf4j.model.Value defaultResult) {
 				URI type = node.getType().toURI();
 				return valueFactory.createLiteral(node.getValue().toString(),valueFactory.createURI(type.toString()));
 			}
 
 		}
 
-		private final class SubjectFormater extends NodeVisitor<org.openrdf.model.Resource> {
+		private final class SubjectFormater extends NodeVisitor<org.eclipse.rdf4j.model.Resource> {
 			@Override
-			public org.openrdf.model.Resource visitURIRef(
+			public org.eclipse.rdf4j.model.Resource visitURIRef(
 					URIRef node,
-					org.openrdf.model.Resource defaultResult) {
+					org.eclipse.rdf4j.model.Resource defaultResult) {
 				return valueFactory.createURI(baseURI.resolve(node.getIdentity()).toString());
 			}
 
 			@Override
-			public org.openrdf.model.Resource visitBlankNode(
+			public org.eclipse.rdf4j.model.Resource visitBlankNode(
 					BlankNode node,
-					org.openrdf.model.Resource defaultResult) {
+					org.eclipse.rdf4j.model.Resource defaultResult) {
 				return valueFactory.createBNode(node.getIdentity());
 			}
 		}
@@ -186,7 +186,7 @@ final class RDFModelFormater {
 						t.getObject().accept(objectFormater));
 		}
 
-		private org.openrdf.model.URI formatPredicate(URIRef predicate) {
+		private org.eclipse.rdf4j.model.URI formatPredicate(URIRef predicate) {
 			return valueFactory.createURI(baseURI.resolve(predicate.getIdentity()).toString());
 		}
 
@@ -223,7 +223,7 @@ final class RDFModelFormater {
 	}
 
 	private RDFFormat getFormat() {
-		return Rio.getWriterFormatForMIMEType(format.getMime(), RDFFormat.TURTLE);
+		return getWriterFormatForMIMEType(format.getMime(), RDFFormat.TURTLE);
 	}
 
 	private void populateRepository(Iterable<Triple> triples, RDFHandler handler) throws RDFHandlerException {
@@ -245,7 +245,7 @@ final class RDFModelFormater {
 			result=new TurtlePrettyPrinter(new MemValueFactory().createURI(baseURI.toString()),writer);
 		} else {
 			RDFWriterRegistry registry=RDFWriterRegistry.getInstance();
-			RDFFormat rawFormat=Rio.getWriterFormatForMIMEType(format.getMime(),RDFFormat.RDFXML);
+			RDFFormat rawFormat=getWriterFormatForMIMEType(format.getMime(),RDFFormat.RDFXML);
 			RDFWriterFactory factory=registry.get(rawFormat);
 			result=factory.getWriter(writer);
 			if(format.equals(Format.JSON_LD)) {
@@ -262,5 +262,13 @@ final class RDFModelFormater {
 		populateRepository(triples, handler);
 		handler.endRDF();
 	}
+
+    public static RDFFormat getWriterFormatForMIMEType(String mimeType, RDFFormat fallback) {
+        RDFFormat fileFormat = Rio.getWriterFormatForMIMEType(mimeType);
+        if (fileFormat == null) {
+            fileFormat = fallback;
+        }
+        return fileFormat;
+    }
 
 }

@@ -38,22 +38,22 @@ import org.ldp4j.rdf.Triple;
 import org.ldp4j.rdf.impl.UnmarshallOptions.Ordering;
 import org.ldp4j.rdf.impl.UnmarshallOptions.UnmarshallStyle;
 import org.ldp4j.rdf.util.TripleSet;
-import org.ldp4j.rdf.sesame.SesameModelParser;
-import org.openrdf.OpenRDFException;
-import org.openrdf.model.Namespace;
-import org.openrdf.model.Statement;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.RepositoryResult;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.rio.RDFFormat;
-import org.openrdf.rio.RDFHandler;
-import org.openrdf.rio.RDFHandlerException;
-import org.openrdf.rio.RDFParseException;
-import org.openrdf.rio.RDFParser;
-import org.openrdf.rio.Rio;
-import org.openrdf.sail.memory.MemoryStore;
+import org.ldp4j.rdf.rdf4j.RDF4JModelParser;
+import org.eclipse.rdf4j.OpenRDFException;
+import org.eclipse.rdf4j.model.Namespace;
+import org.eclipse.rdf4j.model.Statement;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.RepositoryResult;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.rio.RDFFormat;
+import org.eclipse.rdf4j.rio.RDFHandler;
+import org.eclipse.rdf4j.rio.RDFHandlerException;
+import org.eclipse.rdf4j.rio.RDFParseException;
+import org.eclipse.rdf4j.rio.RDFParser;
+import org.eclipse.rdf4j.rio.Rio;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -152,7 +152,7 @@ final class RDFModelParser {
 			RepositoryResult<Statement> statements = null;
 			try {
 				statements=connection.getStatements(null, null, null, false);
-				SesameModelParser tripleParser=new SesameModelParser(getNamespaces(connection));
+				RDF4JModelParser tripleParser=new RDF4JModelParser(getNamespaces(connection));
 				while(statements.hasNext()) {
 					sink.addTriple(tripleParser.parseStatement(statements.next()));
 				}
@@ -262,7 +262,7 @@ final class RDFModelParser {
 				RDFParser parser =Rio.createParser(this.format);
 				parser.setRDFHandler(collector);
 				parser.parse(new StringReader(this.content), this.base);
-				SesameModelParser tripleParser=new SesameModelParser(collector.getNamespaces());
+				RDF4JModelParser tripleParser=new RDF4JModelParser(collector.getNamespaces());
 				for(Statement st:collector.getStatements()) {
 					sink.addTriple(tripleParser.parseStatement(st));
 				}
@@ -290,8 +290,7 @@ final class RDFModelParser {
 
 	private TripleProducer getProducer(String content) {
 		RDFFormat sesameFormat =
-			Rio.
-				getParserFormatForMIMEType(
+			getParserFormatForMIMEType(
 					this.format.getMime(),
 					RDFFormat.TURTLE);
 		TripleProducer producer=null;
@@ -328,5 +327,13 @@ final class RDFModelParser {
 		TripleProducer producer = getProducer(content);
 		producer.injectTriples(sink);
 		return sink.triples();
+	}
+
+	public static RDFFormat getParserFormatForMIMEType(String mimeType, RDFFormat fallback) {
+		RDFFormat fileFormat = Rio.getParserFormatForMIMEType(mimeType);
+		if (fileFormat == null) {
+			fileFormat = fallback;
+		}
+		return fileFormat;
 	}
 }
