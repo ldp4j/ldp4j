@@ -289,17 +289,17 @@ final class RDFModelParser {
 	}
 
 	private TripleProducer getProducer(String content) {
-		RDFFormat sesameFormat =
+		RDFFormat rdf4jFormat =
 			getParserFormatForMIMEType(
 					this.format.getMime(),
 					RDFFormat.TURTLE);
 		TripleProducer producer=null;
 		switch(unmarshallStyle) {
 			case PARSER_BASED:
-				producer=new ParserBasedTripleProducer(content,sesameFormat,this.baseURI.toString());
+				producer=new ParserBasedTripleProducer(content,rdf4jFormat,this.baseURI.toString());
 				break;
 			case REPOSITORY_BASED:
-				producer=new RepositoryBasedTripleProducer(content,sesameFormat,this.baseURI.toString());
+				producer=new RepositoryBasedTripleProducer(content,rdf4jFormat,this.baseURI.toString());
 				break;
 			default:
 				throw new AssertionError("Unsupported unmarshalling style '"+unmarshallStyle+"'");
