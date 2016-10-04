@@ -33,11 +33,11 @@ import org.ldp4j.rdf.query.QueryProcessingException;
 import org.ldp4j.rdf.query.QueryProcessor;
 import org.ldp4j.rdf.query.QueryTemplate;
 
-public final class SesameQueryProcessor<R,S> implements QueryProcessor<R,S> {
+public final class RDF4JQueryProcessor<R,S> implements QueryProcessor<R,S> {
 
 	private final Query<R,S> query;
 
-	public SesameQueryProcessor(Query<R,S> query) {
+	public RDF4JQueryProcessor(Query<R,S> query) {
 		this.query = query;
 	}
 	

@@ -263,7 +263,7 @@ public class MutableTemplateLibraryTest extends TemplateLibraryTest {
 	/**
 	 * TODO: Allow using opaque URIs whenever the RDF handling
 	 * backend supports it (for the time being we are using
-	 * Sesame and it requires using HTTP URIs)
+	 * RDF4J and it requires using HTTP URIs)
 	 */
 	@Test
 	public void testOpaqueMembershipPredicate$directContainer() throws Exception {
@@ -328,7 +328,7 @@ public class MutableTemplateLibraryTest extends TemplateLibraryTest {
 	/**
 	 * TODO: Allow using opaque URIs whenever the RDF handling
 	 * backend supports it (for the time being we are using
-	 * Sesame and it requires using HTTP URIs)
+	 * RDF4J and it requires using HTTP URIs)
 	 */
 	@Test
 	public void testOpaqueInsertedContentRelation() throws Exception {

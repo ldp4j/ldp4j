@@ -45,6 +45,18 @@
 			</licenses>
 		</dependency>
 		<dependency>
+			<groupId>org.eclipse.rdf4j</groupId>
+			<artifactId>rdf4j</artifactId>
+			<version>1.0</version>
+			<licenses>
+				<license>
+					<name>EDL 1.0/name>
+					<url>https://eclipse.org/org/documents/edl-v10.html</url>
+					<distribution>repo</distribution>
+				</license>
+			</licenses>
+		</dependency>
+		<dependency>
 			<groupId>info.aduna.commons</groupId>
 			<artifactId>aduna-commons-concurrent</artifactId>
 			<version>2.2</version>

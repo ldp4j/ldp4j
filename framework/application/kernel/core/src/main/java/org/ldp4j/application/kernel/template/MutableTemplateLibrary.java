@@ -149,7 +149,7 @@ final class MutableTemplateLibrary implements TemplateLibrary {
 					/**
 					 * TODO: Allow using opaque URIs whenever the RDF handling
 					 * backend supports it (for the time being we are using
-					 * Sesame and it requires using HTTP URIs)
+					 * RDF4J and it requires using HTTP URIs)
 					 */
 					throw new TemplateCreationException(id,String.format("%s cannot be a opaque URI (%s)",uriType,predicate));
 				} else if(!uri.isAbsolute()) {

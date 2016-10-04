@@ -32,7 +32,7 @@ import org.ldp4j.rdf.query.Query;
 import org.ldp4j.rdf.query.QueryResultBuilder;
 import org.ldp4j.rdf.query.QueryResultHandler;
 import org.ldp4j.rdf.query.SelectQuery;
-import org.openrdf.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 abstract class QueryExecutionStrategy<R,S> {
 

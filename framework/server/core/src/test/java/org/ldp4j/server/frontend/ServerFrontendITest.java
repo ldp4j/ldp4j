@@ -27,6 +27,7 @@
 package org.ldp4j.server.frontend;
 
 import static com.jayway.restassured.RestAssured.given;
+import org.apache.http.HttpStatus;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
@@ -49,7 +50,6 @@ import javax.ws.rs.core.Response.Status;
 
 import mockit.Deencapsulation;
 
-import org.apache.commons.httpclient.HttpStatus;
 import org.apache.commons.io.IOUtils;
 import org.apache.http.HttpHeaders;
 import org.apache.http.client.methods.HttpDelete;

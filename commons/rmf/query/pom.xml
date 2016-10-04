@@ -65,7 +65,7 @@
 		<dependencies>
 			<dependency>
 				<groupId>org.ldp4j.commons.rmf</groupId>
-				<artifactId>integration-sesame</artifactId>
+				<artifactId>integration-rdf4j</artifactId>
 				<version>${project.version}</version>
 			</dependency>
 			<dependency>
@@ -102,7 +102,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.ldp4j.commons.rmf</groupId>
-			<artifactId>integration-sesame</artifactId>
+			<artifactId>integration-rdf4j</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.apache.jena</groupId>
