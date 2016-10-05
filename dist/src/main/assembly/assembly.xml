@@ -90,6 +90,7 @@
 				<exclude>ldp4j-*.jar</exclude>
 				<exclude>rmf-*.jar</exclude>
 				<exclude>integration-sesame-*.jar</exclude>
+				<exclude>integration-rdf4j-*.jar</exclude>
 			</excludes>
 			<directory>target/libs</directory>
 		</fileSet>
@@ -99,6 +100,7 @@
 				<include>ldp4j-commons*.jar</include>
 				<include>rmf-*.jar</include>
 				<include>integration-sesame-*.jar</include>
+				<include>integration-rdf4j-*.jar</include>
 			</includes>
 			<directory>target/libs</directory>
 		</fileSet>

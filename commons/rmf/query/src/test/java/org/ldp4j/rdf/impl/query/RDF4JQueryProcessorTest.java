@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons.rmf:rmf-query:0.2.1
- *   Bundle      : rmf-query-0.2.1.jar
+ *   Artifact    : org.ldp4j.commons.rmf:rmf-query:0.2.2
+ *   Bundle      : rmf-query-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.rdf.impl.query;
@@ -46,7 +46,6 @@ import org.ldp4j.rdf.BlankNode;
 import org.ldp4j.rdf.Node;
 import org.ldp4j.rdf.NodeVisitor;
 import org.ldp4j.rdf.URIRef;
-import org.ldp4j.rdf.impl.query.SesameQueryProcessor;
 import org.ldp4j.rdf.io.ModuleFactory;
 import org.ldp4j.rdf.query.ImmutableDataSet;
 import org.ldp4j.rdf.query.QueryBuilder;
@@ -56,7 +55,7 @@ import org.ldp4j.rdf.query.QueryResultBuilderFactory;
 import org.ldp4j.rdf.query.QueryResultHandler;
 import org.ldp4j.rdf.query.SelectQuery;
 
-public class SesameQueryProcessorTest {
+public class RDF4JQueryProcessorTest {
 
 	private CustomProcessor sut;
 
@@ -128,7 +127,7 @@ public class SesameQueryProcessorTest {
 			}
 		}
 
-		private SesameQueryProcessor<Map<String,List<String>>,Map<String,Node>> queryProcessor;
+		private RDF4JQueryProcessor<Map<String,List<String>>,Map<String,Node>> queryProcessor;
 
 		private static final String INFERENCE = "inference";
 		private static final String INPUT = "input";
@@ -141,7 +140,7 @@ public class SesameQueryProcessorTest {
 						withBinding(INPUT, URIRef.class).
 						withBinding(INFERENCE, BlankNode.class).
 						build(new CustomQueryResultBuilderFactory());
-			this.queryProcessor = new SesameQueryProcessor<Map<String,List<String>>,Map<String,Node>>(query);
+			this.queryProcessor = new RDF4JQueryProcessor<Map<String,List<String>>,Map<String,Node>>(query);
 		}
 
 		public Map<String,List<String>> getUsedResources(String base, String source) throws QueryProcessingException {

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons.rmf:rmf-query:0.2.1
- *   Bundle      : rmf-query-0.2.1.jar
+ *   Artifact    : org.ldp4j.commons.rmf:rmf-query:0.2.2
+ *   Bundle      : rmf-query-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.rdf.impl.query;
@@ -33,11 +33,11 @@ import org.ldp4j.rdf.query.QueryProcessingException;
 import org.ldp4j.rdf.query.QueryProcessor;
 import org.ldp4j.rdf.query.QueryTemplate;
 
-public final class SesameQueryProcessor<R,S> implements QueryProcessor<R,S> {
+public final class RDF4JQueryProcessor<R,S> implements QueryProcessor<R,S> {
 
 	private final Query<R,S> query;
 
-	public SesameQueryProcessor(Query<R,S> query) {
+	public RDF4JQueryProcessor(Query<R,S> query) {
 		this.query = query;
 	}
 	

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons.rmf:rmf-query:0.2.1
- *   Bundle      : rmf-query-0.2.1.jar
+ *   Artifact    : org.ldp4j.commons.rmf:rmf-query:0.2.2
+ *   Bundle      : rmf-query-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.rdf.impl.query;
@@ -32,7 +32,7 @@ import org.ldp4j.rdf.query.Query;
 import org.ldp4j.rdf.query.QueryResultBuilder;
 import org.ldp4j.rdf.query.QueryResultHandler;
 import org.ldp4j.rdf.query.SelectQuery;
-import org.openrdf.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
 
 abstract class QueryExecutionStrategy<R,S> {
 

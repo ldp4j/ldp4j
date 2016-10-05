@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons.rmf:rmf-query:0.2.1
- *   Bundle      : rmf-query-0.2.1.jar
+ *   Artifact    : org.ldp4j.commons.rmf:rmf-query:0.2.2
+ *   Bundle      : rmf-query-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.rdf.impl.query;
@@ -34,15 +34,15 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import org.ldp4j.rdf.io.Module;
 import org.ldp4j.rdf.query.QueryTemplate;
-import org.ldp4j.rdf.sesame.ContentProcessingException;
-import org.ldp4j.rdf.sesame.SesameUtils;
-import org.ldp4j.rdf.sesame.SesameUtilsException;
-import org.openrdf.model.URI;
-import org.openrdf.repository.Repository;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
-import org.openrdf.repository.sail.SailRepository;
-import org.openrdf.sail.memory.MemoryStore;
+import org.ldp4j.rdf.rdf4j.ContentProcessingException;
+import org.ldp4j.rdf.rdf4j.RDF4JUtils;
+import org.ldp4j.rdf.rdf4j.RDF4JUtilsException;
+import org.eclipse.rdf4j.model.URI;
+import org.eclipse.rdf4j.repository.Repository;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
+import org.eclipse.rdf4j.repository.sail.SailRepository;
+import org.eclipse.rdf4j.sail.memory.MemoryStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,7 +89,7 @@ final class QuerySupport {
 			if(graphName!=null) {
 				newCtx=nextContext(connection,graphName,module.getBase());
 			}
-			SesameUtils.loadModule(connection,module,newCtx);
+			RDF4JUtils.loadModule(connection,module,newCtx);
 			if(graphName!=null) {
 				URI previousCtx=loadedGraphs.put(graphName, newCtx);
 				if(previousCtx!=null) {
@@ -100,7 +100,7 @@ final class QuerySupport {
 			throw new InvalidContentsException("The contents provided could not be loaded",e,graphName,module);
 		} catch (RepositoryException e) {
 			throw new QueryTemplateSupportFailure(e);
-		} catch (SesameUtilsException e) {
+		} catch (RDF4JUtilsException e) {
 			throw new QueryTemplateSupportFailure(e);
 		} finally {
 			close(connection);
@@ -205,7 +205,7 @@ final class QuerySupport {
 			tmpRepo.initialize();
 			return new QuerySupport(tmpRepo,template);
 		} catch (RepositoryException e) {
-			throw new QueryTemplateSupportFailure("Could not initialize internal Sesame repository",e);
+			throw new QueryTemplateSupportFailure("Could not initialize internal RDF4J repository",e);
 		}
 	}
 

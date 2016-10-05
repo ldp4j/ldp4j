@@ -21,8 +21,8 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.1
-      Bundle      : ldp4j-server-core-0.2.1.jar
+      Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.2
+      Bundle      : ldp4j-server-core-0.2.2.jar
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
@@ -37,7 +37,7 @@
 	<parent>
 		<groupId>org.ldp4j.framework</groupId>
 		<artifactId>ldp4j-server</artifactId>
-		<version>0.2.1</version>
+		<version>0.2.2</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -55,7 +55,7 @@
 	<!-- =================================================================== -->
 
 	<properties>
-		<sesame.version>2.7.9</sesame.version>
+		<rdf4j.version>1.0</rdf4j.version>
 		<jena.version>2.13.0</jena.version>
 
 		<arquillian.version>1.0.3.Final</arquillian.version>
@@ -86,24 +86,24 @@
 				<scope>import</scope>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-repository-sail</artifactId>
-				<version>${sesame.version}</version>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-repository-sail</artifactId>
+				<version>${rdf4j.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-sail-memory</artifactId>
-				<version>${sesame.version}</version>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-sail-memory</artifactId>
+				<version>${rdf4j.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-rdfxml</artifactId>
-				<version>${sesame.version}</version>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-rdfxml</artifactId>
+				<version>${rdf4j.version}</version>
 			</dependency>
 			<dependency>
-				<groupId>org.openrdf.sesame</groupId>
-				<artifactId>sesame-rio-turtle</artifactId>
-				<version>${sesame.version}</version>
+				<groupId>org.eclipse.rdf4j</groupId>
+				<artifactId>rdf4j-rio-turtle</artifactId>
+				<version>${rdf4j.version}</version>
 			</dependency>
 
 			<!-- ShrinkWrap -->

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons.rmf:rmf-query:0.2.1
- *   Bundle      : rmf-query-0.2.1.jar
+ *   Artifact    : org.ldp4j.commons.rmf:rmf-query:0.2.2
+ *   Bundle      : rmf-query-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.rdf.impl.query;
@@ -35,16 +35,16 @@ import org.ldp4j.rdf.Node;
 import org.ldp4j.rdf.query.Query;
 import org.ldp4j.rdf.query.QueryResultHandler;
 import org.ldp4j.rdf.query.SelectQuery;
-import org.ldp4j.rdf.sesame.SesameModelParser;
-import org.openrdf.query.BindingSet;
-import org.openrdf.query.MalformedQueryException;
-import org.openrdf.query.QueryEvaluationException;
-import org.openrdf.query.QueryLanguage;
-import org.openrdf.query.TupleQuery;
-import org.openrdf.query.TupleQueryResultHandler;
-import org.openrdf.query.TupleQueryResultHandlerException;
-import org.openrdf.repository.RepositoryConnection;
-import org.openrdf.repository.RepositoryException;
+import org.ldp4j.rdf.rdf4j.RDF4JModelParser;
+import org.eclipse.rdf4j.query.BindingSet;
+import org.eclipse.rdf4j.query.MalformedQueryException;
+import org.eclipse.rdf4j.query.QueryEvaluationException;
+import org.eclipse.rdf4j.query.QueryLanguage;
+import org.eclipse.rdf4j.query.TupleQuery;
+import org.eclipse.rdf4j.query.TupleQueryResultHandler;
+import org.eclipse.rdf4j.query.TupleQueryResultHandlerException;
+import org.eclipse.rdf4j.repository.RepositoryConnection;
+import org.eclipse.rdf4j.repository.RepositoryException;
 
 final class SelectQueryExecutionStrategy<R> extends QueryExecutionStrategy<R,Map<String,Node>>{
 
@@ -53,10 +53,10 @@ final class SelectQueryExecutionStrategy<R> extends QueryExecutionStrategy<R,Map
 		private static final String EXPECTED_BINDINGS_MISSING = "Expected bindings missing";
 
 		private final QueryResultHandler<Map<String,Node>> handler;
-		private final SesameModelParser parser;
+		private final RDF4JModelParser parser;
 
 		public TupleQueryResultHandlerAdapter(QueryResultHandler<Map<String, Node>> handler) {
-			this.parser=new SesameModelParser();
+			this.parser=new RDF4JModelParser();
 			this.handler = handler;
 		}
 
@@ -136,7 +136,7 @@ final class SelectQueryExecutionStrategy<R> extends QueryExecutionStrategy<R,Map
 		} catch (TupleQueryResultHandlerException e) {
 			throw new QueryExecutionException(e);
 		} catch (RepositoryException e) {
-			throw new QueryTemplateSupportFailure("Unexpected Sesame failure",e);
+			throw new QueryTemplateSupportFailure("Unexpected RDF4J failure",e);
 		}
 	}
 

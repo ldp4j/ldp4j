@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.1
- *   Bundle      : ldp4j-application-kernel-core-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.2
+ *   Bundle      : ldp4j-application-kernel-core-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.template;
@@ -263,7 +263,7 @@ public class MutableTemplateLibraryTest extends TemplateLibraryTest {
 	/**
 	 * TODO: Allow using opaque URIs whenever the RDF handling
 	 * backend supports it (for the time being we are using
-	 * Sesame and it requires using HTTP URIs)
+	 * RDF4J and it requires using HTTP URIs)
 	 */
 	@Test
 	public void testOpaqueMembershipPredicate$directContainer() throws Exception {
@@ -328,7 +328,7 @@ public class MutableTemplateLibraryTest extends TemplateLibraryTest {
 	/**
 	 * TODO: Allow using opaque URIs whenever the RDF handling
 	 * backend supports it (for the time being we are using
-	 * Sesame and it requires using HTTP URIs)
+	 * RDF4J and it requires using HTTP URIs)
 	 */
 	@Test
 	public void testOpaqueInsertedContentRelation() throws Exception {
