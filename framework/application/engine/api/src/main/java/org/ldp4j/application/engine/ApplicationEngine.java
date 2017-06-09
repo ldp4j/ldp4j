@@ -135,24 +135,24 @@ public abstract class ApplicationEngine {
 
 	private ApplicationEngineState state;
 
-	private Deployment deployment;
+	private final Deployment deployment;
 
 	protected abstract static class ApplicationContextManager<T extends ApplicationContext> {
 
 		private final Class<? extends T> managedClass;
 
-		protected ApplicationContextManager(Class<? extends T> managedClazz) {
+		protected ApplicationContextManager(final Class<? extends T> managedClazz) {
 			checkNotNull(managedClazz);
 			this.managedClass=managedClazz;
 		}
 
-		protected final boolean isManaged(ApplicationContext instance) {
+		protected final boolean isManaged(final ApplicationContext instance) {
 			return this.managedClass.isInstance(instance);
 		}
 
 		protected abstract T createContext(String applicationClassName) throws ApplicationContextCreationException;
 
-		protected final boolean disposeContext(ApplicationContext applicationContext) throws ApplicationContextTerminationException {
+		protected final boolean disposeContext(final ApplicationContext applicationContext) throws ApplicationContextTerminationException {
 			return doDisposeContext(this.managedClass.cast(applicationContext));
 		}
 
@@ -165,7 +165,7 @@ public abstract class ApplicationEngine {
 	 */
 	protected ApplicationEngine() {
 		this.contexts=Maps.newLinkedHashMap();
-		ReadWriteLock lock = new ReentrantReadWriteLock();
+		final ReadWriteLock lock = new ReentrantReadWriteLock();
 		this.read=lock.readLock();
 		this.write=lock.writeLock();
 		this.currentContext=new AtomicReference<ApplicationContext>();
@@ -175,21 +175,21 @@ public abstract class ApplicationEngine {
 	}
 
 	private void refreshCurrentContext() {
-		String current=this.loadedContexts.isEmpty()?null:this.loadedContexts.peek();
+		final String current=this.loadedContexts.isEmpty()?null:this.loadedContexts.peek();
 		this.currentContext.set(this.contexts.get(current));
 	}
 
-	private boolean isApplicationContextLoaded(ApplicationContext context) {
+	private boolean isApplicationContextLoaded(final ApplicationContext context) {
 		return this.contexts.containsKey(context.applicationClassName()) && this.contexts.containsValue(context);
 	}
 
-	private void unsafeDisposeContext(ApplicationContext applicationContext) throws ApplicationContextTerminationException {
+	private void unsafeDisposeContext(final ApplicationContext applicationContext) throws ApplicationContextTerminationException {
 		applicationContextManager().disposeContext(applicationContext);
 		this.loadedContexts.remove(applicationContext.applicationClassName());
 		this.contexts.remove(applicationContext.applicationClassName());
 	}
 
-	private void setState(ApplicationEngineState newState) {
+	private void setState(final ApplicationEngineState newState) {
 		this.state=newState;
 		ApplicationEngine.notifyStateChange(newState);
 	}
@@ -200,7 +200,7 @@ public abstract class ApplicationEngine {
 		}
 	}
 
-	public synchronized ApplicationEngine withContextPath(String contextPath) {
+	public synchronized ApplicationEngine withContextPath(final String contextPath) {
 		if(!ApplicationEngineState.AVAILABLE.equals(this.state)) {
 			throw new ApplicationEngineRuntimeException("Application engine is not available ("+this.state+")");
 		}
@@ -208,7 +208,7 @@ public abstract class ApplicationEngine {
 		return this;
 	}
 
-	public synchronized ApplicationEngine withTemporalDirectory(File temporalDirectory) {
+	public synchronized ApplicationEngine withTemporalDirectory(final File temporalDirectory) {
 		if(!ApplicationEngineState.AVAILABLE.equals(this.state)) {
 			throw new ApplicationEngineRuntimeException("Application engine is not available ("+this.state+")");
 		}
@@ -246,10 +246,10 @@ public abstract class ApplicationEngine {
 			return;
 		}
 		this.currentContext.set(null);
-		for(ApplicationContext ctx:this.contexts.values()) {
+		for(final ApplicationContext ctx:this.contexts.values()) {
 			try {
 				unsafeDisposeContext(ctx);
-			} catch (ApplicationContextTerminationException e) {
+			} catch (final ApplicationContextTerminationException e) {
 				if(LOGGER.isErrorEnabled()) {
 					LOGGER.error("Could not terminate context", e);
 				}
@@ -262,55 +262,55 @@ public abstract class ApplicationEngine {
 		}
 	}
 
-	public final ApplicationContext load(String applicationClassName) throws ApplicationContextCreationException {
+	public final ApplicationContext load(final String applicationClassName) throws ApplicationContextCreationException {
 		checkNotNull(applicationClassName,"Application class name cannot be null");
 		checkApplicationEngineActive();
-		write.lock();
+		this.write.lock();
 		try {
 			if(this.loadedContexts.contains(applicationClassName)) {
 				throw new IllegalStateException("Application class '"+applicationClassName+"' is already been loaded");
 			}
-			ApplicationContext context=applicationContextManager().createContext(applicationClassName);
+			final ApplicationContext context=applicationContextManager().createContext(applicationClassName);
 			this.contexts.put(applicationClassName, context);
 			this.loadedContexts.push(applicationClassName);
 			refreshCurrentContext();
 			return context;
 		} finally {
-			write.unlock();
+			this.write.unlock();
 		}
 	}
 
-	public final ApplicationContext findByName(String applicationName) {
+	public final ApplicationContext findByName(final String applicationName) {
 		checkNotNull(applicationName,"Application name cannot be null");
 		checkApplicationEngineActive();
-		read.lock();
+		this.read.lock();
 		try {
-			for(ApplicationContext ctx:this.contexts.values()) {
+			for(final ApplicationContext ctx:this.contexts.values()) {
 				if(ctx.applicationName().equals(applicationName)) {
 					return ctx;
 				}
 			}
 			return null;
 		} finally {
-			read.unlock();
+			this.read.unlock();
 		}
 	}
 
-	public final ApplicationContext findByClassName(String applicationClassName) {
+	public final ApplicationContext findByClassName(final String applicationClassName) {
 		checkNotNull(applicationClassName,"Application class name cannot be null");
 		checkApplicationEngineActive();
-		read.lock();
+		this.read.lock();
 		try {
 			return this.contexts.get(applicationClassName);
 		} finally {
-			read.unlock();
+			this.read.unlock();
 		}
 	}
 
-	public final boolean dispose(ApplicationContext applicationContext) throws ApplicationContextTerminationException {
+	public final boolean dispose(final ApplicationContext applicationContext) throws ApplicationContextTerminationException {
 		checkNotNull(applicationContext,"Application context cannot be null");
 		checkApplicationEngineActive();
-		write.lock();
+		this.write.lock();
 		try {
 			if(!applicationContextManager().isManaged(applicationContext)) {
 				throw new ApplicationContextTerminationException("Invalid application context class "+applicationContext.getClass().getName());
@@ -322,7 +322,7 @@ public abstract class ApplicationEngine {
 			refreshCurrentContext();
 			return true;
 		} finally {
-			write.unlock();
+			this.write.unlock();
 		}
 	}
 
@@ -351,39 +351,39 @@ public abstract class ApplicationEngine {
 			}
 
 			if(result==null) {
-				String delegateClassName = System.getProperty(LDP4J_APPLICATION_ENGINE_PROPERTY);
+				final String delegateClassName = System.getProperty(LDP4J_APPLICATION_ENGINE_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createApplicationEngineForClassName(delegateClassName);
 				}
 			}
 
 			return result;
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			throw new IllegalStateException("Could not find application engine",ex);
 		}
 	}
 
 	private static ApplicationEngine createApplicationEngineFromConfigurationFile() {
 		ApplicationEngine result=null;
-		File configFile = getConfigurationFile();
+		final File configFile = getConfigurationFile();
 		if(configFile.canRead()) {
 			InputStream is=null;
 			try {
 				is=new FileInputStream(configFile);
-				Properties configProperties=new Properties();
+				final Properties configProperties=new Properties();
 				configProperties.load(is);
-				String delegateClassName=configProperties.getProperty(LDP4J_APPLICATION_ENGINE_PROPERTY);
+				final String delegateClassName=configProperties.getProperty(LDP4J_APPLICATION_ENGINE_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createApplicationEngineForClassName(delegateClassName);
 				}
 				if(delegateClassName==null && LOGGER.isWarnEnabled()) {
 					LOGGER.warn("Configuration file '"+configFile.getAbsolutePath()+"' does not define a delegate class name");
 				}
-			} catch(FileNotFoundException e) {
+			} catch(final FileNotFoundException e) {
 				if(LOGGER.isDebugEnabled()) {
 					LOGGER.debug("Could not find runtime instance configuration file '"+configFile.getAbsolutePath()+"'",e);
 				}
-			} catch(IOException e) {
+			} catch(final IOException e) {
 				if(LOGGER.isWarnEnabled()) {
 					LOGGER.warn("Could not load runtime instance configuration file '"+configFile.getAbsolutePath()+"'",e);
 				}
@@ -410,11 +410,11 @@ public abstract class ApplicationEngine {
 	 * @param is The input stream that is to be closed.
 	 * @param message The message to log in case of failure.
 	 */
-	private static void closeQuietly(InputStream is, String message) {
+	private static void closeQuietly(final InputStream is, final String message) {
 		if(is!=null) {
 		try {
 			is.close();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			if(LOGGER.isWarnEnabled()) {
 				LOGGER.warn(message,e);
 			}
@@ -425,35 +425,35 @@ public abstract class ApplicationEngine {
 	private static ApplicationEngine createApplicationEngineFromSPI() {
 		if(!DISABLE.equalsIgnoreCase(System.getProperty(LDP4J_APPLICATION_ENGINE_FINDER))) {
 			try {
-				for (ApplicationEngine delegate : ServiceLoader.load(ApplicationEngine.class)) {
+				for (final ApplicationEngine delegate : ServiceLoader.load(ApplicationEngine.class)) {
 					return delegate;
 				}
-			} catch (ServiceConfigurationError ex) {
+			} catch (final ServiceConfigurationError ex) {
 				LOGGER.error("Could not load LDP4j Application Engine service. Full stacktrace follows:",ex);
 			}
 		}
 		return null;
 	}
 
-	private static ApplicationEngine createApplicationEngineForClassName(String delegateClassName) {
+	private static ApplicationEngine createApplicationEngineForClassName(final String delegateClassName) {
 		ApplicationEngine result = null;
 		try {
-			Class<?> delegateClass = Class.forName(delegateClassName);
+			final Class<?> delegateClass = Class.forName(delegateClassName);
 			if(ApplicationEngine.class.isAssignableFrom(delegateClass)) {
-				Object impl = delegateClass.newInstance();
+				final Object impl = delegateClass.newInstance();
 				result = ApplicationEngine.class.cast(impl);
 			}
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			handleFailure(delegateClassName, "find", e);
-		} catch (InstantiationException e) {
+		} catch (final InstantiationException e) {
 			handleFailure(delegateClassName, INSTANTIATE_ACTION, e);
-		} catch (IllegalAccessException e) {
+		} catch (final IllegalAccessException e) {
 			handleFailure(delegateClassName, INSTANTIATE_ACTION, e);
 		}
 		return result;
 	}
 
-	private static void handleFailure(String delegateClassName, String action, Exception failure) {
+	private static void handleFailure(final String delegateClassName, final String action, final Exception failure) {
 		if(LOGGER.isWarnEnabled()) {
 			LOGGER.warn("Could not "+action+" delegate class "+delegateClassName,failure);
 		}
@@ -463,7 +463,7 @@ public abstract class ApplicationEngine {
 		LISTENERS.notify(
 			new Notification<ApplicationEngineLifecycleListener>() {
 				@Override
-				public void propagate(ApplicationEngineLifecycleListener listener) {
+				public void propagate(final ApplicationEngineLifecycleListener listener) {
 					listener.stateChanged(newState);
 				}
 			}
@@ -537,16 +537,16 @@ public abstract class ApplicationEngine {
 	 *             granted.
 	 */
 	public static void setEngine(final ApplicationEngine delegate) {
-		SecurityManager security = System.getSecurityManager();
+		final SecurityManager security = System.getSecurityManager();
 		if (security != null) {
 			security.checkPermission(SUPPRESS_ACCESS_CHECKS_PERMISSION);
 		}
 		synchronized(ApplicationEngine.CACHED_DELEGATE) {
-			ApplicationEngine current=ApplicationEngine.CACHED_DELEGATE.get();
+			final ApplicationEngine current=ApplicationEngine.CACHED_DELEGATE.get();
 			if(current!=null) {
 				try {
 					current.shutdown();
-				} catch (ApplicationEngineLifecycleException e) {
+				} catch (final ApplicationEngineLifecycleException e) {
 					LOGGER.error("Shutdown of previous engine failed. Full stacktrace follows:",e);
 				}
 			}
@@ -557,11 +557,11 @@ public abstract class ApplicationEngine {
 		}
 	}
 
-	public static void registerLifecycleListener(ApplicationEngineLifecycleListener listener) {
+	public static void registerLifecycleListener(final ApplicationEngineLifecycleListener listener) {
 		LISTENERS.registerListener(listener);
 	}
 
-	public static void deregisterLifecycleListener(ApplicationEngineLifecycleListener listener) {
+	public static void deregisterLifecycleListener(final ApplicationEngineLifecycleListener listener) {
 		LISTENERS.deregisterListener(listener);
 	}
 
@@ -571,6 +571,7 @@ public abstract class ApplicationEngine {
 	 * does not support the specified class, the ApplicationEngineException is
 	 * thrown.
 	 *
+	 * @param <T> the type of object to be returned
 	 * @param clazz
 	 *            the class of the object to be returned. This is normally
 	 *            either the underlying {@code ApplicationEngine} implementation
@@ -579,7 +580,7 @@ public abstract class ApplicationEngine {
 	 * @throws ApplicationEngineException
 	 *             if the provider does not support the call
 	 */
-	public <T> T unwrap(Class<? extends T> clazz) throws ApplicationEngineException {
+	public <T> T unwrap(final Class<? extends T> clazz) throws ApplicationEngineException {
 		checkNotNull(clazz,"Target class cannot be null");
 		if(!clazz.isInstance(this)) {
 			throw new ApplicationEngineException("Application Engine implementation is not compatible with "+clazz.getCanonicalName());
