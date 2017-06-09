@@ -62,12 +62,12 @@ import com.google.common.collect.Maps;
  * implementations of the <i>LDP4j Application Engine API</i>. These extension points
  * are designed for use by other <i>LDP4j Application Engine</i> classes and are not
  * intended to be called directly by applications using the <i>LDP4j Application
- * Engine API</i>.<br />
- * <br/>
+ * Engine API</i>.<br>
+ * <br>
  *
  * An implementation of LPD4j Application Engine API MUST provide a concrete
  * subclass of {@code ApplicationEngine}. Using the supplied
- * {@code ApplicationEngine} this can be achieved in one of two ways:<br />
+ * {@code ApplicationEngine} this can be achieved in one of two ways:<br>
  * <ol>
  * <li>An instance of {@code ApplicationEngine} can be instantiated and injected
  * using its static method {@link ApplicationEngine#setEngine(ApplicationEngine) setEngine}. In this case the
@@ -83,7 +83,7 @@ import com.google.common.collect.Maps;
  * implementation of the {@code ApplicationEngine} being used, however applications
  * SHOULD NOT depend on this nor override the supplied {@code ApplicationEngine}
  * instance with an application-supplied alternative as doing so may cause
- * unexpected problems. <br/>
+ * unexpected problems. <br>
  *
  * @author Miguel Esteban Gutiérrez
  * @since 1.0.0

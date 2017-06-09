@@ -34,7 +34,7 @@ public interface NewIndividual extends Individual<URI,NewIndividual> {
 	 * The path where the individual should be made available. The URI will
 	 * always be relative.
 	 *
-	 * @return
+	 * @return the resource path.
 	 */
 	URI path();
 

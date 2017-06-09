@@ -77,6 +77,7 @@ public interface Parameter extends Serializable {
 	 * Returns the first raw value of this parameter as an instance of a given
 	 * type.
 	 *
+	 * @param <T> the type of object to be returned
 	 * @param clazz
 	 *            the {@code Class} for the type T to which the raw value will
 	 *            be transformed to.
@@ -91,6 +92,7 @@ public interface Parameter extends Serializable {
 	/**
 	 * Returns the raw values of this parameter as instances of a given type.
 	 *
+	 * @param <T> the type of object to be returned
 	 * @param clazz
 	 *            the {@code Class} for the type T to which the raw values will
 	 *            be transformed to.

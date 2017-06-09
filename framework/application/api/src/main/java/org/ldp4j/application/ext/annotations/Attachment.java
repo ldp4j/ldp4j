@@ -45,26 +45,45 @@ public @interface Attachment {
 	/**
 	 * The identifier of the attachment. The identifier must be
 	 * template-unique.
+	 *
+	 * @return the identifier of the attachment.
 	 */
 	String id();
 
-	/** The human-based name of the attachment. */
+	/**
+	 * The human-based name of the attachment.
+	 *
+	 * @return the name of the attachment.
+	 */
 	String name() default "";
 
-	/** A description of the purpose of the attachment. */
+	/**
+	 * The description of the purpose of the attachment.
+	 *
+	 * @return the description of the attachment.
+	 */
 	String description() default "";
 
-	/** The relative path to be used when publishing the attached resource. */
+	/**
+	 * The relative path to be used when publishing the attached resource.
+	 *
+	 * @return the relative path of the attachment
+	 */
 	String path();
 
 	/**
 	 * If defined, the predicate to be used for relating the attaching resource
 	 * to the attached resource
+	 *
+	 * @return the predicate used to related the attachment to its parent
+	 *         resource.
 	 */
 	String predicate() default "";
 
 	/**
 	 * The {@code ResourceHandler} class that will handle the attached resource.
+	 *
+	 * @return the class that handles the attache resource.
 	 */
 	Class<? extends ResourceHandler> handler();
 

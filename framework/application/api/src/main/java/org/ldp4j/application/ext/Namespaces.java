@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Interface for read only Namespace processing. <br/>
+ * Interface for read only Namespace processing. <br>
  *
- * A Namespace has the properties: <br/>
+ * A Namespace has the properties: <br>
  *
  * <ul>
  * <li><b>Namespace URI</b>: Namespace name expressed as a URI to which the
@@ -40,7 +40,7 @@ import java.util.Set;
  * <li><b>Prefix</b></li>
  * </ul>
  *
- *<br/>
+ *<br>
  *
  * Note that a Namespace URI can be bound to multiple prefixes. However a prefix
  * can only be bound to a single Namespace URI.

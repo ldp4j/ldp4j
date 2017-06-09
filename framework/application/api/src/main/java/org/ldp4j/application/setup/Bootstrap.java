@@ -32,7 +32,7 @@ import org.ldp4j.application.ext.ResourceHandler;
 /**
  * Utility interface for bootstrapping an LDP4j Application. Using this class
  * the application will be able to register the {@code ResourceHandler}
- * instances and classes that make up the application. <br/> <br/>
+ * instances and classes that make up the application. <br> <br>
  *
  * Upon registration, the <b>LDP4j Application Engine</b> will analyze the
  * templates defined by the resource handlers, discovering any additional
@@ -54,8 +54,8 @@ public interface Bootstrap<T extends Configuration> {
 
 	/**
 	 * Register an initialized {@code ResourceHandler} instance of the
-	 * application. <br/>
-	 * <br/>
+	 * application. <br>
+	 * <br>
 	 *
 	 * This method is to be used if and only if the resource handler requires a
 	 * to be initialized in a controller manner. Otherwise, the resource handler
@@ -69,8 +69,8 @@ public interface Bootstrap<T extends Configuration> {
 	void addHandler(ResourceHandler handler);
 
 	/**
-	 * Register a {@code ResourceHandler} class that is used by the application. <br/>
-	 * <br/>
+	 * Register a {@code ResourceHandler} class that is used by the application. <br>
+	 * <br>
 	 *
 	 * This method is to be used if and only if resource handler instances do
 	 * not require any special initialization. Otherwise, the an initialized

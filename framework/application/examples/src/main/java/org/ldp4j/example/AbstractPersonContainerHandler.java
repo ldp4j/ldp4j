@@ -71,7 +71,7 @@ public class AbstractPersonContainerHandler extends InMemoryContainerHandler {
 	}
 
 	/**
-	 * {@inheritDoc}<br/>
+	 * {@inheritDoc}<br>
 	 *
 	 * Create a new person resource.
 	 */

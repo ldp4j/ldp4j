@@ -28,23 +28,50 @@ package org.ldp4j.http;
 
 import com.google.common.collect.Multimap;
 
+/**
+ * This interface represents the results of the content negotiation process.
+ */
 public interface NegotiationResult {
 
+
+	/**
+	 * Check whether or not the negotiation was positive.
+	 *
+	 * @return {@code true} if it is acceptable, {@code false} otherwise.
+	 */
 	boolean isAcceptable();
 
 	/**
-	 * Null if not acceptable
+	 * Get the quality of the acceptable variant.
+	 *
+	 * @return the resultant quality or {@code null} if not acceptable.
 	 */
 	Quality quality();
 
 
 	/**
-	 * Null if not acceptable
+	 * Get the acceptable variant.
+	 *
+	 * @return the acceptable variant or {@code null} if not acceptable
 	 */
 	Variant variant();
 
+	/**
+	 * Get the alternatives available.
+	 *
+	 * @return the available alternatives.
+	 */
 	Alternatives alternatives();
 
+	/**
+	 * Get the headers that should be included in the response.
+	 *
+	 * @param accepted
+	 *            whether to return the headers for an accepted response or a
+	 *            not acceptable response.
+	 * @return the headers for an accepted response if accepted is {@code true}
+	 *         or the headers for a not acceptable response otherwise.
+	 */
 	Multimap<String,String> responseHeaders(boolean accepted);
 
 }

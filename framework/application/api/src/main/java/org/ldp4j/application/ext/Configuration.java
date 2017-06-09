@@ -32,7 +32,7 @@ import java.util.Set;
 
 /**
  * Provides a programmatic mechanism for an LDP4j application to specify the
- * configuration parameters for the <b>LDP4j Application Engine</b>. <br/>
+ * configuration parameters for the <b>LDP4j Application Engine</b>. <br>
  *
  * This class is meant to be extended (refined) to also include specific
  * configuration requirements of LDP4j applications.

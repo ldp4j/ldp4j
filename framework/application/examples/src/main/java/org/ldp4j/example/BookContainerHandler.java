@@ -91,7 +91,7 @@ public class BookContainerHandler extends InMemoryContainerHandler {
 	}
 
 	/**
-	 * {@inheritDoc}<br/>
+	 * {@inheritDoc}<br>
 	 *
 	 * Create a new book resource.
 	 */

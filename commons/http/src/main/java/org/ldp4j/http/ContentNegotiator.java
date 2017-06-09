@@ -151,7 +151,7 @@ public final class ContentNegotiator {
 	 *
 	 * @return the result of the content negotiation
 	 * @see <a href="https://tools.ietf.org/html/rfc2296">RFC 2296: HTTP Remote
-	 *      Variant Selection Algorithm -- RVSA/1.0</>
+	 *      Variant Selection Algorithm -- RVSA/1.0</a>
 	 */
 	public NegotiationResult negotiate() {
 		return

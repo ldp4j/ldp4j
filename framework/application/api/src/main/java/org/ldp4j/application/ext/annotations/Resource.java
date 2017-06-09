@@ -43,16 +43,31 @@ public @interface Resource {
 	/**
 	 * The identifier of the template. The identifier must be
 	 * application-unique.
+	 *
+	 * @return the identifier of the template.
 	 */
 	String id();
 
-	/** The human-based name of the template. */
+	/**
+	 * The human-based name of the template.
+	 *
+	 * @return the name of the template.
+	 */
 	String name() default "";
 
-	/** A description of the purpose of the template of the template. */
+	/**
+	 * A description of the purpose of the template.
+	 *
+	 * @return the description of the template
+	 */
 	String description() default "";
 
-	/** The attachments of the template. */
+	/**
+	 * The attachments of the template.
+	 *
+	 * @return the attachments of the template
+	 */
 	Attachment[] attachments() default {};
+
 
 }

@@ -40,7 +40,7 @@ import com.google.common.collect.Maps;
 
 
 /**
- * An immutable {@code Namespaces} implementation. <br/>
+ * An immutable {@code Namespaces} implementation. <br>
  *
  * An instance of {@code ImmutableNamespaces} contains its own data and will never
  * change. ImmutableNamespaces is convenient for public static final namespaces

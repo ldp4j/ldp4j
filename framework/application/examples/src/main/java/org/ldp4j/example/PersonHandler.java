@@ -113,7 +113,7 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 	}
 
 	/**
-	 * {@inheritDoc}<br/>
+	 * {@inheritDoc}<br>
 	 *
 	 * Delete a person resource.
 	 */
@@ -133,7 +133,7 @@ public class PersonHandler extends InMemoryResourceHandler implements Modifiable
 	}
 
 	/**
-	 * {@inheritDoc} <br/>
+	 * {@inheritDoc} <br>
 	 *
 	 * Update a person resource.
 	 */

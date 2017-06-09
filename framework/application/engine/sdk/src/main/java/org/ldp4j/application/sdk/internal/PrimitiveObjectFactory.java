@@ -39,7 +39,7 @@ public final class PrimitiveObjectFactory<T> implements ObjectFactory<T> {
 
 	private final Class<? extends T> valueClass;
 
-	private PrimitiveObjectFactory(Class<? extends T> valueClass) {
+	private PrimitiveObjectFactory(final Class<? extends T> valueClass) {
 		this.valueClass = valueClass;
 	}
 
@@ -56,7 +56,7 @@ public final class PrimitiveObjectFactory<T> implements ObjectFactory<T> {
 	 */
 	@Override
 	@SuppressWarnings("unchecked")
-	public T fromString(String rawValue) { // NOSONAR
+	public T fromString(final String rawValue) { // NOSONAR
 		try {
 			Object result=null;
 			if (byte.class.equals(this.valueClass)) {
@@ -77,19 +77,19 @@ public final class PrimitiveObjectFactory<T> implements ObjectFactory<T> {
 				result=parseCharacter(rawValue);
 			}
 			return (T)result;
-		} catch(Exception e) {
+		} catch(final Exception e) {
 			throw new ObjectParseException(e,this.valueClass,rawValue);
 		}
 	}
 
-	static Character parseCharacter(String rawValue) {
+	static Character parseCharacter(final String rawValue) {
 		if(rawValue.length()!=1) {
 			throw new IllegalArgumentException("Raw value has more than one character");
 		}
 		return Character.valueOf(rawValue.charAt(0));
 	}
 
-	static boolean parseBoolean(String rawValue) {
+	static boolean parseBoolean(final String rawValue) {
 		if(TRUE.equalsIgnoreCase(rawValue)) {
 			return true;
 		} else if(FALSE.equalsIgnoreCase(rawValue)) {
@@ -102,18 +102,23 @@ public final class PrimitiveObjectFactory<T> implements ObjectFactory<T> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public String toString(T value) {
+	public String toString(final T value) {
 		return value.toString();
 	}
 
 	/**
 	 * Create a primitive object factory for the specified primitive class
-	 * @param valueClass the primitive class to use
+	 *
+	 * @param <T>
+	 *            the primitive class type * @param valueClass the primitive
+	 *            class to use
 	 * @return an object factory
-	 * @throws NullPointerException if the specified class is {@code null}
-	 * @throws IllegalArgumentException if the specified class is not a primitive class
+	 * @throws NullPointerException
+	 *             if the specified class is {@code null}
+	 * @throws IllegalArgumentException
+	 *             if the specified class is not a primitive class
 	 */
-	public static <T> PrimitiveObjectFactory<T> create(Class<? extends T> valueClass) {
+	public static <T> PrimitiveObjectFactory<T> create(final Class<? extends T> valueClass) {
 		checkNotNull(valueClass,"Value class cannot be null");
 		checkArgument(valueClass.isPrimitive(),"Value class '"+valueClass.getName()+"' is not primitive");
 		return new PrimitiveObjectFactory<T>(valueClass);
