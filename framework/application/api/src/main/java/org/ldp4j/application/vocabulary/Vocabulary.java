@@ -99,6 +99,7 @@ public interface Vocabulary extends Iterable<Term>, Serializable {
 	/**
 	 * Returns the vocabulary term that matches the specified value.
 	 *
+	 * @param <V> the type of value to be processed
 	 * @param value
 	 *            a value to determine the desired term.
 	 * @return the term that upon transformation matches the specified

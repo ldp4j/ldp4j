@@ -45,7 +45,7 @@ public final class Utils {
 	 *            the object
 	 * @return the string representation of the specified object
 	 */
-	public static String defaultToString(Object obj) {
+	public static String defaultToString(final Object obj) {
 		return
 			obj.getClass().getName()+"@"+Integer.toHexString(obj.hashCode());
 	}
@@ -54,19 +54,20 @@ public final class Utils {
 	 * Determine whether a class is a proper utility class (final class +
 	 * private no-arg constructor).
 	 *
+	 * @param <T> the type of library
 	 * @param clazz
 	 *            the library class to evaluate
 	 * @return {@code true} if the specified class is a propery utility class.
 	 */
-	public static <T> boolean isUtilityClass(Class<? extends T> clazz) {
+	public static <T> boolean isUtilityClass(final Class<? extends T> clazz) {
 		if(!isPotentialLibraryClass(clazz)) {
 			return false;
 		}
-		Constructor<?>[] constructor = clazz.getDeclaredConstructors();
+		final Constructor<?>[] constructor = clazz.getDeclaredConstructors();
 		if(constructor.length!=1) {
 			return false;
 		}
-		Constructor<?> defaultConstructor = constructor[0];
+		final Constructor<?> defaultConstructor = constructor[0];
 		if(isValidDefaultConstructor(defaultConstructor)) {
 			invoke(defaultConstructor);
 			return true;
@@ -74,22 +75,22 @@ public final class Utils {
 		return false;
 	}
 
-	private static boolean isValidDefaultConstructor(Constructor<?> defaultConstructor) {
+	private static boolean isValidDefaultConstructor(final Constructor<?> defaultConstructor) {
 		return
 			Modifier.isPrivate(defaultConstructor.getModifiers()) &&
 			defaultConstructor.getParameterTypes().length==0;
 	}
 
-	private static void invoke(Constructor<?> defaultConstructor) {
+	private static void invoke(final Constructor<?> defaultConstructor) {
 		try {
 			defaultConstructor.setAccessible(true);
 			defaultConstructor.newInstance();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			throw new IllegalStateException("Should be able to instantiate library",e);
 		}
 	}
 
-	private static <T> boolean isPotentialLibraryClass(Class<? extends T> clazz) {
+	private static <T> boolean isPotentialLibraryClass(final Class<? extends T> clazz) {
 		return
 			Modifier.isFinal(clazz.getModifiers()) &&
 			(Modifier.isStatic(clazz.getModifiers()) || clazz.getEnclosingClass()==null) ;

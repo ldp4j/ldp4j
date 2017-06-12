@@ -41,7 +41,7 @@ public interface PropertyHelper {
 
 	/**
 	 * Add a literal value
-	 * @param id The literal value to be added
+	 * @param rawValue The literal value to be added
 	 * @return A helper for the current individual and property
 	 */
 	IndividualPropertyHelper withLiteral(Object rawValue);

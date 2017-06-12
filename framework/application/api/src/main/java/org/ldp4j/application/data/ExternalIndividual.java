@@ -34,7 +34,7 @@ public interface ExternalIndividual extends Individual<URI,ExternalIndividual> {
 	 * The location where the individual is available. The URI will always be
 	 * absolute, either hierarchical or opaque.
 	 *
-	 * @return
+	 * @return the external location of the resource.
 	 */
 	URI location();
 

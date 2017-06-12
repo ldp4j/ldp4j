@@ -25,8 +25,8 @@
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 /**
- * <h1>LDP4j Server Frontend Data SPI</h1> <br />
- * <br />
+ * <h1>LDP4j Server Frontend Data SPI</h1> <br>
+ * <br>
  * The Service Provider Interfaces that is part of the <i>LDP4j Server Frontend
  * Data</i> facilities, which provides the means for creating third party
  * implementations or extensions of the <i>LDP4j Server Frontend Data</i>

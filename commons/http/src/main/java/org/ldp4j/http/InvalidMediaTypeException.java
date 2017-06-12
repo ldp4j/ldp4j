@@ -77,7 +77,9 @@ public class InvalidMediaTypeException extends IllegalArgumentException {
 	}
 
 	/**
-	 * Return the offending media type.
+	 * Get the offending media type.
+	 *
+	 * @return the offending media type.
 	 */
 	public String getMediaType() {
 		return this.mediaType;

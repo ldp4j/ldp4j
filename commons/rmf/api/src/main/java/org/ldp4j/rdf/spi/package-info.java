@@ -26,8 +26,8 @@
  */
 /**
  * <h1>ALM iStack Proof-of-Concept Client Business Logic SPI</h1>
- * <br />
- * <br />
+ * <br>
+ * <br>
  * The <b>Client Business Logic SPI</b> (or <i>CBLS</i> for short) -that is part
  *  of the <i>CBLA</i>- provides the means for creating third party 
  *  implementations or extensions of the <i>CBLA</i>.

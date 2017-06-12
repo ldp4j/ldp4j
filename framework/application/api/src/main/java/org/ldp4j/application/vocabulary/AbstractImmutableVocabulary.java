@@ -39,7 +39,7 @@ import static java.util.Objects.*;
 
 /**
  * A base vocabulary implementation for creating immutable vocabularies that
- * defines a collection of {@code ImmutableTerm}s. <br/>
+ * defines a collection of {@code ImmutableTerm}s. <br>
  * Purpose specific vocabularies should be implemented as follows:
  *
  * <pre>

@@ -38,7 +38,7 @@ import javax.xml.namespace.QName;
  * reference.
  * <p>
  *
- * <b>Namespace:</b> {@code <http://www.w3.org/ns/ldp#>} <br/>
+ * <b>Namespace:</b> {@code <http://www.w3.org/ns/ldp#>} <br>
  * <b>Prefix:</b> {@code ldp}
  *
  * @version 1.0

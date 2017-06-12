@@ -35,6 +35,11 @@ import java.util.Locale;
 import com.google.common.base.CharMatcher;
 import com.google.common.collect.Lists;
 
+/**
+ * Utility class for handling Language instances.
+ *
+ * @see Language
+ */
 public final class Languages {
 
 	private static final ImmutableLanguage WILDCARD_INSTANCE=new ImmutableLanguage(null);
@@ -104,7 +109,7 @@ public final class Languages {
 	 *             if the provided locale is a variant (i.e.,
 	 *             {@link Locale#getVariant()} is not empty)
 	 */
-	public static Language of(Locale locale) {
+	public static Language of(final Locale locale) {
 		requireNonNull(locale,"Locale cannot be null");
 		checkArgument(locale.getVariant().isEmpty(),"Language does not allow locale variants (%s)",locale.getVariant());
 		return new ImmutableLanguage(locale);
@@ -114,6 +119,9 @@ public final class Languages {
 	 * Create a {@code Language} instance from a valid {@code language-range}
 	 * definition.
 	 *
+	 * @param language
+	 *            the language-range for the language to be loaded.
+	 * @return the {@code Language} instance for the specified language-range
 	 * @throws NullPointerException
 	 *             if {@code language} is null
 	 * @throws IllegalArgumentException
@@ -133,11 +141,18 @@ public final class Languages {
 	}
 
 	/**
-	 * Implements Basic Filtering matching algorithm defined in <a
-	 * href="https://tools.ietf.org/html/rfc4647#section-3.3.1">Section
+	 * Implements Basic Filtering matching algorithm defined in
+	 * <a href="https://tools.ietf.org/html/rfc4647#section-3.3.1">Section
 	 * 3.3.1</a> of the <b>Matching of Language Tags</b> (BCP 47)
+	 *
+	 * @param language1
+	 *            the including language
+	 * @param language2
+	 *            the language that will be checked for inclusion
+	 * @return true, if the {@code language1} includes {@code language2}
+	 *         attending to the aforementioned algorithm.
 	 */
-	public static boolean includes(Language language1, Language language2) {
+	public static boolean includes(final Language language1, final Language language2) {
 		if(language1==null || language2==null) {
 			return false;
 		}

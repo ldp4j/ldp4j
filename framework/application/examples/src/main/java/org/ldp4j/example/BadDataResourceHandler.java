@@ -77,6 +77,8 @@ public class BadDataResourceHandler extends InMemoryResourceHandler {
 
 	/**
 	 * Get custom representation with bad data
+	 *
+	 * @return the representation
 	 */
 	public DataSet getRepresentation() {
 		return
@@ -103,7 +105,9 @@ public class BadDataResourceHandler extends InMemoryResourceHandler {
 	}
 
 	/**
-	 * All the properties that will be filtered.
+	 * Get all the properties that will be filtered.
+	 *
+	 * @return the properties to be filtered
 	 */
 	public static final String[] filteredProperties() {
 		return new String[]{

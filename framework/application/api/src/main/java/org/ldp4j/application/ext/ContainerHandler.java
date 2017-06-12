@@ -32,8 +32,8 @@ import org.ldp4j.application.session.WriteSession;
 import org.ldp4j.application.data.DataSet;
 
 /**
- * Interface to be implemented for handling Container LDP resources. <br/>
- * <br/>
+ * Interface to be implemented for handling Container LDP resources. <br>
+ * <br>
  *
  * Handler implementations can be further extended by implementing the
  * {@link Deletable} and/or {@link Modifiable} interfaces.
