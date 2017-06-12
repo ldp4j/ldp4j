@@ -39,20 +39,20 @@ final class DataSetHelperImpl extends DataSetHelper {
 		private final Individual<?, ?> from;
 		private final Individual<?, ?> to;
 
-		private IndividualRenamer(Individual<?, ?> from, Individual<?, ?> to) {
+		private IndividualRenamer(final Individual<?, ?> from, final Individual<?, ?> to) {
 			this.from = from;
 			this.to = to;
 		}
 
 		@Override
-		public void consume(Individual<?, ?> subject, URI predicate, Literal<?> object) {
+		public void consume(final Individual<?, ?> subject, final URI predicate, final Literal<?> object) {
 			if(subject==this.from) {
 				this.to.addValue(predicate,object);
 			}
 		}
 
 		@Override
-		public void consume(Individual<?, ?> subject, URI predicate, Individual<?, ?> object) {
+		public void consume(final Individual<?, ?> subject, final URI predicate, final Individual<?, ?> object) {
 			if(subject==this.from) {
 				Value value=object;
 				if(value==this.from) {
@@ -73,19 +73,19 @@ final class DataSetHelperImpl extends DataSetHelper {
 			private final DataSetHelperImpl.TripleConsumer consumer;
 			private final URI predicate;
 
-			private TripleConsumerAdapter(Property property, Individual<?, ?> individual, DataSetHelperImpl.TripleConsumer consumer) {
+			private TripleConsumerAdapter(final Property property, final Individual<?, ?> individual, final DataSetHelperImpl.TripleConsumer consumer) {
 				this.predicate  = property.predicate();
 				this.individual = individual;
 				this.consumer   = consumer;
 			}
 
 			@Override
-			public void visitLiteral(Literal<?> value) {
+			public void visitLiteral(final Literal<?> value) {
 				this.consumer.consume(this.individual,this.predicate,value);
 			}
 
 			@Override
-			public void visitIndividual(Individual<?, ?> value) {
+			public void visitIndividual(final Individual<?, ?> value) {
 				this.consumer.consume(this.individual,this.predicate,value);
 			}
 
@@ -93,15 +93,15 @@ final class DataSetHelperImpl extends DataSetHelper {
 
 		private final DataSet dataSet;
 
-		private DataSetIterator(DataSet dataSet) {
+		private DataSetIterator(final DataSet dataSet) {
 			this.dataSet = dataSet;
 		}
 
-		void iterate(DataSetHelperImpl.TripleConsumer processor) {
-			for(Individual<?,?> individual:this.dataSet) {
-				for(Property property:individual) {
-					DataSetIterator.TripleConsumerAdapter visitor = new TripleConsumerAdapter(property,individual, processor);
-					for(Value value:property) {
+		void iterate(final DataSetHelperImpl.TripleConsumer processor) {
+			for(final Individual<?,?> individual:this.dataSet) {
+				for(final Property property:individual) {
+					final DataSetIterator.TripleConsumerAdapter visitor = new TripleConsumerAdapter(property,individual, processor);
+					for(final Value value:property) {
 						value.accept(visitor);
 					}
 				}
@@ -118,33 +118,33 @@ final class DataSetHelperImpl extends DataSetHelper {
 		private boolean hasSelf=false;
 		private boolean idInUse=false;
 
-		private NewIndividualIdCollector(ManagedIndividualId id) {
+		private NewIndividualIdCollector(final ManagedIndividualId id) {
 			this.id = id;
 		}
 
 		@Override
-		public void visitManagedIndividual(ManagedIndividual individual) {
+		public void visitManagedIndividual(final ManagedIndividual individual) {
 			this.idInUse=this.id.equals(individual.id());
 		}
 
 		@Override
-		public void visitRelativeIndividual(RelativeIndividual individual) {
+		public void visitRelativeIndividual(final RelativeIndividual individual) {
 			// Nothing to do
 		}
 
 		@Override
-		public void visitLocalIndividual(LocalIndividual individual) {
+		public void visitLocalIndividual(final LocalIndividual individual) {
 			// Nothing to do
 		}
 
 		@Override
-		public void visitExternalIndividual(ExternalIndividual individual) {
+		public void visitExternalIndividual(final ExternalIndividual individual) {
 			// Nothing to do
 		}
 
 		@Override
-		public void visitNewIndividual(NewIndividual individual) {
-			URI path=individual.path();
+		public void visitNewIndividual(final NewIndividual individual) {
+			final URI path=individual.path();
 			this.hasSelf=this.hasSelf || path.equals(SELF);
 			this.newIds.add(path);
 		}
@@ -156,7 +156,7 @@ final class DataSetHelperImpl extends DataSetHelper {
 			return this.newIds;
 		}
 
-		void collect(Individual<?, ?> individual) throws DataSetModificationException {
+		void collect(final Individual<?, ?> individual) throws DataSetModificationException {
 			individual.accept(this);
 			if(this.idInUse) {
 				throw new DataSetModificationException("The data set already has an individual identified as '"+this.id+"'");
@@ -167,29 +167,29 @@ final class DataSetHelperImpl extends DataSetHelper {
 
 	private final DataSet dataSet;
 
-	DataSetHelperImpl(DataSet dataSet) {
+	DataSetHelperImpl(final DataSet dataSet) {
 		this.dataSet = dataSet;
 	}
 
 	private void rename(final Individual<?,?> from, final Individual<?,?> to) {
-		DataSetIterator iterator = new DataSetIterator(this.dataSet);
-		TripleConsumer consumer = new IndividualRenamer(from, to);
+		final DataSetIterator iterator = new DataSetIterator(this.dataSet);
+		final TripleConsumer consumer = new IndividualRenamer(from, to);
 		iterator.iterate(consumer);
 		this.dataSet.remove(from);
 	}
 
-	private List<URI> getNewIds(ManagedIndividualId id) throws DataSetModificationException {
-		NewIndividualIdCollector collector=new NewIndividualIdCollector(id);
-		for(Individual<?,?> individual:this.dataSet) {
+	private List<URI> getNewIds(final ManagedIndividualId id) throws DataSetModificationException {
+		final NewIndividualIdCollector collector=new NewIndividualIdCollector(id);
+		for(final Individual<?,?> individual:this.dataSet) {
 			collector.collect(individual);
 		}
 		return collector.getCollectedIds();
 	}
 
 	@Override
-	public <T extends Serializable, S extends Individual<T, S>>  S replace(Serializable from, T to, Class<? extends S> clazz) {
+	public <T extends Serializable, S extends Individual<T, S>>  S replace(final Serializable from, final T to, final Class<? extends S> clazz) {
 		S target=null;
-		Individual<?, ?> src=this.dataSet.individualOfId(from);
+		final Individual<?, ?> src=this.dataSet.individualOfId(from);
 		if(src!=null) {
 			target=this.dataSet.individual(to, clazz);
 			rename(src,target);
@@ -200,24 +200,25 @@ final class DataSetHelperImpl extends DataSetHelper {
 
 	@Override
 	public ManagedIndividual manage(final ManagedIndividualId id) throws DataSetModificationException {
-		List<URI> newIds=getNewIds(id);
+		final List<URI> newIds=getNewIds(id);
 		newIds.remove(SELF);
-		ManagedIndividual self=replace(SELF,id,ManagedIndividual.class);
-		for(URI newId:newIds) {
-			RelativeIndividualId relativeId=RelativeIndividualId.createId(id, newId);
+		final ManagedIndividual self=replace(SELF,id,ManagedIndividual.class);
+		for(final URI newId:newIds) {
+			final RelativeIndividualId relativeId=RelativeIndividualId.createId(id, newId);
 			replace(newId,relativeId,RelativeIndividual.class);
 		}
 		return self;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public <T extends Individual<URI,T>> T self() {
-		return relative(SELF);
+		return (T)relative(SELF);
 	}
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public <T extends Individual<URI,T>> T relative(URI path) {
+	public <T extends Individual<URI,T>> T relative(final URI path) {
 		return (T)this.dataSet.individualOfId(path);
 	}
 
@@ -225,9 +226,9 @@ final class DataSetHelperImpl extends DataSetHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IndividualHelper managedIndividual(Name<?> name, String managerId) {
-		ManagedIndividualId individualId = ManagedIndividualId.createId(name,managerId);
-		ManagedIndividual individual = this.dataSet.individual(individualId, ManagedIndividual.class);
+	public IndividualHelper managedIndividual(final Name<?> name, final String managerId) {
+		final ManagedIndividualId individualId = ManagedIndividualId.createId(name,managerId);
+		final ManagedIndividual individual = this.dataSet.individual(individualId, ManagedIndividual.class);
 		return new IndividualHelperImpl(individual);
 	}
 
@@ -235,10 +236,10 @@ final class DataSetHelperImpl extends DataSetHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IndividualHelper relativeIndividual(Name<?> name, String managerId, URI path) {
-		ManagedIndividualId parentId = ManagedIndividualId.createId(name,managerId);
-		RelativeIndividualId individualId=RelativeIndividualId.createId(parentId, path);
-		RelativeIndividual individual = this.dataSet.individual(individualId, RelativeIndividual.class);
+	public IndividualHelper relativeIndividual(final Name<?> name, final String managerId, final URI path) {
+		final ManagedIndividualId parentId = ManagedIndividualId.createId(name,managerId);
+		final RelativeIndividualId individualId=RelativeIndividualId.createId(parentId, path);
+		final RelativeIndividual individual = this.dataSet.individual(individualId, RelativeIndividual.class);
 		return new IndividualHelperImpl(individual);
 	}
 
@@ -246,8 +247,9 @@ final class DataSetHelperImpl extends DataSetHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IndividualHelper localIndividual(Name<?> name) {
+	public IndividualHelper localIndividual(final Name<?> name) {
 		@SuppressWarnings("rawtypes")
+		final
 		LocalIndividual individual = this.dataSet.individual((Name)name, LocalIndividual.class);
 		return new IndividualHelperImpl(individual);
 	}
@@ -256,7 +258,7 @@ final class DataSetHelperImpl extends DataSetHelper {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public IndividualHelper externalIndividual(URI uri) {
+	public IndividualHelper externalIndividual(final URI uri) {
 		Individual<?, ?> individual=null;
 		if(uri.isAbsolute()) {
 			individual=this.dataSet.individual(uri, ExternalIndividual.class);
