@@ -72,17 +72,17 @@ public class WriteSessionTest {
 	private final class UnitOfWorkInspector implements Visitor {
 
 		@Override
-		public void visitNew(DelegatedResourceSnapshot obj) {
+		public void visitNew(final DelegatedResourceSnapshot obj) {
 			LOGGER.debug("Pending creation: "+obj);
 		}
 
 		@Override
-		public void visitDirty(DelegatedResourceSnapshot obj) {
+		public void visitDirty(final DelegatedResourceSnapshot obj) {
 			LOGGER.debug("Pending update: "+obj);
 		}
 
 		@Override
-		public void visitDeleted(DelegatedResourceSnapshot obj) {
+		public void visitDeleted(final DelegatedResourceSnapshot obj) {
 			LOGGER.debug("Pending deletion: "+obj);
 
 		}
@@ -95,7 +95,7 @@ public class WriteSessionTest {
 		;
 		private final String prefix;
 
-		Stage(String prefix) {
+		Stage(final String prefix) {
 			this.prefix = prefix;
 		}
 
@@ -148,20 +148,20 @@ public class WriteSessionTest {
 
 	@Test
 	public void testSession() throws Exception {
-		Resource rootResource = initialize();
+		final Resource rootResource = initialize("me","root");
 
 		// BEGIN First interaction
 		prepareSession(Action.PUT, rootResource);
 		handleAction(Action.PUT,rootResource);
 
-		ResourceSnapshot me = sut.find(ResourceSnapshot.class,rootResource.id().name(),PersonHandler.class);
-		ResourceSnapshot myRelatives = attachResource(me,"personRelatives","myRelatives",RelativeContainerHandler.class);
-		ResourceSnapshot address = attachResource(me,"address","myAddress",AddressHandler.class);
-		ContainerSnapshot books = attachContainer(me,"books","myBooks",BookContainerHandler.class);
-		ResourceSnapshot firstBook = addMember(books,"book1");
-		ResourceSnapshot secondBook = addMember(books,"book2");
+		final ResourceSnapshot me = this.sut.find(ResourceSnapshot.class,rootResource.id().name(),PersonHandler.class);
+		final ResourceSnapshot myRelatives = attachResource(me,"personRelatives","myRelatives",RelativeContainerHandler.class);
+		final ResourceSnapshot address = attachResource(me,"address","myAddress",AddressHandler.class);
+		final ContainerSnapshot books = attachContainer(me,"books","myBooks",BookContainerHandler.class);
+		final ResourceSnapshot firstBook = addMember(books,"book1");
+		final ResourceSnapshot secondBook = addMember(books,"book2");
 
-		terminateSession(Action.PUT, me);
+		commitSession(Action.PUT, me);
 		// END First interaction
 
 		// BEGIN Second interaction
@@ -176,10 +176,10 @@ public class WriteSessionTest {
 
 		handleAction(Action.POST, myRelatives);
 
-		ContainerSnapshot otherRelatives = sut.find(ContainerSnapshot.class,myRelatives.name(),RelativeContainerHandler.class);
-		ResourceSnapshot myWife = addMember(otherRelatives,"myWife");
+		final ContainerSnapshot otherRelatives = this.sut.find(ContainerSnapshot.class,myRelatives.name(),RelativeContainerHandler.class);
+		final ResourceSnapshot myWife = addMember(otherRelatives,"myWife");
 
-		terminateSession(Action.POST, myRelatives);
+		commitSession(Action.POST, myRelatives);
 		// END Second interaction
 
 		// BEGIN Third interaction
@@ -195,17 +195,17 @@ public class WriteSessionTest {
 
 		handleAction(Action.DELETE, myWife);
 
-		ResourceSnapshot foundRelative = assertAvailable(myWife,ResourceSnapshot.class,PersonHandler.class);
+		final ResourceSnapshot foundRelative = assertAvailable(myWife,ResourceSnapshot.class,PersonHandler.class);
 
 		deleteResource(foundRelative);
 
-		terminateSession(Action.DELETE, myWife);
+		commitSession(Action.DELETE, myWife);
 		// END Third interaction
 
 		// BEGIN Fourth interaction
 		prepareSession(Action.DELETE, me);
 
-		ResourceSnapshot otherMe=assertAvailable(me,ResourceSnapshot.class,PersonHandler.class);
+		final ResourceSnapshot otherMe=assertAvailable(me,ResourceSnapshot.class,PersonHandler.class);
 		assertAvailable(myRelatives, ResourceSnapshot.class, RelativeContainerHandler.class);
 		assertAvailable(address, ResourceSnapshot.class, AddressHandler.class);
 		assertAvailable(books, ContainerSnapshot.class, BookContainerHandler.class);
@@ -217,7 +217,7 @@ public class WriteSessionTest {
 
 		deleteResource(otherMe);
 
-		terminateSession(Action.DELETE, me);
+		commitSession(Action.DELETE, me);
 		// END Fourth interaction
 
 		// BEGIN Final interaction
@@ -231,8 +231,141 @@ public class WriteSessionTest {
 		assertUnavailable(myWife, ResourceSnapshot.class,PersonHandler.class);
 	}
 
-	private Resource initialize() {
-		Transaction transaction=
+	@Test
+	public void testSession$DiscardChanges$doesNotCarryOutDeletions() throws Exception {
+		final Resource rootResource = initialize("discard","alternativePath");
+
+		// BEGIN First interaction
+		prepareSession(Action.PUT, rootResource);
+		handleAction(Action.PUT,rootResource);
+
+		final ResourceSnapshot me = this.sut.find(ResourceSnapshot.class,rootResource.id().name(),PersonHandler.class);
+		final ResourceSnapshot myRelatives = attachResource(me,"personRelatives","myRelatives",RelativeContainerHandler.class);
+		final ResourceSnapshot address = attachResource(me,"address","myAddress",AddressHandler.class);
+		final ContainerSnapshot books = attachContainer(me,"books","myBooks",BookContainerHandler.class);
+		final ResourceSnapshot firstBook = addMember(books,"book1");
+		final ResourceSnapshot secondBook = addMember(books,"book2");
+
+		commitSession(Action.PUT, me);
+		// END First interaction
+
+		// BEGIN Second interaction
+		prepareSession(Action.POST, myRelatives);
+
+		assertAvailable(me, ResourceSnapshot.class, PersonHandler.class);
+		assertAvailable(myRelatives, ResourceSnapshot.class, RelativeContainerHandler.class);
+		assertAvailable(address, ResourceSnapshot.class, AddressHandler.class);
+		assertAvailable(books, ContainerSnapshot.class, BookContainerHandler.class);
+		assertAvailable(firstBook, ResourceSnapshot.class, BookHandler.class);
+		assertAvailable(secondBook, ResourceSnapshot.class, BookHandler.class);
+
+		handleAction(Action.POST, myRelatives);
+
+		final ContainerSnapshot otherRelatives = this.sut.find(ContainerSnapshot.class,myRelatives.name(),RelativeContainerHandler.class);
+		final ResourceSnapshot myWife = addMember(otherRelatives,"myWife");
+
+		commitSession(Action.POST, myRelatives);
+		// END Second interaction
+
+		// BEGIN Third interaction
+		prepareSession(Action.DELETE, myWife);
+
+		assertAvailable(me, ResourceSnapshot.class, PersonHandler.class);
+		assertAvailable(myRelatives, ResourceSnapshot.class, RelativeContainerHandler.class);
+		assertAvailable(address, ResourceSnapshot.class, AddressHandler.class);
+		assertAvailable(books, ContainerSnapshot.class, BookContainerHandler.class);
+		assertAvailable(firstBook, ResourceSnapshot.class, BookHandler.class);
+		assertAvailable(secondBook, ResourceSnapshot.class, BookHandler.class);
+		assertAvailable(myWife, ResourceSnapshot.class,PersonHandler.class);
+
+		handleAction(Action.DELETE, myWife);
+
+		final ResourceSnapshot foundRelative = assertAvailable(myWife,ResourceSnapshot.class,PersonHandler.class);
+
+		deleteResource(foundRelative);
+
+		commitSession(Action.DELETE, myWife);
+		// END Third interaction
+
+		// BEGIN Fourth interaction
+		prepareSession(Action.DELETE, me);
+
+		final ResourceSnapshot otherMe=assertAvailable(me,ResourceSnapshot.class,PersonHandler.class);
+		assertAvailable(myRelatives, ResourceSnapshot.class, RelativeContainerHandler.class);
+		assertAvailable(address, ResourceSnapshot.class, AddressHandler.class);
+		assertAvailable(books, ContainerSnapshot.class, BookContainerHandler.class);
+		assertAvailable(firstBook, ResourceSnapshot.class, BookHandler.class);
+		assertAvailable(secondBook, ResourceSnapshot.class, BookHandler.class);
+		assertUnavailable(myWife, ResourceSnapshot.class,PersonHandler.class);
+
+		handleAction(Action.DELETE, me);
+
+		deleteResource(otherMe);
+
+		discardSession(Action.DELETE, me);
+		// END Fourth interaction
+
+		// BEGIN Final interaction
+		prepareSession(Action.CHECK, me);
+
+		assertAvailable(myRelatives, ResourceSnapshot.class, RelativeContainerHandler.class);
+		assertAvailable(address, ResourceSnapshot.class, AddressHandler.class);
+		assertAvailable(books, ContainerSnapshot.class, BookContainerHandler.class);
+		assertAvailable(firstBook, ResourceSnapshot.class, BookHandler.class);
+		assertAvailable(secondBook, ResourceSnapshot.class, BookHandler.class);
+		assertUnavailable(myWife, ResourceSnapshot.class,PersonHandler.class);
+	}
+
+	@Test
+	public void testSession$DiscardChanges$doesNotCarryOutCreationsNorModifications() throws Exception {
+		final Resource rootResource = initialize("discard","alternativePath");
+
+		// BEGIN First interaction
+		prepareSession(Action.PUT, rootResource);
+		handleAction(Action.PUT,rootResource);
+
+		final ResourceSnapshot me = this.sut.find(ResourceSnapshot.class,rootResource.id().name(),PersonHandler.class);
+		final ResourceSnapshot myRelatives = attachResource(me,"personRelatives","myRelatives",RelativeContainerHandler.class);
+		final ResourceSnapshot address = attachResource(me,"address","myAddress",AddressHandler.class);
+		final ContainerSnapshot books = attachContainer(me,"books","myBooks",BookContainerHandler.class);
+		final ResourceSnapshot firstBook = addMember(books,"book1");
+		final ResourceSnapshot secondBook = addMember(books,"book2");
+
+		commitSession(Action.PUT, me);
+		// END First interaction
+
+		// BEGIN Second interaction
+		prepareSession(Action.POST, myRelatives);
+
+		assertAvailable(me, ResourceSnapshot.class, PersonHandler.class);
+		assertAvailable(myRelatives, ResourceSnapshot.class, RelativeContainerHandler.class);
+		assertAvailable(address, ResourceSnapshot.class, AddressHandler.class);
+		assertAvailable(books, ContainerSnapshot.class, BookContainerHandler.class);
+		assertAvailable(firstBook, ResourceSnapshot.class, BookHandler.class);
+		assertAvailable(secondBook, ResourceSnapshot.class, BookHandler.class);
+
+		handleAction(Action.POST, myRelatives);
+
+		final ContainerSnapshot otherRelatives = this.sut.find(ContainerSnapshot.class,myRelatives.name(),RelativeContainerHandler.class);
+		final ResourceSnapshot myWife = addMember(otherRelatives,"myWife");
+
+		discardSession(Action.POST, myRelatives);
+		// END Second interaction
+
+		// BEGIN Third interaction
+		prepareSession(Action.CHECK, me);
+
+		assertAvailable(me, ResourceSnapshot.class, PersonHandler.class);
+		assertAvailable(myRelatives, ResourceSnapshot.class, RelativeContainerHandler.class);
+		assertAvailable(address, ResourceSnapshot.class, AddressHandler.class);
+		assertAvailable(books, ContainerSnapshot.class, BookContainerHandler.class);
+		assertAvailable(firstBook, ResourceSnapshot.class, BookHandler.class);
+		assertAvailable(secondBook, ResourceSnapshot.class, BookHandler.class);
+		assertUnavailable(myWife, ResourceSnapshot.class,PersonHandler.class);
+	}
+
+	private Resource initialize(final String id, final String path) {
+		final Transaction transaction=
 			RuntimeDelegate.
 				getInstance().
 					getTransactionManager().
@@ -240,16 +373,16 @@ public class WriteSessionTest {
 		transaction.begin();
 		try {
 			this.uow = UnitOfWork.newCurrent();
-			Resource rootResource=
+			final Resource resource=
 				this.modelFactory.createResource(
 					this.templateManagementService.templateOfId("personTemplate"),
-					name("me"));
-			Endpoint rootEndpoint=this.modelFactory.createEndpoint("root",rootResource,new Date(),EntityTag.createStrong("root"));
-			RuntimeDelegate.getInstance().getResourceRepository().add(rootResource);
-			RuntimeDelegate.getInstance().getEndpointRepository().add(rootEndpoint);
+					name(id));
+			final Endpoint endpoint=this.modelFactory.createEndpoint(path,resource,new Date(),EntityTag.createStrong(path));
+			RuntimeDelegate.getInstance().getResourceRepository().add(resource);
+			RuntimeDelegate.getInstance().getEndpointRepository().add(endpoint);
 			UnitOfWork.setCurrent(null);
 			transaction.commit();
-			return rootResource;
+			return resource;
 		} finally {
 			if(transaction.isActive()) {
 				transaction.rollback();
@@ -257,52 +390,52 @@ public class WriteSessionTest {
 		}
 	}
 
-	private Name<?> name(String id) {
+	private Name<?> name(final String id) {
 		return NamingScheme.getDefault().name(id);
 	}
 
-	private void logAction(Stage stage, Action action, ResourceSnapshot object) {
+	private void logAction(final Stage stage, final Action action, final ResourceSnapshot object) {
 		LOGGER.debug(String.format(">> %s %s(%s)",stage.prefix,action,object.name()));
 	}
 
-	private ResourceSnapshot addMember(ContainerSnapshot target, String name) {
+	private ResourceSnapshot addMember(final ContainerSnapshot target, final String name) {
 		LOGGER.debug("--> Requested adding member '"+name+"' to container '"+target.name()+"'");
-		ResourceSnapshot addMember = target.addMember(name(name));
+		final ResourceSnapshot addMember = target.addMember(name(name));
 		LOGGER.debug("--> Completed adding member '"+name+"' to container '"+target.name()+"'");
 		return addMember;
 	}
 
-	private ResourceSnapshot attachResource(ResourceSnapshot target, String attachmentId, String name, Class<? extends ResourceHandler> clazz) {
+	private ResourceSnapshot attachResource(final ResourceSnapshot target, final String attachmentId, final String name, final Class<? extends ResourceHandler> clazz) {
 		LOGGER.debug("--> Requested attaching resource of type '"+clazz.getCanonicalName()+"' as '"+attachmentId+"' to resource '"+target.name()+"'");
-		ResourceSnapshot attachResource = target.createAttachedResource(ResourceSnapshot.class,attachmentId,name(name),clazz);
+		final ResourceSnapshot attachResource = target.createAttachedResource(ResourceSnapshot.class,attachmentId,name(name),clazz);
 		LOGGER.debug("--> Complete attaching resource of type '"+clazz.getCanonicalName()+"' as '"+attachmentId+"' to resource '"+target.name()+"'");
 		return attachResource;
 	}
 
-	private ContainerSnapshot attachContainer(ResourceSnapshot target, String attachmentId, String name, Class<? extends ContainerHandler> clazz) {
+	private ContainerSnapshot attachContainer(final ResourceSnapshot target, final String attachmentId, final String name, final Class<? extends ContainerHandler> clazz) {
 		LOGGER.debug("--> Requested attaching resource of type '"+clazz.getCanonicalName()+"' as '"+attachmentId+"' to resource '"+target.name()+"'");
-		ContainerSnapshot attachContainer = target.createAttachedResource(ContainerSnapshot.class,attachmentId,name(name), clazz);
+		final ContainerSnapshot attachContainer = target.createAttachedResource(ContainerSnapshot.class,attachmentId,name(name), clazz);
 		LOGGER.debug("--> Completed attaching resource of type '"+clazz.getCanonicalName()+"' as '"+attachmentId+"' to resource '"+target.name()+"'");
 		return attachContainer;
 	}
 
-	private void deleteResource(ResourceSnapshot resource) {
+	private void deleteResource(final ResourceSnapshot resource) {
 		LOGGER.debug("--> Requested deletion of "+resource.name());
 		this.sut.delete(resource);
 		LOGGER.debug("--> Completed deletion of "+resource.name());
 	}
 
-	private void assertUnavailable(ResourceSnapshot resource, Class<? extends ResourceSnapshot> clazz, Class<? extends ResourceHandler> handlerClass) {
-		ResourceSnapshot found=this.sut.find(clazz,resource.name(),handlerClass);
+	private void assertUnavailable(final ResourceSnapshot resource, final Class<? extends ResourceSnapshot> clazz, final Class<? extends ResourceHandler> handlerClass) {
+		final ResourceSnapshot found=this.sut.find(clazz,resource.name(),handlerClass);
 		assertThat(found,nullValue());
 	}
 
-	private ResourceSnapshot assertAvailable(ResourceSnapshot resource, Class<? extends ResourceSnapshot> clazz, Class<? extends ResourceHandler> handlerClass) {
+	private ResourceSnapshot assertAvailable(final ResourceSnapshot resource, final Class<? extends ResourceSnapshot> clazz, final Class<? extends ResourceHandler> handlerClass) {
 		Class<? extends DelegatedResourceSnapshot> delegatedClass = DelegatedResourceSnapshot.class;
 		if(clazz==ContainerSnapshot.class) {
 			delegatedClass=DelegatedContainerSnapshot.class;
 		}
-		ResourceSnapshot found=this.sut.find(clazz,resource.name(),handlerClass);
+		final ResourceSnapshot found=this.sut.find(clazz,resource.name(),handlerClass);
 		assertThat(found,notNullValue());
 		assertThat(found,instanceOf(clazz));
 		assertThat(found,instanceOf(delegatedClass));
@@ -310,32 +443,40 @@ public class WriteSessionTest {
 		return found;
 	}
 
-	private void handleAction(Action action, ResourceSnapshot resource) {
+	private void handleAction(final Action action, final ResourceSnapshot resource) {
 		logAction(Stage.HANDLING,action,resource);
 	}
 
-	private void terminateSession(Action action, ResourceSnapshot resource) throws Exception {
+	private void commitSession(final Action action, final ResourceSnapshot resource) throws Exception {
 		logAction(Stage.TERMINATION,action,resource);
 		this.uow.accept(new UnitOfWorkInspector());
 		this.sut.saveChanges();
 		this.sut.close();
-		assertThat(transaction.isActive(),equalTo(false));
+		assertThat(this.transaction.isActive(),equalTo(false));
 	}
 
-	private void prepareSession(Action action, ResourceSnapshot snapshot) {
+	private void discardSession(final Action action, final ResourceSnapshot resource) throws Exception {
+		logAction(Stage.TERMINATION,action,resource);
+		this.uow.accept(new UnitOfWorkInspector());
+		this.sut.discardChanges();
+		this.sut.close();
+		assertThat(this.transaction.isActive(),equalTo(false));
+	}
+
+	private void prepareSession(final Action action, final ResourceSnapshot snapshot) {
 		logAction(Stage.PREPARATION,action,snapshot);
-		Resource resource=
+		final Resource resource=
 			this.modelFactory.
 				createResource(this.templateManagementService.templateOfId(snapshot.templateId()), snapshot.name());
 		doPrepareSession(resource);
 	}
 
-	private void prepareSession(Action action, org.ldp4j.application.kernel.resource.Resource resource) {
+	private void prepareSession(final Action action, final org.ldp4j.application.kernel.resource.Resource resource) {
 		logAction(Stage.PREPARATION, action, resource);
 		doPrepareSession(resource);
 	}
 
-	private void doPrepareSession(org.ldp4j.application.kernel.resource.Resource resource) {
+	private void doPrepareSession(final org.ldp4j.application.kernel.resource.Resource resource) {
 		this.transaction=RuntimeDelegate.getInstance().getTransactionManager().currentTransaction();
 		this.transaction.begin();
 		this.sut =
@@ -348,11 +489,11 @@ public class WriteSessionTest {
 		this.uow = UnitOfWork.getCurrent();
 	}
 
-	private void handleAction(Action action, org.ldp4j.application.kernel.resource.Resource resource) {
+	private void handleAction(final Action action, final org.ldp4j.application.kernel.resource.Resource resource) {
 		logAction(Stage.HANDLING,action,resource);
 	}
 
-	private void logAction(Stage stage, Action action, org.ldp4j.application.kernel.resource.Resource resource) {
+	private void logAction(final Stage stage, final Action action, final org.ldp4j.application.kernel.resource.Resource resource) {
 		LOGGER.debug(String.format(">> %s %s(%s)",stage.prefix,action,resource.id().name()));
 	}
 
