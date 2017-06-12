@@ -58,7 +58,7 @@
 
 	<properties>
 		<tomcat.major.version>7</tomcat.major.version>
-		<tomcat.version>${tomcat.major.version}.0.20</tomcat.version>
+		<tomcat.version>${tomcat.major.version}.0.76</tomcat.version>
 		<test.manager.username>manager-username</test.manager.username>
 		<test.manager.password>manager-password</test.manager.password>
 		<test.catalina.home>${project.build.directory}/cargo/installs/apache-tomcat-${tomcat.version}/apache-tomcat-${tomcat.version}</test.catalina.home>
