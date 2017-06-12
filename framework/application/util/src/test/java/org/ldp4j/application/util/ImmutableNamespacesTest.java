@@ -27,11 +27,17 @@
 package org.ldp4j.application.util;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.*;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.sameInstance;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.ldp4j.application.util.ImmutableNamespaces;
 import org.ldp4j.commons.testing.Utils;
 
 public class ImmutableNamespacesTest {
@@ -53,9 +59,9 @@ public class ImmutableNamespacesTest {
 
 	@Test
 	public void testWithPrefix$valid() throws Exception {
-		ImmutableNamespaces ns = this.sut.withPrefix(NS1, VALID_NAMESPACE);
+		final ImmutableNamespaces ns = this.sut.withPrefix(NS1, VALID_NAMESPACE);
 		assertThat(ns,not(sameInstance(this.sut)));
-		assertThat(ns.getDeclaredPrefixes(),contains(NS1,DEFAULT_PR1,DEFAULT_PR2));
+		assertThat(ns.getDeclaredPrefixes(),containsInAnyOrder(NS1,DEFAULT_PR1,DEFAULT_PR2));
 		assertThat(ns.getNamespaceURI(NS1),equalTo(VALID_NAMESPACE));
 		assertThat(ns.getPrefix(VALID_NAMESPACE),equalTo(NS1));
 		assertThat(ns.getPrefixes(VALID_NAMESPACE),contains(NS1));
@@ -73,14 +79,14 @@ public class ImmutableNamespacesTest {
 
 	@Test
 	public void testWithoutPrefix() throws Exception {
-		ImmutableNamespaces ns = this.sut.withoutPrefix(DEFAULT_PR1,DEFAULT_PR2);
+		final ImmutableNamespaces ns = this.sut.withoutPrefix(DEFAULT_PR1,DEFAULT_PR2);
 		assertThat(ns,not(sameInstance(this.sut)));
 		assertThat(ns.getDeclaredPrefixes(),hasSize(0));
 	}
 
 	@Test
 	public void testGetDeclaredPrefixes() throws Exception {
-		assertThat(this.sut.getDeclaredPrefixes(),contains(DEFAULT_PR1,DEFAULT_PR2));
+		assertThat(this.sut.getDeclaredPrefixes(),containsInAnyOrder(DEFAULT_PR1,DEFAULT_PR2));
 	}
 
 	@Test
@@ -101,7 +107,7 @@ public class ImmutableNamespacesTest {
 
 	@Test
 	public void testGetPrefixes$found() throws Exception {
-		assertThat(this.sut.getPrefixes(DEFAULT_NAMESPACE),contains(DEFAULT_PR1,DEFAULT_PR2));
+		assertThat(this.sut.getPrefixes(DEFAULT_NAMESPACE),containsInAnyOrder(DEFAULT_PR1,DEFAULT_PR2));
 	}
 
 	@Test
@@ -111,7 +117,7 @@ public class ImmutableNamespacesTest {
 
 	@Test
 	public void testToString$empty() throws Exception {
-		ImmutableNamespaces ns = new ImmutableNamespaces();
+		final ImmutableNamespaces ns = new ImmutableNamespaces();
 		assertThat(ns.toString(),not(equalTo(Utils.defaultToString(ns))));
 	}
 
