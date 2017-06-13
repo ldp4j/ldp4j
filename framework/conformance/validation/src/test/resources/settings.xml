@@ -27,20 +27,15 @@
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
-<web-app
-	metadata-complete="false"
-	version="3.0"
-	xmlns="http://java.sun.com/xml/ns/javaee"
+<settings
+	xmlns="http://maven.apache.org/SETTINGS/1.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="
-		http://java.sun.com/xml/ns/javaee 
-		http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-
-	<display-name>LDP4j Conformance Fixture</display-name>
-
-	<context-param>
-		<param-name>ldp4jTargetApplication</param-name>
-		<param-value>org.ldp4j.conformance.fixture.TCKFApplication</param-value>
-	</context-param>
-
-</web-app>
+	xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <offline>true</offline>
+  <localRepository>${localRepository}</localRepository>
+  <pluginGroups/>
+  <proxies/>
+  <servers/>
+  <mirrors/>
+  <profiles/>
+</settings>

@@ -49,7 +49,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * ServletContextListener enable dumping the data collected by the JaCoCo Agent properly
- * @see http://askstop.com/questions/2974363/arquillian-jboss-as7-managed-and-jacoco-jacoco-exec-file-is-empty
+ * @see https://stackoverflow.com/questions/17907858/arquillian-jboss-as7-managed-and-jacoco-jacoco-exec-file-is-empty
  */
 @WebListener
 public final class JaCoCoAgentController implements ServletContextListener {
@@ -59,17 +59,17 @@ public final class JaCoCoAgentController implements ServletContextListener {
 
 	private static final class AttributeLogger implements ServletContextAttributeListener {
 		@Override
-		public void attributeAdded(ServletContextAttributeEvent scab) {
+		public void attributeAdded(final ServletContextAttributeEvent scab) {
 			LOGGER.info(String.format("Added attribute '%s' with value '%s'",scab.getName(),scab.getValue()));
 		}
 
 		@Override
-		public void attributeRemoved(ServletContextAttributeEvent scab) {
+		public void attributeRemoved(final ServletContextAttributeEvent scab) {
 			LOGGER.info(String.format("Deleted attribute '%s' with value '%s'",scab.getName(),scab.getValue()));
 		}
 
 		@Override
-		public void attributeReplaced(ServletContextAttributeEvent scab) {
+		public void attributeReplaced(final ServletContextAttributeEvent scab) {
 			LOGGER.info(String.format("Replaced attribute '%s' with value '%s'",scab.getName(),scab.getValue()));
 		}
 	}
@@ -78,14 +78,14 @@ public final class JaCoCoAgentController implements ServletContextListener {
 
 	private static final String NEW_LINE=System.getProperty("line.separator");
 
-	private void addMessage(Map<String, Object> messages, String attributeName, Object object) {
+	private void addMessage(final Map<String, Object> messages, final String attributeName, final Object object) {
 		if(object!=null) {
 			messages.put(attributeName,object);
 		}
 	}
 
-	private String dumpContext(String event, ServletContext context) {
-		Map<String,Object> messages=new TreeMap<String,Object>();
+	private String dumpContext(final String event, final ServletContext context) {
+		final Map<String,Object> messages=new TreeMap<String,Object>();
 
 		addMessage(messages,"Context path", context.getContextPath());
 		addMessage(messages,"Servlet context name", context.getServletContextName());
@@ -97,43 +97,43 @@ public final class JaCoCoAgentController implements ServletContextListener {
 		addMessage(messages,"Effective major version",context.getEffectiveMajorVersion());
 		addMessage(messages,"Effective minor version",context.getEffectiveMinorVersion());
 
-		Set<SessionTrackingMode> efectiveSessionTrackingModes=context.getEffectiveSessionTrackingModes();
+		final Set<SessionTrackingMode> efectiveSessionTrackingModes=context.getEffectiveSessionTrackingModes();
 		if(efectiveSessionTrackingModes!=null && !efectiveSessionTrackingModes.isEmpty()) {
-			StringBuilder builder=new StringBuilder();
-			for(SessionTrackingMode trackingMode:efectiveSessionTrackingModes) {
+			final StringBuilder builder=new StringBuilder();
+			for(final SessionTrackingMode trackingMode:efectiveSessionTrackingModes) {
 				builder.append(NEW_LINE).append("\t\t+ ").append(trackingMode);
 			}
 			addMessage(messages,"Efective session tracking modes",builder.toString());
 		}
 
-		Enumeration<String> attributeNames = context.getAttributeNames();
+		final Enumeration<String> attributeNames = context.getAttributeNames();
 		if(attributeNames!=null && attributeNames.hasMoreElements()) {
-			StringBuilder builder=new StringBuilder();
+			final StringBuilder builder=new StringBuilder();
 			while(attributeNames.hasMoreElements()) {
-				String name = attributeNames.nextElement();
+				final String name = attributeNames.nextElement();
 				if("org.apache.tomcat.util.scan.MergedWebXml".equals(name)) {
 					continue;
 				}
-				Object value = context.getAttribute(name);
+				final Object value = context.getAttribute(name);
 				builder.append(NEW_LINE).append("\t\t+ ").append(name).append(": ").append(value.toString()).append(" (").append(value.getClass().getCanonicalName()).append(")");
 			}
 			addMessage(messages,"Attributes",builder.toString());
 		}
 
-		Enumeration<String> initParameterNames = context.getInitParameterNames();
+		final Enumeration<String> initParameterNames = context.getInitParameterNames();
 		if(initParameterNames!=null && initParameterNames.hasMoreElements()) {
-			StringBuilder builder=new StringBuilder();
+			final StringBuilder builder=new StringBuilder();
 			while(initParameterNames.hasMoreElements()) {
-				String name = initParameterNames.nextElement();
-				String value = context.getInitParameter(name);
+				final String name = initParameterNames.nextElement();
+				final String value = context.getInitParameter(name);
 				builder.append(NEW_LINE).append("\t\t+ ").append(name).append(": ").append(value);
 			}
 			addMessage(messages,"Init parameters",builder.toString());
 		}
 
-		SessionCookieConfig sessionCookieConfig = context.getSessionCookieConfig();
+		final SessionCookieConfig sessionCookieConfig = context.getSessionCookieConfig();
 		if(sessionCookieConfig!=null) {
-			StringBuilder builder=new StringBuilder();
+			final StringBuilder builder=new StringBuilder();
 			builder.append(NEW_LINE).append("\t\t+ ").append("Name").append(": ").append(sessionCookieConfig.getName());
 			builder.append(NEW_LINE).append("\t\t+ ").append("Comment").append(": ").append(sessionCookieConfig.getComment());
 			builder.append(NEW_LINE).append("\t\t+ ").append("Domain").append(": ").append(sessionCookieConfig.getDomain());
@@ -142,38 +142,38 @@ public final class JaCoCoAgentController implements ServletContextListener {
 			addMessage(messages,"Session cookie config",builder.toString());
 		}
 
-		Map<String, ? extends ServletRegistration> servletRegistrations = context.getServletRegistrations();
+		final Map<String, ? extends ServletRegistration> servletRegistrations = context.getServletRegistrations();
 		if(servletRegistrations!=null && !servletRegistrations.isEmpty()) {
-			StringBuilder builder=new StringBuilder();
-			for(Entry<String, ? extends ServletRegistration> entry:servletRegistrations.entrySet()) {
-				ServletRegistration registration = entry.getValue();
+			final StringBuilder builder=new StringBuilder();
+			for(final Entry<String, ? extends ServletRegistration> entry:servletRegistrations.entrySet()) {
+				final ServletRegistration registration = entry.getValue();
 				builder.append(NEW_LINE).append("\t\t+ ").append(entry.getKey()).append(": ");
 				builder.append(NEW_LINE).append("\t\t\t- ").append("Name.......: ").append(registration.getName());
 				builder.append(NEW_LINE).append("\t\t\t- ").append("Class name.: ").append(registration.getClassName());
-				String runAsRole = registration.getRunAsRole();
+				final String runAsRole = registration.getRunAsRole();
 				if(runAsRole!=null && !runAsRole.trim().isEmpty()) {
 					builder.append(NEW_LINE).append("\t\t\t- ").append("Run as role: ").append(runAsRole.trim());
 				}
-				Map<String, String> initParameters = registration.getInitParameters();
+				final Map<String, String> initParameters = registration.getInitParameters();
 				if(initParameters!=null && !initParameters.isEmpty()) {
 					builder.append(NEW_LINE).append("\t\t\t- ").append("Init parameters:");
-					for(Entry<String, String> ipEntry:initParameters.entrySet()) {
+					for(final Entry<String, String> ipEntry:initParameters.entrySet()) {
 						builder.append(NEW_LINE).append("\t\t\t\t* ").append(ipEntry.getKey()).append(": ").append(ipEntry.getValue());
 					}
 				}
-				Collection<String> mappings = registration.getMappings();
+				final Collection<String> mappings = registration.getMappings();
 				if(mappings!=null && !mappings.isEmpty()) {
 					builder.append(NEW_LINE).append("\t\t\t- ").append("Mappings:");
-					for(String mapping:mappings) {
+					for(final String mapping:mappings) {
 						builder.append(NEW_LINE).append("\t\t\t\t* ").append(mapping);
 					}
 				}
 			}
 			addMessage(messages,"Servlet registrations",builder.toString());
 		}
-		StringBuilder builder=new StringBuilder();
+		final StringBuilder builder=new StringBuilder();
 		builder.append(event).append(":");
-		for(Entry<String, Object> entry:messages.entrySet()) {
+		for(final Entry<String, Object> entry:messages.entrySet()) {
 			builder.append(NEW_LINE).append("\t- ").append(entry.getKey()).append(": ").append(entry.getValue());
 		}
 
@@ -181,7 +181,7 @@ public final class JaCoCoAgentController implements ServletContextListener {
 	}
 
 	@Override
-	public void contextInitialized(ServletContextEvent sce) {
+	public void contextInitialized(final ServletContextEvent sce) {
 		if(isEnabled(SERVER_UPDATE_LOGGING)) {
 			sce.
 				getServletContext().
@@ -192,18 +192,18 @@ public final class JaCoCoAgentController implements ServletContextListener {
 	}
 
 	@Override
-	public void contextDestroyed(ServletContextEvent sce) {
+	public void contextDestroyed(final ServletContextEvent sce) {
 		if(isEnabled(SERVER_SHUTDOWN_LOGGING)) {
 			LOGGER.info(dumpContext("Context shutdown started",sce.getServletContext()));
 		}
 		try {
-			Class<?> rtClass = ClassLoader.getSystemClassLoader().loadClass("org.jacoco.agent.rt.RT");
-			Object jacocoAgent = rtClass.getMethod("getAgent").invoke(null);
-			Method dumpMethod = jacocoAgent.getClass().getMethod("dump",boolean.class);
+			final Class<?> rtClass = ClassLoader.getSystemClassLoader().loadClass("org.jacoco.agent.rt.RT");
+			final Object jacocoAgent = rtClass.getMethod("getAgent").invoke(null);
+			final Method dumpMethod = jacocoAgent.getClass().getMethod("dump",boolean.class);
 			dumpMethod.invoke(jacocoAgent, false);
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			LOGGER.debug("no jacoco agent attached to this jvm");
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			LOGGER.error("while trying to dump jacoco data", e);
 		}
 
@@ -213,7 +213,7 @@ public final class JaCoCoAgentController implements ServletContextListener {
 	 * @param property
 	 * @return
 	 */
-	protected boolean isEnabled(String property) {
+	protected boolean isEnabled(final String property) {
 		return Boolean.parseBoolean(System.getProperty(property));
 	}
 
