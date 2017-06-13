@@ -268,10 +268,10 @@ public class LDPConformanceITest {
 	}
 
 	private File targetWorkingDir() {
-		final String relPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
-		final File targetDir = new File(relPath, "ldp-testsuite");
+		final String relPath = System.getProperty("conformance.reports.path");
+		final File targetDir = new File(relPath);
 		if (!targetDir.exists()) {
-			Assume.assumeTrue("Could not create report-directory",targetDir.mkdir());
+			Assume.assumeTrue("Could not create report-directory",targetDir.mkdirs());
 		}
 		return targetDir;
 	}

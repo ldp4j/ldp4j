@@ -291,6 +291,7 @@
 						<java.util.logging.config.file>${basedir}${file.separator}src${file.separator}test${file.separator}resources${file.separator}logging.properties</java.util.logging.config.file>
 						<maven.repo.local>${settings.localRepository}</maven.repo.local>
 						<ldp4j.version>${project.version}</ldp4j.version>
+						<conformance.reports.path>${project.build.directory}${file.separator}conformance</conformance.reports.path>
 					</systemPropertyVariables>
 				</configuration>
 				<dependencies>
