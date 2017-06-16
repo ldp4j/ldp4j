@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
- *   Bundle      : ldp4j-application-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.2
+ *   Bundle      : ldp4j-application-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.ext;
@@ -30,9 +30,9 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Interface for read only Namespace processing. <br/>
+ * Interface for read only Namespace processing. <br>
  *
- * A Namespace has the properties: <br/>
+ * A Namespace has the properties: <br>
  *
  * <ul>
  * <li><b>Namespace URI</b>: Namespace name expressed as a URI to which the
@@ -40,7 +40,7 @@ import java.util.Set;
  * <li><b>Prefix</b></li>
  * </ul>
  *
- *<br/>
+ *<br>
  *
  * Note that a Namespace URI can be bound to multiple prefixes. However a prefix
  * can only be bound to a single Namespace URI.

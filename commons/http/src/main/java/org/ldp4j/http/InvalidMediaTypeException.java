@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons:ldp4j-commons-http:0.2.1
- *   Bundle      : ldp4j-commons-http-0.2.1.jar
+ *   Artifact    : org.ldp4j.commons:ldp4j-commons-http:0.2.2
+ *   Bundle      : ldp4j-commons-http-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.http;
@@ -77,7 +77,9 @@ public class InvalidMediaTypeException extends IllegalArgumentException {
 	}
 
 	/**
-	 * Return the offending media type.
+	 * Get the offending media type.
+	 *
+	 * @return the offending media type.
 	 */
 	public String getMediaType() {
 		return this.mediaType;

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-sdk:0.2.1
- *   Bundle      : ldp4j-application-engine-sdk-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-engine-sdk:0.2.2
+ *   Bundle      : ldp4j-application-engine-sdk-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.sdk.internal;
@@ -62,25 +62,25 @@ public class BooleanObjectFactory implements ObjectFactory<Boolean> {
 	 *             {@code Boolean} object.
 	 */
 	@Override
-	public Boolean fromString(String rawValue) {
+	public Boolean fromString(final String rawValue) {
 		try {
 			return PrimitiveObjectFactory.parseBoolean(rawValue);
-		} catch (IllegalArgumentException e) {
+		} catch (final IllegalArgumentException e) {
 			throw new ObjectParseException(e,Boolean.class, rawValue);
 		}
 	}
 
-    /**
-     * Returns a {@code String} object representing the specified
-     * boolean.  If the specified boolean is {@code true}, then
-     * the string {@code "true"} will be returned, otherwise the
-     * string {@code "false"} will be returned.
-     *
-     * @param b the boolean to be converted
-     * @return the string representation of the specified {@code boolean}
-     */
+	/**
+	 * Returns a {@code String} object representing the specified boolean. If
+	 * the specified boolean is {@code true}, then the string {@code "true"}
+	 * will be returned, otherwise the string {@code "false"} will be returned.
+	 *
+	 * @param value
+	 *            the boolean to be converted
+	 * @return the string representation of the specified {@code boolean}
+	 */
 	@Override
-	public String toString(Boolean value) {
+	public String toString(final Boolean value) {
 		return value.toString();
 	}
 

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
- *   Bundle      : ldp4j-application-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.2
+ *   Bundle      : ldp4j-application-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.vocabulary;
@@ -53,7 +53,7 @@ public interface Term extends Comparable<Term>, Serializable {
 	 * Returns the name of this term constant, exactly as declared in its
 	 * vocabulary declaration.
 	 *
-	 * <b>Most programmers should use the {@link #toString} method in preference
+	 * <b>Most programmers should use the {@link Object#toString} method in preference
 	 * to this one, as the toString method may return a more user-friendly
 	 * name.</b> This method is designed primarily for use in specialized
 	 * situations where correctness depends on getting the exact name, which
@@ -64,14 +64,18 @@ public interface Term extends Comparable<Term>, Serializable {
 	String name();
 
 	/**
-	 * Returns the simple name of the entity of the vocabulary identified by
-	 * this term constant.
+	 * Get the simple name of the entity of the vocabulary identified by this
+	 * term constant.
+	 *
+	 * @return the entity name
 	 */
 	String entityName();
 
 	/**
-	 * Returns the qualified name of the entity of the vocabulary identified by
+	 * Get the qualified name of the entity of the vocabulary identified by
 	 * this term constant.
+	 *
+	 * @return the qualified name
 	 */
 	String qualifiedEntityName();
 
@@ -89,6 +93,7 @@ public interface Term extends Comparable<Term>, Serializable {
 	/**
 	 * Transform the term to an instance of the specified type.
 	 *
+	 * @param <T> the type of object to be returned
 	 * @param type
 	 *            The type to which the term is to be transformed to.
 	 * @return An instance of the specified type that represents this term.

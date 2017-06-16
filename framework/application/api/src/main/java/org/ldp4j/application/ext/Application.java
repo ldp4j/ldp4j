@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
- *   Bundle      : ldp4j-application-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.2
+ *   Bundle      : ldp4j-application-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.ext;
@@ -57,7 +57,7 @@ public abstract class Application<T extends Configuration> {
 	}
 
 	/**
-	 * Setup the application. <br/>
+	 * Setup the application. <br>
 	 *
 	 * The implementation class will have to register the resource handler
 	 * instances and classes in the {@code Bootstrap} instance, and publish
@@ -74,7 +74,7 @@ public abstract class Application<T extends Configuration> {
 	public abstract void setup(Environment environment, Bootstrap<T> bootstrap) throws ApplicationSetupException;
 
 	/**
-	 * Initialize the application. <br/>
+	 * Initialize the application. <br>
 	 *
 	 * The implementation class may synchronize its internal state with the
 	 * state of the resources already managed by the LDP4j framework.
@@ -89,7 +89,7 @@ public abstract class Application<T extends Configuration> {
 	public abstract void initialize(WriteSession session) throws ApplicationInitializationException;
 
 	/**
-	 * Shutdown the application. <br/>
+	 * Shutdown the application. <br>
 	 *
 	 * The implementation class should carry out any termination activity
 	 * required before shutting down the application.

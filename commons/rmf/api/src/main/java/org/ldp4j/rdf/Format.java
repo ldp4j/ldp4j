@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons.rmf:rmf-api:0.2.1
- *   Bundle      : rmf-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.commons.rmf:rmf-api:0.2.2
+ *   Bundle      : rmf-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.rdf;
@@ -32,14 +32,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 /**
- * The set of possible syntaxes in which the content of a <b>Linked Data Platform
- * Resource</b> can be formatted.
- *
- * @author Miguel Esteban Gutiérrez
- * @since 1.0-S2
- * @version 1.0
- * @category ALM iStack Linked Data Platform API
- * @see org.centeropenmiddleware.almistack.middleware.ldp.server.api.IResource
+ * The set of possible syntaxes in which the content of a <b>RDF data set</b>
+ * can be formatted.
  */
 public final class Format implements Comparable<Format> {
 
@@ -66,7 +60,7 @@ public final class Format implements Comparable<Format> {
 	private final String type;
 	private final String name;
 
-	private Format(String type, String subtype, String name) {
+	private Format(final String type, final String subtype, final String name) {
 		Objects.requireNonNull(type, TYPE_PARAM);
 		Objects.requireNonNull(subtype, SUBTYPE_PARAM);
 		Objects.requireNonNull(name, NAME_PARAM);
@@ -84,8 +78,8 @@ public final class Format implements Comparable<Format> {
 		}
 	}
 
-	static Format registerFormat(String type, String subtype, String name) {
-		Format format = new Format(type,subtype,name);
+	static Format registerFormat(final String type, final String subtype, final String name) {
+		final Format format = new Format(type,subtype,name);
 		Format registeredFormat = FORMATS.putIfAbsent(format.getMime(),format);
 		if(registeredFormat==null) {
 			registeredFormat=format;
@@ -97,36 +91,36 @@ public final class Format implements Comparable<Format> {
 		return FORMATS.values().toArray(EMPTY_FORMAT_ARRAY);
 	}
 
-	public static Format valueOf(String mime) {
+	public static Format valueOf(final String mime) {
 		return FORMATS.get(mime);
 	}
 
 	public String getMime() {
-		return type.concat("/").concat(subtype);
+		return this.type.concat("/").concat(this.subtype);
 	}
 
 	public String getName() {
-		return name;
+		return this.name;
 	}
 
 	@Override
 	public int hashCode() {
 		final int prime = 17;
 		int result = 19;
-		result = prime * result + name.hashCode();
-		result = prime * result + subtype.hashCode();
-		result = prime * result + type.hashCode();
+		result = prime * result + this.name.hashCode();
+		result = prime * result + this.subtype.hashCode();
+		result = prime * result + this.type.hashCode();
 		return result;
 	}
 
 	@Override
-	public final boolean equals(Object obj) {
+	public final boolean equals(final Object obj) {
 		if(this==obj) {
 			return true;
 		}
 		boolean result=false;
 		if(obj instanceof Format) {
-			Format that=(Format)obj;
+			final Format that=(Format)obj;
 			result=
 				Objects.equals(this.name, that.name) &&
 				Objects.equals(this.subtype, that.subtype) &&
@@ -137,17 +131,17 @@ public final class Format implements Comparable<Format> {
 
 	@Override
 	public String toString() {
-		return String.format("%s (%s)",name,getMime());
+		return String.format("%s (%s)",this.name,getMime());
 	}
 
 	@Override
-	public int compareTo(Format o) {
+	public int compareTo(final Format o) {
 		if(o==null) {
 			return 1;
 		}
 		int comparison=getMime().compareToIgnoreCase(o.getMime());
 		if(comparison==0) {
-			comparison=name.compareTo(o.name);
+			comparison=this.name.compareTo(o.name);
 		}
 		return comparison;
 	}

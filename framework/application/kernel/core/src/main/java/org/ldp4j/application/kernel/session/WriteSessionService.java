@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.1
- *   Bundle      : ldp4j-application-kernel-core-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-kernel-core:0.2.2
+ *   Bundle      : ldp4j-application-kernel-core-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.kernel.session;
@@ -75,24 +75,45 @@ public final class WriteSessionService implements Service {
 		private final DelegatedWriteSession session;
 		private final Date lastModified;
 
-		private ResourceProcessor(DelegatedWriteSession session) {
+		private ResourceProcessor(final DelegatedWriteSession session) {
 			this.lastModified = session.getLastModified();
 			this.session = session;
 		}
 
 		@Override
-		public void visitNew(DelegatedResourceSnapshot obj) {
+		public void visitNew(final DelegatedResourceSnapshot obj) {
 			createResource(obj.delegate(),this.lastModified,this.session.getDesiredPath(obj),this.session.getIndirectId(obj));
 		}
 
 		@Override
-		public void visitDirty(DelegatedResourceSnapshot obj) {
+		public void visitDirty(final DelegatedResourceSnapshot obj) {
 			modifyResource(obj.delegate(),this.lastModified);
 		}
 
 		@Override
-		public void visitDeleted(DelegatedResourceSnapshot obj) {
+		public void visitDeleted(final DelegatedResourceSnapshot obj) {
 			deleteResource(obj.delegate(),this.lastModified);
+		}
+	}
+
+	private final class RollbackResourceProcessor implements UnitOfWork.Visitor {
+
+		private RollbackResourceProcessor() {
+		}
+
+		@Override
+		public void visitNew(final DelegatedResourceSnapshot obj) {
+			LOGGER.trace("Discarding creation of resource {}",obj.resourceId());
+		}
+
+		@Override
+		public void visitDirty(final DelegatedResourceSnapshot obj) {
+			LOGGER.trace("Discarding modifications for resource {}",obj.resourceId());
+		}
+
+		@Override
+		public void visitDeleted(final DelegatedResourceSnapshot obj) {
+			LOGGER.trace("Discarding deletion of resource {}",obj.resourceId());
 		}
 	}
 
@@ -106,20 +127,20 @@ public final class WriteSessionService implements Service {
 
 	private final TransactionManager transactionManager;
 
-	private WriteSessionService(TemplateManagementService templateManagementService, EndpointManagementService endointManagementService) {
+	private WriteSessionService(final TemplateManagementService templateManagementService, final EndpointManagementService endointManagementService) {
 		this.templateManagementService = templateManagementService;
 		this.endpointManagementService = endointManagementService;
 		this.resourceRepository=RuntimeDelegate.getInstance().getResourceRepository();
 		this.transactionManager=RuntimeDelegate.getInstance().getTransactionManager();
 	}
 
-	public WriteSession createSession(WriteSessionConfiguration configuration) {
+	public WriteSession createSession(final WriteSessionConfiguration configuration) {
 		UnitOfWork.newCurrent();
 		logLifecycleMessage("Created write session: %s",configuration);
 		return new DelegatedWriteSession(configuration,this);
 	}
 
-	void terminateSession(DelegatedWriteSession session) {
+	void terminateSession(final DelegatedWriteSession session) {
 		try {
 			switch(session.status()) {
 				case ACTIVE:
@@ -133,41 +154,41 @@ public final class WriteSessionService implements Service {
 					// Nothing to do
 					break;
 				default:
-					String errorMessage = "Unsupported status "+session.status();
+					final String errorMessage = "Unsupported status "+session.status();
 					LOGGER.error(errorMessage);
 					throw new IllegalStateException(errorMessage);
 			}
-		} catch (WriteSessionException e) {
+		} catch (final WriteSessionException e) {
 			LOGGER.error("Could not force termination of active session",e);
 		} finally {
 			UnitOfWork.setCurrent(null);
 		}
 	}
 
-	public ResourceSnapshot attach(WriteSession writeSession, Resource resource, Class<? extends ResourceHandler> handlerClass) {
+	public ResourceSnapshot attach(final WriteSession writeSession, final Resource resource, final Class<? extends ResourceHandler> handlerClass) {
 		return writeSession.find(ResourceSnapshot.class, resource.id().name(), handlerClass);
 	}
 
-	public Resource detach(WriteSession writeSession, ResourceSnapshot snapshot) {
+	public Resource detach(final WriteSession writeSession, final ResourceSnapshot snapshot) {
 		checkArgument(writeSession instanceof DelegatedWriteSession,"Invalid session");
 		checkArgument(snapshot instanceof DelegatedResourceSnapshot,"Unknown resource '%s'",snapshot.name());
-		DelegatedResourceSnapshot delegatedSnapshot=(DelegatedResourceSnapshot)snapshot;
+		final DelegatedResourceSnapshot delegatedSnapshot=(DelegatedResourceSnapshot)snapshot;
 		return delegatedSnapshot.delegate();
 	}
 
-	void commitSession(DelegatedWriteSession session) {
+	void commitSession(final DelegatedWriteSession session) {
 		logLifecycleMessage("Commiting session...");
 		UnitOfWork.getCurrent().accept(new ResourceProcessor(session));
 		this.transactionManager.currentTransaction().commit();
 	}
 
-	void rollbackSession(DelegatedWriteSession session) {
+	void rollbackSession(final DelegatedWriteSession session) {
 		logLifecycleMessage("Rolling back session...");
-		UnitOfWork.getCurrent().accept(new ResourceProcessor(session));
+		UnitOfWork.getCurrent().accept(new RollbackResourceProcessor());
 		this.transactionManager.currentTransaction().rollback();
 	}
 
-	Resource resourceOfId(ResourceId resourceId) {
+	Resource resourceOfId(final ResourceId resourceId) {
 		return this.resourceRepository.resourceById(resourceId,Resource.class);
 	}
 
@@ -175,7 +196,7 @@ public final class WriteSessionService implements Service {
 		return this.templateManagementService;
 	}
 
-	private void logLifecycleMessage(String msg, Object... args) {
+	private void logLifecycleMessage(final String msg, final Object... args) {
 		if(LOGGER.isDebugEnabled()) {
 			LOGGER.debug(String.format(msg,args));
 		}
@@ -185,15 +206,15 @@ public final class WriteSessionService implements Service {
 	 * TODO: Devise a mechanism for generating the entity tags using meaningful
 	 * information from the client
 	 */
-	private EntityTag generateEntityTag(Resource resource) { // NOSONAR
+	private EntityTag generateEntityTag(final Resource resource) { // NOSONAR
 		return EntityTag.createStrong(UUID.randomUUID().toString());
 	}
 
-	private void createResource(Resource resource, Date lastModified, String relativePath, URI indirectId) {
+	private void createResource(final Resource resource, final Date lastModified, final String relativePath, final URI indirectId) {
 		try {
 			resource.setIndirectId(indirectId);
 			this.resourceRepository.add(resource);
-			Endpoint newEndpoint=
+			final Endpoint newEndpoint=
 				this.endpointManagementService.
 					createEndpointForResource(
 						resource,
@@ -204,14 +225,14 @@ public final class WriteSessionService implements Service {
 				LOGGER.trace("Created "+resource);
 				LOGGER.trace("Created "+newEndpoint);
 			}
-		} catch (EndpointCreationException e) {
+		} catch (final EndpointCreationException e) {
 			throw new IllegalStateException(e);
 		}
 	}
 
-	private void modifyResource(Resource resource, Date lastModified) {
+	private void modifyResource(final Resource resource, final Date lastModified) {
 		try {
-			Endpoint endpoint =
+			final Endpoint endpoint =
 				this.endpointManagementService.
 					modifyResourceEndpoint(
 						resource,
@@ -221,15 +242,15 @@ public final class WriteSessionService implements Service {
 				LOGGER.trace("Modified "+resource);
 				LOGGER.trace("Modified "+endpoint);
 			}
-		} catch (EndpointNotFoundException e) {
+		} catch (final EndpointNotFoundException e) {
 			throw new IllegalStateException(e);
 		}
 	}
 
-	private void deleteResource(Resource resource, Date lastModified) {
+	private void deleteResource(final Resource resource, final Date lastModified) {
 		try {
 			this.resourceRepository.remove(resource);
-			Endpoint endpoint =
+			final Endpoint endpoint =
 				this.endpointManagementService.
 					deleteResourceEndpoint(
 						resource,
@@ -238,7 +259,7 @@ public final class WriteSessionService implements Service {
 				LOGGER.trace("Deleted "+resource);
 				LOGGER.trace("Deleted "+endpoint);
 			}
-		} catch (EndpointNotFoundException e) {
+		} catch (final EndpointNotFoundException e) {
 			throw new IllegalStateException(e);
 		}
 	}

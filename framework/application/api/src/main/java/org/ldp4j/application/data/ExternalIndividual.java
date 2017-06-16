@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
- *   Bundle      : ldp4j-application-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.2
+ *   Bundle      : ldp4j-application-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -34,7 +34,7 @@ public interface ExternalIndividual extends Individual<URI,ExternalIndividual> {
 	 * The location where the individual is available. The URI will always be
 	 * absolute, either hierarchical or opaque.
 	 *
-	 * @return
+	 * @return the external location of the resource.
 	 */
 	URI location();
 

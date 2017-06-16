@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
- *   Bundle      : ldp4j-application-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.2
+ *   Bundle      : ldp4j-application-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.vocabulary;
@@ -99,6 +99,7 @@ public interface Vocabulary extends Iterable<Term>, Serializable {
 	/**
 	 * Returns the vocabulary term that matches the specified value.
 	 *
+	 * @param <V> the type of value to be processed
 	 * @param value
 	 *            a value to determine the desired term.
 	 * @return the term that upon transformation matches the specified

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-util:0.2.1
- *   Bundle      : ldp4j-application-util-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-util:0.2.2
+ *   Bundle      : ldp4j-application-util-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.util;
@@ -40,7 +40,7 @@ import com.google.common.collect.Maps;
 
 
 /**
- * An immutable {@code Namespaces} implementation. <br/>
+ * An immutable {@code Namespaces} implementation. <br>
  *
  * An instance of {@code ImmutableNamespaces} contains its own data and will never
  * change. ImmutableNamespaces is convenient for public static final namespaces

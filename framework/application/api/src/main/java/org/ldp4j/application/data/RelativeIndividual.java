@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
- *   Bundle      : ldp4j-application-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.2
+ *   Bundle      : ldp4j-application-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.data;
@@ -31,14 +31,20 @@ import java.net.URI;
 public interface RelativeIndividual extends Individual<RelativeIndividualId,RelativeIndividual> {
 
 	/**
-	 * The relative path w.r.t. the location where the parent managed resource
+	 * Get the relative path w.r.t. the location where the parent managed resource
 	 * is available. This URI will always be relative child the previously
 	 * mentioned location.
-	 * 
-	 * @return
+	 *
+	 * @return the resource relative path.
 	 */
 	URI path();
 
+	/**
+	 * Get the identifier of the parent resource to which this resource belongs
+	 * to.
+	 *
+	 * @return the identifier of this resource parent resource.
+	 */
 	ManagedIndividualId parentId();
 
 }

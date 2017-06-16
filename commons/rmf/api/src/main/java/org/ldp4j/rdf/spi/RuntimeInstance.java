@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons.rmf:rmf-api:0.2.1
- *   Bundle      : rmf-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.commons.rmf:rmf-api:0.2.2
+ *   Bundle      : rmf-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.rdf.spi;
@@ -44,16 +44,16 @@ import org.slf4j.LoggerFactory;
 
 /**
  * RuntimeInstance is an abstract factory class that provides various methods for
- * the creation of objects that implement the ALM iStack LDP Kernel SPI (LKS for short). 
- * These methods are designed for use by other LKA classes and are not intended 
+ * the creation of objects that implement the ALM iStack LDP Kernel SPI (LKS for short).
+ * These methods are designed for use by other LKA classes and are not intended
  * to be called directly by applications.
  * RuntimeInstance allows the standard LKA classes to use different LKS
- * implementations without any code changes. <br />
- * <br/>
- * 
+ * implementations without any code changes. <br>
+ * <br>
+ *
  * An implementation of LKS MUST provide a concrete subclass of RuntimeInstance.
  * Using the supplied RuntimeInstance this can be provided to LKS in one of two
- * ways:<br />
+ * ways:<br>
  *	<ol>
  * 		<li>An instance of RuntimeInstance can be instantiated and injected using its
  * static method <code>setInstance</code>. In this case the implementation is responsible
@@ -63,30 +63,25 @@ import org.slf4j.LoggerFactory;
  * responsible for instantiating an instance of the class and the configured
  * class MUST have a public constructor which takes no arguments.</li>
  * 	</ol>
- * 
+ *
  * Note that an implementation MAY supply an alternate implementation of the
  * RuntimeInstance API class (provided it passes the TCK signature test and
  * behaves according to the specification) that supports alternate means of
- * locating a concrete subclass. <br />
- * <br/>
+ * locating a concrete subclass. <br>
+ * <br>
  *
  * A CBLS implementation may rely on a particular implementation of
  * RuntimeInstance being used – applications SHOULD NOT override the supplied
  * RuntimeInstance instance with an application-supplied alternative and doing so
  * may cause unexpected problems.
- * <br/>
- *
- * @author Miguel Esteban Gutiérrez
- * @since 1.0-RC
- * @version 1.0
- * @category ALM iStack LDP Kernel SPI
+ * <br>
  */
 public abstract class RuntimeInstance {
 
 	private static final String INSTANTIATE_ACTION = "instantiate";
 
 	private static final Logger LOGGER=LoggerFactory.getLogger(RuntimeInstance.class);
-	
+
 	public static final String RDF_API_SPI_RUNTIMEINSTANCE_FINDER = "org.ldp4j.rdf.spi.runtimeinstance.finder";
 
 	/**
@@ -117,7 +112,7 @@ public abstract class RuntimeInstance {
 	/**
 	 * Obtain a {@code RuntimeInstance} instance using the method described in
 	 * {@link #getInstance}.
-	 * 
+	 *
 	 * @return an instance of {@code RuntimeInstance}.
 	 */
 	private static RuntimeInstance findDelegate() {
@@ -128,7 +123,7 @@ public abstract class RuntimeInstance {
 			}
 
 			if(result==null) {
-				String delegateClassName = System.getProperty(RDF_API_SPI_PROPERTY);
+				final String delegateClassName = System.getProperty(RDF_API_SPI_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createRuntimeInstanceForClassName(delegateClassName);
 				}
@@ -137,34 +132,34 @@ public abstract class RuntimeInstance {
 			if(result==null) {
 				result=new DefaultRuntimeInstance();
 			}
-			
+
 			return result;
-		} catch (Exception ex) {
+		} catch (final Exception ex) {
 			throw new IllegalStateException("Could not find runtime delegate",ex);
 		}
 	}
 
 	private static RuntimeInstance createRuntimeInstanceFromConfigurationFile() {
 		RuntimeInstance result=null;
-		File configFile = getConfigurationFile();
+		final File configFile = getConfigurationFile();
 		if(configFile.canRead()) {
 			InputStream is=null;
 			try {
 				is=new FileInputStream(configFile);
-				Properties configProperties=new Properties();
+				final Properties configProperties=new Properties();
 				configProperties.load(is);
-				String delegateClassName=configProperties.getProperty(RDF_API_SPI_PROPERTY);
+				final String delegateClassName=configProperties.getProperty(RDF_API_SPI_PROPERTY);
 				if(delegateClassName!=null) {
 					result=createRuntimeInstanceForClassName(delegateClassName);
 				}
 				if(delegateClassName==null && LOGGER.isWarnEnabled()) {
 					LOGGER.warn("Configuration file '"+configFile.getAbsolutePath()+"' does not define a delegate class name");
 				}
-			} catch(FileNotFoundException e) {
+			} catch(final FileNotFoundException e) {
 				if(LOGGER.isDebugEnabled()) {
 					LOGGER.debug("Could not find runtime instance configuration file '"+configFile.getAbsolutePath()+"'",e);
 				}
-			} catch(IOException e) {
+			} catch(final IOException e) {
 				if(LOGGER.isWarnEnabled()) {
 					LOGGER.warn("Could not load runtime instance configuration file '"+configFile.getAbsolutePath()+"'",e);
 				}
@@ -179,7 +174,7 @@ public abstract class RuntimeInstance {
 	 * Get the configuration file for the Runtime Instance: a file named
 	 * {@link RuntimeInstance#RDF_API_CFG} in the <code>lib</code> directory of
 	 * current JAVA_HOME.
-	 * 
+	 *
 	 * @return The configuration file for the runtime instance.
 	 */
 	private static File getConfigurationFile() {
@@ -191,11 +186,11 @@ public abstract class RuntimeInstance {
 	 * @param is The input stream that is to be closed.
 	 * @param message The message to log in case of failure.
 	 */
-	private static void closeQuietly(InputStream is, String message) {
+	private static void closeQuietly(final InputStream is, final String message) {
 		if(is!=null) {
 		try {
 			is.close();
-		} catch (Exception e) {
+		} catch (final Exception e) {
 			if(LOGGER.isWarnEnabled()) {
 				LOGGER.warn(message,e);
 			}
@@ -205,26 +200,26 @@ public abstract class RuntimeInstance {
 
 	private static RuntimeInstance createRuntimeInstanceFromSPI() {
 		if(!"disable".equalsIgnoreCase(System.getProperty(RDF_API_SPI_RUNTIMEINSTANCE_FINDER))) {
-			for (RuntimeInstance delegate : ServiceLoader.load(RuntimeInstance.class)) {
+			for (final RuntimeInstance delegate : ServiceLoader.load(RuntimeInstance.class)) {
 				return delegate;
 			}
 		}
 		return null;
 	}
 
-	private static RuntimeInstance createRuntimeInstanceForClassName(String delegateClassName) {
+	private static RuntimeInstance createRuntimeInstanceForClassName(final String delegateClassName) {
 		RuntimeInstance result = null;
 		try {
-			Class<?> delegateClass = Class.forName(delegateClassName);
+			final Class<?> delegateClass = Class.forName(delegateClassName);
 			if(RuntimeInstance.class.isAssignableFrom(delegateClass)) {
-				Object impl = delegateClass.newInstance();
+				final Object impl = delegateClass.newInstance();
 				result = RuntimeInstance.class.cast(impl);
 			}
-		} catch (ClassNotFoundException e) {
+		} catch (final ClassNotFoundException e) {
 			handleFailure(delegateClassName, "find", e);
-		} catch (InstantiationException e) {
+		} catch (final InstantiationException e) {
 			handleFailure(delegateClassName, INSTANTIATE_ACTION, e);
-		} catch (IllegalAccessException e) {
+		} catch (final IllegalAccessException e) {
 			handleFailure(delegateClassName, INSTANTIATE_ACTION, e);
 		}
 		return result;
@@ -235,8 +230,8 @@ public abstract class RuntimeInstance {
 	 * @param action
 	 * @param failure
 	 */
-	private static void handleFailure(String delegateClassName, String action,
-			Exception failure) {
+	private static void handleFailure(final String delegateClassName, final String action,
+			final Exception failure) {
 		if(LOGGER.isWarnEnabled()) {
 			LOGGER.warn("Could not "+action+" delegate class "+delegateClassName,failure);
 		}
@@ -247,7 +242,7 @@ public abstract class RuntimeInstance {
 	 * been created and set via {@link #setInstance(RuntimeInstance)}, the first
 	 * invocation will create an instance which will then be cached for future
 	 * use.
-	 * 
+	 *
 	 * <p>
 	 * The algorithm used to locate the RuntimeInstance subclass to use consists
 	 * of the following steps:
@@ -270,14 +265,14 @@ public abstract class RuntimeInstance {
 	 * <li>
 	 * Finally, a default implementation class name is used.</li>
 	 * </ul>
-	 * 
+	 *
 	 * @return an instance of {@code RuntimeInstance}.
 	 */
 	public static RuntimeInstance getInstance() {
 		RuntimeInstance result = RuntimeInstance.CACHED_DELEGATE.get();
 		if (result != null) {
 			return result;
-		} 
+		}
 		synchronized(RuntimeInstance.CACHED_DELEGATE) {
 			result=RuntimeInstance.CACHED_DELEGATE.get();
 			if(result==null) {
@@ -292,7 +287,7 @@ public abstract class RuntimeInstance {
 	 * Set the runtime delegate that will be used by Client Business Logic API
 	 * classes. If this method is not called prior to {@link #getInstance} then
 	 * an implementation will be sought as described in {@link #getInstance}.
-	 * 
+	 *
 	 * @param delegate
 	 *            the {@code RuntimeInstance} runtime delegate instance.
 	 * @throws SecurityException
@@ -301,7 +296,7 @@ public abstract class RuntimeInstance {
 	 *             granted.
 	 */
 	public static void setInstance(final RuntimeInstance delegate) {
-		SecurityManager security = System.getSecurityManager();
+		final SecurityManager security = System.getSecurityManager();
 		if (security != null) {
 			security.checkPermission(suppressAccessChecksPermission);
 		}
@@ -311,7 +306,7 @@ public abstract class RuntimeInstance {
 	public abstract <T> void registerTransformer(Class<? extends T> type, Transformer<T> transformer);
 
 	public abstract <T> Transformer<T> findTransformer(Class<? extends T> type);
-	
+
 	public abstract <T> Unmarshaller<T> newUnmarshaller(Format format, T output);
 
 	public abstract <T> Marshaller<T> newMarshaller(Format format, T output);
@@ -321,22 +316,22 @@ public abstract class RuntimeInstance {
 		private static final String ERROR_MESSAGE = String.format("No %s runtime instance found",RuntimeInstance.class);
 
 		@Override
-		public <T> void registerTransformer(Class<? extends T> type, Transformer<T> transformer) {
+		public <T> void registerTransformer(final Class<? extends T> type, final Transformer<T> transformer) {
 			throw new UnsupportedOperationException(ERROR_MESSAGE);
 		}
 
 		@Override
-		public <T> Transformer<T> findTransformer(Class<? extends T> type) {
+		public <T> Transformer<T> findTransformer(final Class<? extends T> type) {
 			throw new UnsupportedOperationException(ERROR_MESSAGE);
 		}
 
 		@Override
-		public <T> Marshaller<T> newMarshaller(Format format, T output) {
+		public <T> Marshaller<T> newMarshaller(final Format format, final T output) {
 			throw new UnsupportedOperationException(ERROR_MESSAGE);
 		}
 
 		@Override
-		public <T> Unmarshaller<T> newUnmarshaller(Format format, T output) {
+		public <T> Unmarshaller<T> newUnmarshaller(final Format format, final T output) {
 			throw new UnsupportedOperationException(ERROR_MESSAGE);
 		}
 

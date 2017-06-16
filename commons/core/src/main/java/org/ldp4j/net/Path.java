@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons:ldp4j-commons-core:0.2.1
- *   Bundle      : ldp4j-commons-core-0.2.1.jar
+ *   Artifact    : org.ldp4j.commons:ldp4j-commons-core:0.2.2
+ *   Bundle      : ldp4j-commons-core-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.net;
@@ -53,20 +53,20 @@ public final class Path {
 	private Path() {
 	}
 
-	private Path(Path path) {
+	private Path(final Path path) {
 		setDirectory(path.getDirectory());
 		setFile(path.getFile());
 	}
 
-	private void setDirectory(String directory) {
+	private void setDirectory(final String directory) {
 		this.directory = directory;
 	}
 
-	private void setFile(String file) {
+	private void setFile(final String file) {
 		String tFileName=null;
 		String tFileExtension=null;
 		if(file!=null && !file.isEmpty()) {
-			int ext = file.lastIndexOf(CURRENT_CHAR);
+			final int ext = file.lastIndexOf(CURRENT_CHAR);
 			if(ext>=0) {
 				tFileName=file.substring(0,ext);
 				tFileExtension=file.substring(ext+1);
@@ -78,20 +78,20 @@ public final class Path {
 		setFileExtension(tFileExtension);
 	}
 
-	private void setFileExtension(String fileExtension) {
+	private void setFileExtension(final String fileExtension) {
 		this.fileExtension=fileExtension;
 	}
 
-	private void setFileName(String fileName) {
+	private void setFileName(final String fileName) {
 		this.fileName=fileName;
 	}
 
-	private String nullable(String string) {
+	private String nullable(final String string) {
 		return string==null?"":string;
 	}
 
 	private String file() {
-		StringBuilder builder=new StringBuilder();
+		final StringBuilder builder=new StringBuilder();
 		builder.append(nullable(this.fileName));
 		if(this.fileExtension!=null) {
 			builder.append(CURRENT);
@@ -100,9 +100,9 @@ public final class Path {
 		return builder.toString();
 	}
 
-	private String normalizePath(String[] segments, String file) {
-		Deque<String> buffer=new LinkedList<String>();
-		for(String segment:segments) {
+	private String normalizePath(final String[] segments, final String file) {
+		final Deque<String> buffer=new LinkedList<String>();
+		for(final String segment:segments) {
 			if(segment.equals(CURRENT)) {
 				// do nothing
 			} else if(segment.equals(PARENT)) {
@@ -114,7 +114,7 @@ public final class Path {
 		return assembleSegments(buffer, file);
 	}
 
-	private void processParentSegment(Deque<String> buffer) {
+	private void processParentSegment(final Deque<String> buffer) {
 		if(!buffer.isEmpty()) {
 			if(buffer.peekLast().equals(PARENT)) {
 				buffer.addLast(PARENT);
@@ -128,10 +128,10 @@ public final class Path {
 		}
 	}
 
-	private String assembleSegments(Deque<String> segments, String file) {
-		StringBuilder builder=new StringBuilder();
-		for(Iterator<String> it=segments.iterator();it.hasNext();) {
-			String segment=it.next();
+	private String assembleSegments(final Deque<String> segments, final String file) {
+		final StringBuilder builder=new StringBuilder();
+		for(final Iterator<String> it=segments.iterator();it.hasNext();) {
+			final String segment=it.next();
 			builder.append(segment);
 			if(it.hasNext() || !isDotSegment(segment) || file!=null) {
 				builder.append(SLASH);
@@ -143,7 +143,7 @@ public final class Path {
 		return builder.toString();
 	}
 
-	private boolean isDotSegment(String segment) {
+	private boolean isDotSegment(final String segment) {
 		return segment.equals(CURRENT) || segment.equals(PARENT);
 	}
 
@@ -158,14 +158,29 @@ public final class Path {
 		}
 	}
 
+	/**
+	 * Checks if the path is empty.
+	 *
+	 * @return {@code true}, if is empty, {@code false} otherwise
+	 */
 	public boolean isEmpty() {
 		return this.directory==null && this.fileName==null && this.fileExtension==null;
 	}
 
+	/**
+	 * Checks if the path is root.
+	 *
+	 * @return {@code true}, if is root, {@code false} otherwise
+	 */
 	public boolean isRoot() {
 		return this.directory!=null && this.directory.startsWith(SLASH);
 	}
 
+	/**
+	 * Checks if the path is out of the scope.
+	 *
+	 * @return {@code true}, if is out of the scope, {@code false} otherwise
+	 */
 	public boolean isOutOfScope() {
 		// Files are always on scope
 		if(this.directory==null) {
@@ -173,7 +188,7 @@ public final class Path {
 		}
 
 		// First, normalize
-		Path normalize=normalize();
+		final Path normalize=normalize();
 
 		// If now we are a file, we are in scope
 		if(normalize.directory==null) {
@@ -181,7 +196,7 @@ public final class Path {
 		}
 
 		// If we find a segment which is '..' we are out of scope
-		String[] segments=normalize.segments();
+		final String[] segments=normalize.segments();
 		boolean result=false;
 		for(int i=0;i<segments.length && !result;i++) {
 			result=isDotSegment(segments[i]);
@@ -189,39 +204,81 @@ public final class Path {
 		return result;
 	}
 
+	/**
+	 * Checks if the path is a directory.
+	 *
+	 * @return {@code true}, if is a directory, {@code false} otherwise
+	 */
 	public boolean isDirectory() {
 		return this.directory!=null && this.fileName==null && this.fileExtension==null;
 	}
 
+	/**
+	 * Checks if the path is a file.
+	 *
+	 * @return {@code true}, if is a file, {@code false} otherwise
+	 */
 	public boolean isFile() {
 		return !isDirectory();
 	}
 
+	/**
+	 * Gets the directory.
+	 *
+	 * @return the directory
+	 */
 	public String getDirectory() {
 		return this.directory;
 	}
 
+	/**
+	 * Gets the file.
+	 *
+	 * @return the file
+	 */
 	public String getFile() {
-		String file=file();
+		final String file=file();
 		return file.isEmpty()?null:file;
 	}
 
+	/**
+	 * Gets the file name.
+	 *
+	 * @return the file name
+	 */
 	public String getFileName() {
 		return this.fileName;
 	}
 
+	/**
+	 * Gets the file extension.
+	 *
+	 * @return the file extension
+	 */
 	public String getFileExtension() {
 		return this.fileExtension;
 	}
 
-	public Path withDirectory(String directory) {
-		Path result = new Path(this);
+	/**
+	 * Create a new path with a given directory.
+	 *
+	 * @param directory the directory for the path
+	 * @return the new path
+	 */
+	public Path withDirectory(final String directory) {
+		final Path result = new Path(this);
 		result.setDirectory(directory);
 		return result;
 	}
 
-	public Path withFile(String file) {
-		Path result = new Path(this);
+	/**
+	 * Create a new path with a given file.
+	 *
+	 * @param file the file for the path
+	 * @return the new path
+	 */
+	public Path withFile(final String file) {
+		final Path result = new Path(this);
 		result.setFile(file);
 		return result;
 	}
@@ -234,7 +291,7 @@ public final class Path {
 	}
 
 	public Path normalize() {
-		String[] segments=
+		final String[] segments=
 			this.directory==null?
 				EMPTY_SEGMENTS:
 				SLASH.equals(this.directory)?
@@ -246,14 +303,17 @@ public final class Path {
 	/**
 	 * Computes relative relative path to reference "target" from "base". Uses
 	 * ".." if needed, in contrast to {@link URI#relativize(URI)}.
+	 *
+	 * @param path the path to be relativized
+	 * @return the relative path
 	 */
-	public Path relativize(Path path) {
+	public Path relativize(final Path path) {
 		Objects.requireNonNull("Path cannot be null");
 
-		Path base=this;
+		final Path base=this;
 
 		// By default, we return the normalized form of the input path
-		Path defaultRelative = path.normalize();
+		final Path defaultRelative = path.normalize();
 
 		// Either root or not
 		if(base.isRoot()!=path.isRoot()) {
@@ -266,7 +326,7 @@ public final class Path {
 		}
 
 		// Beyond this point we need the normalized form
-		Path nBase = base.normalize();
+		final Path nBase = base.normalize();
 
 		// If we are out of the scope...
 		if(base.isOutOfScope()) {
@@ -282,8 +342,8 @@ public final class Path {
 		}
 
 		// Can only compare for equality iff normalized.
-		Path unBase=nBase.unroot();
-		Path unPath=defaultRelative.unroot();
+		final Path unBase=nBase.unroot();
+		final Path unPath=defaultRelative.unroot();
 
 		// If the base and the target are the same, return the empty path
 		if(unBase.equals(unPath)) {
@@ -304,7 +364,7 @@ public final class Path {
 	 * resolve a directory coming from a path, we have to make explicit that we
 	 * want the directory
 	 */
-	private Path assembleRelativeSegments(Path path, Path base, Deque<String> segments) {
+	private Path assembleRelativeSegments(final Path path, final Path base, final Deque<String> segments) {
 		if(segments.isEmpty() && path.isDirectory() && base.isFile()) {
 			segments.add(CURRENT);
 		}
@@ -312,10 +372,10 @@ public final class Path {
 		return Path.create(assembleSegments(segments,path.getFile()));
 	}
 
-	private Deque<String> getRelativeSegments(String[] baseSegments,String[] targetSegments) {
-		Deque<String> segments=new LinkedList<String>();
+	private Deque<String> getRelativeSegments(final String[] baseSegments,final String[] targetSegments) {
+		final Deque<String> segments=new LinkedList<String>();
 		// Look for index of last common segment
-		int commonSegments=countCommonSegments(baseSegments, targetSegments);
+		final int commonSegments=countCommonSegments(baseSegments, targetSegments);
 		// For each different segment of the base path, add '..' to the
 		// segments of the relative path
 		addParentSegments(segments,baseSegments,commonSegments);
@@ -325,20 +385,20 @@ public final class Path {
 		return segments;
 	}
 
-	private void addChildSegments(Deque<String> segments, String[] targetSegments, int commonSegments) {
+	private void addChildSegments(final Deque<String> segments, final String[] targetSegments, final int commonSegments) {
 		for(int i=commonSegments;i<targetSegments.length;i++) {
 			segments.add(targetSegments[i]);
 		}
 	}
 
-	private void addParentSegments(Deque<String> segments, String[] baseSegments, int commonSegments) {
+	private void addParentSegments(final Deque<String> segments, final String[] baseSegments, final int commonSegments) {
 		for(int i=commonSegments;i<baseSegments.length;i++) {
 			segments.add(PARENT);
 		}
 	}
 
-	private int countCommonSegments(String[] s1, String[] s2) {
-		int comparableSegments=Math.min(s1.length,s2.length);
+	private int countCommonSegments(final String[] s1, final String[] s2) {
+		final int comparableSegments=Math.min(s1.length,s2.length);
 		int commonSegments=0;
 		for(int i=0;i<comparableSegments;i++) {
 			if(!s1[i].equals(s2[i])) {
@@ -349,7 +409,7 @@ public final class Path {
 		return commonSegments;
 	}
 
-	public Path resolve(Path path) {
+	public Path resolve(final Path path) {
 		if(path==null) {
 			throw new NullPointerException("Target path cannot be null");
 		}
@@ -362,13 +422,13 @@ public final class Path {
 		if(path.isRoot()) {
 			return path.normalize();
 		}
-		Path base=normalize();
-		Path relative=path.normalize();
+		final Path base=normalize();
+		final Path relative=path.normalize();
 
-		List<String> baseSegments=new ArrayList<String>(Arrays.asList(base.segments()));
+		final List<String> baseSegments=new ArrayList<String>(Arrays.asList(base.segments()));
 		baseSegments.addAll(Arrays.asList(relative.segments()));
-		String[] segments = baseSegments.toArray(new String[baseSegments.size()]);
-		String resolved=normalizePath(segments,path.getFile());
+		final String[] segments = baseSegments.toArray(new String[baseSegments.size()]);
+		final String resolved=normalizePath(segments,path.getFile());
 		return Path.create(resolved);
 	}
 
@@ -378,10 +438,10 @@ public final class Path {
 	}
 
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		boolean result = false;
 		if(obj instanceof Path) {
-			Path that=(Path)obj;
+			final Path that=(Path)obj;
 			result=
 				Objects.equals(this.directory,that.directory) &&
 				Objects.equals(this.fileName,that.fileName) &&
@@ -392,23 +452,23 @@ public final class Path {
 
 	@Override
 	public String toString() {
-		StringBuilder builder=new StringBuilder();
+		final StringBuilder builder=new StringBuilder();
 		if(this.directory!=null) {
 			builder.append(this.directory);
 		}
 		builder.append(file());
 		return builder.toString();
 	}
-	public static Path create(java.net.URI jdkURI) {
+	public static Path create(final java.net.URI jdkURI) {
 		return create(jdkURI.getPath());
 	}
 
-	public static Path create(String path) {
+	public static Path create(final String path) {
 		Path result=null;
 		if(path!=null) {
 			String directory=null;
 			String file=null;
-			int lastSegmentSeparator = path.lastIndexOf('/');
+			final int lastSegmentSeparator = path.lastIndexOf('/');
 			if(lastSegmentSeparator<0) {
 				if(CURRENT.equals(path)) {
 					directory=CURRENT;
@@ -421,7 +481,7 @@ public final class Path {
 				directory=path;
 			} else {
 				directory=path.substring(0,lastSegmentSeparator+1);
-				String segment=path.substring(lastSegmentSeparator+1);
+				final String segment=path.substring(lastSegmentSeparator+1);
 				if(CURRENT.equals(segment)) {
 					directory+=CURRENT;
 				} else if(PARENT.equals(segment)) {

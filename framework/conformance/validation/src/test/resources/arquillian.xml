@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
@@ -22,8 +22,8 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-conformance-validation:0.2.1
-      Bundle      : ldp4j-conformance-validation-0.2.1.jar
+      Artifact    : org.ldp4j.framework:ldp4j-conformance-validation:0.2.2
+      Bundle      : ldp4j-conformance-validation-0.2.2.jar
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
@@ -33,18 +33,22 @@
 	xsi:schemaLocation="
 		http://jboss.org/schema/arquillian
 		http://jboss.org/schema/arquillian/arquillian_1_0.xsd">
-
-	<container qualifier="tomcat" default="true">
-		<configuration>
-			<property name="catalinaHome">${test.catalina.home}</property>
-			<property name="catalinaBase">${test.catalina.base}</property>
-			<property name="javaVmArguments">-Xmx1024m  -XX:MaxPermSize=512m ${jacoco.agent.it.arg} -Dorg.ldp4j.server.response.contentType.ommitCharset=true</property>
-			<property name="jmxPort">${test.jmx.port}</property>
-			<property name="bindHttpPort">${test.http.port}</property>
-			<property name="serverConfig">server.xml</property>
-			<property name="user">${test.manager.username}</property>
-			<property name="pass">${test.manager.password}</property>
-		</configuration>
-	</container>
-
+	<group qualifier="tomcat-cluster" default="true">
+		<container qualifier="local">
+			<configuration>
+				<property name="catalinaHome">${test.catalina.home}</property>
+				<property name="catalinaBase">${application.catalina.base}</property>
+				<property name="javaVmArguments">
+					-Xmx1024m
+					${jacoco.agent.it.arg}
+					-Dlog4j.configuration=${test.baseUri}target/test-classes/container/log4j.properties
+					-Dorg.ldp4j.server.response.contentType.ommitCharset=true
+				</property>
+				<property name="jmxPort">${application.tomcat.jmx.port}</property>
+				<property name="bindHttpPort">${application.tomcat.http.port}</property>
+				<property name="user">${test.manager.username}</property>
+				<property name="pass">${test.manager.password}</property>
+			</configuration>
+		</container>
+	</group>
 </arquillian>

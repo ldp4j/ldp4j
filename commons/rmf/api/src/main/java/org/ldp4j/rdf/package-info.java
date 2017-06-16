@@ -20,14 +20,14 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons.rmf:rmf-api:0.2.1
- *   Bundle      : rmf-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.commons.rmf:rmf-api:0.2.2
+ *   Bundle      : rmf-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 /**
  * <h1>ALM iStack Proof-of-Concept Client Business Logic SPI</h1>
- * <br />
- * <br />
+ * <br>
+ * <br>
  * The <b>Client Business Logic SPI</b> (or <i>CBLS</i> for short) -that is part
  *  of the <i>CBLA</i>- provides the means for creating third party 
  *  implementations or extensions of the <i>CBLA</i>.

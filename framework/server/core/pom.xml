@@ -21,8 +21,8 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.1
-      Bundle      : ldp4j-server-core-0.2.1.jar
+      Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.2
+      Bundle      : ldp4j-server-core-0.2.2.jar
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
@@ -37,7 +37,7 @@
 	<parent>
 		<groupId>org.ldp4j.framework</groupId>
 		<artifactId>ldp4j-server</artifactId>
-		<version>0.2.1</version>
+		<version>0.2.2</version>
 		<relativePath>../pom.xml</relativePath>
 	</parent>
 
@@ -63,7 +63,7 @@
 		<shrinkwrap.resolver.version>2.0.0-alpha-5</shrinkwrap.resolver.version>
 		<shrinkwrap.version>1.1.1-alpha-1</shrinkwrap.version>
 
-		<version.org.apache.tomcat>7.0.20</version.org.apache.tomcat>
+		<version.org.apache.tomcat>7.0.76</version.org.apache.tomcat>
 		<version.org.eclipse.jdt.core.compiler>3.7</version.org.eclipse.jdt.core.compiler>
 
 		<reflections.version>0.9.8</reflections.version>

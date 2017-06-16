@@ -20,13 +20,13 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.1
- *   Bundle      : ldp4j-server-core-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.2
+ *   Bundle      : ldp4j-server-core-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 /**
- * <h1>LDP4j Server Frontend Data SPI</h1> <br />
- * <br />
+ * <h1>LDP4j Server Frontend Data SPI</h1> <br>
+ * <br>
  * The Service Provider Interfaces that is part of the <i>LDP4j Server Frontend
  * Data</i> facilities, which provides the means for creating third party
  * implementations or extensions of the <i>LDP4j Server Frontend Data</i>

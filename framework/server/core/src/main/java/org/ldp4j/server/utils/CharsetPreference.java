@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.1
- *   Bundle      : ldp4j-server-core-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-server-core:0.2.2
+ *   Bundle      : ldp4j-server-core-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.server.utils;
@@ -69,7 +69,7 @@ public final class CharsetPreference implements Comparable<CharsetPreference> {
 	private static final DecimalFormat FORMAT;
 
 	static {
-		DecimalFormat format = new DecimalFormat("0",new DecimalFormatSymbols(Locale.ENGLISH));
+		final DecimalFormat format = new DecimalFormat("0",new DecimalFormatSymbols(Locale.ENGLISH));
 		format.setMaximumFractionDigits(3);
 		FORMAT=format;
 	}
@@ -77,7 +77,7 @@ public final class CharsetPreference implements Comparable<CharsetPreference> {
 	private final String charset;
 	private final int weight;
 
-	public CharsetPreference(String charset, int weight) {
+	public CharsetPreference(final String charset, final int weight) {
 		this.charset = charset;
 		this.weight = weight;
 	}
@@ -106,7 +106,7 @@ public final class CharsetPreference implements Comparable<CharsetPreference> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public boolean equals(Object obj) {
+	public boolean equals(final Object obj) {
 		boolean result=false;
 		if(obj instanceof CharsetPreference) {
 			final CharsetPreference that=(CharsetPreference)obj;
@@ -133,38 +133,47 @@ public final class CharsetPreference implements Comparable<CharsetPreference> {
 	 * {@inheritDoc}
 	 */
 	@Override
-	public int compareTo(CharsetPreference o) {
+	public int compareTo(final CharsetPreference o) {
 		return this.weight-o.weight;
 	}
 
-	/** Create a charset preference that matches the following grammar:
-	 *  <pre>       {@code
-       CHAR           = <any US-ASCII character (octets 0 - 127)>
-       DIGIT          = <any US-ASCII digit "0".."9">
-       CTL            = <any US-ASCII control character
-                        (octets 0 - 31) and DEL (127)>
-       SP             = <US-ASCII SP, space (32)>
-       HT             = <US-ASCII HT, horizontal-tab (9)>
-       <">            = <US-ASCII double-quote mark (34)>
-       token          = 1*<any CHAR except CTLs or separators>
-       separators     = "(" | ")" | "<" | ">" | "@"
-                      | "," | ";" | ":" | "\" | <">
-                      | "/" | "[" | "]" | "?" | "="
-                      | "{" | "}" | SP | HT
-       charset        = token
-       qvalue         = ( "0" [ "." 0*3DIGIT ] )
-                      | ( "1" [ "." 0*3("0") ] )
-       preference     = ( charset | "*" )[ ";" "q" "=" qvalue ]}</pre>
+	/**
+	 * Create a charset preference that matches the following grammar:
+	 *
+	 * <pre>
+	 *        {@code
+	   CHAR           = <any US-ASCII character (octets 0 - 127)>
+	   DIGIT          = <any US-ASCII digit "0".."9">
+	   CTL            = <any US-ASCII control character
+	                    (octets 0 - 31) and DEL (127)>
+	   SP             = <US-ASCII SP, space (32)>
+	   HT             = <US-ASCII HT, horizontal-tab (9)>
+	   <">            = <US-ASCII double-quote mark (34)>
+	   token          = 1*<any CHAR except CTLs or separators>
+	   separators     = "(" | ")" | "<" | ">" | "@"
+	                  | "," | ";" | ":" | "\" | <">
+	                  | "/" | "[" | "]" | "?" | "="
+	                  | "{" | "}" | SP | HT
+	   charset        = token
+	   qvalue         = ( "0" [ "." 0*3DIGIT ] )
+	                  | ( "1" [ "." 0*3("0") ] )
+	   preference     = ( charset | "*" )[ ";" "q" "=" qvalue ]}
+	 * </pre>
+	 *
+	 * @param str
+	 *            a charset specifier
+	 * @return the matching chartset preference, or {@code null} if no one could
+	 *         be found
 	 */
-	public static CharsetPreference valueOf(String str) {
-		String[] parts = str.split(";");
+	public static CharsetPreference valueOf(final String str) {
+		final String[] parts = str.split(";");
 		if(parts.length<=2) {
-			String charsetName =parts[0].trim();
+			final String charsetName =parts[0].trim();
 			if("*".equals(charsetName) || TOKEN_MATCHER.matchesAllOf(charsetName)) {
 				int weight=MAX_WEIGHT;
 				if(parts.length==2) {
-					String weightValue=parts[1].trim();
-					Matcher matcher = QUALITY_PATTERN.matcher(weightValue);
+					final String weightValue=parts[1].trim();
+					final Matcher matcher = QUALITY_PATTERN.matcher(weightValue);
 					if(!matcher.matches()) {
 						return null;
 					}
@@ -182,21 +191,21 @@ public final class CharsetPreference implements Comparable<CharsetPreference> {
 		return new CharsetPreference("*",MAX_WEIGHT);
 	}
 
-	public static CharsetPreference wildcard(double weight) {
+	public static CharsetPreference wildcard(final double weight) {
 		return new CharsetPreference("*",round(weight));
 	}
 
-	public static CharsetPreference create(Charset charset) {
+	public static CharsetPreference create(final Charset charset) {
 		Objects.requireNonNull(charset,"Charset cannot be null");
 		return new CharsetPreference(charset.name(),MAX_WEIGHT);
 	}
 
-	public static CharsetPreference create(Charset charset, double weight) {
+	public static CharsetPreference create(final Charset charset, final double weight) {
 		Objects.requireNonNull(charset,"Charset cannot be null");
 		return new CharsetPreference(charset.name(),round(weight));
 	}
 
-	static int round(double weight) {
+	static int round(final double weight) {
 		Preconditions.checkArgument(weight>=0D,"Weight must be greater than or equal to 0 (%s)",weight);
 		Preconditions.checkArgument(weight<=1D,"Weight must be lower than or equal to 1 (%s)",weight);
 		return DoubleMath.roundToInt(weight*MAX_WEIGHT_DOUBLE,RoundingMode.DOWN);

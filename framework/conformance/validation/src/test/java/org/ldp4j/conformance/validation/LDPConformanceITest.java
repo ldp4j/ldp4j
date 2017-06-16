@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-conformance-validation:0.2.1
- *   Bundle      : ldp4j-conformance-validation-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-conformance-validation:0.2.2
+ *   Bundle      : ldp4j-conformance-validation-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.conformance.validation;
@@ -82,14 +82,14 @@ public class LDPConformanceITest {
 	private static final int TESTNG_STATUS_HAS_NO_TEST = 8;
 
 	@Deployment(name="default",testable=false)
-	@TargetsContainer("tomcat")
+	@TargetsContainer("local")
 	public static WebArchive createDeployment() throws Exception {
-		return ConformanceUtil.createWebArchive("tckf.war");
+		return AcceptanceTestDriver.applicationArchive("tckf.war");
 	}
 
 	@Test
 	@OperateOnDeployment("default")
-	public void testService(@ArquillianResource URL contextURL) throws Exception {
+	public void testService(@ArquillianResource final URL contextURL) throws Exception {
 		RestAssured.
 			given().
 				header("Accept",TEXT_TURTLE).
@@ -98,19 +98,19 @@ public class LDPConformanceITest {
 			statusCode(OK).
 			contentType(TEXT_TURTLE).
 		when().
-			get(ConformanceUtil.resolve(contextURL, "ldp4j/api/resource/"));
+			get(LDPConformanceITest.resolve(contextURL, "ldp4j/api/resource/"));
 	}
 
 	@Test
 	@OperateOnDeployment("default")
-	public void testBasicContainerConformance(@ArquillianResource URL contextURL) throws Exception {
+	public void testBasicContainerConformance(@ArquillianResource final URL contextURL) throws Exception {
 		LOGGER.info("Running W3C official LDP Basic Container Test Suite against '{}' server",contextURL);
-		String reportPath = targetWorkingDir().getAbsolutePath();
+		final String reportPath = targetWorkingDir().getAbsolutePath();
 
-		Map<String, String> options = new HashMap<>();
-		options.put("server", ConformanceUtil.resolve(contextURL,"ldp4j/api/basic_container/"));
+		final Map<String, String> options = new HashMap<>();
+		options.put("server", LDPConformanceITest.resolve(contextURL,"ldp4j/api/basic_container/"));
 		options.put("basic", null);
-		options.put("cont-res",ConformanceUtil.resolve(contextURL, "ldp4j/api/resource/"));
+		options.put("cont-res",LDPConformanceITest.resolve(contextURL, "ldp4j/api/resource/"));
 		options.put("read-only-prop","http://www.example.org/vocab#creationDate");
 		options.put("httpLogging", null);
 		options.put("skipLogging", null);
@@ -119,10 +119,10 @@ public class LDPConformanceITest {
 
 		LOGGER.debug("You can find LDP Basic Container Test Suite outputs at {}", reportPath);
 
-		LdpTestSuite testSuite = new LdpTestSuite(options);
+		final LdpTestSuite testSuite = new LdpTestSuite(options);
 		testSuite.run();
 
-		SuiteResults results = SuiteResultCollector.lastResults();
+		final SuiteResults results = SuiteResultCollector.lastResults();
 
 		LOGGER.info("LDP Basic Container Test Suite execution completed:", results);
 
@@ -149,14 +149,14 @@ public class LDPConformanceITest {
 
 	@Test
 	@OperateOnDeployment("default")
-	public void testDirectContainerConformance(@ArquillianResource URL contextURL) throws Exception {
+	public void testDirectContainerConformance(@ArquillianResource final URL contextURL) throws Exception {
 		LOGGER.info("Running W3C official LDP Direct Container Test Suite against '{}' server",contextURL);
-		String reportPath = targetWorkingDir().getAbsolutePath();
+		final String reportPath = targetWorkingDir().getAbsolutePath();
 
-		Map<String, String> options = new HashMap<>();
-		options.put("server", ConformanceUtil.resolve(contextURL,"ldp4j/api/resource/direct_container/"));
+		final Map<String, String> options = new HashMap<>();
+		options.put("server", LDPConformanceITest.resolve(contextURL,"ldp4j/api/resource/direct_container/"));
 		options.put("direct", null);
-		options.put("cont-res",ConformanceUtil.resolve(contextURL, "ldp4j/api/resource/"));
+		options.put("cont-res",LDPConformanceITest.resolve(contextURL, "ldp4j/api/resource/"));
 		options.put("read-only-prop","http://www.example.org/vocab#creationDate");
 		options.put("httpLogging", null);
 		options.put("skipLogging", null);
@@ -165,10 +165,10 @@ public class LDPConformanceITest {
 
 		LOGGER.debug("You can find the LDP Direct Container Test Suite outputs at {}", reportPath);
 
-		LdpTestSuite testSuite = new LdpTestSuite(options);
+		final LdpTestSuite testSuite = new LdpTestSuite(options);
 		testSuite.run();
 
-		SuiteResults results = SuiteResultCollector.lastResults();
+		final SuiteResults results = SuiteResultCollector.lastResults();
 		LOGGER.info("LDP Direct Container Test Suite execution completed:", results);
 
 		assertThat(results.numberOfTests(Result.values()), equalTo(97));
@@ -194,14 +194,14 @@ public class LDPConformanceITest {
 
 	@Test
 	@OperateOnDeployment("default")
-	public void testIndirectContainerConformance(@ArquillianResource URL contextURL) throws Exception {
+	public void testIndirectContainerConformance(@ArquillianResource final URL contextURL) throws Exception {
 		LOGGER.info("Running W3C official LDP Indirect Container Test Suite against '{}' server",contextURL);
-		String reportPath = targetWorkingDir().getAbsolutePath();
+		final String reportPath = targetWorkingDir().getAbsolutePath();
 
-		Map<String, String> options = new HashMap<>();
-		options.put("server", ConformanceUtil.resolve(contextURL,"ldp4j/api/resource/indirect_container/"));
+		final Map<String, String> options = new HashMap<>();
+		options.put("server", LDPConformanceITest.resolve(contextURL,"ldp4j/api/resource/indirect_container/"));
 		options.put("indirect", null);
-		options.put("cont-res",ConformanceUtil.resolve(contextURL, "ldp4j/api/resource/"));
+		options.put("cont-res",LDPConformanceITest.resolve(contextURL, "ldp4j/api/resource/"));
 		options.put("read-only-prop","http://www.example.org/vocab#creationDate");
 		options.put("httpLogging", null);
 		options.put("skipLogging", null);
@@ -210,10 +210,10 @@ public class LDPConformanceITest {
 
 		LOGGER.debug("You can find the LDP Indirect Container Test Suite outputs at {}", reportPath);
 
-		LdpTestSuite testSuite = new LdpTestSuite(options);
+		final LdpTestSuite testSuite = new LdpTestSuite(options);
 		testSuite.run();
 
-		SuiteResults results = SuiteResultCollector.lastResults();
+		final SuiteResults results = SuiteResultCollector.lastResults();
 		LOGGER.info("LDP Indirect Container Test Suite execution completed:", results);
 
 		assertThat(results.numberOfTests(Result.values()), equalTo(90));
@@ -247,10 +247,10 @@ public class LDPConformanceITest {
 
 	@After
 	public void tearDown() throws IOException {
-		List<String> lines = IOUtils.readLines(new StringReader(this.buffer.toString()));
+		final List<String> lines = IOUtils.readLines(new StringReader(this.buffer.toString()));
 		boolean failure=false;
 		int count=0;
-		for(String line:lines) {
+		for(final String line:lines) {
 			if(failure) {
 				if(count<5) {
 					count++;
@@ -268,12 +268,16 @@ public class LDPConformanceITest {
 	}
 
 	private File targetWorkingDir() {
-		String relPath = getClass().getProtectionDomain().getCodeSource().getLocation().getFile();
-		File targetDir = new File(relPath, "ldp-testsuite");
+		final String relPath = System.getProperty("conformance.reports.path");
+		final File targetDir = new File(relPath);
 		if (!targetDir.exists()) {
-			Assume.assumeTrue("Could not create report-directory",targetDir.mkdir());
+			Assume.assumeTrue("Could not create report-directory",targetDir.mkdirs());
 		}
 		return targetDir;
+	}
+
+	private static String resolve(final URL base, final String path) {
+		return base.toString()+path;
 	}
 
 }

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
- *   Bundle      : ldp4j-application-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.2
+ *   Bundle      : ldp4j-application-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.vocabulary;
@@ -39,7 +39,7 @@ import static java.util.Objects.*;
 
 /**
  * A base vocabulary implementation for creating immutable vocabularies that
- * defines a collection of {@code ImmutableTerm}s. <br/>
+ * defines a collection of {@code ImmutableTerm}s. <br>
  * Purpose specific vocabularies should be implemented as follows:
  *
  * <pre>

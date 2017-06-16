@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
- *   Bundle      : ldp4j-application-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.2
+ *   Bundle      : ldp4j-application-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.vocabulary;
@@ -38,13 +38,13 @@ import javax.xml.namespace.QName;
  * reference.
  * <p>
  *
- * <b>Namespace:</b> {@code http://www.w3.org/2000/01/rdf-schema#} <br/>
+ * <b>Namespace:</b> {@code http://www.w3.org/2000/01/rdf-schema#} <br>
  * <b>Prefix:</b> {@code rdfs}
  *
  * @version 1.0
  * @since 1.0.0
  * @author Miguel Esteban Guti&eacute;rrez
- * @see <a href=http://www.w3.org/TR/2004/REC-rdf-schema-20040210/">http://www.w3.org/TR/2004/REC-rdf-schema-20040210/</a>
+ * @see <a href="http://www.w3.org/TR/2004/REC-rdf-schema-20040210/">http://www.w3.org/TR/2004/REC-rdf-schema-20040210/</a>
  */
 public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 
@@ -281,7 +281,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 *            The local part of the term's URI
 	 * @return A {@code LDPTerm} instance that represents the term.
 	 */
-	private static Term term(String localPart) {
+	private static Term term(final String localPart) {
 		return new ImmutableTerm(VOCABULARY,localPart);
 	}
 
@@ -309,7 +309,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 *            A {@code String}-based representation of the term's name.
 	 * @return The {@code Term} that matches the specified name.
 	 */
-	public static Term valueOf(String term) {
+	public static Term valueOf(final String term) {
 		return getInstance().fromName(term);
 	}
 
@@ -321,7 +321,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * @return The {@code Term} that matches the specified URI.
 	 * @see javax.xml.namespace.QName
 	 */
-	public static Term valueOf(QName term) {
+	public static Term valueOf(final QName term) {
 		return getInstance().fromValue(term);
 	}
 
@@ -333,7 +333,7 @@ public final class RDFS extends AbstractImmutableVocabulary<ImmutableTerm> {
 	 * @return The {@code LDPTerm} that matches the specified URI.
 	 * @see java.net.URI
 	 */
-	public static Term valueOf(URI term) {
+	public static Term valueOf(final URI term) {
 		return getInstance().fromValue(term);
 	}
 

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
- *   Bundle      : ldp4j-application-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.2
+ *   Bundle      : ldp4j-application-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.ext;
@@ -32,7 +32,7 @@ import java.util.Set;
 
 /**
  * Provides a programmatic mechanism for an LDP4j application to specify the
- * configuration parameters for the <b>LDP4j Application Engine</b>. <br/>
+ * configuration parameters for the <b>LDP4j Application Engine</b>. <br>
  *
  * This class is meant to be extended (refined) to also include specific
  * configuration requirements of LDP4j applications.

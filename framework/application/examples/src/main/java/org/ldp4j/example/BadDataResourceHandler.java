@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.2.1
- *   Bundle      : ldp4j-application-examples-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-examples:0.2.2
+ *   Bundle      : ldp4j-application-examples-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.example;
@@ -77,6 +77,8 @@ public class BadDataResourceHandler extends InMemoryResourceHandler {
 
 	/**
 	 * Get custom representation with bad data
+	 *
+	 * @return the representation
 	 */
 	public DataSet getRepresentation() {
 		return
@@ -103,7 +105,9 @@ public class BadDataResourceHandler extends InMemoryResourceHandler {
 	}
 
 	/**
-	 * All the properties that will be filtered.
+	 * Get all the properties that will be filtered.
+	 *
+	 * @return the properties to be filtered
 	 */
 	public static final String[] filteredProperties() {
 		return new String[]{

@@ -1,4 +1,3 @@
-<?xml version="1.0" encoding="UTF-8"?>
 <!--
 
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
@@ -22,25 +21,15 @@
       See the License for the specific language governing permissions and
       limitations under the License.
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
-      Artifact    : org.ldp4j.framework:ldp4j-conformance-validation:0.2.1
-      Bundle      : ldp4j-conformance-validation-0.2.1.jar
+      Artifact    : org.ldp4j.framework:ldp4j-conformance-validation:0.2.2
+      Bundle      : ldp4j-conformance-validation-0.2.2.jar
     #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
 
 -->
-<web-app
-	metadata-complete="false"
-	version="3.0"
-	xmlns="http://java.sun.com/xml/ns/javaee"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="
-		http://java.sun.com/xml/ns/javaee 
-		http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd">
-
-	<display-name>LDP4j Conformance Fixture</display-name>
-
-	<context-param>
-		<param-name>ldp4jTargetApplication</param-name>
-		<param-value>org.ldp4j.conformance.fixture.TCKFApplication</param-value>
-	</context-param>
-
-</web-app>
+<tomcat-users>
+	<role rolename="manager-script" />
+	<user
+		username="${test.manager.username}"
+		password="${test.manager.password}"
+		roles="manager-script" />
+</tomcat-users>

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
- *   Bundle      : ldp4j-application-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.2
+ *   Bundle      : ldp4j-application-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.ext.annotations;
@@ -45,42 +45,70 @@ public @interface IndirectContainer {
 	/**
 	 * The identifier of the template. The identifier must be
 	 * application-unique.
+	 *
+	 * @return the identifier of the template.
 	 */
 	String id();
 
-	/** The human-based name of the template. */
+	/**
+	 * The human-based name of the template.
+	 *
+	 * @return the name of the template.
+	 */
 	String name() default "";
 
-	/** A description of the purpose of the template. */
+	/**
+	 * A description of the purpose of the template.
+	 *
+	 * @return the description of the template
+	 */
 	String description() default "";
 
-	/** The attachments of the template. */
+	/**
+	 * The attachments of the template.
+	 *
+	 * @return the attachments of the template
+	 */
 	Attachment[] attachments() default {};
 
 	/**
 	 * The {@code ResourceHandler} class that will handle the member resources
 	 * of the container.
+	 *
+	 * @return the class that will handle the members of the container.
 	 */
 	Class<? extends ResourceHandler> memberHandler();
 
-	/** If defined, the path prefix to be used when publishing member resources. */
+	/**
+	 * If defined, the path prefix to be used when publishing member resources.
+	 *
+	 * @return the path prefix used for publishing member resources
+	 */
 	String memberPath() default "";
 
 	/**
 	 * The membership predicate to use for relating the member resources with
 	 * the container.
+	 *
+	 * @return the membership predicate used for relating container members
 	 */
 	String membershipPredicate() default "http://www.w3.org/ns/ldp#member";
 
 	/**
 	 * The membership relation to use for defining direction of the relationship
-	 * between the member resources with the container .
+	 * between the member resources with the container.
+	 *
+	 * @return the membership relation used for defining direction of the
+	 *         relationship between the member resources with the container.
 	 */
 	MembershipRelation membershipRelation() default MembershipRelation.HAS_MEMBER;
 
 	/**
 	 * The predicate that should be used for specifying the indirect identifier
 	 * (URIRef) of a member of the container
+	 *
+	 * @return the predicate used for specifying the indirect identifier of a
+	 *         member of the container
 	 */
 	String insertedContentRelation() default "http://www.w3.org/ns/ldp#MemberSubject";
 

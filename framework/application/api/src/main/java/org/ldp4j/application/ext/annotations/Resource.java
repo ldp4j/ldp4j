@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.1
- *   Bundle      : ldp4j-application-api-0.2.1.jar
+ *   Artifact    : org.ldp4j.framework:ldp4j-application-api:0.2.2
+ *   Bundle      : ldp4j-application-api-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.application.ext.annotations;
@@ -43,16 +43,31 @@ public @interface Resource {
 	/**
 	 * The identifier of the template. The identifier must be
 	 * application-unique.
+	 *
+	 * @return the identifier of the template.
 	 */
 	String id();
 
-	/** The human-based name of the template. */
+	/**
+	 * The human-based name of the template.
+	 *
+	 * @return the name of the template.
+	 */
 	String name() default "";
 
-	/** A description of the purpose of the template of the template. */
+	/**
+	 * A description of the purpose of the template.
+	 *
+	 * @return the description of the template
+	 */
 	String description() default "";
 
-	/** The attachments of the template. */
+	/**
+	 * The attachments of the template.
+	 *
+	 * @return the attachments of the template
+	 */
 	Attachment[] attachments() default {};
+
 
 }

@@ -20,8 +20,8 @@
  *   See the License for the specific language governing permissions and
  *   limitations under the License.
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
- *   Artifact    : org.ldp4j.commons:ldp4j-commons-http:0.2.1
- *   Bundle      : ldp4j-commons-http-0.2.1.jar
+ *   Artifact    : org.ldp4j.commons:ldp4j-commons-http:0.2.2
+ *   Bundle      : ldp4j-commons-http-0.2.2.jar
  * #-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=#
  */
 package org.ldp4j.http;
@@ -151,7 +151,7 @@ public final class ContentNegotiator {
 	 *
 	 * @return the result of the content negotiation
 	 * @see <a href="https://tools.ietf.org/html/rfc2296">RFC 2296: HTTP Remote
-	 *      Variant Selection Algorithm -- RVSA/1.0</>
+	 *      Variant Selection Algorithm -- RVSA/1.0</a>
 	 */
 	public NegotiationResult negotiate() {
 		return
